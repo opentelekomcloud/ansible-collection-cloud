@@ -1,8 +1,15 @@
-#!/usr/bin/python
-
-# (c) 2018, Artem Goncharov <artem.goncharov@gmail.com>
-# GNU General Public License v3.0+
-# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+#!/usr/bin/env python
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from __future__ import absolute_import, division, print_function
 
@@ -14,10 +21,10 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: otc_loadbalancer
+module: loadbalancer
 short_description: Add/Delete load balancer from OpenTelekomCloud
 extends_documentation_fragment: openstack
-version_added: "2.8"
+version_added: "2.9"
 author: "Artem Goncharov (@gtema)"
 description:
   - Add or Remove Enhanced Load Balancer from the OTC load-balancer
@@ -64,10 +71,7 @@ options:
     description:
       - The amount of time the module should wait.
     default: 180
-  availability_zone:
-    description:
-      - Ignored. Present for backwards compatibility
-requirements: ["openstacksdk"]
+requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
@@ -133,7 +137,7 @@ loadbalancer:
 
 EXAMPLES = '''
 # Create a load balancer by specifying the VIP subnet.
-- otc_loadbalancer:
+- loadbalancer:
     auth:
       auth_url: https://identity.example.com
       username: admin
@@ -146,7 +150,7 @@ EXAMPLES = '''
 
 # Create a load balancer together with its sub-resources in the 'all in one'
 # way. A public IP address is also allocated to the load balancer VIP.
-- otc_loadbalancer:
+- loadbalancer:
     name: ELB
     state: present
     vip_subnet: default_subnet
@@ -155,7 +159,7 @@ EXAMPLES = '''
     timeout: 600
 
 # Delete a load balancer(and all its related resources)
-- otc_loadbalancer:
+- loadbalancer:
     auth:
       auth_url: https://identity.example.com
       username: admin
@@ -166,7 +170,7 @@ EXAMPLES = '''
 
 # Delete a load balancer(and all its related resources) together with the
 # public IP address(if any) attached to it.
-- otc_loadbalancer:
+- loadbalancer:
     auth:
       auth_url: https://identity.example.com
       username: admin
@@ -180,14 +184,9 @@ EXAMPLES = '''
 import time
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.openstack import openstack_full_argument_spec, \
+from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
+    import openstack_full_argument_spec, \
     openstack_module_kwargs, openstack_cloud_from_module
-
-try:
-    from __main__ import display
-except ImportError:
-    from ansible.utils.display import Display
-    display = Display()
 
 
 def _wait_for_lb(module, cloud, lb, status, failures, interval=5):
@@ -221,6 +220,76 @@ def _wait_for_lb(module, cloud, lb, status, failures, interval=5):
     )
 
 
+def bind_floating_ip(cloud, module, lb, public_vip_address, allocate_fip):
+    fip = None
+    orig_public_ip = None
+    new_public_ip = None
+    if public_vip_address or allocate_fip:
+        ips = cloud.network.ips(
+            port_id=lb.vip_port_id,
+            fixed_ip_address=lb.vip_address
+        )
+        ips = list(ips)
+        if ips:
+            orig_public_ip = ips[0]
+            new_public_ip = orig_public_ip.floating_ip_address
+
+    if public_vip_address and public_vip_address != orig_public_ip:
+        fip = cloud.network.find_ip(public_vip_address)
+        if not fip:
+            module.fail_json(
+                msg='Public IP %s is unavailable' % public_vip_address
+            )
+
+        # Release origin public ip first
+        cloud.network.update_ip(
+            orig_public_ip,
+            fixed_ip_address=None,
+            port_id=None
+        )
+
+        # Associate new public ip
+        cloud.network.update_ip(
+            fip,
+            fixed_ip_address=lb.vip_address,
+            port_id=lb.vip_port_id
+        )
+
+        new_public_ip = public_vip_address
+    elif allocate_fip and not orig_public_ip:
+        fip = cloud.network.find_available_ip()
+        if not fip:
+
+            pub_net = cloud.get_network('admin_external_net')
+            if not pub_net:
+                module.fail_json(
+                    msg='Public network admin_external_net not found'
+                )
+            fip = cloud.network.create_ip(
+                floating_network_id=pub_net.id
+            )
+
+        cloud.network.update_ip(
+            fip,
+            fixed_ip_address=lb.vip_address,
+            port_id=lb.vip_port_id
+        )
+
+        new_public_ip = fip.floating_ip_address
+
+    return new_public_ip
+
+
+def _system_state_change(module, cloud, lb):
+    state = module.params['state']
+    if state == 'present':
+        if not lb:
+            return True
+    elif state == 'absent' and lb:
+        return True
+    return False
+
+
 def main():
     argument_spec = openstack_full_argument_spec(
         name=dict(required=True),
@@ -232,7 +301,10 @@ def main():
         delete_public_ip=dict(required=False, default=False, type='bool'),
     )
     module_kwargs = openstack_module_kwargs()
-    module = AnsibleModule(argument_spec, **module_kwargs)
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        **module_kwargs)
     sdk, cloud = openstack_cloud_from_module(module)
 
     vip_subnet = module.params['vip_subnet']
@@ -242,10 +314,15 @@ def main():
 
     vip_subnet_id = None
 
+    lb = None
+
     try:
         changed = False
         lb = cloud.network.find_load_balancer(
             name_or_id=module.params['name'])
+
+        if module.check_mode:
+            module.exit_json(changed=_system_state_change(module, cloud, lb))
 
         if module.params['state'] == 'present':
             if not lb:
@@ -276,74 +353,23 @@ def main():
             # Associate public ip to the load balancer VIP. If
             # public_vip_address is provided, use that IP, otherwise, either
             # find an available public ip or create a new one.
-            fip = None
-            orig_public_ip = None
-            new_public_ip = None
-            if public_vip_address or allocate_fip:
-                ips = cloud.network.ips(
-                    port_id=lb.vip_port_id,
-                    fixed_ip_address=lb.vip_address
-                )
-                ips = list(ips)
-                if ips:
-                    orig_public_ip = ips[0]
-                    new_public_ip = orig_public_ip.floating_ip_address
+            floating_ip = bind_floating_ip(
+                cloud, module, lb,
+                public_vip_address, allocate_fip)
 
-            if public_vip_address and public_vip_address != orig_public_ip:
-                fip = cloud.network.find_ip(public_vip_address)
-                if not fip:
-                    module.fail_json(
-                        msg='Public IP %s is unavailable' % public_vip_address
-                    )
-
-                # Release origin public ip first
-                cloud.network.update_ip(
-                    orig_public_ip,
-                    fixed_ip_address=None,
-                    port_id=None
-                )
-
-                # Associate new public ip
-                cloud.network.update_ip(
-                    fip,
-                    fixed_ip_address=lb.vip_address,
-                    port_id=lb.vip_port_id
-                )
-
-                new_public_ip = public_vip_address
+            if floating_ip:
+                # Include public_vip_address in the result.
+                lb = cloud.network.find_load_balancer(name_or_id=lb.id)
+                lb_dict = lb.to_dict()
+                lb_dict.update({"public_vip_address": floating_ip})
                 changed = True
-            elif allocate_fip and not orig_public_ip:
-                fip = cloud.network.find_available_ip()
-                if not fip:
-
-                    pub_net = cloud.get_network('admin_external_net')
-                    if not pub_net:
-                        module.fail_json(
-                            msg='Public network admin_external_net not found'
-                        )
-                    fip = cloud.network.create_ip(
-                        floating_network_id=pub_net.id
-                    )
-
-                cloud.network.update_ip(
-                    fip,
-                    fixed_ip_address=lb.vip_address,
-                    port_id=lb.vip_port_id
-                )
-
-                new_public_ip = fip.floating_ip_address
-                changed = True
-
-            # Include public_vip_address in the result.
-            lb = cloud.network.find_load_balancer(name_or_id=lb.id)
-            lb_dict = lb.to_dict()
-            lb_dict.update({"public_vip_address": new_public_ip})
 
             module.exit_json(
                 changed=changed,
-                loadbalancer=lb_dict,
+                loadbalancer=lb.to_dict(),
                 id=lb.id
             )
+
         elif module.params['state'] == 'absent':
             changed = False
             public_vip_address = None

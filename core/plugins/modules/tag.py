@@ -1,9 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # coding: utf-8 -*-
-
-# (c) 2018, Artem Goncharov <artem.goncharov@gmail.com>
-# GNU General Public License v3.0+
-# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
@@ -16,13 +23,13 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: os_tag
-short_description: Manage tags on diverse OpenStack resources
+module: tag
+short_description: Manage tags on diverse OpenStack/OTC resources
 extends_documentation_fragment: openstack
-version_added: "2.8"
+version_added: "2.9"
 author: Artem Goncharov (@gtema)
 description:
-    - set or delete tags on the OpenStack resources
+    - set or delete tags on the OpenStack/OTC resources
 options:
    server:
       description:
@@ -67,9 +74,6 @@ options:
          are present.
      choices: [replace, set]
      default: replace
-   availability_zone:
-     description:
-       - Ignored. Present for backwards compatibility
 notes:
     - One and only one of C(server), C(floating_ip), C(network), C(port),
       C(router), C(security_group), C(security_group_rule), C(subnet),
@@ -77,6 +81,7 @@ notes:
 requirements:
     - "python >= 2.7"
     - "openstacksdk"
+    - "otcextensions"
 '''
 EXAMPLES = '''
 ---
@@ -128,7 +133,9 @@ tags:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.openstack import openstack_full_argument_spec, openstack_module_kwargs, openstack_cloud_from_module
+from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
+    import openstack_full_argument_spec, \
+    openstack_module_kwargs, openstack_cloud_from_module
 from ansible.module_utils._text import to_native
 
 

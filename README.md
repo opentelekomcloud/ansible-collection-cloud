@@ -1,8 +1,7 @@
-# ansible-modules
-Ansible modules for using with OTC (addition to the native OpenStack modules)
+# ansible-collections
+Ansible Collections for using with OTC (addition to the native OpenStack modules)
 
+* core - collection containing additional ansible modules for managing OTC
+  specific resources (or modified OpenStack modules in case of behavioral
+  differencies)
 
-#TODO
-
-Project can be for example incuded as git module into the your project and a
-link to otc/ should be available as library where the playbooks are located

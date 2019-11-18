@@ -1,0 +1,26 @@
+---
+
+- name: Test CCE
+  hosts: localhost
+  collections:
+    - opentelekomcloud.core
+  tasks:
+
+    - name: Get CCE cluster info
+      cce_cluster_info:
+      register: cce
+
+    - name: debug cce
+      debug:
+        var: cce.cce_clusters
+
+    - name: get cluster certs
+      cce_cluster_cert_info:
+        cluster: "{{ item.id }}"
+      loop: "{{ cce.cce_clusters | selectattr('id') | list }}"
+      register: certs
+
+    - name: debug certs
+      debug:
+        msg: "{{ item.cce_cluster_certs }}"
+      loop: "{{ certs.results }}"

@@ -1,0 +1,32 @@
+---
+
+- name: Test RDS
+  hosts: localhost
+  collections:
+    - opentelekomcloud.core
+  tasks:
+
+    - name: Get datastore info
+      rds_datastore_info:
+        datastore: postgresql
+      register: rds
+
+    - name: debug datastores
+      debug:
+        var: rds.rds_datastores
+
+    - name: Get flavor info
+      rds_flavor_info:
+        datastore: "postgresql"
+        version: "10"
+        instance_mode: "single"
+      register: rds
+
+    - name: debug flavors
+      debug:
+        var: rds.rds_flavors
+
+    - name: Get flavor info
+      rds_flavor_info:
+        datastore: "postgresql"
+        version: "10"
