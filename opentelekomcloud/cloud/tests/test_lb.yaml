@@ -81,5 +81,3 @@
           os_network:
              name: "{{ network_name }}"
              state: "absent"
-
-

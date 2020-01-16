@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -183,115 +179,11 @@ EXAMPLES = '''
 
 import time
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
-    import openstack_full_argument_spec, \
-    openstack_module_kwargs, openstack_cloud_from_module
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-def _wait_for_lb(module, cloud, lb, status, failures, interval=5):
-    """Wait for load balancer to be in a particular provisioning status."""
-    timeout = module.params['timeout']
-
-    total_sleep = 0
-    if failures is None:
-        failures = []
-
-    while total_sleep < timeout:
-        lb = cloud.network.get_load_balancer(lb.id)
-
-        if lb:
-            if lb:
-                return None
-        else:
-            if status == "DELETED":
-                return None
-            else:
-                module.fail_json(
-                    msg="Load Balancer %s transitioned to DELETED" % lb.id
-                )
-
-        time.sleep(interval)
-        total_sleep += interval
-
-    module.fail_json(
-        msg="Timeout waiting for Load Balancer %s to transition to %s" %
-            (lb.id, status)
-    )
-
-
-def bind_floating_ip(cloud, module, lb, public_vip_address, allocate_fip):
-    fip = None
-    orig_public_ip = None
-    new_public_ip = None
-    if public_vip_address or allocate_fip:
-        ips = cloud.network.ips(
-            port_id=lb.vip_port_id,
-            fixed_ip_address=lb.vip_address
-        )
-        ips = list(ips)
-        if ips:
-            orig_public_ip = ips[0]
-            new_public_ip = orig_public_ip.floating_ip_address
-
-    if public_vip_address and public_vip_address != orig_public_ip:
-        fip = cloud.network.find_ip(public_vip_address)
-        if not fip:
-            module.fail_json(
-                msg='Public IP %s is unavailable' % public_vip_address
-            )
-
-        # Release origin public ip first
-        cloud.network.update_ip(
-            orig_public_ip,
-            fixed_ip_address=None,
-            port_id=None
-        )
-
-        # Associate new public ip
-        cloud.network.update_ip(
-            fip,
-            fixed_ip_address=lb.vip_address,
-            port_id=lb.vip_port_id
-        )
-
-        new_public_ip = public_vip_address
-    elif allocate_fip and not orig_public_ip:
-        fip = cloud.network.find_available_ip()
-        if not fip:
-
-            pub_net = cloud.get_network('admin_external_net')
-            if not pub_net:
-                module.fail_json(
-                    msg='Public network admin_external_net not found'
-                )
-            fip = cloud.network.create_ip(
-                floating_network_id=pub_net.id
-            )
-
-        cloud.network.update_ip(
-            fip,
-            fixed_ip_address=lb.vip_address,
-            port_id=lb.vip_port_id
-        )
-
-        new_public_ip = fip.floating_ip_address
-
-    return new_public_ip
-
-
-def _system_state_change(module, cloud, lb):
-    state = module.params['state']
-    if state == 'present':
-        if not lb:
-            return True
-    elif state == 'absent' and lb:
-        return True
-    return False
-
-
-def main():
-    argument_spec = openstack_full_argument_spec(
+class LoadBalancerModule(OTCModule):
+    argument_spec = dict(
         name=dict(required=True),
         state=dict(default='present', choices=['absent', 'present']),
         vip_subnet=dict(required=False),
@@ -300,93 +192,182 @@ def main():
         auto_public_ip=dict(required=False, default=False, type='bool'),
         delete_public_ip=dict(required=False, default=False, type='bool'),
     )
-    module_kwargs = openstack_module_kwargs()
-    module = AnsibleModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True,
-        **module_kwargs)
-    sdk, cloud = openstack_cloud_from_module(module)
 
-    vip_subnet = module.params['vip_subnet']
-    public_vip_address = module.params['public_ip_address']
-    allocate_fip = module.params['auto_public_ip']
-    delete_fip = module.params['delete_public_ip']
+    def _wait_for_lb(self, lb, status, failures, interval=5):
+        """Wait for load balancer to be in a particular provisioning status."""
+        timeout = self.params['timeout']
 
-    vip_subnet_id = None
+        total_sleep = 0
+        if failures is None:
+            failures = []
 
-    lb = None
+        while total_sleep < timeout:
+            lb = self.conn.network.get_load_balancer(lb.id)
 
-    try:
+            if lb:
+                if lb:
+                    return None
+            else:
+                if status == "DELETED":
+                    return None
+                else:
+                    self.fail_json(
+                        msg="Load Balancer %s transitioned to DELETED" % lb.id
+                    )
+
+            time.sleep(interval)
+            total_sleep += interval
+
+        self.fail_json(
+            msg="Timeout waiting for Load Balancer %s to transition to %s" %
+                (lb.id, status)
+        )
+
+    def bind_floating_ip(self, lb, public_vip_address, allocate_fip):
+        fip = None
+        orig_public_ip = None
+        new_public_ip = None
+        if public_vip_address or allocate_fip:
+            ips = self.conn.network.ips(
+                port_id=lb.vip_port_id,
+                fixed_ip_address=lb.vip_address
+            )
+            ips = list(ips)
+            if ips:
+                orig_public_ip = ips[0]
+                new_public_ip = orig_public_ip.floating_ip_address
+
+        if public_vip_address and public_vip_address != orig_public_ip:
+            fip = self.conn.network.find_ip(public_vip_address)
+            if not fip:
+                self.fail_json(
+                    msg='Public IP %s is unavailable' % public_vip_address
+                )
+
+            # Release origin public ip first
+            self.conn.network.update_ip(
+                orig_public_ip,
+                fixed_ip_address=None,
+                port_id=None
+            )
+
+            # Associate new public ip
+            self.conn.network.update_ip(
+                fip,
+                fixed_ip_address=lb.vip_address,
+                port_id=lb.vip_port_id
+            )
+
+            new_public_ip = public_vip_address
+        elif allocate_fip and not orig_public_ip:
+            fip = self.conn.network.find_available_ip()
+            if not fip:
+
+                pub_net = self.conn.get_network('admin_external_net')
+                if not pub_net:
+                    self.fail_json(
+                        msg='Public network admin_external_net not found'
+                    )
+                fip = self.conn.network.create_ip(
+                    floating_network_id=pub_net.id
+                )
+
+            self.conn.network.update_ip(
+                fip,
+                fixed_ip_address=lb.vip_address,
+                port_id=lb.vip_port_id
+            )
+
+            new_public_ip = fip.floating_ip_address
+
+        return new_public_ip
+
+    def _system_state_change(self, lb):
+        state = self.params['state']
+        if state == 'present':
+            if not lb:
+                return True
+        elif state == 'absent' and lb:
+            return True
+        return False
+
+    def run(self):
+        vip_subnet = self.params['vip_subnet']
+        public_vip_address = self.params['public_ip_address']
+        allocate_fip = self.params['auto_public_ip']
+        delete_fip = self.params['delete_public_ip']
+
+        vip_subnet_id = None
+
+        lb = None
+
         changed = False
-        lb = cloud.network.find_load_balancer(
-            name_or_id=module.params['name'])
+        lb = self.conn.network.find_load_balancer(
+            name_or_id=self.params['name'])
 
-        if module.check_mode:
-            module.exit_json(changed=_system_state_change(module, cloud, lb))
+        if self.check_mode:
+            self.exit_json(changed=self._system_state_change(lb))
 
-        if module.params['state'] == 'present':
+        if self.params['state'] == 'present':
             if not lb:
                 if vip_subnet:
-                    subnet = cloud.get_subnet(vip_subnet)
+                    subnet = self.conn.get_subnet(vip_subnet)
                     if not subnet:
-                        module.fail_json(
+                        self.fail_json(
                             msg='subnet %s is not found' % vip_subnet
                         )
                     vip_subnet_id = subnet.id
 
-                lb = cloud.network.create_load_balancer(
-                    name=module.params['name'],
+                lb = self.conn.network.create_load_balancer(
+                    name=self.params['name'],
                     vip_subnet_id=vip_subnet_id,
-                    vip_address=module.params['vip_address'],
+                    vip_address=self.params['vip_address'],
                 )
                 changed = True
 
-            if not module.params['wait']:
-                module.exit_json(
+            if not self.params['wait']:
+                self.exit_json(
                     changed=changed,
                     loadbalancer=lb.to_dict(),
                     id=lb.id
                 )
 
-            _wait_for_lb(module, cloud, lb, "ACTIVE", ["ERROR"])
+            self._wait_for_lb(lb, "ACTIVE", ["ERROR"])
 
             # Associate public ip to the load balancer VIP. If
             # public_vip_address is provided, use that IP, otherwise, either
             # find an available public ip or create a new one.
-            floating_ip = bind_floating_ip(
-                cloud, module, lb,
-                public_vip_address, allocate_fip)
+            floating_ip = self.bind_floating_ip(
+                lb, public_vip_address, allocate_fip)
 
             if floating_ip:
                 # Include public_vip_address in the result.
-                lb = cloud.network.find_load_balancer(name_or_id=lb.id)
+                lb = self.conn.network.find_load_balancer(name_or_id=lb.id)
                 lb_dict = lb.to_dict()
                 lb_dict.update({"public_vip_address": floating_ip})
                 changed = True
 
-            module.exit_json(
+            self.exit_json(
                 changed=changed,
                 loadbalancer=lb.to_dict(),
                 id=lb.id
             )
 
-        elif module.params['state'] == 'absent':
+        elif self.params['state'] == 'absent':
             changed = False
             public_vip_address = None
 
             if lb:
-                cloud.network.delete(
+                self.conn.network.delete(
                     '/lbaas/loadbalancers/{id}?cascade=true'.format(id=lb.id))
                 changed = True
 
                 if delete_fip and lb.vip_address:
-                    cloud.network.delete_ip(lb.vip_address)
+                    self.conn.network.delete_ip(lb.vip_address)
                     changed = True
 
-            module.exit_json(changed=changed)
-    except sdk.exceptions.OpenStackCloudException as e:
-        module.fail_json(msg=str(e), extra_data=e.extra_data)
+            self.exit_json(changed=changed)
 
 
 if __name__ == "__main__":
-    main()
+    LoadBalancerModule()()

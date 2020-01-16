@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -23,7 +19,7 @@ DOCUMENTATION = '''
 ---
 module: as_group_info
 short_description: Get AutoScaling groups
-extends_documentation_fragment: openstack
+extends_documentation_fragment: opentelekomcloud.cloud.otc.doc
 version_added: "2.9"
 author: "Artem Goncharov (@gtema)"
 description:
@@ -63,28 +59,22 @@ EXAMPLES = '''
 '''
 
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
-    import openstack_full_argument_spec, \
-    openstack_module_kwargs, openstack_cloud_from_module
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-def main():
-    argument_spec = openstack_full_argument_spec(
+class AutoScalingGroupInfoModule(OTCModule):
+
+    argument_spec = dict(
         name=dict(required=False),
         status=dict(required=False, choices=[
             'inservice', 'paused', 'error', 'deleting'])
     )
-    module_kwargs = openstack_module_kwargs()
-    module = AnsibleModule(
-        argument_spec=argument_spec,
-        **module_kwargs)
-    sdk, cloud = openstack_cloud_from_module(module)
 
-    name_filter = module.params['name']
-    status_filter = module.params['status']
+    def run(self):
 
-    try:
+        name_filter = self.params['name']
+        status_filter = self.params['status']
+
         data = []
         # TODO: Pass filters into SDK
         attrs = {}
@@ -92,19 +82,16 @@ def main():
             attrs['scaling_groups_name'] = name_filter
         if status_filter:
             attrs['scaling_group_status'] = status_filter.upper()
-        for raw in cloud.auto_scaling.groups(**attrs):
+        for raw in self.conn.auto_scaling.groups(**attrs):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
 
-        module.exit_json(
+        self.exit_json(
             changed=False,
             as_groups=data
         )
 
-    except sdk.exceptions.OpenStackCloudException as e:
-        module.fail_json(msg=str(e), extra_data=e.extra_data)
-
 
 if __name__ == "__main__":
-    main()
+    AutoScalingGroupInfoModule()()

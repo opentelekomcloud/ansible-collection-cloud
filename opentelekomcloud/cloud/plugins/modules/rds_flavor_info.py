@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -72,34 +68,26 @@ EXAMPLES = '''
 '''
 
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
-    import openstack_full_argument_spec, \
-    openstack_module_kwargs, openstack_cloud_from_module
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-def main():
-    argument_spec = openstack_full_argument_spec(
+class RdsFlavorModule(OTCModule):
+    argument_spec = dict(
         name=dict(required=False),
         datastore=dict(required=True, choices=['mysql', 'postgresql',
                                                'sqlserver']),
         version=dict(required=True),
         instance_mode=dict(choices=['single', 'replica', 'ha'])
     )
-    module_kwargs = openstack_module_kwargs()
-    module = AnsibleModule(
-        argument_spec=argument_spec,
-        **module_kwargs)
-    sdk, cloud = openstack_cloud_from_module(module)
 
-    datastore = module.params['datastore']
-    version = module.params['version']
-    instance_mode_filter = module.params['instance_mode']
+    def run(self):
+        datastore = self.params['datastore']
+        version = self.params['version']
+        instance_mode_filter = self.params['instance_mode']
 
-    try:
         data = []
-        for raw in cloud.rds.flavors(datastore_name=datastore,
-                                     version_name=version):
+        for raw in self.conn.rds.flavors(datastore_name=datastore,
+                                         version_name=version):
             if (instance_mode_filter
                     and raw.instance_mode != instance_mode_filter):
                 # Skip result
@@ -109,14 +97,11 @@ def main():
             dt.pop('id')
             data.append(dt)
 
-        module.exit_json(
+        self.exit_json(
             changed=False,
             rds_flavors=data
         )
 
-    except sdk.exceptions.OpenStackCloudException as e:
-        module.fail_json(msg=str(e), extra_data=e.extra_data)
-
 
 if __name__ == "__main__":
-    main()
+    RdsFlavorModule()()

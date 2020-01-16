@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -62,41 +58,30 @@ EXAMPLES = '''
 '''
 
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
-    import openstack_full_argument_spec, \
-    openstack_module_kwargs, openstack_cloud_from_module
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-def main():
-    argument_spec = openstack_full_argument_spec(
+class RdsDatastoreInfoModule(OTCModule):
+    argument_spec = dict(
         name=dict(required=False),
         datastore=dict(required=True, choices=['mysql', 'postgresql',
                                                'sqlserver']),
     )
-    module_kwargs = openstack_module_kwargs()
-    module = AnsibleModule(
-        argument_spec=argument_spec,
-        **module_kwargs)
-    sdk, cloud = openstack_cloud_from_module(module)
 
-    datastore = module.params['datastore']
+    def run(self):
+        datastore = self.params['datastore']
 
-    try:
         data = []
-        for raw in cloud.rds.datastores(database_name=datastore):
+        for raw in self.conn.rds.datastores(database_name=datastore):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
 
-        module.exit_json(
+        self.exit_json(
             changed=False,
             rds_datastores=data
         )
 
-    except sdk.exceptions.OpenStackCloudException as e:
-        module.fail_json(msg=str(e), extra_data=e.extra_data)
-
 
 if __name__ == "__main__":
-    main()
+    RdsDatastoreInfoModule()()

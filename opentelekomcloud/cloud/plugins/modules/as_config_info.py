@@ -10,10 +10,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import (absolute_import, division, print_function)
-
-__metaclass__ = type
-
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -23,7 +19,7 @@ DOCUMENTATION = '''
 ---
 module: as_config_info
 short_description: Get AutoScaling configs
-extends_documentation_fragment: openstack
+extends_documentation_fragment: opentelekomcloud.cloud.otc.doc
 version_added: "2.9"
 author: "Artem Goncharov (@gtema)"
 description:
@@ -64,8 +60,7 @@ EXAMPLES = '''
   register: as
 '''
 
-from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
-    import OTCModule
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
 class AutoScalingConfigInfoModule(OTCModule):
@@ -73,7 +68,6 @@ class AutoScalingConfigInfoModule(OTCModule):
         name=dict(required=False),
         image_id=dict(required=False)
     )
-    module_kwargs = dict()
 
     def run(self):
         name_filter = self.params['name']
@@ -91,12 +85,11 @@ class AutoScalingConfigInfoModule(OTCModule):
             dt.pop('location')
             data.append(dt)
 
-        module.exit_json(
+        self.exit_json(
             changed=False,
             as_configs=data
         )
 
 
 if __name__ == '__main__':
-    module = AutoScalingConfigInfoModule()
-    module()
+    AutoScalingConfigInfoModule()()

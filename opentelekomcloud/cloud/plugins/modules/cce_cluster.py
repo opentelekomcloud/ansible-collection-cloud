@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -23,7 +19,7 @@ DOCUMENTATION = '''
 ---
 module: cce_cluster
 short_description: Add/Delete CCE Cluster
-extends_documentation_fragment: openstack
+extends_documentation_fragment: opentelekomcloud.cloud.otc.doc
 version_added: "2.9"
 author: "Artem Goncharov (@gtema)"
 description:
@@ -77,7 +73,7 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 id:
-    description: The load balancer UUID.
+    description: The CCE Cluster UUID.
     returned: On success when C(state=present)
     type: str
     sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
@@ -184,56 +180,12 @@ EXAMPLES = '''
 
 import time
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
-    import openstack_full_argument_spec, \
-    openstack_module_kwargs, openstack_cloud_from_module
+
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-def _wait_for_cluster(module, cloud, lb, status, failures, interval=5):
-    """Wait for cluster to be in a particular provisioning status."""
-    timeout = module.params['timeout']
-
-    total_sleep = 0
-    if failures is None:
-        failures = []
-
-    while total_sleep < timeout:
-        lb = cloud.network.get_load_balancer(lb.id)
-
-        if lb:
-            if lb:
-                return None
-        else:
-            if status == "DELETED":
-                return None
-            else:
-                module.fail_json(
-                    msg="Load Balancer %s transitioned to DELETED" % lb.id
-                )
-
-        time.sleep(interval)
-        total_sleep += interval
-
-    module.fail_json(
-        msg="Timeout waiting for Load Balancer %s to transition to %s" %
-            (lb.id, status)
-    )
-
-
-def _system_state_change(module, cloud, cluster):
-    state = module.params['state']
-    if state == 'present':
-        if not cluster:
-            return True
-        # TODO: check other parameters, whether update is required
-    elif state == 'absent' and cluster:
-        return True
-    return False
-
-
-def main():
-    argument_spec = openstack_full_argument_spec(
+class CceClusterModule(OTCModule):
+    argument_spec = dict(
         name=dict(required=True),
         state=dict(default='present', choices=['absent', 'present']),
         cluster_type=dict(default=None,
@@ -246,54 +198,58 @@ def main():
         router=dict(default=None),
         network=dict(default=None),
         network_mode=dict(default=None, choices=['overlay_l2',
-                                                  'underlay_ipvlan',
-                                                  'vpc-router']),
+                                                 'underlay_ipvlan',
+                                                 'vpc-router']),
         wait=dict(required=False, type=bool, default=True),
         timeout=dict(required=False, type=int, default=None)
     )
-    module_kwargs = openstack_module_kwargs(
+    module_kwargs = dict(
         required_if=[
             'state', 'present',
             ['flavor', 'cluster_type', 'router', 'network', 'network_mode']
         ]
     )
-    module = AnsibleModule(
-        argument_spec=argument_spec,
-        supports_check_mode=True,
-        **module_kwargs)
-    sdk, cloud = openstack_cloud_from_module(module)
 
-    name = module.params['name']
-    cluster_type = module.params['cluster_type']
-    flavor = module.params['flavor']
-    description = module.params['description']
-    router = module.params['router']
-    network = module.params['network']
-    network_mode = module.params['network_mode']
-    timeout = module.params['timeout']
+    def _system_state_change(self, cluster):
+        state = self.params['state']
+        if state == 'present':
+            if not cluster:
+                return True
+            # TODO: check other parameters, whether update is required
+        elif state == 'absent' and cluster:
+            return True
+        return False
 
-    cluster = None
-    data = None
+    def run(self):
+        name = self.params['name']
+        cluster_type = self.params['cluster_type']
+        flavor = self.params['flavor']
+        description = self.params['description']
+        router = self.params['router']
+        network = self.params['network']
+        network_mode = self.params['network_mode']
+        timeout = self.params['timeout']
 
-    try:
+        cluster = None
+        data = None
         changed = False
-        cluster = cloud.cce.find_cluster(
+
+        cluster = self.conn.cce.find_cluster(
             name_or_id=name)
 
-        if module.check_mode:
-            module.exit_json(changed=_system_state_change(module, cloud,
-                                                          cluster))
+        if self.check_mode:
+            self.exit_json(changed=self._system_state_change(cluster))
 
-        if module.params['state'] == 'present':
+        if self.params['state'] == 'present':
             if not cluster:
-                cloud_network = cloud.network.find_network(network)
-                cloud_router = cloud.network.find_router(router)
+                cloud_network = self.conn.network.find_network(network)
+                cloud_router = self.conn.network.find_router(router)
                 if not cloud_network:
-                    module.fail_json(
+                    self.fail_json(
                         msg='Network %s is not found' % network
                     )
                 if not cloud_router:
-                    module.fail_json(
+                    self.fail_json(
                         msg='Router %s is not found' % router
                     )
 
@@ -320,52 +276,44 @@ def main():
                 if description:
                     data['spec']['description'] = description
 
-                cluster = cloud.cce.create_cluster(
+                cluster = self.conn.cce.create_cluster(
                     **data
                 )
                 changed = True
 
-                if not module.params['wait']:
-                    module.exit_json(
+                if not self.params['wait']:
+                    self.exit_json(
                         changed=changed,
                         cce_cluster=cluster.to_dict(),
                         id=cluster.id
                     )
 
                 if cluster.job_id:
-                    cloud.cce.wait_for_job(cluster.job_id,
-                                           wait=timeout)
+                    self.conn.cce.wait_for_job(cluster.job_id,
+                                               wait=timeout)
 
                 # Refetch the cluster
-                cluster = cloud.cce.get_cluster(cluster)
+                cluster = self.conn.cce.get_cluster(cluster)
+            else:
+                # Decide whether update is required
+                pass
 
-            module.exit_json(
+            self.exit_json(
                 changed=changed,
                 cce_cluster=cluster.to_dict(),
                 id=cluster.id
             )
 
-        elif module.params['state'] == 'absent':
+        elif self.params['state'] == 'absent':
             changed = False
 
             if cluster:
                 # TODO perhaps delete all nodes here first
-                cloud.cce.delete_cluster(cluster)
+                self.conn.cce.delete_cluster(cluster)
                 changed = True
 
-            module.exit_json(changed=changed)
-    except sdk.exceptions.OpenStackCloudException as e:
-        params = {
-            'msg': str(e),
-            'extra_data': {
-                'request_data': data,
-                'data': e.extra_data,
-                'details': e.details,
-                'response': e.response.text
-            }
-        }
-        module.fail_json(**params)
+            self.exit_json(changed=changed)
 
 
 if __name__ == "__main__":
-    main()
+    CceClusterModule()()

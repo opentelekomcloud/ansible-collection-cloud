@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -71,31 +67,23 @@ EXAMPLES = '''
   register: data
 '''
 
-
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
-    import openstack_full_argument_spec, \
-    openstack_module_kwargs, openstack_cloud_from_module
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-def main():
-    argument_spec = openstack_full_argument_spec(
+class CceClusterInfoModule(OTCModule):
+    argument_spec = dict(
         name=dict(required=False),
         status=dict(required=False, choices=['available', 'creating',
                                              'deleting'])
     )
-    module_kwargs = openstack_module_kwargs()
-    module = AnsibleModule(
-        argument_spec=argument_spec,
-        **module_kwargs)
-    sdk, cloud = openstack_cloud_from_module(module)
 
-    name_filter = module.params['name']
-    status_filter = module.params['status']
+    def run(self):
 
-    try:
+        name_filter = self.params['name']
+        status_filter = self.params['status']
+
         data = []
-        for raw in cloud.cce.clusters():
+        for raw in self.conn.cce.clusters():
             if name_filter and raw.name != name_filter:
                 continue
             if status_filter and raw.status != status_filter.lower():
@@ -106,14 +94,11 @@ def main():
             dt.pop('kind')
             data.append(dt)
 
-        module.exit_json(
+        self.exit_json(
             changed=False,
             cce_clusters=data
         )
 
-    except sdk.exceptions.OpenStackCloudException as e:
-        module.fail_json(msg=str(e), extra_data=e.extra_data)
-
 
 if __name__ == "__main__":
-    main()
+    CceClusterInfoModule()()

@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -61,40 +57,29 @@ EXAMPLES = '''
 '''
 
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
-    import openstack_full_argument_spec, \
-    openstack_module_kwargs, openstack_cloud_from_module
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-def main():
-    argument_spec = openstack_full_argument_spec(
+class CceClusterCertInfoModule(OTCModule):
+    argument_spec = dict(
         cluster=dict(required=True),
     )
-    module_kwargs = openstack_module_kwargs()
-    module = AnsibleModule(
-        argument_spec=argument_spec,
-        **module_kwargs)
-    sdk, cloud = openstack_cloud_from_module(module)
 
-    cluster = module.params['cluster']
+    def run(self):
+        cluster = self.params['cluster']
 
-    try:
-        cluster = cloud.cce.find_cluster(cluster, ignore_missing=False)
+        cluster = self.conn.cce.find_cluster(cluster, ignore_missing=False)
 
-        certs = cloud.cce.get_cluster_certificates(cluster).to_dict()
+        certs = self.conn.cce.get_cluster_certificates(cluster).to_dict()
         certs.pop('location')
         certs.pop('id')
         certs.pop('name')
 
-        module.exit_json(
+        self.exit_json(
             changed=False,
             cce_cluster_certs=certs
         )
 
-    except sdk.exceptions.OpenStackCloudException as e:
-        module.fail_json(msg=str(e), extra_data=e.extra_data)
-
 
 if __name__ == "__main__":
-    main()
+    CceClusterCertInfoModule()()

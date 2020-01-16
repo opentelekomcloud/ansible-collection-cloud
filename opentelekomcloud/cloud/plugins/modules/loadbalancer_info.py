@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -51,12 +47,12 @@ loadbalancers:
             sample: "elb_test"
         vip_network_id:
             description: Network ID the load balancer virutal IP port belongs
-            to.
+                to.
             type: str
             sample: "f171db43-56fd-41cf-82d7-4e91d741762e"
         vip_subnet_id:
             description: Subnet ID the load balancer virutal IP port belongs
-            to.
+                to.
             type: str
             sample: "c53e3c70-9d62-409a-9f71-db148e7aa853"
         vip_port_id:
@@ -106,38 +102,26 @@ EXAMPLES = '''
   register: lb_info
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
-    import openstack_full_argument_spec, \
-    openstack_module_kwargs, openstack_cloud_from_module
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-def main():
-    argument_spec = openstack_full_argument_spec(
+class LoadBalancerInfoModule(OTCModule):
+    argument_spec = dict(
         name=dict(required=False)
     )
-    module_kwargs = openstack_module_kwargs()
-    module = AnsibleModule(
-        argument_spec=argument_spec,
-        supports_check_mode=False,
-        **module_kwargs)
-    sdk, cloud = openstack_cloud_from_module(module)
 
-    try:
-        if module.params['name']:
-            lb = cloud.network.find_load_balancer(
-                name_or_id=module.params['name'])
+    def run(self):
+        if self.params['name']:
+            lb = self.conn.network.find_load_balancer(
+                name_or_id=self.params['name'])
         else:
-            lb = list(cloud.network.load_balancers())
+            lb = list(self.conn.network.load_balancers())
 
-        module.exit_json(
+        self.exit_json(
             changed=False,
             otc_loadbalancers=lb
         )
 
-    except sdk.exceptions.OpenStackCloudException as e:
-        module.fail_json(msg=str(e), extra_data=e.extra_data)
-
 
 if __name__ == "__main__":
-    main()
+    LoadBalancerInfoModule()()
