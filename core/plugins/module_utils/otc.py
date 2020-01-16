@@ -9,6 +9,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import abc
+
+from ansible.module_utils.basic import AnsibleModule
 
 import openstack as sdk
 import otcextensions
@@ -98,3 +101,26 @@ def openstack_cloud_from_module(module, min_version='0.6.9'):
     except sdk.exceptions.SDKException as e:
         # Probably a cloud configuration/login error
         module.fail_json(msg=str(e))
+
+
+class OTCModule(AnsibleModule):
+    argument_spec = {}
+    module_kwargs = {}
+
+    def __init__(self):
+
+        super(OTCModule, self).__init__(
+            openstack_full_argument_spec(**self.argument_spec),
+            openstack_module_kwargs(**self.module_kwargs))
+
+        self.sdk, self.conn = openstack_cloud_from_module(self)
+
+    @abc.abstractmethod
+    def run(self):
+        pass
+
+    def __call__(self):
+        try:
+            self.run()
+        except self.sdk.exceptions.OpenStackCloudException as e:
+            self.fail_json(msg=str(e), extra_data=e.extra_data)

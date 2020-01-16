@@ -10,10 +10,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from __future__ import absolute_import, division, print_function
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
+
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -40,7 +40,7 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 as_configs:
-    description: List of dictionaries describing RDS datastore version.
+    description: List of dictionaries describing AutoScaling Configs.
     type: complex
     returned: On Success.
     contains:
@@ -58,33 +58,30 @@ EXAMPLES = '''
 # Get configs versions.
 - as_config_info:
   register: as
+
+- as_config_info:
+    name: my_fake_config
+  register: as
 '''
 
-
-from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.opentelekomcloud.core.plugins.module_utils.otc \
-    import openstack_full_argument_spec, \
-    openstack_module_kwargs, openstack_cloud_from_module
+    import OTCModule
 
 
-def main():
-    argument_spec = openstack_full_argument_spec(
+class AutoScalingConfigInfoModule(OTCModule):
+    argument_spec = dict(
         name=dict(required=False),
         image_id=dict(required=False)
     )
-    module_kwargs = openstack_module_kwargs()
-    module = AnsibleModule(
-        argument_spec=argument_spec,
-        **module_kwargs)
-    sdk, cloud = openstack_cloud_from_module(module)
+    module_kwargs = dict()
 
-    name_filter = module.params['name']
-    image_id_filter = module.params['image_id']
+    def run(self):
+        name_filter = self.params['name']
+        image_id_filter = self.params['image_id']
 
-    try:
         data = []
         # TODO: Pass filters into SDK
-        for raw in cloud.auto_scaling.configs():
+        for raw in self.conn.auto_scaling.configs():
             if name_filter and raw.name != name_filter:
                 continue
             if (image_id_filter
@@ -99,9 +96,7 @@ def main():
             as_configs=data
         )
 
-    except sdk.exceptions.OpenStackCloudException as e:
-        module.fail_json(msg=str(e), extra_data=e.extra_data)
 
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    module = AutoScalingConfigInfoModule()
+    module()
