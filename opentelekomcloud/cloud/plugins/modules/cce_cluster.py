@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -30,34 +30,42 @@ options:
     description:
       - Name that has to be given to the load balancer
     required: true
+    type: str
   state:
     description:
       - Should the resource be present or absent.
     choices: [present, absent]
     default: present
+    type: str
   flavor:
     description:
       - Cluster flavor name
     required: true
-    choices: [cce.s1.small, cce.s1.medium, ...]
+    choices: [cce.s1.small, cce.s1.medium]
+    type: str
   cluster_type:
     description: Cluster type
     required: true
     choices: [baremetal, virtualmachine]
+    type: str
   description:
     description:
       - Cluster description
+    type: str
   router:
     description:
       - Name or ID of the Neutron router
     required: true
+    type: str
   network:
     description:
       - Name or ID of the Neutron network
     required: true
+    type: str
   network_mode:
     description: Network type
     required: true
+    type: str
     choices: [overlay_l2, underlay_ipvlan, vpc-router]
   wait:
     description:
@@ -68,6 +76,7 @@ options:
     description:
       - The amount of time the module should wait.
     default: 180
+    type: int
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -90,92 +99,9 @@ cce_cluster:
             description: Name given to the load balancer.
             type: str
             sample: "elb_test"
-        vip_network_id:
-            description: Network ID the load balancer virutal IP port belongs in.
-            type: str
-            sample: "f171db43-56fd-41cf-82d7-4e91d741762e"
-        vip_subnet_id:
-            description: Subnet ID the load balancer virutal IP port belongs in.
-            type: str
-            sample: "c53e3c70-9d62-409a-9f71-db148e7aa853"
-        vip_port_id:
-            description: The load balancer virutal IP port ID.
-            type: str
-            sample: "2061395c-1c01-47ab-b925-c91b93df9c1d"
-        vip_address:
-            description: The load balancer virutal IP address.
-            type: str
-            sample: "192.168.2.88"
-        public_vip_address:
-            description: The load balancer public VIP address.
-            type: str
-            sample: "10.17.8.254"
-        provisioning_status:
-            description: The provisioning status of the load balancer.
-            type: str
-            sample: "ACTIVE"
-        operating_status:
-            description: The operating status of the load balancer.
-            type: str
-            sample: "ONLINE"
-        is_admin_state_up:
-            description: The administrative state of the load balancer.
-            type: bool
-            sample: true
-        listeners:
-            description: The associated listener IDs, if any.
-            type: list
-            sample: [{"id": "7aa1b380-beec-459c-a8a7-3a4fb6d30645"}, {"id": "692d06b8-c4f8-4bdb-b2a3-5a263cc23ba6"}]
-        pools:
-            description: The associated pool IDs, if any.
-            type: list
-            sample: [{"id": "27b78d92-cee1-4646-b831-e3b90a7fa714"}, {"id": "befc1fb5-1992-4697-bdb9-eee330989344"}]
 '''
 
 EXAMPLES = '''
-# Create a load balancer by specifying the VIP subnet.
-- loadbalancer:
-    auth:
-      auth_url: https://identity.example.com
-      username: admin
-      password: passme
-      project_name: admin
-    state: present
-    name: my_lb
-    vip_subnet: my_subnet
-    timeout: 150
-
-# Create a load balancer together with its sub-resources in the 'all in one'
-# way. A public IP address is also allocated to the load balancer VIP.
-- loadbalancer:
-    name: ELB
-    state: present
-    vip_subnet: default_subnet
-    auto_public_ip: yes
-    wait: yes
-    timeout: 600
-
-# Delete a load balancer(and all its related resources)
-- loadbalancer:
-    auth:
-      auth_url: https://identity.example.com
-      username: admin
-      password: passme
-      project_name: admin
-    state: absent
-    name: my_lb
-
-# Delete a load balancer(and all its related resources) together with the
-# public IP address(if any) attached to it.
-- loadbalancer:
-    auth:
-      auth_url: https://identity.example.com
-      username: admin
-      password: passme
-      project_name: admin
-    state: absent
-    name: my_lb
-    delete_public_ip: yes
 '''
 
 import time
@@ -200,13 +126,13 @@ class CceClusterModule(OTCModule):
         network_mode=dict(default=None, choices=['overlay_l2',
                                                  'underlay_ipvlan',
                                                  'vpc-router']),
-        wait=dict(required=False, type=bool, default=True),
-        timeout=dict(required=False, type=int, default=None)
+        wait=dict(required=False, type='bool', default=True),
+        timeout=dict(required=False, type='int', default=180)
     )
     module_kwargs = dict(
         required_if=[
-            'state', 'present',
-            ['flavor', 'cluster_type', 'router', 'network', 'network_mode']
+            ('state', 'present',
+             ['flavor', 'cluster_type', 'router', 'network', 'network_mode'])
         ]
     )
 
@@ -315,5 +241,10 @@ class CceClusterModule(OTCModule):
             self.exit_json(changed=changed)
 
 
-if __name__ == "__main__":
-    CceClusterModule()()
+def main():
+    module = CceClusterModule()
+    module()
+
+
+if __name__ == '__main__':
+    main()

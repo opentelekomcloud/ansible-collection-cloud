@@ -45,7 +45,7 @@ tags: ['OpenStack', 'OpenTelekomCloud']
 dependencies: {}
 
 # The URL of the originating SCM repository
-repository: http://github.com/OpenTelekomCloud/ansible-collections
+repository: http://github.com/OpenTelekomCloud/ansible_collections
 
 # The URL to any online docs
 documentation: http://docs.example.com
@@ -54,4 +54,10 @@ documentation: http://docs.example.com
 homepage: https://open-telekom-cloud.com
 
 # The URL to the collection issue tracker
-issues: http://github.com/OpenTelekomCloud/ansible-collections/issue/tracker
+issues: http://github.com/OpenTelekomCloud/ansible_collections/issue/tracker
+
+build_ignore:
+  - build_artifact/
+  - testing/output
+  - "*.tar.gz"
+  - zuul.yaml

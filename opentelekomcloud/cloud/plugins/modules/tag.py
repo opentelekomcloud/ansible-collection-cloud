@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # coding: utf-8 -*-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,39 +30,50 @@ options:
    server:
       description:
         - Name or id of the Nova Server resource.
+      type: str
    floating_ip:
       description:
         - Name or id of the Floating IP resource.
+      type: str
    network:
       description:
         - Name or id of the Neutron Network resource.
+      type: str
    port:
       description:
         - Name or id of the Neutron Port resource.
+      type: str
    router:
       description:
         - Name or id of the Neutron Router resource.
+      type: str
    security_group:
       description:
         - Name or id of the Neutron SecurityGroup resource.
+      type: str
    security_group_rule:
       description:
         - Name or id of the Neutron SecurityGroupRule resource.
+      type: str
    subnet:
       description:
         - Name or id of the Neutron Subnet resource.
+      type: str
    trunk:
       description:
         - Name or id of the Neutron Trunk resource.
+      type: str
    state:
      description:
        - Should the resource be present or absent.
      choices: [ present, absent ]
      default: present
+     type: str
    tags:
      description:
        - List of tags
      default: []
+     type: list
    mode:
      description:
        - Mode to be used for tags presence ('replace' or 'set'). 'replace'
@@ -70,6 +81,7 @@ options:
          are present.
      choices: [replace, set]
      default: replace
+     type: str
 notes:
     - One and only one of C(server), C(floating_ip), C(network), C(port),
       C(router), C(security_group), C(security_group_rule), C(subnet),
@@ -145,7 +157,7 @@ class TagModule(OTCModule):
         subnet=dict(default=None),
         trunk=dict(default=None),
         state=dict(default='present', choices=['absent', 'present']),
-        tags=dict(default=[], type=list),
+        tags=dict(default=[], type='list'),
         mode=dict(default='replace', choices=['replace', 'set'])
     )
 
@@ -347,5 +359,10 @@ class TagModule(OTCModule):
             self.fail_json(msg='Instance %s can not be found' % resource)
 
 
+def main():
+    module = TagModule()
+    module()
+
+
 if __name__ == '__main__':
-    TagModule()()
+    main()

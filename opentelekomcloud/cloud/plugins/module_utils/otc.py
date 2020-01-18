@@ -12,11 +12,16 @@
 
 import abc
 
-from ansible.module_utils.basic import AnsibleModule
+try:
+    import openstack as sdk
+    import otcextensions
+    from otcextensions import sdk as otc_sdk
+    HAS_LIBRARIES = True
+except ImportError:
+    HAS_LIBRARIES = False
 
-import openstack as sdk
-import otcextensions
-from otcextensions import sdk as otc_sdk
+from ansible.module_utils.basic import AnsibleModule
+from distutils.version import StrictVersion
 
 
 def openstack_full_argument_spec(**kwargs):
@@ -40,20 +45,9 @@ def openstack_full_argument_spec(**kwargs):
     return spec
 
 
-def openstack_module_kwargs(**kwargs):
-    ret = {}
-    for key in ('mutually_exclusive', 'required_together', 'required_one_of'):
-        if key in kwargs:
-            if key in ret:
-                ret[key].extend(kwargs[key])
-            else:
-                ret[key] = kwargs[key]
-
-    return ret
-
-
 def openstack_cloud_from_module(module, min_version='0.6.9'):
-    from distutils.version import StrictVersion
+    if not HAS_LIBRARIES:
+        module.fail_json(msg='openstacksdk and otcextensions are required for this module')
 
     if min_version:
         min_version = max(StrictVersion('0.6.9'), StrictVersion(min_version))
@@ -123,7 +117,7 @@ class OTCModule(AnsibleModule):
     def __call__(self):
         try:
             self.run()
-        except sdk.exceptions.OpenStackCloudException as e:
+        except self.sdk.exceptions.OpenStackCloudException as e:
             params = {
                 'msg': str(e),
                 'extra_data': {

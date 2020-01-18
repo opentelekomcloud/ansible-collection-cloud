@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -25,9 +25,10 @@ author: "Artem Goncharov (@gtema)"
 description:
   - Get CCE cluster certificates info from the OTC.
 options:
-  name:
+  cluster:
     description: Name of the cluster.
     required: true
+    type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -81,5 +82,10 @@ class CceClusterCertInfoModule(OTCModule):
         )
 
 
-if __name__ == "__main__":
-    CceClusterCertInfoModule()()
+def main():
+    module = CceClusterCertInfoModule()
+    module()
+
+
+if __name__ == '__main__':
+    main()

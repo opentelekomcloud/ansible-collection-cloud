@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -23,22 +23,27 @@ extends_documentation_fragment: openstack
 version_added: "2.9"
 author: "Artem Goncharov (@gtema)"
 description:
-  - Get RDS datastore info from the OTC.
+  - Get RDS flavor info from the OTC.
 options:
+  name:
+    description: flavor name
+    type: str
   datastore:
     description:
       - Name of the database (datastore type).
-    required: true
     choices: [mysql, postgresql, sqlserver]
     default: postgresql
+    type: str
   version:
     description:
       - Datastore version
     required: true
+    type: str
   instance_mode:
     description:
       - Instance mode to filter results
-    choices: [single, replicy, ha]
+    choices: [single, replica, ha]
+    type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -74,8 +79,8 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class RdsFlavorModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
-        datastore=dict(required=True, choices=['mysql', 'postgresql',
-                                               'sqlserver']),
+        datastore=dict(choices=['mysql', 'postgresql', 'sqlserver'],
+                       default='postgresql'),
         version=dict(required=True),
         instance_mode=dict(choices=['single', 'replica', 'ha'])
     )
@@ -103,5 +108,10 @@ class RdsFlavorModule(OTCModule):
         )
 
 
+def main():
+    module = RdsFlavorModule()
+    module()
+
+
 if __name__ == "__main__":
-    RdsFlavorModule()()
+    main()

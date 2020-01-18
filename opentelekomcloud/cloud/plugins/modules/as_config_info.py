@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -28,9 +28,11 @@ options:
   name:
     description:
       - Name of the AS config.
+    type: str
   image_id:
     description:
       - ID of the image to filter results.
+    type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -91,5 +93,10 @@ class AutoScalingConfigInfoModule(OTCModule):
         )
 
 
+def main():
+    module = AutoScalingConfigInfoModule()
+    module()
+
+
 if __name__ == '__main__':
-    AutoScalingConfigInfoModule()()
+    main()

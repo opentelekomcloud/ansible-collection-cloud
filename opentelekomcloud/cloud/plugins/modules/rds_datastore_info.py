@@ -28,9 +28,12 @@ options:
   datastore:
     description:
       - Name of the database (datastore type).
-    required: true
     choices: [mysql, postgresql, sqlserver]
     default: postgresql
+    type: str
+  name:
+    description: datastore name
+    type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -64,8 +67,8 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class RdsDatastoreInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
-        datastore=dict(required=True, choices=['mysql', 'postgresql',
-                                               'sqlserver']),
+        datastore=dict(choices=['mysql', 'postgresql', 'sqlserver'],
+                       default='postgresql'),
     )
 
     def run(self):
@@ -83,5 +86,10 @@ class RdsDatastoreInfoModule(OTCModule):
         )
 
 
+def main():
+    module = RdsDatastoreInfoModule()
+    module()
+
+
 if __name__ == "__main__":
-    RdsDatastoreInfoModule()()
+    main()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -28,10 +28,12 @@ options:
   name:
     description:
       - Name of the cluster config.
+    type: str
   status:
     description:
       - Status of the group.
     choices: ['available', 'creating', 'deleting']
+    type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -100,5 +102,10 @@ class CceClusterInfoModule(OTCModule):
         )
 
 
-if __name__ == "__main__":
-    CceClusterInfoModule()()
+def main():
+    module = CceClusterInfoModule()
+    module()
+
+
+if __name__ == '__main__':
+    main()

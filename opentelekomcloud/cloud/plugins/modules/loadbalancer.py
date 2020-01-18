@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -30,22 +30,27 @@ options:
     description:
       - Name that has to be given to the load balancer
     required: true
+    type: str
   state:
     description:
       - Should the resource be present or absent.
     choices: [present, absent]
     default: present
+    type: str
   vip_subnet:
     description:
       - The name or id of the subnet for the virtual IP of the load balancer.
         One of I(vip_network), I(vip_subnet), or I(vip_port) must be specified
         for creation.
+    type: str
   vip_address:
     description:
       - IP address of the load balancer virtual IP.
+    type: str
   public_ip_address:
     description:
       - Public IP address associated with the VIP.
+    type: str
   auto_public_ip:
     description:
       - Allocate a public IP address and associate with the VIP automatically.
@@ -67,6 +72,7 @@ options:
     description:
       - The amount of time the module should wait.
     default: 180
+    type: int
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -369,5 +375,10 @@ class LoadBalancerModule(OTCModule):
             self.exit_json(changed=changed)
 
 
-if __name__ == "__main__":
-    LoadBalancerModule()()
+def main():
+    module = LoadBalancerModule()
+    module()
+
+
+if __name__ == '__main__':
+    main()
