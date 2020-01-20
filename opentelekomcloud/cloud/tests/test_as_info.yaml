@@ -3,7 +3,7 @@
 - name: Test AS
   hosts: localhost
   collections:
-    - opentelekomcloud.core
+    - opentelekomcloud.cloud
   tasks:
 
     - name: Get AS config info

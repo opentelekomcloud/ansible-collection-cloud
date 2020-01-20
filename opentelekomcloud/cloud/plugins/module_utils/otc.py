@@ -105,7 +105,7 @@ class OTCModule(AnsibleModule):
     def __init__(self, *args, **kwargs):
 
         super(OTCModule, self).__init__(
-            openstack_full_argument_spec(**self.argument_spec),
+            argument_spec=openstack_full_argument_spec(**self.argument_spec),
             **self.module_kwargs)
 
         self.sdk, self.conn = openstack_cloud_from_module(self)

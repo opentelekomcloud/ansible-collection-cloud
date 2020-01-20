@@ -1,8 +1,8 @@
 ansible
-#pycodestyle
+pycodestyle
 flake8
-#pylint
-#voluptuous
-#yamllint
+pylint
+voluptuous
+yamllint
 openstacksdk
 otcextensions

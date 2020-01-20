@@ -32,3 +32,6 @@ plugins/modules/rds_flavor_info.py validate-modules:missing-gplv3-license
 plugins/modules/tag.py future-import-boilerplate
 plugins/modules/tag.py metaclass-boilerplate
 plugins/modules/tag.py validate-modules:missing-gplv3-license
+plugins/modules/volume_backup.py future-import-boilerplate
+plugins/modules/volume_backup.py metaclass-boilerplate
+plugins/modules/volume_backup.py validate-modules:missing-gplv3-license
