@@ -3,6 +3,7 @@
       jobs:
         - tox-linters
         - tox-pep8
-      gate:
+    gate:
+      jobs:
         - tox-linters
         - tox-pep8
