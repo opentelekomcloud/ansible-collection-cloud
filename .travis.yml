@@ -4,7 +4,5 @@ matrix:
   include:
   - python: 3.7
     env: TOXENV=pep8
-  - python: 3.7
-    env: TOXENV=sanity
 install: pip install tox
 script: tox
