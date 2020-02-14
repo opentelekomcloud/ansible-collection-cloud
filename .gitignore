@@ -1,0 +1,4 @@
+.tox
+**/*.tar.gz
+**/.collections
+**/tests/output/*
