@@ -1,0 +1,8 @@
+- project:
+    check:
+      jobs:
+        - tox-linters
+        - tox-pep8
+      gate:
+        - tox-linters
+        - tox-pep8
