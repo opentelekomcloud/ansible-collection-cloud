@@ -104,8 +104,6 @@ cce_cluster:
 EXAMPLES = '''
 '''
 
-import time
-
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
