@@ -100,9 +100,6 @@ backup:
 EXAMPLES = '''
 '''
 
-import time
-
-
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
@@ -115,7 +112,7 @@ class VolumeBackupModule(OTCModule):
         state=dict(default='present', choices=['absent', 'present']),
         force=dict(default=False, type='bool'),
         metadata=dict(default=None, type='dict'),
-        incremental=dict(defaul=False, type='bool'),
+        incremental=dict(default=False, type='bool'),
         wait=dict(type='bool', default=True),
         timeout=dict(type='int', default=180)
     )
@@ -200,7 +197,6 @@ class VolumeBackupModule(OTCModule):
         metadata = self.params['metadata']
         timeout = self.params['timeout']
 
-        data = None
         changed = False
         backup = None
 
@@ -216,17 +212,25 @@ class VolumeBackupModule(OTCModule):
                 cloud_volume = self.find_volume(volume)
                 cloud_snapshot_id = None
 
-                if snapshot:
-                    cloud_snapshot_id = self.find_snapshot(snapshot).id
+                attrs = {
+                    'name': name,
+                    'volume_id': cloud_volume.id,
+                    'force': force,
+                    'is_incremental': is_incremental
+                }
 
-                backup = self.conn.block_storage.create_backup(
-                    name=name,
-                    volume_id=cloud_volume.id,
-                    snapshot_id=cloud_snapshot_id,
-                    force=force,
-                    is_incremental=is_incremental,
-                    metadata=metadata
-                )
+                if snapshot:
+                    cloud_snapshot_id = self.find_snapshot(snapshot,
+                                                           ignore_missing=False).id
+                    attrs['snapshot_id'] = cloud_snapshot_id
+
+                if metadata:
+                    attrs['metadata'] = metadata
+
+                if description:
+                    attrs['description'] = description
+
+                backup = self.conn.block_storage.create_backup(**attrs)
                 changed = True
 
                 if not self.params['wait']:

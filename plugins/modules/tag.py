@@ -141,7 +141,6 @@ tags:
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
-from ansible.module_utils._text import to_native
 
 
 class TagModule(OTCModule):
