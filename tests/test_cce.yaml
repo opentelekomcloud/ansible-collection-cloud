@@ -1,0 +1,84 @@
+---
+
+- name: Test CCE
+  hosts: localhost
+  collections:
+    - opentelekomcloud.core
+  vars:
+    prefix: "ans-collect-test-"
+    network_name: "{{ (prefix + 'net') }}"
+    subnet_name: "{{ (prefix + 'subnet') }}"
+    subnet_cidr: "192.168.99.0/24"
+    router_name: "{{ (prefix + 'router') }}"
+    enable_snat: true
+    cluster_name: "{{ (prefix + 'cluster') }}"
+    external_network_name: "admin_external_net"
+  tasks:
+    - block:
+      - name: Create Network
+        os_network:
+          name: "{{ network_name }}"
+
+      - name: Create default subnet
+        os_subnet:
+          name: "{{ subnet_name }}"
+          network_name: "{{ network_name }}"
+          cidr: "{{ subnet_cidr }}"
+
+      - name: Create Router
+        os_router:
+          name: "{{ router_name }}"
+          network: "{{ external_network_name }}"
+          enable_snat: "{{ enable_snat }} "
+          interfaces:
+            - net: "{{ network_name }}"
+              subnet: "{{ subnet_name }}"
+
+      - name: Create Cluster
+        cce_cluster:
+          name: "{{ cluster_name }}"
+          router: "{{ router_name }}"
+          network: "{{ network_name }}"
+          flavor: "cce.s1.small"
+          description: "test cluster"
+          cluster_type: "virtualmachine"
+          network_mode: "overlay_l2"
+          wait: False
+
+      - name: Get cluster info
+        cce_cluster_info:
+          name: "{{ cluster_name }}"
+        register: data
+
+      - name: debug cluster
+        debug:
+          var: data
+
+      - name: List LBs
+        cce_cluster_info:
+        register: data
+
+      - name: debug clusters
+        debug:
+          var: data
+
+      always:
+        - name: Delete cluster
+          cce_cluster:
+            name: "{{ cluster_name }}"
+            state: "absent"
+
+        - name: Delete router
+          os_router:
+            name: "{{ router_name }}"
+            state: "absent"
+
+        - name: Delete subnet
+          os_subnet:
+            name: "{{ subnet_name }}"
+            state: "absent"
+
+        - name: Delete net
+          os_network:
+             name: "{{ network_name }}"
+             state: "absent"

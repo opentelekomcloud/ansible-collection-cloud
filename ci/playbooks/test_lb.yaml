@@ -1,0 +1,83 @@
+---
+
+- name: Test LB
+  hosts: localhost
+  collections:
+   - opentelekomcloud.core
+  vars:
+    prefix: "ans-collect-test-"
+    network_name: "{{ (prefix + 'net') }}"
+    subnet_name: "{{ (prefix + 'subnet') }}"
+    subnet_cidr: "192.168.99.0/24"
+    router_name: "{{ (prefix + 'router') }}"
+    enable_snat: true
+    lb_name: "{{ (prefix + 'lb') }}"
+    external_network_name: "admin_external_net"
+  tasks:
+    - block:
+      - name: Create Network
+        os_network:
+          name: "{{ network_name }}"
+
+      - name: Create default subnet
+        os_subnet:
+          name: "{{ subnet_name }}"
+          network_name: "{{ network_name }}"
+          cidr: "{{ subnet_cidr }}"
+
+      - name: Create Router
+        os_router:
+          name: "{{ router_name }}"
+          network: "{{ external_network_name }}"
+          enable_snat: "{{ enable_snat }} "
+          interfaces:
+            - net: "{{ network_name }}"
+              subnet: "{{ subnet_name }}"
+
+      - name: Create LB
+        loadbalancer:
+          name: "{{ lb_name }}"
+          vip_subnet: "{{ subnet_name }}"
+
+      - name: Modify LB
+        loadbalancer:
+          name: "{{ lb_name }}"
+          vip_subnet: "{{ subnet_name }}"
+
+      - name: Get LB info
+        loadbalancer_info:
+          name: "{{ lb_name }}"
+        register: lb
+
+      - name: debug LB
+        debug:
+          var: lb
+
+      - name: List LBs
+        loadbalancer_info:
+        register: lbs
+
+      - name: debug LB
+        debug:
+          var: lbs
+
+      always:
+        - name: Delete LB
+          loadbalancer:
+            name: "{{ lb_name }}"
+            state: "absent"
+
+        - name: Delete router
+          os_router:
+            name: "{{ router_name }}"
+            state: "absent"
+
+        - name: Delete subnet
+          os_subnet:
+            name: "{{ subnet_name }}"
+            state: "absent"
+
+        - name: Delete net
+          os_network:
+             name: "{{ network_name }}"
+             state: "absent"

@@ -1,0 +1,45 @@
+---
+
+- name: Test Volume Backup
+  hosts: localhost
+  collections:
+    - opentelekomcloud.cloud
+  tasks:
+    - block:
+
+      - name: Create volume
+        os_volume:
+          state: present
+          size: 1
+          availability_zone: eu-de-01
+          display_name: test_volume
+        register: vol
+
+      - name: Create snapshot
+        os_volume_snapshot:
+          state: present
+          display_name: "test_snapshot"
+          volume: "test_volume"
+
+      - name: Create backup
+        volume_backup:
+          display_name: test_volume_backup
+          volume: "test_volume"
+          snapshot: "test_snapshot"
+
+      always:
+        - name: delete backup
+          volume_backup:
+            display_name: test_volume_backup
+            state: absent
+
+        - name: delete snapshot
+          os_volume_snapshot:
+            state: absent
+            display_name: "test_snapshot"
+            volume: "test_volume"
+
+        - name: delete volume
+          os_volume:
+            state: absent
+            display_name: "test_volume"
