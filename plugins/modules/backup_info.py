@@ -76,13 +76,13 @@ class BackupInfoModule(OTCModule):
         volume_id_filter = self.params['volume_id']
 
         data = []
+        attrs = {}
+        if name_filter:
+            attrs['name'] = name_filter
+        if volume_id_filter:
+            attrs['volume_id'] = volume_id_filter
         # TODO: Pass filters into SDK
-        for raw in conn.block_storage.backups():
-            if name_filter and raw.name != name_filter:
-                continue
-            if (volume_id_filter
-                    and raw.['volume_id'] != volume_id_filter):
-                continue
+        for raw in self.conn.block_storage.backups(**attrs):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
@@ -94,7 +94,7 @@ class BackupInfoModule(OTCModule):
 
 
 def main():
-    module = AutoScalingConfigInfoModule()
+    module = BackupInfoModule()
     module()
 
 
