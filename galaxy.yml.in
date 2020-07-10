@@ -8,7 +8,6 @@ authors:
 description: Modules for working with OpenTelekomCloud (base on OpenStack modules, adding proprietary services)
 license:
 - Apache-2.0
-license_file: 'LICENSE'
 tags: 
   - cloud
   - openstack
@@ -25,6 +24,11 @@ build_ignore:
   - galaxy.yml.in
   - setup.cfg
   - test-requirements.txt
-  - tests/
+  - tests
+  - tools
   - tox.ini
-  - zuul.yaml
+  - .gitignore
+  - .gitreview
+  - .zuul.yaml
+  - .pytest_cache
+  - importer_result.json

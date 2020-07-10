@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
-
-
 DOCUMENTATION = '''
 ---
 module: tag
@@ -74,6 +69,7 @@ options:
        - List of tags
      default: []
      type: list
+     elements: str
    mode:
      description:
        - Mode to be used for tags presence ('replace' or 'set'). 'replace'
@@ -156,7 +152,7 @@ class TagModule(OTCModule):
         subnet=dict(default=None),
         trunk=dict(default=None),
         state=dict(default='present', choices=['absent', 'present']),
-        tags=dict(default=[], type='list'),
+        tags=dict(default=[], elements='str', type='list'),
         mode=dict(default='replace', choices=['replace', 'set'])
     )
 

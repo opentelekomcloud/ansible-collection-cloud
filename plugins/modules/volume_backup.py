@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
-
 DOCUMENTATION = '''
 ---
 module: volume_backup
@@ -46,8 +42,8 @@ options:
   volume:
     description:
       - Name or ID of the volume
+      - Required when state = present
     type: str
-    required: True
   snapshot:
     description: Name or ID of the Snapshot to take backup of
     type: str

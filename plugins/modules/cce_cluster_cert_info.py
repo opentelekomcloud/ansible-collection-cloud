@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
-
 DOCUMENTATION = '''
 ---
 module: cce_cluster_cert_info
@@ -49,6 +45,7 @@ cce_cluster_certs:
             type: str
         context:
             description: Dictionary with the certificate context information.
+            type: dict
 '''
 
 EXAMPLES = '''

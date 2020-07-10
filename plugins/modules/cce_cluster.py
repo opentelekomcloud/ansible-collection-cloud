@@ -11,10 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
-
 DOCUMENTATION = '''
 ---
 module: cce_cluster
@@ -45,8 +41,8 @@ options:
     type: str
   cluster_type:
     description: Cluster type
-    required: true
     choices: [baremetal, virtualmachine]
+    required: true
     type: str
   description:
     description:
@@ -112,18 +108,17 @@ class CceClusterModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True),
         state=dict(default='present', choices=['absent', 'present']),
-        cluster_type=dict(default=None,
-                          choices=['virtualmachine', 'baremetal']),
-        flavor=dict(default=None, choices=[
+        cluster_type=dict(required=True, choices=['virtualmachine', 'baremetal']),
+        flavor=dict(required=True, choices=[
             'cce.s1.small',
             'cce.s1.medium'
         ]),
         description=dict(required=False),
-        router=dict(default=None),
-        network=dict(default=None),
-        network_mode=dict(default=None, choices=['overlay_l2',
-                                                 'underlay_ipvlan',
-                                                 'vpc-router']),
+        router=dict(required=True),
+        network=dict(required=True),
+        network_mode=dict(required=True, choices=['overlay_l2',
+                                                  'underlay_ipvlan',
+                                                  'vpc-router']),
         wait=dict(required=False, type='bool', default=True),
         timeout=dict(required=False, type='int', default=180)
     )

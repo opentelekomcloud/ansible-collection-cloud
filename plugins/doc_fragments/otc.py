@@ -92,9 +92,8 @@ options:
     choices: [ admin, internal, public ]
     default: public
     aliases: [ endpoint_type ]
-    version_added: "2.3"
 requirements:
-  - python >= 2.7
+  - python >= 3.6
   - openstacksdk >= 0.36.0
 notes:
   - The standard OpenStack environment variables, such as C(OS_USERNAME)
