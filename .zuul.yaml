@@ -2,13 +2,5 @@
 ---
 - project:
     merge-mode: squash-merge
-    project-templates:
+    templates:
       - ansible-collection
-    check:
-      jobs:
-        - tox-linters
-        - tox-pep8
-    gate:
-      jobs:
-        - tox-linters
-        - tox-pep8
