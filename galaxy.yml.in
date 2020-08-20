@@ -23,7 +23,8 @@ build_ignore:
   - ci/
   - galaxy.yml.in
   - setup.cfg
-  - test-requirements.txt
+  - setup.py
+  - test-requirements*.txt
   - tests
   - tools
   - tox.ini

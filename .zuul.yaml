@@ -1,6 +1,9 @@
 # yamllint disable
 ---
 - project:
+    merge-mode: squash-merge
+    project-templates:
+      - ansible-collection
     check:
       jobs:
         - tox-linters
