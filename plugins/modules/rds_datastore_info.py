@@ -15,8 +15,8 @@ DOCUMENTATION = '''
 ---
 module: rds_datastore_info
 short_description: Get supported RDS datastore versions
-extends_documentation_fragment: openstack
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Get RDS datastore info from the OTC.

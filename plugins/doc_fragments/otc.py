@@ -14,7 +14,7 @@
 class ModuleDocFragment(object):
 
     # Standard otc  documentation fragment
-    DOC = r'''
+    DOCUMENTATION = r'''
 options:
   cloud:
     description:

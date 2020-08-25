@@ -15,8 +15,8 @@ DOCUMENTATION = '''
 ---
 module: cce_cluster
 short_description: Add/Delete CCE Cluster
-extends_documentation_fragment: opentelekomcloud.cloud.otc.doc
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Add or Remove CCE Cluster in OTC

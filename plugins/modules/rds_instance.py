@@ -15,8 +15,8 @@ DOCUMENTATION = '''
 ---
 module: rds_instance
 short_description: Manage RDS instance
-extends_documentation_fragment: openstack
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Manage RDS instances.

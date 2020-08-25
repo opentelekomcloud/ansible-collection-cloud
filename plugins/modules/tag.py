@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# coding: utf-8 -*-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -16,8 +15,8 @@ DOCUMENTATION = '''
 ---
 module: tag
 short_description: Manage tags on diverse OpenStack/OTC resources
-extends_documentation_fragment: openstack
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: Artem Goncharov (@gtema)
 description:
     - set or delete tags on the OpenStack/OTC resources

@@ -22,7 +22,7 @@ import shutil
 
 
 def generate_version_info():
-    version_info = pbr.version.VersionInfo('opentelekomcloud-cloud')
+    version_info = pbr.version.VersionInfo('fake')
     semantic_version = version_info.semantic_version()
     release_string = semantic_version._long_version('-')
 

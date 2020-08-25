@@ -15,8 +15,8 @@ DOCUMENTATION = '''
 ---
 module: cce_cluster_cert_info
 short_description: Get Certificates of a CCE cluster
-extends_documentation_fragment: openstack
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Get CCE cluster certificates info from the OTC.

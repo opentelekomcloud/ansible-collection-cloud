@@ -15,8 +15,8 @@ DOCUMENTATION = '''
 ---
 module: rds_flavor_info
 short_description: Get RDS flavor info
-extends_documentation_fragment: openstack
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Get RDS flavor info from the OTC.

@@ -15,8 +15,8 @@ DOCUMENTATION = '''
 ---
 module: loadbalancer
 short_description: Add/Delete load balancer from OpenTelekomCloud
-extends_documentation_fragment: openstack
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Add or Remove Enhanced Load Balancer from the OTC load-balancer

@@ -7,6 +7,5 @@ voluptuous
 yamllint
 rstcheck
 ruamel.yaml
-galaxy-importer
 tox
 otcextensions

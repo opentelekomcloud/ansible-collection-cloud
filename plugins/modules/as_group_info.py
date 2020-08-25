@@ -15,8 +15,8 @@ DOCUMENTATION = '''
 ---
 module: as_group_info
 short_description: Get AutoScaling groups
-extends_documentation_fragment: opentelekomcloud.cloud.otc.doc
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Get details about AutoScaling groups available in the project.
