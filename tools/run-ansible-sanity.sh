@@ -50,7 +50,7 @@ location=$(ansible-galaxy collection install ${output} \
 cd ${COLLECTION_PATH}
 #tree .
 ANSIBLE_COLLECTIONS_PATH=${ANSIBLE_COLLECTIONS_PATH} && ansible-test sanity \
-    --venv --python 3.6 \
+    --docker \
     --skip-test metaclass-boilerplate \
     --skip-test future-import-boilerplate 
 #    plugins/ tests/

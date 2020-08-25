@@ -1,0 +1,2 @@
+---
+test_cloud: ${OS_CLOUD}

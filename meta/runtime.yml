@@ -14,4 +14,3 @@ action_groups:
     - rds_instance
     - tag
     - volume_backup
-
