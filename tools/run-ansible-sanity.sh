@@ -51,7 +51,7 @@ cd ${COLLECTION_PATH}
 echo "Running ansible-test with version:"
 ansible --version
 ANSIBLE_COLLECTIONS_PATH=${ANSIBLE_COLLECTIONS_PATH} ansible-test sanity \
-    --venv --python 3.8 --debug -vv \
+    --venv --python 3.6 --debug -vv \
     --skip-test metaclass-boilerplate \
     --skip-test future-import-boilerplate
 
