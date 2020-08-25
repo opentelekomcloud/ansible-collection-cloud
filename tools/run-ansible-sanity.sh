@@ -34,24 +34,25 @@ rm -rf "${ANSIBLE_COLLECTIONS_PATH}"
 mkdir -p ${COLLECTION_PATH}
 
 # Created collection x.y at z
-#output=$(ansible-galaxy collection build --force | sed 's,.* at ,,')
-#location=$(ansible-galaxy collection install ${output} \
-#  -p ${ANSIBLE_COLLECTIONS_PATH} --force)
-for folder in {docs,playbooks,plugins,roles,tests}; do
-  if [ -d $folder ]; then
-    cp -av ${TOXDIR}/$folder ${COLLECTION_PATH}/$folder;
-  fi
-done
+output=$(ansible-galaxy collection build --force | sed 's,.* at ,,')
+location=$(ansible-galaxy collection install ${output} \
+  -p ${ANSIBLE_COLLECTIONS_PATH} --force)
+#for folder in {docs,playbooks,plugins,roles,tests}; do
+#  if [ -d $folder ]; then
+#    cp -av ${TOXDIR}/$folder ${COLLECTION_PATH}/$folder;
+#  fi
+#done
 #cp -av ${TOXDIR}/{plugins,docs,plugins,roles,tests} \
 #  ${COLLECTION_PATH} || true
-cp ${TOXDIR}/galaxy.yml ${COLLECTION_PATH}
-mkdir ${COLLECTION_PATH}/logs
-rm -rf ${COLLECTION_PATH}/tests/output || true
+#cp ${TOXDIR}/galaxy.yml ${COLLECTION_PATH}
+#mkdir ${COLLECTION_PATH}/logs
+#rm -rf ${COLLECTION_PATH}/tests/output || true
 cd ${COLLECTION_PATH}
-echo "Running ansible-test with version:"
-ansible --version
-ANSIBLE_COLLECTIONS_PATH=${ANSIBLE_COLLECTIONS_PATH} ansible-test sanity \
-    --venv --python 3.6 --debug -vv \
+#tree .
+ANSIBLE_COLLECTIONS_PATH=${ANSIBLE_COLLECTIONS_PATH} && ansible-test sanity \
+    --venv --python 3.6 \
     --skip-test metaclass-boilerplate \
-    --skip-test future-import-boilerplate
+    --skip-test future-import-boilerplate 
+#    plugins/ tests/
+
 

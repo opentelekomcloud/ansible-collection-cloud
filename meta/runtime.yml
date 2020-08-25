@@ -1,0 +1,17 @@
+---
+requires_ansible: '>=2.9.10'
+action_groups:
+  otc:
+    - as_config_group
+    - as_config_info
+    - cce_cluster
+    - cce_cluster_cert_info
+    - cce_cluster_info
+    - loadbalancer
+    - loadbalancer_info
+    - rds_datastore_info
+    - rds_flavor_info
+    - rds_instance
+    - tag
+    - volume_backup
+
