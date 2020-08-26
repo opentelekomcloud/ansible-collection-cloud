@@ -1,0 +1,19 @@
+---
+- block:
+    - name: Get AS config info
+      as_config_info:
+        cloud: "{{ test_cloud }}"
+      register: auto_scale
+
+    - name: debug configs
+      debug:
+        var: auto_scale.as_configs
+
+    - name: assert result
+      assert:
+        that:
+          - auto_scale is success
+          - auto_scale is not changed
+          - auto_scale.as_configs is defined
+
+

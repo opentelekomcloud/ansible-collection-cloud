@@ -22,3 +22,19 @@
           - rds.rds_flavors[0]['ram'] is defined
           - rds.rds_flavors[0]['spec_code'] is defined
           - rds.rds_flavors[0]['vcpus'] is defined
+
+    - name: Get flavor info for wrong ds
+      rds_flavor_info:
+        cloud: "{{ test_cloud }}"
+        datastore: "postgresql1"
+        version: "10"
+        instance_mode: "single"
+      register: rds
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - rds is not success
+          - rds is not changed
+          - 'rds.msg == "value of datastore must be one of: mysql, postgresql, sqlserver, got: postgresql1"'
