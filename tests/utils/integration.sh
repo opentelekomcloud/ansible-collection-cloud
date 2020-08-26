@@ -35,4 +35,4 @@ if [ -f "requirements.txt" ]; then
 fi
 
 cd "$TEST_DIR"
-ansible-test integration
+ansible-test integration --no-temp-unicode
