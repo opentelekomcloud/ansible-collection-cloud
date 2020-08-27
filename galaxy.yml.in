@@ -13,6 +13,7 @@ tags:
   - openstack
   - opentelekomcloud
 dependencies:
+  "openstack.cloud": *
 repository: http://github.com/OpenTelekomCloud/ansible_collections
 documentation: http://docs.otc.t-systems.com
 homepage: https://open-telekom-cloud.com
@@ -24,8 +25,6 @@ build_ignore:
   - galaxy.yml.in
   - setup.cfg
   - setup.py
-  - test-requirements*.txt
-    #  - tests
   - tools
   - tox.ini
   - .gitignore
