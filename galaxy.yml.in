@@ -13,7 +13,7 @@ tags:
   - openstack
   - opentelekomcloud
 dependencies:
-  "openstack.cloud": *
+  "openstack.cloud": "*"
 repository: http://github.com/OpenTelekomCloud/ansible_collections
 documentation: http://docs.otc.t-systems.com
 homepage: https://open-telekom-cloud.com
