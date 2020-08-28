@@ -50,22 +50,22 @@ volume_snapshots:
         created_at:
             description: Specifies the time when the snapshot was created.
             type: str
-            sample: "2016-02-16T16:54:14.981520" 
-        description: 
+            sample: "2016-02-16T16:54:14.981520"
+        description:
             description: Specifies the snapshot description.
             type: str
-            sample: "test description"   
+            sample: "test description"
         id:
             description: Specifies the snapshot ID.
             type: str
-            sample: "b836dc3d-4e10-4ea4-a34c-8f6b0460a583"  
-        metadata": 
+            sample: "b836dc3d-4e10-4ea4-a34c-8f6b0460a583"
+        metadata":
             description: Specifies the snapshot metadata.
-            type: dict            
+            type: dict
         name:
             description: Specifies the snapshot name.
             type: str
-            sample: "test01" 
+            sample: "test01"
         size:
             description: Specifies the snapshot size, in GB.
             type: int
@@ -73,15 +73,15 @@ volume_snapshots:
         status:
             description: Specifies the snapshot status. For details.
             type: str
-            sample: "available"  
+            sample: "available"
         volume_id:
             description: Specifies the ID of the snapshot's source disk.
             type: str
-            sample: "ba5730ea-8621-4ae8-b702-ff0ffc12c209" 
+            sample: "ba5730ea-8621-4ae8-b702-ff0ffc12c209"
         "updated_at":
             description: Specifies the time when the snapshot was updated.
             type: str
-            sample: "2016-02-16T16:54:14.981520"  
+            sample: "2016-02-16T16:54:14.981520"
 '''
 
 EXAMPLES = '''
@@ -91,6 +91,7 @@ EXAMPLES = '''
     status: available
   register: data
 '''
+
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
