@@ -25,7 +25,7 @@ options:
     description:
         - Instance availability zone.
         - Can be a CSV list (i.e. eu-de-01,eu-de-02)
-    required: true
+        - Mandatory for creating instance
     type: str
   backup_keepdays:
     description:
@@ -52,8 +52,9 @@ options:
     description: KMS ID
     type: str
   flavor:
-    description: Instance specification code
-    required: true
+    description:
+        - Instance specification code
+        - Mandatory for new instance
     type: str
   ha_mode:
     choices: [async, semisync, sync]
@@ -95,11 +96,12 @@ options:
     description: |
       - Type of the volume
       - Supported values: common, ultrahigh
-    required: true
+      - Mandatory for new instance
     type: str
   volume_size:
-    description: Size of the volume
-    required: true
+    description:
+        - Size of the volume
+        - Mandatory for new instance
     type: int
   wait:
      description:
@@ -142,7 +144,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class RdsInstanceModule(OTCModule):
     argument_spec = dict(
-        availability_zone=dict(required=True, type='str'),
+        availability_zone=dict(type='str'),
         backup_keepdays=dict(type='int'),
         backup_timeframe=dict(type='str'),
         configuration=dict(type='str'),
@@ -150,7 +152,7 @@ class RdsInstanceModule(OTCModule):
                             choices=['postgresql', 'mysql', 'sqlserver']),
         datastore_version=dict(type='str'),
         disk_encryption=dict(type='str'),
-        flavor=dict(required=True, type='str'),
+        flavor=dict(type='str'),
         ha_mode=dict(type='str', choices=['async', 'semisync', 'sync']),
         name=dict(required=True, type='str'),
         network=dict(type='str'),
@@ -161,8 +163,8 @@ class RdsInstanceModule(OTCModule):
         router=dict(type='str'),
         security_group=dict(type='str'),
         state=dict(type='str', choices=['present', 'absent'], default='present'),
-        volume_type=dict(required=True, type='str'),
-        volume_size=dict(required=True, type='int'),
+        volume_type=dict(type='str'),
+        volume_size=dict(type='int'),
         wait=dict(type='bool', default=True),
         timeout=dict(type='int', default=180)
     )
@@ -178,6 +180,8 @@ class RdsInstanceModule(OTCModule):
         ]
     )
 
+    otce_min_version = '0.7.1'
+
     def _system_state_change(self, obj):
         state = self.params['state']
         if state == 'present':
@@ -191,11 +195,12 @@ class RdsInstanceModule(OTCModule):
         name = self.params['name']
 
         changed = False
+        response = None
 
         instance = self.conn.rds.find_instance(
             name_or_id=name)
 
-        if self.check_mode:
+        if self.ansible.check_mode:
             self.exit(changed=self._system_state_change(instance))
 
         if self.params['state'] == 'absent':
@@ -205,15 +210,18 @@ class RdsInstanceModule(OTCModule):
                 response = self.conn.rds.delete_instance(instance)
                 changed = True
 
-            if self.params['wait']:
+            if self.params['wait'] and response and hasattr(response, 'job_id'):
                 wait_args = {}
-                if self.args['timeout']:
+                if self.params['timeout']:
                     wait_args['wait'] = self.params['timeout']
 
                 self.conn.rds.wait_for_job(response.job_id, **wait_args)
 
         elif self.params['state'] == 'present':
             # Attention: not conform password result in BadRequest with no info
+
+            if instance:
+                self.exit(changed=False)
 
             instance = self.conn.create_rds_instance(**self.params)
             self.exit(changed=True, instance=instance.to_dict())
