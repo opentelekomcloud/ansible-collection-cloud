@@ -10,4 +10,4 @@ function main()
   eval "echo \"$content\""
 }
 
-main "$@"
+main tests/integration/integration_config.yml.template > tests/integration/integration_config.yml
