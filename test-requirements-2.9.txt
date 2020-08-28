@@ -1,5 +1,5 @@
+ansible
 openstacksdk
-ansible-base
 pycodestyle
 flake8
 pylint

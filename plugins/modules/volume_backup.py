@@ -11,16 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
-
 DOCUMENTATION = '''
 ---
 module: volume_backup
 short_description: Add/Delete Volume backup
-extends_documentation_fragment: opentelekomcloud.cloud.otc.doc
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Add or Remove Volume Backup in OTC.
@@ -46,8 +42,8 @@ options:
   volume:
     description:
       - Name or ID of the volume
+      - Required when state = present
     type: str
-    required: True
   snapshot:
     description: Name or ID of the Snapshot to take backup of
     type: str

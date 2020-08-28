@@ -11,16 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
-
 DOCUMENTATION = '''
 ---
 module: cce_cluster_cert_info
 short_description: Get Certificates of a CCE cluster
-extends_documentation_fragment: openstack
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Get CCE cluster certificates info from the OTC.
@@ -49,6 +45,7 @@ cce_cluster_certs:
             type: str
         context:
             description: Dictionary with the certificate context information.
+            type: dict
 '''
 
 EXAMPLES = '''

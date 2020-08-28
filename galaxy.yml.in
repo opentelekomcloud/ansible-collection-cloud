@@ -8,12 +8,12 @@ authors:
 description: Modules for working with OpenTelekomCloud (base on OpenStack modules, adding proprietary services)
 license:
 - Apache-2.0
-license_file: 'LICENSE'
 tags: 
   - cloud
   - openstack
   - opentelekomcloud
-dependencies: {}
+dependencies:
+  "openstack.cloud": "*"
 repository: http://github.com/OpenTelekomCloud/ansible_collections
 documentation: http://docs.otc.t-systems.com
 homepage: https://open-telekom-cloud.com
@@ -24,7 +24,11 @@ build_ignore:
   - ci/
   - galaxy.yml.in
   - setup.cfg
-  - test-requirements.txt
-  - tests/
+  - setup.py
+  - tools
   - tox.ini
-  - zuul.yaml
+  - .gitignore
+  - .gitreview
+  - .zuul.yaml
+  - .pytest_cache
+  - importer_result.json

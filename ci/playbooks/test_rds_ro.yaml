@@ -3,7 +3,7 @@
 - name: Test RDS
   hosts: localhost
   collections:
-    - opentelekomcloud.core
+    - opentelekomcloud.cloud
   tasks:
 
     - name: Get datastore info

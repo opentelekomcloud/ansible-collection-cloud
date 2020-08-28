@@ -1,11 +1,9 @@
 # yamllint disable
 ---
 - project:
-    check:
-      jobs:
-        - tox-linters
-        - tox-pep8
-    gate:
-      jobs:
-        - tox-linters
-        - tox-pep8
+    merge-mode: squash-merge
+    templates:
+      - ansible-collection
+    vars:
+      ansible_collection_namespace: "opentelekomcloud"
+      ansible_collection_name: "cloud"
