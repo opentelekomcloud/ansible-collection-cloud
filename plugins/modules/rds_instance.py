@@ -195,6 +195,7 @@ class RdsInstanceModule(OTCModule):
         name = self.params['name']
 
         changed = False
+        response = None
 
         instance = self.conn.rds.find_instance(
             name_or_id=name)
@@ -213,7 +214,6 @@ class RdsInstanceModule(OTCModule):
                     # RDS might give job_id, but it is a fake
                     instance = self.conn.rds.find_instance(
                         name_or_id=name)
-
                     if instance:
                         self.sdk.resource.wait_for_delete(
                             self.conn.rds,
