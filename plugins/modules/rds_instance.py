@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: rds_instance
 short_description: Manage RDS instance
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.0.2"
 author: "Artem Goncharov (@gtema)"
 description:
   - Manage RDS instances.
@@ -139,6 +139,8 @@ EXAMPLES = '''
 '''
 
 
+from openstack import resource
+
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
@@ -195,7 +197,6 @@ class RdsInstanceModule(OTCModule):
         name = self.params['name']
 
         changed = False
-        response = None
 
         instance = self.conn.rds.find_instance(
             name_or_id=name)
@@ -207,15 +208,21 @@ class RdsInstanceModule(OTCModule):
             changed = False
 
             if instance:
-                response = self.conn.rds.delete_instance(instance)
+                self.conn.rds.delete_instance(instance)
                 changed = True
 
-            if self.params['wait'] and response and hasattr(response, 'job_id'):
-                wait_args = {}
-                if self.params['timeout']:
-                    wait_args['wait'] = self.params['timeout']
+                if self.params['wait']:
+                    # RDS might give job_id, but it is a fake
+                    instance = self.conn.rds.find_instance(
+                        name_or_id=name)
 
-                self.conn.rds.wait_for_job(response.job_id, **wait_args)
+                    if instance:
+                        resource.wait_for_delete(
+                            self.conn.rds,
+                            instance,
+                            5,
+                            self.params['timeout']
+                        )
 
         elif self.params['state'] == 'present':
             # Attention: not conform password result in BadRequest with no info
@@ -223,8 +230,13 @@ class RdsInstanceModule(OTCModule):
             if instance:
                 self.exit(changed=False)
 
+            volume_type = self.params['volume_type']
+            if volume_type:
+                self.params['volume_type'] = volume_type.upper()
+
             instance = self.conn.create_rds_instance(**self.params)
             self.exit(changed=True, instance=instance.to_dict())
+
         self.exit(changed=changed)
 
 

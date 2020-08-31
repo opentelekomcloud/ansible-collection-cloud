@@ -154,6 +154,7 @@ class RdsInstanceTest(TestCase):
         set_module_args({
             'state': 'absent',
             'name': 'test',
+            'wait': 'false'
         })
         with self.assertRaises(AnsibleExitJson) as result:
             self.conn.rds.find_instance.return_value = self.conn.instance

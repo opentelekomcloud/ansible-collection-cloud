@@ -27,4 +27,4 @@ if [ -f "requirements.txt" ]; then
 fi
 
 cd "$TEST_DIR"
-ansible-test units --requirements --docker --python 3.8
+ansible-test units --docker --requirements --python 3.6
