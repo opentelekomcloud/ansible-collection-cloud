@@ -28,7 +28,7 @@ options:
   instance_type:
     description:
       - Instance type.
-    chocies: [single, ha, replica]
+    choices: [single, ha, replica]
     type: str
   name:
     description:

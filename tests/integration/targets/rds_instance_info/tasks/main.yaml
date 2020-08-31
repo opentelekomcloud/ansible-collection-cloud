@@ -53,5 +53,3 @@
           - rds is success
           - rds is not changed
           - 'rds.message == "No router with name or id some_fake_router found"'
-
-
