@@ -139,8 +139,6 @@ EXAMPLES = '''
 '''
 
 
-from openstack import resource
-
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
@@ -217,7 +215,7 @@ class RdsInstanceModule(OTCModule):
                         name_or_id=name)
 
                     if instance:
-                        resource.wait_for_delete(
+                        self.sdk.resource.wait_for_delete(
                             self.conn.rds,
                             instance,
                             5,
