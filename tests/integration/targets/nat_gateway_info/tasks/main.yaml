@@ -1,0 +1,17 @@
+---
+- block:
+    - name: Get NAT gateway info
+      nat_gateway_info:
+        cloud: "{{ test_cloud }}"
+      register: gw
+
+    - name: debug configs
+      debug:
+        var: gw.nat_gateways
+
+    - name: assert result
+      assert:
+        that:
+          - gw is success
+          - gw is not changed
+          - gw.nat_gateways is defined
