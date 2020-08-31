@@ -1,0 +1,16 @@
+---
+- module_defaults:
+    rds_instance:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Delete missing instance
+      rds_instance:
+        state: absent
+        name: "definitely_missing_instance"
+      register: rds
+
+    - name: assert result
+      assert:
+        that:
+          - rds is success
+          - rds is not changed

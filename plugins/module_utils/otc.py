@@ -56,31 +56,32 @@ class OTCModule:
         module_name: Module name (i.e. server_action)
         sdk_version: Version of used OpenstackSDK.
         results: Dictionary for return of Ansible module,
-                 must include `changed` keyword.
+            must include `changed` keyword.
         exit, exit_json: Exit module and return data inside, must include
-                         changed` keyword in a data.
+            changed` keyword in a data.
         fail, fail_json: Exit module with failure, has `msg` keyword to
-                         specify a reason of failure.
+            specify a reason of failure.
         conn: Connection to SDK object.
         log: Print message to system log.
         debug: Print debug message to system log, prints if Ansible Debug is
-               enabled or verbosity is more than 2.
+            enabled or verbosity is more than 2.
         check_deprecated_names: Function that checks if module was called with
-                                a deprecated name and prints the correct name
-                                with deprecation warning.
+            a deprecated name and prints the correct name with deprecation
+            warning.
         check_versioned: helper function to check that all arguments are known
-                         in the current SDK version.
+            in the current SDK version.
         run: method that executes and shall be overriden in inherited classes.
 
     Args:
         deprecated_names: Should specify deprecated modules names for current
-                          module.
+            module.
         argument_spec: Used for construction of Openstack common arguments.
         module_kwargs: Additional arguments for Ansible Module.
     """
 
     argument_spec = {}
     module_kwargs = {}
+    otce_min_version = None
 
     def __init__(self):
 
@@ -114,6 +115,9 @@ class OTCModule:
                 " ".join(['[DEBUG]', msg]))
 
     def openstack_cloud_from_module(self, min_version='0.6.9'):
+        if self.otce_min_version:
+            min_version = self.otce_min_version
+
         if not HAS_LIBRARIES:
             self.fail_json(msg='openstacksdk and otcextensions are required for this self')
 
@@ -125,7 +129,7 @@ class OTCModule:
         if StrictVersion(otcextensions.__version__) < min_version:
             self.fail_json(
                 msg="To utilize this self, the installed version of "
-                    "the otcextensions library MUST be >={min_version}.".format(
+                    "the otcextensions library MUST be >={min_version}".format(
                         min_version=min_version))
 
         cloud_config = self.params.pop('cloud', None)
@@ -202,9 +206,10 @@ class OTCModule:
             params = {
                 'msg': str(e),
                 'extra_data': {
-                    'data': e.extra_data,
-                    'details': e.details,
-                    'response': e.response.text
+                    'data': getattr(e, 'extra_data', 'None'),
+                    'details': getattr(e, 'details', 'None'),
+                    'response': getattr(getattr(e, 'response', ''),
+                                        'text', 'None')
                 }
             }
             self.ansible.fail_json(**params)
