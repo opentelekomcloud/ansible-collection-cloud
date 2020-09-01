@@ -17,7 +17,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: volume_snapshot_info
+module: os_volume_snapshot_info
 short_description: Get information about volume snapshots
 extends_documentation_fragment: openstack
 version_added: "2.9"
@@ -87,7 +87,7 @@ volume_snapshots:
 
 EXAMPLES = '''
 # Get configs versions.
-- volume_snapshot_info:
+- os_volume_snapshot_info:
     name: my_snapshot
     status: available
   register: data

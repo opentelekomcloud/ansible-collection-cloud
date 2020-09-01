@@ -1,42 +1,13 @@
 ---
-
 - name: Test Volume Snapshot
   hosts: localhost
   collections:
     - opentelekomcloud.cloud
   tasks:
-    - block:
+    - name: Get volume snapshot info
+      os_volume_snapshot_info:
+      register: snapshot
 
-      - name: Create volume
-        os_volume:
-          state: present
-          size: 1
-          availability_zone: eu-de-01
-          display_name: test_volume_for_snapshot
-        register: vol
-
-      - name: Create snapshot
-        os_volume_snapshot:
-          state: present
-          display_name: "test_snapshot"
-          volume: "test_volume_for_snapshot"
-
-      - name: Get volume snapshot info
-        volume_snapshot_info:
-        register: snapshot
-
-      - name: Debug snapshots
-        debug:
-          var: snapshot
-
-      always:
-        - name: Delete snapshot
-          os_volume_snapshot:
-            state: absent
-            display_name: "test_snapshot"
-            volume: "test_volume_for_snapshot"
-
-        - name: Delete volume
-          os_volume:
-            state: absent
-            display_name: "test_volume_for_snapshot"
+    - name: Debug snapshots
+      debug:
+        var: snapshot
