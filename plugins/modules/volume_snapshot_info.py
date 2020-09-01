@@ -17,9 +17,9 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: os_volume_snapshot_info
+module: volume_snapshot_info
 short_description: Get information about volume snapshots
-extends_documentation_fragment: openstack
+extends_documentation_fragment: opentelekomcloud.cloud.otc.doc
 version_added: "2.9"
 author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
@@ -87,12 +87,11 @@ volume_snapshots:
 
 EXAMPLES = '''
 # Get configs versions.
-- os_volume_snapshot_info:
+- volume_snapshot_info:
     name: my_snapshot
     status: available
   register: data
 '''
-
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 

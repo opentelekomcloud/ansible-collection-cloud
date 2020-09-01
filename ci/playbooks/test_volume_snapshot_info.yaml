@@ -1,11 +1,13 @@
 ---
+
 - name: Test Volume Snapshot
   hosts: localhost
   collections:
     - opentelekomcloud.cloud
   tasks:
+
     - name: Get volume snapshot info
-      os_volume_snapshot_info:
+      volume_snapshot_info:
       register: snapshot
 
     - name: Debug snapshots
