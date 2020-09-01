@@ -33,9 +33,9 @@ options:
     description:
       - Name of the snapshot.
     type: str
-  volume_id:
+  volume:
     description:
-      - Volume id of a snapshot.
+      - Disk name of a snapshot.
     type: str
   status:
     description:
@@ -100,7 +100,7 @@ class VolumeSnapshotInfoModule(OTCModule):
     argument_spec = dict(
         details=dict(default=True, type='bool'),
         name=dict(required=False),
-        volume_id=dict(required=False),
+        volume=dict(required=False),
         status=dict(required=False, choices=['creating', 'available', 'error',
                                              'deleting', 'error_deleting', 'rollbacking',
                                              'backing-up']),
@@ -110,15 +110,15 @@ class VolumeSnapshotInfoModule(OTCModule):
 
         details_filter = self.params['details']
         name_filter = self.params['name']
-        volume_id_filter = self.params['volume_id']
+        volume_filter = self.params['volume']
         status_filter = self.params['status']
 
         data = []
         query = {}
         if name_filter:
             query['name'] = name_filter
-        if volume_id_filter:
-            query['volume_id'] = volume_id_filter
+        if volume_filter:
+            query['volume_id'] = self.conn.block_storage.find_volume(volume_filter)
         if status_filter:
             query['status'] = status_filter.lower()
 
