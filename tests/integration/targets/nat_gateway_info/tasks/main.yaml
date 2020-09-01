@@ -3,6 +3,7 @@
     - name: Get NAT gateway info
       nat_gateway_info:
         cloud: "{{ test_cloud }}"
+        admin_state_up: True
       register: gw
 
     - name: debug configs

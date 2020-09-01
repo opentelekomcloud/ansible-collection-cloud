@@ -55,18 +55,59 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class NATGatewayInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
-        gw_id=dict(required=False)
+        id=dict(required=False),
+        admin_state_up=dict(required=False),
+        created_at=dict(required=False),
+        description=dict(required=False),
+        internal_network_id=dict(required=False),
+        limit=dict(required=False),
+        router_id=dict(required=False),
+        spec=dict(required=False),
+        status=dict(required=False),
+        project_id=dict(required=False)
     )
 
     def run(self):
         name_filter = self.params['name']
-        gw_id_filter = self.params['gw_id']
+        id_filter = self.params['id']
+        admin_state_up_filter = self.params['admin_state_up']
+        created_at_filter = self.params['created_at']
+        description_filter = self.params['description']
+        internal_network_id_filter = self.params['internal_network_id']
+        limit_filter = self.params['limit']
+        router_id_filter = self.params['router_id']
+        spec_filter = self.params['spec']
+        status_filter = self.params['status']
+        project_id_filter = self.params['project_id']
 
         data = []
 
         for raw in self.conn.nat.gateways():
-            print("Hallo")
-            print(raw)
+            if (name_filter and raw.name != name_filter):
+                continue
+            if (id_filter and raw.id != id_filter):
+                continue
+            # if ((admin_state_up_filter and raw.admin_state_up) or
+            #         (not admin_state_up_filter and not raw.admin_state_up)):
+            #     continue
+            if (created_at_filter and raw.created_at != created_at_filter):
+                continue
+            if (description_filter and raw.description
+                    != description_filter):
+                continue
+            if (internal_network_id_filter and raw.internal_network_id
+                    != internal_network_id_filter):
+                continue
+            if (limit_filter and raw.limit != limit_filter):
+                continue
+            if (router_id_filter and raw.router_id != router_id_filter):
+                continue
+            if (spec_filter and raw.spec != spec_filter):
+                continue
+            if (status_filter and raw.status != status_filter):
+                continue
+            if (project_id_filter and raw.project_id != project_id_filter):
+                continue
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
