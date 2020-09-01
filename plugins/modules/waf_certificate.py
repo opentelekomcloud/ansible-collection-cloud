@@ -22,17 +22,15 @@ description:
   - Manage WAF certificates.
 options:
   name:
-    description: Certificate name or ID
+    description: Certificate name or ID.
     type: str
     required: true
   content:
-    description: Certificate content (line breaks must be as \n)
+    description: Certificate content. Required for creation.
     type: str
-    required: true
-  key:
-    description: Private key for the certificate (line breaks must be as \n)
+  private_key:
+    description: Private key for the certificate. Required for creation.
     type: str
-    required: true
   state:
     choices: [present, absent]
     default: present
@@ -70,7 +68,7 @@ class WafCertificateModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True, type='str'),
         content=dict(type='str', no_log=True),
-        key=dict(type='str', no_log=True),
+        private_key=dict(type='str', no_log=True),
         state=dict(type='str', choices=['present', 'absent'],
                    default='present')
     )
@@ -116,7 +114,7 @@ class WafCertificateModule(OTCModule):
             if certificate:
                 self.exit(changed=False)
 
-            key = self.params['key'].strip()
+            key = self.params['private_key'].strip()
             content = self.params['content'].strip()
 
             cert = self.conn.waf.create_certificate(

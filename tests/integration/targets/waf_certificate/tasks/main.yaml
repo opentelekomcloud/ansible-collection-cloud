@@ -73,7 +73,7 @@
       waf_certificate:
         name: "{{ cert_name }}"
         content: "{{ content }}"
-        key: "{{ key }}"
+        private_key: "{{ key }}"
       register: result
 
     - name: assert result
