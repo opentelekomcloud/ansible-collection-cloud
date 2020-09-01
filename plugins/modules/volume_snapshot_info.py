@@ -60,7 +60,7 @@ volume_snapshots:
             description: Specifies the snapshot ID.
             type: str
             sample: "b836dc3d-4e10-4ea4-a34c-8f6b0460a583"
-        metadata":
+        metadata:
             description: Specifies the snapshot metadata.
             type: dict
         name:
@@ -79,7 +79,7 @@ volume_snapshots:
             description: Specifies the ID of the snapshot's source disk.
             type: str
             sample: "ba5730ea-8621-4ae8-b702-ff0ffc12c209"
-        "updated_at":
+        updated_at:
             description: Specifies the time when the snapshot was updated.
             type: str
             sample: "2016-02-16T16:54:14.981520"
@@ -125,7 +125,6 @@ class VolumeSnapshotInfoModule(OTCModule):
         for raw in self.conn.block_storage.snapshots(details_filter, **query):
             dt = raw.to_dict()
             dt.pop('location')
-            dt.pop('api_version')
             dt.pop('kind')
             data.append(dt)
 
