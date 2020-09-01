@@ -20,7 +20,7 @@ DOCUMENTATION = '''
 module: volume_snapshot_info
 short_description: Get information about volume snapshots
 extends_documentation_fragment: opentelekomcloud.cloud.otc.doc
-version_added: "2.9"
+version_added: "0.0.3"
 author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Get a generator of snapshots info from the OTC.
