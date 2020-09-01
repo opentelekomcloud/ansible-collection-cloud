@@ -35,7 +35,7 @@ options:
     type: str
   volume:
     description:
-      - Name or ID of the volume.
+      - Name of the volume.
     type: str
   status:
     description:
@@ -95,7 +95,6 @@ EXAMPLES = '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
-
 class VolumeSnapshotInfoModule(OTCModule):
     argument_spec = dict(
         details=dict(default=True, type='bool'),
@@ -118,7 +117,16 @@ class VolumeSnapshotInfoModule(OTCModule):
         if name_filter:
             query['name'] = name_filter
         if volume_filter:
-            query['volume_id'] = self.conn.block_storage.find_volume(volume_filter)
+            objs = list(self.conn.block_storage.volumes(
+                details=False, name=volume_filter))
+            if len(objs) == 1:
+                query['volume_id'] = objs[0]
+            elif len(objs) > 1:
+                self.fail_json(msg='More than one volume with name %s '
+                               'found' % volume_filter)
+            else:
+                self.fail_json(msg='No volume with name %s '
+                               'can be found in cloud.' % volume_filter)
         if status_filter:
             query['status'] = status_filter.lower()
 
