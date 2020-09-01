@@ -1,6 +1,6 @@
 ---
 
-- name: Test Volume Snapshot
+- name: Test Volume Snapshot Info
   hosts: localhost
   collections:
     - opentelekomcloud.cloud

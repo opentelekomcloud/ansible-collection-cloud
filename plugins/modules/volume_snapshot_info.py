@@ -25,6 +25,10 @@ author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Get a generator of snapshots info from the OTC.
 options:
+  details:
+    description: More detailed output
+    type: bool
+    default: True
   name:
     description:
       - Name of the snapshot.
@@ -79,10 +83,6 @@ volume_snapshots:
             description: Specifies the ID of the snapshot's source disk.
             type: str
             sample: "ba5730ea-8621-4ae8-b702-ff0ffc12c209"
-        updated_at:
-            description: Specifies the time when the snapshot was updated.
-            type: str
-            sample: "2016-02-16T16:54:14.981520"
 '''
 
 EXAMPLES = '''
