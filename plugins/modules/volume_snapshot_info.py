@@ -125,7 +125,6 @@ class VolumeSnapshotInfoModule(OTCModule):
         for raw in self.conn.block_storage.snapshots(details_filter, **query):
             dt = raw.to_dict()
             dt.pop('location')
-            dt.pop('kind')
             data.append(dt)
 
         self.exit_json(
