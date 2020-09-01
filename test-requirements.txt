@@ -1,6 +1,5 @@
-ansible
-ansible-base
 openstacksdk
+ansible-base
 pycodestyle
 flake8
 pylint
@@ -8,4 +7,5 @@ voluptuous
 yamllint
 rstcheck
 ruamel.yaml
+tox
 otcextensions

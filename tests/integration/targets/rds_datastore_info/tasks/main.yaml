@@ -1,0 +1,17 @@
+---
+- module_defaults:
+  block:
+    - name: Get datastore info
+      rds_datastore_info:
+        cloud: "{{ test_cloud }}"
+        datastore: "postgresql"
+      register: rds
+
+    - name: assert result
+      assert:
+        that:
+          - rds is success
+          - rds is not changed
+          - rds.rds_datastores is defined
+          - rds.rds_datastores[0]['id'] is defined
+          - rds.rds_datastores[0]['name'] is defined

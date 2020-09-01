@@ -11,16 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
-
 DOCUMENTATION = '''
 ---
 module: as_config_info
 short_description: Get AutoScaling configs
-extends_documentation_fragment: opentelekomcloud.cloud.otc.doc
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Get AS config info from the OTC.
@@ -87,7 +83,7 @@ class AutoScalingConfigInfoModule(OTCModule):
             dt.pop('location')
             data.append(dt)
 
-        self.exit_json(
+        self.exit(
             changed=False,
             as_configs=data
         )

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# coding: utf-8 -*-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,17 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
-
-
 DOCUMENTATION = '''
 ---
 module: tag
 short_description: Manage tags on diverse OpenStack/OTC resources
-extends_documentation_fragment: openstack
-version_added: "2.9"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.1"
 author: Artem Goncharov (@gtema)
 description:
     - set or delete tags on the OpenStack/OTC resources
@@ -74,6 +68,7 @@ options:
        - List of tags
      default: []
      type: list
+     elements: str
    mode:
      description:
        - Mode to be used for tags presence ('replace' or 'set'). 'replace'
@@ -156,7 +151,7 @@ class TagModule(OTCModule):
         subnet=dict(default=None),
         trunk=dict(default=None),
         state=dict(default='present', choices=['absent', 'present']),
-        tags=dict(default=[], type='list'),
+        tags=dict(default=[], elements='str', type='list'),
         mode=dict(default='replace', choices=['replace', 'set'])
     )
 
