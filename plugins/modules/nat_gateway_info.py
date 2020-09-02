@@ -24,6 +24,7 @@ options:
     description:
       - NAT gateway state.
     type: bool
+    default: True
   created_at:
     description:
       - Creation time of the NAT gateway
@@ -54,11 +55,11 @@ options:
     type: str
   spec:
     description:
-      - Specifies the type of the NAT gateway: 1 (small: 10.000 connections),
-        2 (medium: 50.000 connections), 3 (large: 200.000 connections), 4
-        (extra-large: 1.000.000 connections)
+      - Specifies the type of the NAT gateway. 1 (small 10.000 connections),
+        2 (medium 50.000 connections), 3 (large 200.000 connections), 4
+        (extra-large 1.000.000 connections)
     type: str
-    choices: [1, 2, 3, 4]
+    choices: ["1", "2", "3", "4"]
   status:
     description:
       - Specifies the status of the NAT gateway
@@ -147,7 +148,7 @@ class NATGatewayInfoModule(OTCModule):
         description=dict(required=False),
         internal_network_id=dict(required=False),
         router_id=dict(required=False),
-        spec=dict(required=False),
+        spec=dict(required=False, choices=["1", "2", "3", "4"]),
         status=dict(required=False),
         project_id=dict(required=False)
     )
