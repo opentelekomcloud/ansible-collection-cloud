@@ -24,7 +24,6 @@ options:
     description:
       - NAT gateway state.
     type: bool
-    default: True
   created_at:
     description:
       - Creation time of the NAT gateway
@@ -143,7 +142,7 @@ class NATGatewayInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
         id=dict(required=False),
-        admin_state_up=dict(required=False, type=bool, default=True),
+        admin_state_up=dict(required=False, type=bool),
         created_at=dict(required=False),
         description=dict(required=False),
         internal_network_id=dict(required=False),
@@ -172,7 +171,9 @@ class NATGatewayInfoModule(OTCModule):
                 continue
             if (id_filter and raw.id != id_filter):
                 continue
-            if ((admin_state_up_filter and not raw.admin_state_up) or
+            if (admin_state_up_filter is None):
+                pass
+            elif ((admin_state_up_filter and not raw.admin_state_up) or
                     (not admin_state_up_filter and raw.admin_state_up)):
                 continue
             if (created_at_filter and raw.created_at != created_at_filter):
