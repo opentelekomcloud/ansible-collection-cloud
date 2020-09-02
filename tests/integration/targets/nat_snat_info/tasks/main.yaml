@@ -1,0 +1,17 @@
+---
+- block:
+    - name: Get NAT gateway info
+      nat_snat_info:
+        cloud: "{{ test_cloud }}"
+      register: sn
+
+    - name: debug configs
+      debug:
+        var: sn.snat_list
+
+    - name: assert result
+      assert:
+        that:
+          - sn is success
+          - sn is not changed
+          - sn.snat_list is defined
