@@ -23,11 +23,11 @@ requirements: ["openstacksdk", "otcextensions"]
 options:
   admin_state_up:
     description:
-      - NAT gateway state.
+      - NAT rule state.
     type: str
   cidr:
     description:
-      - Classless Inter-Domain Routing
+      - Specifies a subset of the VPC subnet Classless Inter-Domain Routing block or a CIDR block of Direct Connect
     type: str
   created_at:
     description:
@@ -70,19 +70,56 @@ options:
 
 RETURN = '''
 ---
-as_configs:
-    description: List of dictionaries describing NAT gateways.
+snat_list:
+    description: List of SNAT rules.
     type: complex
     returned: On Success.
     contains:
-        id:
-            description: Unique UUID.
+        admin_state_up:
+            description: NAT rule state
+            type: str
+            sample: "True"
+        cidr:
+            description: Specifies a subset of the VPC subnet Classless Inter-Domain Routing block or a CIDR block of Direct Connect
+            type: str
+            sample: "null"
+        created_at:
+            description: Creation time
+            type: str
+            sample: "yyyy-mm-dd hh:mm:ss"
+        floating_ip_address:
+            description: Assigned Floating IP Address
+            type: str
+            sample: "123.1.2.3"
+        floating_ip_id:
+            description: Assigned Floating IP ID
             type: str
             sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-        name:
-            description: Name (version) of the datastore.
+        id:
+            description: ID of the SNAT rule
             type: str
-            sample: "10.0"
+            sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
+        nat_gateway_id:
+            description: NAT Gateway ID
+            type: str
+            sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
+        network_id:
+            description: ID of the attached Network
+            type: str
+            sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
+        project_id:
+            description: ID of the Project where the SNAT rule is located in
+            type: str
+            sample: "16d53a84a13b49529d2e2c3646612345"
+        source_type:
+            description: 0 Either network id or cidr can be specified in VPC ... 1 only cidr can be specified over Direct Connect
+            type: str
+            sample: "0"
+        status:
+            description: NAT rule status
+            type: str
+            sample: "ACTIVE"
+
 '''
 
 EXAMPLES = '''
