@@ -40,7 +40,7 @@ options:
   status:
     description:
       - Specifies the snapshot status.
-        choices: ['creating', 'available', 'error', 'deleting',
+    choices: ['creating', 'available', 'error', 'deleting',
         'error_deleting', 'rollbacking', 'backing-up']
     type: str
 requirements: ["openstacksdk", "otcextensions"]
