@@ -11,16 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
-
 DOCUMENTATION = '''
 ---
 module: volume_snapshot_info
 short_description: Get information about volume snapshots
-extends_documentation_fragment: opentelekomcloud.cloud.otc.doc
-version_added: "0.0.1"
+extends_documentation_fragment: opentelekomcloud.cloud.otc
+version_added: "0.0.3"
 author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Get a generator of snapshots info from the OTC.
@@ -40,49 +36,49 @@ options:
   status:
     description:
       - Specifies the snapshot status.
-    choices: ['creating', 'available', 'error', 'deleting',
-        'error_deleting', 'rollbacking', 'backing-up']
+    choices: [creating, available, error, deleting,
+     error_deleting, rollbacking, backing-up]
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
 volume_snapshots:
-    description: List of dictionaries describing volume snapshots.
-    type: complex
-    returned: On Success.
-    contains:
-        created_at:
-            description: Specifies the time when the snapshot was created.
-            type: str
-            sample: "2016-02-16T16:54:14.981520"
-        description:
-            description: Specifies the snapshot description.
-            type: str
-            sample: "test description"
-        id:
-            description: Specifies the snapshot ID.
-            type: str
-            sample: "b836dc3d-4e10-4ea4-a34c-8f6b0460a583"
-        metadata:
-            description: Specifies the snapshot metadata.
-            type: dict
-        name:
-            description: Specifies the snapshot name.
-            type: str
-            sample: "test01"
-        size:
-            description: Specifies the snapshot size, in GB.
-            type: int
-            sample: 1
-        status:
-            description: Specifies the snapshot status. For details.
-            type: str
-            sample: "available"
-        volume_id:
-            description: Specifies the ID of the snapshot's source disk.
-            type: str
-            sample: "ba5730ea-8621-4ae8-b702-ff0ffc12c209"
+  description: List of dictionaries describing volume snapshots.
+  type: complex
+  returned: On Success.
+  contains:
+    created_at:
+      description: Specifies the time when the snapshot was created.
+      type: str
+      sample: "2016-02-16T16:54:14.981520"
+    description:
+      description: Specifies the snapshot description.
+      type: str
+      sample: "test description"
+    id:
+      description: Specifies the snapshot ID.
+      type: str
+      sample: "b836dc3d-4e10-4ea4-a34c-8f6b0460a583"
+    metadata:
+      description: Specifies the snapshot metadata.
+      type: dict
+    name:
+      description: Specifies the snapshot name.
+      type: str
+      sample: "test01"
+    size:
+      description: Specifies the snapshot size, in GB.
+      type: int
+      sample: 1
+    status:
+      description: Specifies the snapshot status. For details.
+      type: str
+      sample: "available"
+    volume_id:
+      description: Specifies the ID of the snapshot's source disk.
+      type: str
+      sample: "ba5730ea-8621-4ae8-b702-ff0ffc12c209"
 '''
 
 EXAMPLES = '''
