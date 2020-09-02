@@ -38,12 +38,15 @@ waf_certificate_info:
             description: Unique UUID.
             type: str
             sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+        name:
+            description: Certificate name
+            type: str
         timestamp:
             description: Certificate upload timestamp
-            type: str
+            type: int
         expire_time:
             description: Expiration timestamp
-            type: str
+            type: int
 '''
 
 EXAMPLES = '''

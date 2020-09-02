@@ -55,6 +55,14 @@ waf_certificate:
             description: Name of the certificate.
             type: str
             sample: "test"
+        expire_time:
+            description: Expiration timestamp
+            type: int
+            sample: 1630488473000
+        timestamp:
+            description: Certificate creation time
+            type: int
+            sample: 1630488473000
 '''
 
 EXAMPLES = '''
@@ -74,7 +82,7 @@ class WafCertificateModule(OTCModule):
     )
     module_kwargs = dict(
         required_if=[
-            ('state', 'present', ['content', 'key']),
+            ('state', 'present', ['content', 'private_key']),
         ]
     )
 
