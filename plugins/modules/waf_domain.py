@@ -13,32 +13,56 @@
 
 DOCUMENTATION = '''
 ---
-module: waf_domain_info
-short_description: Get WAF domain info
+module: waf_domain
+short_description: Add/Modify/Delete WAF domain
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.3"
 author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
-  - Get WAF Domain info from the OTC or list all domains.
+  - Add/Modify/Delete WAF domain from the OTC.
 options:
-  name:
-    description: The name of a domain.
+  hostname:
+    description: Specifies the domain name.
     type: str
-  limit:
-    description: Specifies the maximum number of
-     records displayed on each page.
+  certificate_id:
+    description: Specifies the certificate ID.
+    type: str
+  client_protocol:
+    description: Protocol type of the client.
+    type: str
+  server_protocol:
+    description: Protocol used by WAF to
+     forward client requests to the server.
+    type: str
+  address:
+    description: Public IP address or domain name
+     of the web server that the client accesses
+    type: str
+  port:
+    description: Port number used by the web server.
     type: int
-  offset:
-    description: Specifies the number of returned pages.
-    type: int
-  policy_name:
-    description: Specifies the policy name.
+  proxy:
+    description: Specifies whether a proxy is configured.
+    type: bool
+    default: False
+  sip_header_name:
+    description: Specifies the type of the source IP header.
+    type: str
+  sip_header_list:
+    description: Specifies the HTTP request header
+     for identifying the real source IP address. 
+    type: str
+  state:
+    description:
+      - Should the resource be present or absent.
+    choices: [present, absent]
+    default: present
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-waf_domain_info:
+waf_domain:
   description: List of dictionaries describing domains matching query.
   type: complex
   returned: On Success.
@@ -80,42 +104,38 @@ waf_domain_info:
 '''
 
 EXAMPLES = '''
-# Get Domain.
-- waf_domain_info:
-  register: domain
+# Create Domain.
+- waf_domain:
+
+# Modify Domain.
+- waf_domain:
+    instance_id: "id"
+    client_protocol: HTTP
+    server_protocol: HTTP
+    address: 192.168.0.100
+    port: 8888
+  state: absent
+  
+# Delete Domain.
+- waf_domain:
+  state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class WafDomainInfoModule(OTCModule):
+class WafDomainModule(OTCModule):
     argument_spec = dict(
-        nane=dict(required=False),
-        limit=dict(required=False),
-        offset=dict(required=False),
-        policy_name=dict(required=False)
+        name=dict(required=False),
     )
 
-    otce_min_version = '0.8.0' #TODO: Change it after version with WAF domains come
+    otce_min_version = '0.8.0'
 
     def run(self):
-        name_filter = self.params['name']
-        limit_filter = self.params['limit']
-        offset_filter = self.params['offset']
-        policy_name_filter = self.params['policy_name']
 
         data = []
-        query = {}
-        if name_filter:
-            query['name'] = name_filter
-        if limit_filter:
-            query['limit'] = limit_filter
-        if offset_filter:
-            query['offset'] = offset_filter
-        if policy_name_filter:
-            query['policy_name'] = policy_name_filter
 
-        for raw in self.conn.waf.domains(**query):
+        for raw in self.conn.waf.find_domain(offset=0, limit=-1):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
@@ -127,7 +147,7 @@ class WafDomainInfoModule(OTCModule):
 
 
 def main():
-    module = WafDomainInfoModule()
+    module = WafDomainModule()
     module()
 
 

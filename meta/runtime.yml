@@ -17,3 +17,4 @@ action_groups:
     - waf_certificate
     - waf_certificate_info
     - volume_snapshot_info
+    - waf_domain_info
