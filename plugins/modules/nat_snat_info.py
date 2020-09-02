@@ -20,6 +20,52 @@ author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get a SNAT Rule Details.
 requirements: ["openstacksdk", "otcextensions"]
+options:
+  admin_state_up:
+    description:
+      - NAT gateway state.
+    type: str
+  cidr:
+    description:
+      - Classless Inter-Domain Routing
+    type: str
+  created_at:
+    description:
+      - Creation time of the rule
+    type: str
+  floating_ip_address:
+    description:
+      - Assigned floating IP
+    type: str
+  floating_ip_id:
+    description:
+      - ID of the floating IP
+    type: str
+  id:
+    description:
+      - ID the rule
+    type: str
+  nat_gateway_id:
+    description:
+      - ID of the NAT gateway
+    type: str
+  network_id:
+    description:
+      - ID of the assigned network
+    type: str
+  project_id:
+    description:
+      - Filters SNAT rules for the project ID
+    type: str
+  source_type:
+    description:
+      - 0 Either network id or cidr can be specified in VPC ... 1 only cidr can be specified over Direct Connect
+    type: str
+  status:
+    description:
+      - rule enabled or disable
+    type: str
+
 '''
 
 RETURN = '''
