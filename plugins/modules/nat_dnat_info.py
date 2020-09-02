@@ -143,12 +143,17 @@ dnat_list:
 
 EXAMPLES = '''
 # Get configs versions.
-- nat_gateway_info:
-  register: gw
+- nat_dnat_info:
+  register: dn
 
-- as_config_info:
-    name: my_gateway
-  register: gw
+- nat_dnat_info:
+    admin_state_up: "true"
+  register: dn
+
+- nat_dnat_info:
+    admin_state_up: "true"
+    status: "ACTIVE"
+  register: dn
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

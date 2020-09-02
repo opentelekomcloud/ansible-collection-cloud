@@ -124,12 +124,17 @@ snat_list:
 
 EXAMPLES = '''
 # Get configs versions.
-- nat_gateway_info:
-  register: gw
+- nat_snat_info:
+  register: sn
 
-- as_config_info:
-    name: my_gateway
-  register: gw
+- nat_snat_info:
+    status: "ACTIVE"
+  register: sn
+
+- nat_snat_info:
+    status: "ACTIVE"
+    source_type: "0"
+  register: sn
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
