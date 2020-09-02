@@ -8,4 +8,4 @@ yamllint
 rstcheck
 ruamel.yaml
 tox
-otcextensions
+otcextensions>=0.7.2

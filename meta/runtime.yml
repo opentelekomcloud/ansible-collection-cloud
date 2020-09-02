@@ -14,3 +14,5 @@ action_groups:
     - rds_instance
     - tag
     - volume_backup
+    - waf_certificate
+    - waf_certificate_info
