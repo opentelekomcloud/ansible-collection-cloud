@@ -10,20 +10,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 DOCUMENTATION = '''
 ---
-module: nat_gateway_info
+module: nat_snat_info
 short_description: Get SNAT rule details
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.1"
-author: "Sebastian Gode (@Felixkruemel)"
+author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Get a SNAT Rule Details
+  - Get a SNAT Rule Details.
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
+---
 as_configs:
     description: List of dictionaries describing NAT gateways.
     type: complex
@@ -63,26 +63,26 @@ class NATGatewayInfoModule(OTCModule):
         nat_gateway_id=dict(required=False),
         network_id=dict(required=False),
         source_type=dict(required=False),
- 	status=dict(required=False),
-	project_id=dict(required=False)
+        status=dict(required=False),
+        project_id=dict(required=False)
     )
 
     def run(self):
         admin_state_up_filter = self.params['admin_state_up']
-	cidr_filter = self.params['cidr']
+        cidr_filter = self.params['cidr']
         created_at_filter = self.params['created_at']
-	floating_ip_address_filter = self.params['floating_ip_address']
+        floating_ip_address_filter = self.params['floating_ip_address']
         floating_ip_id_filter = self.params['floating_ip_id']
         id_filter = self.params['id']
-	nat_gateway_id_filter = self.params['nat_gateway_id']
-	network_id_filter = self.params['network_id']
-	source_type_filter = self.params['source_type']
-	status_filter = self.params['status']
+        nat_gateway_id_filter = self.params['nat_gateway_id']
+        network_id_filter = self.params['network_id']
+        source_type_filter = self.params['source_type']
+        status_filter = self.params['status']
         project_id_filter = self.params['project_id']
 
         data = []
 
-        for raw in self.conn.nat.get_snat_rule():
+        for raw in self.conn.nat.snat_rules():
             if ((admin_state_up_filter and not raw.admin_state_up) or
                     (not admin_state_up_filter and raw.admin_state_up)):
                 continue
@@ -90,13 +90,16 @@ class NATGatewayInfoModule(OTCModule):
                 continue
             if (created_at_filter and raw.created_at != created_at_filter):
                 continue
-            if (floating_ip_address_filter and raw.floating_ip_address != floating_ip_address_filter):
+            if (floating_ip_address_filter and raw.floating_ip_address
+                    != floating_ip_address_filter):
                 continue
-            if (floating_ip_id_filter and raw.floating_ip_id != floating_ip_id_filter):
+            if (floating_ip_id_filter and raw.floating_ip_id
+                    != floating_ip_id_filter):
                 continue
             if (id_filter and raw.id != id_filter):
                 continue
-            if (nat_gateway_id_filter and raw.nat_gateway_id != nat_gateway_id_filter):
+            if (nat_gateway_id_filter and raw.nat_gateway_id
+                    != nat_gateway_id_filter):
                 continue
             if (network_id_filter and raw.network_id != network_id_filter):
                 continue
