@@ -1,13 +1,21 @@
 ---
 - module_defaults:
+    waf_domain:
+      cloud: "{{ test_cloud }}"
+    waf_domain_info:
+      cloud: "{{ test_cloud }}"
     waf_certificate:
       cloud: "{{ test_cloud }}"
-    waf_certificate_info:
-      cloud: "{{ test_cloud }}"
   block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
     - name: Set initial facts
       set_fact:
-        cert_name: test_cert_ansible_collection
+        cert_name: "{{ ( prefix + '-test_cert_ansible_collection') }}"
+        cert2_name: "{{ ( prefix + '-test_cert_ansible_collection_2') }}"
+        domain_name: "{{ ( prefix + '.example.com') }}"
         content: |
           -----BEGIN CERTIFICATE-----
           MIIDADCCAegCCQCUu4mu6VfH/zANBgkqhkiG9w0BAQsFADBCMQswCQYDVQQGEwJE
@@ -58,51 +66,116 @@
           Ltxv392mcEGwmbfc1YJJfN2B
           -----END PRIVATE KEY-----
 
-    - name: Ensure cert does not exists
-      waf_certificate:
-        name: "{{ cert_name }}"
-        state: absent
-      register: result
-
-    - name: assert result
-      assert:
-        that:
-          - result is success
-
     - name: Create cert
       waf_certificate:
         name: "{{ cert_name }}"
         content: "{{ content }}"
         private_key: "{{ key }}"
-      register: result
+      register: cert
 
-    - name: assert result
-      assert:
-        that:
-          - result is success
-          - result is changed
-          - result.waf_certificate is defined
-
-    - name: Drop cert
+    - name: Create 2nd cert
       waf_certificate:
-        name: "{{ cert_name }}"
+        name: "{{ cert2_name }}"
+        content: "{{ content }}"
+        private_key: "{{ key }}"
+      register: cert2
+
+    - name: Create domain
+      waf_domain:
+        state: present
+        name: "{{ domain_name }}"
+        # here we pass cert id explicitly
+        certificate: "{{ cert.waf_certificate.id }}"
+        server:
+          - client_protocol: https
+            server_protocol: http
+            address: 1.2.3.4
+            port: 80
+        proxy: true
+        sip_header_name: default
+        sip_header_list:
+          - X-Forwarded-For
+      register: domain
+
+    - name: assert result
+      assert:
+        that:
+          - domain is success
+          - domain is changed
+          - domain.waf_domain is defined
+          - domain.waf_domain.id is defined
+
+    - name: Update certificate reference in the domain
+      waf_domain:
+        name: "{{ domain_name }}"
+        # we want to support cert_id and name
+        certificate: "{{ cert2_name }}"
+
+    - name: Get WAF Domain with name filter info
+      waf_domain_info:
+        name: "{{ domain_name }}"
+      register: res
+
+    - name: assert result
+      assert:
+        that:
+          - res is success
+          - res.waf_domains is defined
+          - res.waf_domains[0].id is defined
+          - res.waf_domains[0].certificate_id == cert2.waf_certificate.id
+
+    - name: Get WAF Domain by ID
+      waf_domain_info:
+        name: "{{ domain.waf_domain.id }}"
+      register: res
+
+    - name: assert result
+      assert:
+        that:
+          - res is success
+          - res.waf_domains is defined
+          - res.waf_domains[0].id is defined
+
+    - name: Drop existing domain
+      waf_domain:
+        # pass ID as name
+        name: "{{ domain.waf_domain.id }}"
         state: absent
-      register: result
+      register: domain
 
     - name: assert result
       assert:
         that:
-          - result is success
-          - result is changed
+          - domain is success
+          - domain is changed
 
-    - name: Get cert info
-      waf_certificate_info:
-        name: "{{ cert_name }}"
-      register: result
+    - name: Drop not more existing domain
+      waf_domain:
+        name: "{{ domain_name }}"
+        state: absent
+      register: domain
 
     - name: assert result
       assert:
         that:
-          - result is success
-          - result is not changed
-          - result.waf_certificates == []
+          - domain is success
+          - domain is not changed
+
+  always:
+    - block:
+      # Cleanup
+      - name: Drop perhaps existing domain
+        waf_domain:
+          name: "{{ domain_name }}"
+          state: absent
+
+      - name: Drop certificate
+        waf_certificate:
+          name: "{{ cert_name }}"
+          state: absent
+
+      - name: Drop 2nd certificate
+        waf_certificate:
+          name: "{{ cert2_name }}"
+          state: absent
+      ignore_errors: true

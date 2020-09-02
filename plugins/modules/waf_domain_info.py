@@ -24,13 +24,6 @@ options:
   name:
     description: The name of a domain.
     type: str
-  limit:
-    description: Specifies the maximum number of
-     records displayed on each page.
-    type: int
-  offset:
-    description: Specifies the number of returned pages.
-    type: int
   policy_name:
     description: Specifies the policy name.
     type: str
@@ -91,8 +84,6 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class WafDomainInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
-        limit=dict(required=False, type='int'),
-        offset=dict(required=False, type='int'),
         policy_name=dict(required=False)
     )
 
@@ -100,18 +91,12 @@ class WafDomainInfoModule(OTCModule):
 
     def run(self):
         name_filter = self.params['name']
-        limit_filter = self.params['limit']
-        offset_filter = self.params['offset']
         policy_name_filter = self.params['policy_name']
 
         data = []
         query = {}
         if name_filter:
             query['name'] = name_filter
-        if limit_filter:
-            query['limit'] = limit_filter
-        if offset_filter:
-            query['offset'] = offset_filter
         if policy_name_filter:
             query['policy_name'] = policy_name_filter
 
