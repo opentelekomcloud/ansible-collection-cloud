@@ -23,15 +23,18 @@ description:
 options:
   hostname:
     description: Specifies the domain name.
+    required: true
     type: str
   certificate_id:
     description: Specifies the certificate ID.
     type: str
   server:
     description: Specifies the origin server information.
+    required: true
     type: list
   proxy:
     description: Specifies whether a proxy is configured.
+    required: true
     type: bool
   sip_header_name:
     description: Specifies the type of the source IP header.
@@ -118,9 +121,9 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class WafDomainModule(OTCModule):
     argument_spec = dict(
-        hostname=dict(required=True),
+        hostname=dict(required=True, type='str'),
         certificate_id=dict(required=False),
-        server=dict(required=True),
+        server=dict(required=True, type='list'),
         proxy=dict(required=True, type='bool'),
         sip_header_name=dict(required=False),
         sip_header_list=dict(required=False),

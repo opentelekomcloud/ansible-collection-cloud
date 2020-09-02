@@ -91,8 +91,8 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class WafDomainInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
-        limit=dict(required=False),
-        offset=dict(required=False),
+        limit=dict(required=False, type='int'),
+        offset=dict(required=False, type='int'),
         policy_name=dict(required=False)
     )
 
