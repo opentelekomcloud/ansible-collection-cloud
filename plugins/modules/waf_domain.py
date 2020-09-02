@@ -27,30 +27,18 @@ options:
   certificate_id:
     description: Specifies the certificate ID.
     type: str
-  client_protocol:
-    description: Protocol type of the client.
-    type: str
-  server_protocol:
-    description: Protocol used by WAF to
-     forward client requests to the server.
-    type: str
-  address:
-    description: Public IP address or domain name
-     of the web server that the client accesses
-    type: str
-  port:
-    description: Port number used by the web server.
-    type: int
+  server:
+    description: Specifies the origin server information.
+    type: list
   proxy:
     description: Specifies whether a proxy is configured.
     type: bool
-    default: False
   sip_header_name:
     description: Specifies the type of the source IP header.
     type: str
   sip_header_list:
     description: Specifies the HTTP request header
-     for identifying the real source IP address. 
+     for identifying the real source IP address.
     type: str
   state:
     description:
@@ -115,7 +103,7 @@ EXAMPLES = '''
     address: 192.168.0.100
     port: 8888
   state: absent
-  
+
 # Delete Domain.
 - waf_domain:
   state: absent
@@ -126,24 +114,68 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class WafDomainModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=False),
+        hostname=dict(required=True),
+        certificate_id=dict(required=False),
+        server=dict(required=True),
+        proxy=dict(required=True, type='bool'),
+        sip_header_name=dict(required=False),
+        sip_header_list=dict(required=False),
+        state=dict(default='present', choices=['absent', 'present']),
     )
+    #     server: [
+    #       {
+    #         client_protocol: HTTPS,
+    #         server_protocol: HTTP,
+    #         address: "X.X.X.X",
+    #         port: 80
+    #       }
+    #     ]
 
+    # Change it after version with WAF domains come
     otce_min_version = '0.8.0'
 
+    def _system_state_change(self, domain):
+        state = self.params['state']
+        if state == 'present':
+            if not domain:
+                return True
+        elif state == 'absent' and domain:
+            return True
+        return False
+
     def run(self):
+        name_filter = self.params['hostname']
 
-        data = []
+        domain = None
+        changed = False
 
-        for raw in self.conn.waf.find_domain(offset=0, limit=-1):
-            dt = raw.to_dict()
-            dt.pop('location')
-            data.append(dt)
+        domain = self.conn.waf.find_domain(name_or_id=name_filter)
 
-        self.exit(
-            changed=False,
-            waf_domains=data
-        )
+        if self.check_mode:
+            self.exit_json(changed=self._system_state_change(domain))
+
+        if self.params['state'] == 'absent':
+            changed = False
+
+            if domain:
+                self.conn.waf.delete_domain(domain)
+                changed = True
+
+        elif self.params['state'] == 'present':
+            if domain:
+                domain = self.conn.waf.update_domain(domain, **self.params)
+                self.exit(
+                    changed=True,
+                    waf_domain=domain.to_dict()
+                )
+
+            domain = self.conn.waf.create_domain(**self.params)
+            self.exit(
+                changed=True,
+                waf_domain=domain.to_dict()
+            )
+
+        self.exit(changed=changed)
 
 
 def main():

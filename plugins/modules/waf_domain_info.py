@@ -96,7 +96,8 @@ class WafDomainInfoModule(OTCModule):
         policy_name=dict(required=False)
     )
 
-    otce_min_version = '0.8.0' #TODO: Change it after version with WAF domains come
+    # Change it after version with WAF domains come
+    otce_min_version = '0.8.0'
 
     def run(self):
         name_filter = self.params['name']
