@@ -98,10 +98,14 @@ EXAMPLES = '''
 # Modify Domain.
 - waf_domain:
     instance_id: "id"
-    client_protocol: HTTP
-    server_protocol: HTTP
-    address: 192.168.0.100
-    port: 8888
+    server: [
+      {
+        client_protocol: HTTP,
+        server_protocol: HTTP,
+        address: 192.168.0.100,
+        port: 8888
+      }
+    ]
   state: absent
 
 # Delete Domain.
@@ -122,14 +126,6 @@ class WafDomainModule(OTCModule):
         sip_header_list=dict(required=False),
         state=dict(default='present', choices=['absent', 'present']),
     )
-    #     server: [
-    #       {
-    #         client_protocol: HTTPS,
-    #         server_protocol: HTTP,
-    #         address: "X.X.X.X",
-    #         port: 80
-    #       }
-    #     ]
 
     # Change it after version with WAF domains come
     otce_min_version = '0.8.0'
