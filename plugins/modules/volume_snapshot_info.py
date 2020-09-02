@@ -114,16 +114,7 @@ class VolumeSnapshotInfoModule(OTCModule):
         if name_filter:
             query['name'] = name_filter
         if volume_filter:
-            vol = list(self.conn.block_storage.volumes(
-                details=False, name=volume_filter))
-            if len(vol) == 1:
-                query['volume_id'] = vol[0].id
-            elif len(vol) > 1:
-                self.fail_json(msg='More than one volume with name %s '
-                                   'found' % volume_filter)
-            else:
-                self.fail_json(msg='No volume with name %s '
-                                   'can be found in cloud.' % volume_filter)
+            query['volume_id'] = self.conn.block_storage.find_volume(volume_filter)
         if status_filter:
             query['status'] = status_filter.lower()
 
