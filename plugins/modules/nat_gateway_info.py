@@ -142,7 +142,7 @@ class NATGatewayInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
         id=dict(required=False),
-        admin_state_up=dict(required=False, type=bool),
+        admin_state_up=dict(required=False, type='bool'),
         created_at=dict(required=False),
         description=dict(required=False),
         internal_network_id=dict(required=False),
