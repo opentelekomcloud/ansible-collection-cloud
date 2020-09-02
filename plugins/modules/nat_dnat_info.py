@@ -78,8 +78,8 @@ options:
 
 RETURN = '''
 ---
-snat_list:
-    description: List of SNAT rules.
+dnat_list:
+    description: List of DNAT rules.
     type: complex
     returned: On Success.
     contains:
@@ -87,14 +87,14 @@ snat_list:
             description: NAT rule state
             type: str
             sample: "True"
-        cidr:
-            description: Specifies a subset of the VPC subnet Classless Inter-Domain Routing block or a CIDR block of Direct Connect
-            type: str
-            sample: "null"
         created_at:
             description: Creation time
             type: str
             sample: "yyyy-mm-dd hh:mm:ss"
+        external_service_port:
+            description: Specifies the port for providing external services
+            type: str
+            sample: "123"
         floating_ip_address:
             description: Assigned Floating IP Address
             type: str
@@ -104,19 +104,31 @@ snat_list:
             type: str
             sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
         id:
-            description: ID of the SNAT rule
+            description: ID of the DNAT rule
             type: str
             sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
+        internal_service_port:
+            description: Specifies the port used by ECS/BMS
+            type: str
+            sample: "123"
         nat_gateway_id:
             description: NAT Gateway ID
             type: str
             sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
-        network_id:
-            description: ID of the attached Network
+        port_id:
+            description: Specifies the port ID of an ECS or BMS
             type: str
             sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
+        private_ip:
+            description: Specifies the private IP
+            type: str
+            sample: "10.1.2.3"
+        protocol:
+            description: Specifies the protocol type. Currently TCP(6), UDP(17) and ANY(0)
+            type: str
+            sample: "6"
         project_id:
-            description: ID of the Project where the SNAT rule is located in
+            description: ID of the Project where the DNAT rule is located in
             type: str
             sample: "16d53a84a13b49529d2e2c3646612345"
         source_type:
@@ -127,7 +139,6 @@ snat_list:
             description: NAT rule status
             type: str
             sample: "ACTIVE"
-
 '''
 
 EXAMPLES = '''
