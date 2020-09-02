@@ -1,0 +1,16 @@
+---
+- block:
+    - name: Get volume snapshot info
+      volume_snapshot_info:
+      register: snapshot
+
+    - name: Debug snapshots
+      debug:
+        var: snapshot
+
+    - name: assert result
+      assert:
+        that:
+          - snapshot is success
+          - snapshot is not changed
+          - snapshot.volume_snapshots is defined

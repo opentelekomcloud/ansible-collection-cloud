@@ -16,3 +16,4 @@ action_groups:
     - volume_backup
     - waf_certificate
     - waf_certificate_info
+    - volume_snapshot_info
