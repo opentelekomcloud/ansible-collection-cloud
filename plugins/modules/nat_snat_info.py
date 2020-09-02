@@ -83,7 +83,9 @@ class NATGatewayInfoModule(OTCModule):
         data = []
 
         for raw in self.conn.nat.snat_rules():
-            if ((admin_state_up_filter and not raw.admin_state_up) or
+            if (admin_state_up_filter is None):
+                pass
+            elif ((admin_state_up_filter and not raw.admin_state_up) or
                     (not admin_state_up_filter and raw.admin_state_up)):
                 continue
             if (cidr_filter and raw.cidr != cidr_filter):
