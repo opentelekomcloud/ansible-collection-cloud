@@ -147,7 +147,7 @@ EXAMPLES = '''
   register: dn
 
 - nat_dnat_info:
-    admin_state_up: "true"
+    id: "2f561c37-277e-412a-8f76-0d430b596de5"
   register: dn
 
 - nat_dnat_info:
