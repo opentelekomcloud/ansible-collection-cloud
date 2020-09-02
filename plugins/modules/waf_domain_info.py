@@ -90,14 +90,13 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class WafDomainInfoModule(OTCModule):
     argument_spec = dict(
-        nane=dict(required=False),
+        name=dict(required=False),
         limit=dict(required=False),
         offset=dict(required=False),
         policy_name=dict(required=False)
     )
 
-    # Change it after version with WAF domains come
-    otce_min_version = '0.8.0'
+    otce_min_version = '0.9.0'
 
     def run(self):
         name_filter = self.params['name']

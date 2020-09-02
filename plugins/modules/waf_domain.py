@@ -128,7 +128,7 @@ class WafDomainModule(OTCModule):
     )
 
     # Change it after version with WAF domains come
-    otce_min_version = '0.8.0'
+    otce_min_version = '0.9.0'
 
     def _system_state_change(self, domain):
         state = self.params['state']
