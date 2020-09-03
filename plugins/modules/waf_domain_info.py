@@ -86,17 +86,18 @@ class WafDomainInfoModule(OTCModule):
     otce_min_version = '0.9.0'
 
     def run(self):
-        name_filter = self.params['name']
-
         data = []
-        query = {}
-        if name_filter:
-            query['name'] = self.conn.waf.find_domain(name_or_id=name_filter)
 
-        for raw in self.conn.waf.domains(**query):
-            dt = raw.to_dict()
-            dt.pop('location')
-            data.append(dt)
+        if self.params['name']:
+            raw = self.conn.waf.find_domain(
+                self.params['name'], ignore_missing=True)
+            if raw:
+                data.append(raw.to_dict().pop('location'))
+        else:
+            for raw in self.conn.waf.domains():
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
 
         self.exit(
             changed=False,
