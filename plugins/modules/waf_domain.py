@@ -168,9 +168,9 @@ class WafDomainModule(OTCModule):
                 certificate = self.conn.waf.find_certificate(name_or_id=certificate_filter)
 
             if self.params['proxy']:
-                if self.params['sip_header_name']:
+                if not self.params['sip_header_name']:
                     self.fail_json(msg='sip_header_name should by specified when proxy is set to true.')
-                if self.params['sip_header_list']:
+                if not self.params['sip_header_list']:
                     self.fail_json(msg='sip_header_list should by specified when proxy is set to true.')
 
             if domain:
