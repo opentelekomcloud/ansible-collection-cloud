@@ -91,9 +91,9 @@ class WafDomainInfoModule(OTCModule):
         data = []
         query = {}
         if name_filter:
-            query['name'] = name_filter
+            query['name'] = self.conn.waf.find_domain(name_or_id=name_filter)
 
-        for raw in self.conn.waf.domains(name_or_id=name_filter):
+        for raw in self.conn.waf.domains(**query):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
