@@ -21,21 +21,19 @@ author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Add/Modify/Delete WAF domain from the OTC.
 options:
-  hostname:
+  name:
     description: Specifies the domain name.
     required: true
     type: str
-  certificate_id:
-    description: Specifies the certificate ID.
+  certificate:
+    description: Specifies the certificate.
     type: str
   server:
     description: Specifies the origin server information.
-    required: true
     type: list
     elements: dict
   proxy:
     description: Specifies whether a proxy is configured.
-    required: true
     type: bool
   sip_header_name:
     description: Specifies the type of the source IP header.
@@ -101,7 +99,7 @@ EXAMPLES = '''
 
 # Modify Domain.
 - waf_domain:
-    instance_id: "id"
+    name: test.domain.name
     server: [
       {
         client_protocol: HTTP,
@@ -122,15 +120,20 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class WafDomainModule(OTCModule):
     argument_spec = dict(
-        hostname=dict(required=True, type='str'),
-        certificate_id=dict(required=False),
-        server=dict(required=True, type='list', elements='dict'),
-        proxy=dict(required=True, type='bool'),
+        name=dict(required=True, type='str'),
+        certificate=dict(required=False),
+        server=dict(required=False, type='list', elements='dict'),
+        proxy=dict(required=False, type='bool'),
         sip_header_name=dict(required=False),
         sip_header_list=dict(required=False),
         state=dict(default='present', choices=['absent', 'present']),
     )
-
+    module_kwargs = dict(
+        required_if=[
+            ('state', 'present', ['server', 'proxy']),
+            ('proxy', 'True', ['sip_header_name', 'sip_header_list'])
+        ]
+    )
     otce_min_version = '0.9.0'
 
     def _system_state_change(self, domain):
@@ -143,7 +146,11 @@ class WafDomainModule(OTCModule):
         return False
 
     def run(self):
-        name_filter = self.params['hostname']
+        name_filter = self.params['name']
+        certificate_filter = self.params['certificate']
+
+        if certificate_filter:
+            certificate = self.conn.waf.find_certificate(name_or_id=certificate_filter)
 
         domain = None
         changed = False
