@@ -150,7 +150,7 @@ class WafDomainModule(OTCModule):
         certificate_filter = self.params['certificate']
 
         if certificate_filter:
-            certificate = self.conn.waf.find_certificate(name_or_id=certificate_filter)
+            self.params['certificate'] = self.conn.waf.find_certificate(name_or_id=certificate_filter)
 
         domain = None
         changed = False

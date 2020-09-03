@@ -22,10 +22,7 @@ description:
   - Get WAF Domain info from the OTC or list all domains.
 options:
   name:
-    description: The name of a domain.
-    type: str
-  policy_name:
-    description: Specifies the policy name.
+    description: The name or ID of a domain.
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -83,24 +80,20 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class WafDomainInfoModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=False),
-        policy_name=dict(required=False)
+        name=dict(required=False)
     )
 
     otce_min_version = '0.9.0'
 
     def run(self):
         name_filter = self.params['name']
-        policy_name_filter = self.params['policy_name']
 
         data = []
         query = {}
         if name_filter:
             query['name'] = name_filter
-        if policy_name_filter:
-            query['policy_name'] = policy_name_filter
 
-        for raw in self.conn.waf.domains(**query):
+        for raw in self.conn.waf.domains(name_or_id=name_filter):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
