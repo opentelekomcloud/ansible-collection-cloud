@@ -130,8 +130,7 @@ class WafDomainModule(OTCModule):
     )
     module_kwargs = dict(
         required_if=[
-            ('state', 'present', ['server', 'proxy']),
-            ('proxy', 'True', ['sip_header_name', 'sip_header_list'])
+            ('state', 'present', ['server', 'proxy'])
         ]
     )
     otce_min_version = '0.9.0'

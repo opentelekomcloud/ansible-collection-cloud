@@ -89,10 +89,13 @@ class WafDomainInfoModule(OTCModule):
         data = []
 
         if self.params['name']:
-            raw = self.conn.waf.find_domain(
-                self.params['name'], ignore_missing=True)
+            raw = self.conn.waf.find_domain(name_or_id=self.params['name'], ignore_missing=True)
             if raw:
-                data.append(raw.to_dict().pop('location'))
+                if not raw.server:
+                    raw = self.conn.waf.get_domain(raw.id)
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
         else:
             for raw in self.conn.waf.domains():
                 dt = raw.to_dict()
