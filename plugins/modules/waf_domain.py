@@ -37,11 +37,13 @@ options:
     type: bool
   sip_header_name:
     description: Specifies the type of the source IP header.
+    choices: [default, cloudflare, akamai, custom]
     type: str
   sip_header_list:
     description: Specifies the HTTP request header
      for identifying the real source IP address.
-    type: str
+    type: list
+    elements: str
   state:
     description:
       - Should the resource be present or absent.
@@ -124,8 +126,8 @@ class WafDomainModule(OTCModule):
         certificate=dict(required=False),
         server=dict(required=False, type='list', elements='dict'),
         proxy=dict(required=False, type='bool'),
-        sip_header_name=dict(required=False),
-        sip_header_list=dict(required=False),
+        sip_header_name=dict(required=False, choices=['default', 'cloudflare', 'akamai', 'custom']),
+        sip_header_list=dict(required=False, type='list', elements='str'),
         state=dict(default='present', choices=['absent', 'present']),
     )
     module_kwargs = dict(
@@ -146,18 +148,11 @@ class WafDomainModule(OTCModule):
 
     def run(self):
         name_filter = self.params['name']
-        certificate_filter = self.params['certificate']
-
-        if certificate_filter:
-            self.params['certificate'] = self.conn.waf.find_certificate(name_or_id=certificate_filter)
 
         domain = None
         changed = False
 
         domain = self.conn.waf.find_domain(name_or_id=name_filter)
-
-        if self.check_mode:
-            self.exit_json(changed=self._system_state_change(domain))
 
         if self.params['state'] == 'absent':
             changed = False
@@ -167,8 +162,22 @@ class WafDomainModule(OTCModule):
                 changed = True
 
         elif self.params['state'] == 'present':
+            certificate_filter = self.params['certificate']
+            certificate = None
+            if certificate_filter:
+                certificate = self.conn.waf.find_certificate(name_or_id=certificate_filter)
+
+            if self.params['proxy']:
+                if self.params['sip_header_name']:
+                    self.fail_json(msg='sip_header_name should by specified when proxy is set to true.')
+                if self.params['sip_header_list']:
+                    self.fail_json(msg='sip_header_list should by specified when proxy is set to true.')
+
             if domain:
-                domain = self.conn.waf.update_domain(domain, **self.params)
+                # check attrs
+                if certificate.id:
+                    if domain.certificate.id != certificate.id:
+                        domain = self.conn.waf.update_domain(domain, **self.params)
                 self.exit(
                     changed=True,
                     waf_domain=domain.to_dict()
