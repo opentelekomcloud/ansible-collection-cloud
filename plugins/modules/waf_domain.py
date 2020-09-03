@@ -32,6 +32,7 @@ options:
     description: Specifies the origin server information.
     required: true
     type: list
+    elements: dict
   proxy:
     description: Specifies whether a proxy is configured.
     required: true
@@ -123,14 +124,13 @@ class WafDomainModule(OTCModule):
     argument_spec = dict(
         hostname=dict(required=True, type='str'),
         certificate_id=dict(required=False),
-        server=dict(required=True, type='list'),
+        server=dict(required=True, type='list', elements='dict'),
         proxy=dict(required=True, type='bool'),
         sip_header_name=dict(required=False),
         sip_header_list=dict(required=False),
         state=dict(default='present', choices=['absent', 'present']),
     )
 
-    # Change it after version with WAF domains come
     otce_min_version = '0.9.0'
 
     def _system_state_change(self, domain):
