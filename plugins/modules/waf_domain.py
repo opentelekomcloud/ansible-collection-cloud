@@ -25,7 +25,7 @@ options:
     description: Specifies the domain name.
     required: true
     type: str
-  certificate_id:
+  certificate:
     description: Specifies the certificate.
     type: str
   server:
@@ -123,7 +123,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class WafDomainModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True, type='str'),
-        certificate_id=dict(required=False),
+        certificate=dict(required=False),
         server=dict(required=False, type='list', elements='dict'),
         proxy=dict(required=False, type='bool'),
         sip_header_name=dict(required=False, choices=['default', 'cloudflare', 'akamai', 'custom']),
@@ -165,7 +165,7 @@ class WafDomainModule(OTCModule):
 
         elif self.params['state'] == 'present':
             query = {}
-            certificate_filter = self.params['certificate_id']
+            certificate_filter = self.params['certificate']
             server_filter = self.params['server']
             proxy_filter = self.params['proxy']
             sip_header_name_filter = self.params['sip_header_name']
