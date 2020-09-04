@@ -148,7 +148,7 @@ class WafDomainModule(OTCModule):
 
     def _check_server_client_protocol(self, server: list):
         for srv in server:
-            if srv['client_protocol'] is 'HTTPS':
+            if srv['client_protocol'] == 'HTTPS':
                 return True
         return False
 
@@ -217,7 +217,7 @@ class WafDomainModule(OTCModule):
                     changed=True,
                     waf_domain=domain.to_dict()
                 )
-
+            self.fail_json(msg='Query is: %s' % query)
             domain = self.conn.waf.create_domain(**query)
             self.exit(
                 changed=True,
