@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: nat_gateway_info
 short_description: Get NAT gateways
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.0.4"
 author: "Tino Schreiber (@tischrei)"
 description:
   - Get NAT gateway info from the OTC.
@@ -85,18 +85,14 @@ nat_gateways:
             description: Description of the NAT gateway
             type: str
             sample: "My Gateway"
-        id:
-            description: Unique UUID.
+        gateway:
+            description: Name or ID of the NAT gateway
             type: str
-            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+            sample: "my-gateway"
         internal_network_id:
             description: Network ID where the NAT gateway is attached to.
             type: str
             sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
-        name:
-            description: Name of the gateway.
-            type: str
-            sample: "nat-1234"
         project_id:
             description: Project ID where the NAT gateway is located in.
             type: str
@@ -121,7 +117,7 @@ EXAMPLES = '''
   register: gw
 
 - nat_gateway_info:
-    name: "my_gateway"
+    gateway: "my_gateway"
   register: gw
 
 - nat_gateway_info:
@@ -140,58 +136,55 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class NATGatewayInfoModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=False),
-        id=dict(required=False),
         admin_state_up=dict(required=False, type='bool'),
         created_at=dict(required=False),
         description=dict(required=False),
+        gateway=dict(required=False),
         internal_network_id=dict(required=False),
+        project_id=dict(required=False),
         router_id=dict(required=False),
         spec=dict(required=False, choices=["1", "2", "3", "4"]),
-        status=dict(required=False),
-        project_id=dict(required=False)
+        status=dict(required=False)
     )
 
     def run(self):
-        name_filter = self.params['name']
-        id_filter = self.params['id']
-        admin_state_up_filter = self.params['admin_state_up']
-        created_at_filter = self.params['created_at']
-        description_filter = self.params['description']
-        internal_network_id_filter = self.params['internal_network_id']
-        router_id_filter = self.params['router_id']
-        spec_filter = self.params['spec']
-        status_filter = self.params['status']
-        project_id_filter = self.params['project_id']
 
         data = []
+        query = {}
 
-        for raw in self.conn.nat.gateways():
-            if (name_filter and raw.name != name_filter):
-                continue
-            if (id_filter and raw.id != id_filter):
-                continue
-            if (admin_state_up_filter is None):
-                pass
-            elif ((admin_state_up_filter and not raw.admin_state_up) or
-                    (not admin_state_up_filter and raw.admin_state_up)):
-                continue
-            if (created_at_filter and raw.created_at != created_at_filter):
-                continue
-            if (description_filter and raw.description
-                    != description_filter):
-                continue
-            if (internal_network_id_filter and raw.internal_network_id
-                    != internal_network_id_filter):
-                continue
-            if (router_id_filter and raw.router_id != router_id_filter):
-                continue
-            if (spec_filter and raw.spec != spec_filter):
-                continue
-            if (status_filter and raw.status != status_filter):
-                continue
-            if (project_id_filter and raw.project_id != project_id_filter):
-                continue
+        if self.params['gateway']:
+            gw = self.conn.nat.find_gateway(
+                     name_or_id=self.params['gateway'],
+                     ignore_missing=True)
+            if gw:
+                query['id'] = gw.id
+            else:
+                self.exit(
+                    changed=False,
+                    nat_gateways=[],
+                    message=('No gateway found with name or id: %s' %
+                             self.params['gateway'])
+                )
+
+        if self.params['admin_state_up']:
+            query['admin_state_up'] = self.params['admin_state_up']
+        if self.params['created_at']:
+            query['created_at'] = self.params['created_at']
+        if self.params['description']:
+            query['description'] = self.params['description']
+        if self.params['internal_network_id']:
+            query['internal_network_id'] = self.params[
+                                               'internal_network_id']
+        if self.params['project_id']:
+            query['project_id'] = self.params['project_id']
+        if self.params['router_id']:
+            query['router_id'] = self.params['router_id']
+        if self.params['spec']:
+            query['spec'] = self.params['spec']
+        if self.params['status']:
+            query['status'] = self.params['status']
+
+        for raw in self.conn.nat.gateways(**query):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
