@@ -146,6 +146,12 @@ class WafDomainModule(OTCModule):
             return True
         return False
 
+    def check_server_client_protocol(self, server: list):
+        for srv in server:
+            if srv['client_protocol'] is 'HTTPS':
+                return True
+        return False
+
     def run(self):
         name_filter = self.params['name']
 
@@ -162,28 +168,50 @@ class WafDomainModule(OTCModule):
                 changed = True
 
         elif self.params['state'] == 'present':
-            certificate_filter = self.params['certificate']
+            query = {}
             certificate = None
-            if certificate_filter:
-                certificate = self.conn.waf.find_certificate(name_or_id=certificate_filter)
+            certificate_filter = self.params['certificate']
+            server_filter = self.params['server']
+            proxy_filter = self.params['proxy']
+            sip_header_name_filter = self.params['sip_header_name']
+            sip_header_list_filter = self.params['sip_header_list']
 
-            if self.params['proxy']:
-                if not self.params['sip_header_name']:
-                    self.fail_json(msg='sip_header_name should by specified when proxy is set to true.')
-                if not self.params['sip_header_list']:
-                    self.fail_json(msg='sip_header_list should by specified when proxy is set to true.')
+            if name_filter:
+                query['name'] = name_filter
+
+            if server_filter:
+                if self.check_server_client_protocol(server_filter):
+                    if not certificate_filter:
+                        self.fail_json(msg='certificate should by specified'
+                                           ' when client_protocol is equal to HTTPS.')
+                    else:
+                        query['certificate'] = self.conn.waf.find_certificate(name_or_id=certificate_filter).id
+                query['server'] = server_filter
+            else:
+                self.fail_json(msg='server should by specified when state is set to present.')
+
+            if proxy_filter:
+                query['proxy'] = proxy_filter
+                if not sip_header_name_filter and not sip_header_list_filter:
+                    self.fail_json(msg='sip_header_name and sip_header_list'
+                                       ' should by specified when proxy is set to true.')
+                else:
+                    query['sip_header_name'] = sip_header_name_filter
+                    query['sip_header_list'] = sip_header_list_filter
+            else:
+                self.fail_json(msg='proxy should by specified when state is set to present.')
 
             if domain:
                 # check attrs
                 if certificate.id:
                     if domain.certificate.id != certificate.id:
-                        domain = self.conn.waf.update_domain(domain, **self.params)
+                        domain = self.conn.waf.update_domain(domain, **query)
                 self.exit(
                     changed=True,
                     waf_domain=domain.to_dict()
                 )
 
-            domain = self.conn.waf.create_domain(**self.params)
+            domain = self.conn.waf.create_domain(**query)
             self.exit(
                 changed=True,
                 waf_domain=domain.to_dict()
