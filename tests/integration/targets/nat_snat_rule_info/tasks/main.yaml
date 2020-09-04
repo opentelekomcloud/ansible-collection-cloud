@@ -1,9 +1,7 @@
 ---
 - block:
-    - name: Get NAT gateway info
+    - name: Get SNAT rule info
       nat_snat_rule_info:
-        cloud: "{{ test_cloud }}"
-
       register: sn
 
     - name: debug configs

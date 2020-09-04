@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: nat_snat_rule_info
 short_description: Get SNAT rule details
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.0.4"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get a SNAT Rule Details.
@@ -24,7 +24,7 @@ options:
   admin_state_up:
     description:
       - NAT rule state.
-    type: str
+    type: bool
   cidr:
     description:
       - Specifies a subset of the VPC subnet Classless Inter-Domain Routing block or a CIDR block of Direct Connect
@@ -33,21 +33,17 @@ options:
     description:
       - Creation time of the rule
     type: str
-  floating_ip_address:
+  floating_ip:
     description:
-      - Assigned floating IP
+      - IP or ID of floating IP address.
     type: str
-  floating_ip_id:
+  gateway:
     description:
-      - ID of the floating IP
+      - Name or ID of the NAT gateway
     type: str
-  nat_gateway_id:
+  network:
     description:
-      - ID of the NAT gateway
-    type: str
-  network_id:
-    description:
-      - ID of the assigned network
+      - Name or ID of the assigned network
     type: str
   project_id:
     description:
@@ -60,7 +56,7 @@ options:
   source_type:
     description:
       - 0 Either network id or cidr can be specified in VPC ... 1 only cidr can be specified over Direct Connect
-    type: str
+    type: int
   status:
     description:
       - rule enabled or disable
@@ -91,20 +87,20 @@ snat_rules:
             description: Assigned Floating IP Address
             type: str
             sample: "123.1.2.3"
-        floating_ip_id:
-            description: Assigned Floating IP ID
+        floating_ip:
+            description: IP or ID of Floating IP address.
             type: str
-            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+            sample: "123.1.2.3"
+        gateway:
+            description: Name or ID of the NAT gateway
+            type: str
+            sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
         id:
             description: ID of the SNAT rule
             type: str
             sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
-        nat_gateway_id:
-            description: NAT Gateway ID
-            type: str
-            sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
-        network_id:
-            description: ID of the attached Network
+        network:
+            description: Name or ID of the attached Network
             type: str
             sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
         project_id:
@@ -113,8 +109,8 @@ snat_rules:
             sample: "16d53a84a13b49529d2e2c3646612345"
         source_type:
             description: 0 Either network id or cidr can be specified in VPC ... 1 only cidr can be specified over Direct Connect
-            type: str
-            sample: "0"
+            type: int
+            sample: 0
         status:
             description: NAT rule status
             type: str
@@ -143,21 +139,20 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class SNATRuleInfoModule(OTCModule):
     argument_spec = dict(
-        admin_state_up=dict(required=False),
+        admin_state_up=dict(required=False, type='bool'),
         cidr=dict(required=False),
         created_at=dict(required=False),
-        floating_ip_address=dict(required=False),
-        floating_ip_id=dict(required=False),
-        nat_gateway_id=dict(required=False),
-        network_id=dict(required=False),
+        floating_ip=dict(required=False),
+        gateway=dict(required=False),
+        network=dict(required=False),
         rule=dict(required=False),
-        source_type=dict(required=False),
+        source_type=dict(required=False, type='int'),
         status=dict(required=False),
         project_id=dict(required=False)
     )
 
     def run(self):
-      
+
         data = []
         query = {}
 
@@ -179,14 +174,45 @@ class SNATRuleInfoModule(OTCModule):
             query['cidr'] = self.params['cidr']
         if self.params['created_at']:
             query['created_at'] = self.params['created_at']
-        if self.params['floating_ip_address']:
-            query['floating_ip_address'] = self.params['floating_ip_address']
-        if self.params['floating_ip_id']:
-            query['floating_ip_id'] = self.params['floating_ip_id']
-        if self.params['nat_gateway_id']:
-            query['nat_gateway_id'] = self.params['nat_gateway_id']
-        if self.params['network_id']:
-            query['network_id'] = self.params['network_id']
+        if self.params['floating_ip']:
+            rs = self.conn.network.find_ip(
+                name_or_id=self.params['floating_ip'],
+                ignore_missing=True)
+            if rs:
+                query['floating_ip_id'] = rs.id
+            else:
+                self.exit(
+                    changed=False,
+                    snat_rules=[],
+                    message=('No Floating IP found with name or id: %s' %
+                             self.params['floating_ip'])
+                )
+        if self.params['gateway']:
+            rs = self.conn.nat.find_gateway(
+                name_or_id=self.params['gateway'],
+                ignore_missing=True)
+            if rs:
+                query['nat_gateway_id'] = rs.id
+            else:
+                self.exit(
+                    changed=False,
+                    snat_rules=[],
+                    message=('No NAT gateway found with name or id: %s' %
+                             self.params['gateway'])
+                )
+        if self.params['network']:
+            rs = self.conn.network.find_network(
+                name_or_id=self.params['network'],
+                ignore_missing=True)
+            if rs:
+                query['network_id'] = rs.id
+            else:
+                self.exit(
+                    changed=False,
+                    snat_rules=[],
+                    message=('No network found with name or id: %s' %
+                             self.params['network'])
+                )
         if self.params['project_id']:
             query['project_id'] = self.params['project_id']
         if self.params['source_type']:

@@ -7,11 +7,11 @@
 
     - name: debug configs
       debug:
-        var: dn.dnat_list
+        var: dn.dnat_rules
 
     - name: assert result
       assert:
         that:
           - dn is success
           - dn is not changed
-          - dn.dnat_list is defined
+          - dn.dnat_rules is defined
