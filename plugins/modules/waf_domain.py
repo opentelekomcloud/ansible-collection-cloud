@@ -130,11 +130,7 @@ class WafDomainModule(OTCModule):
         sip_header_list=dict(required=False, type='list', elements='str'),
         state=dict(default='present', choices=['absent', 'present']),
     )
-    module_kwargs = dict(
-        required_if=[
-            ('state', 'present', ['server', 'proxy'])
-        ]
-    )
+
     otce_min_version = '0.9.0'
 
     def _system_state_change(self, domain):
@@ -169,7 +165,6 @@ class WafDomainModule(OTCModule):
 
         elif self.params['state'] == 'present':
             query = {}
-            certificate = None
             certificate_filter = self.params['certificate']
             server_filter = self.params['server']
             proxy_filter = self.params['proxy']
@@ -179,6 +174,13 @@ class WafDomainModule(OTCModule):
             if name_filter:
                 query['name'] = name_filter
 
+            if certificate_filter:
+                try:
+                    res = self.conn.waf.find_certificate(name_or_id=certificate_filter)
+                    query['certificate_id'] = res.id
+                except self.sdk.exceptions.ResourceNotFound:
+                    self.fail_json(msg='certificate not found.')
+
             if server_filter:
                 for srv in server_filter:
                     srv['client_protocol'] = srv['client_protocol'].upper()
@@ -187,14 +189,8 @@ class WafDomainModule(OTCModule):
                     if not certificate_filter:
                         self.fail_json(msg='certificate should by specified'
                                            ' when client_protocol is equal to HTTPS.')
-                    else:
-                        try:
-                            res = self.conn.waf.find_certificate(name_or_id=certificate_filter)
-                            query['certificate_id'] = res.id
-                        except self.sdk.exceptions.ResourceNotFound:
-                            self.fail_json(msg='certificate not found.')
                 query['server'] = server_filter
-            else:
+            if not server_filter and not domain:
                 self.fail_json(msg='server should by specified when state is set to present.')
 
             if proxy_filter:
@@ -205,19 +201,20 @@ class WafDomainModule(OTCModule):
                 else:
                     query['sip_header_name'] = sip_header_name_filter
                     query['sip_header_list'] = sip_header_list_filter
-            else:
+            if not proxy_filter and not domain:
                 self.fail_json(msg='proxy should by specified when state is set to present.')
+
+            domain = self.conn.waf.create_domain(**query)
 
             if domain:
                 # check attrs
-                if certificate.id:
-                    if domain.certificate.id != certificate.id:
+                if certificate_filter:
+                    if domain.certificate.id != query['certificate_id']:
                         domain = self.conn.waf.update_domain(domain, **query)
                 self.exit(
                     changed=True,
                     waf_domain=domain.to_dict()
                 )
-            domain = self.conn.waf.create_domain(**query)
             self.exit(
                 changed=True,
                 waf_domain=domain.to_dict()
