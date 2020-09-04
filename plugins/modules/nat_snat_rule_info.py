@@ -12,7 +12,7 @@
 # limitations under the License.
 DOCUMENTATION = '''
 ---
-module: nat_snat_info
+module: nat_snat_rule_info
 short_description: Get SNAT rule details
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.1"
@@ -41,10 +41,6 @@ options:
     description:
       - ID of the floating IP
     type: str
-  id:
-    description:
-      - ID the rule
-    type: str
   nat_gateway_id:
     description:
       - ID of the NAT gateway
@@ -56,6 +52,10 @@ options:
   project_id:
     description:
       - Filters SNAT rules for the project ID
+    type: str
+  rule:
+    description:
+      - ID the rule
     type: str
   source_type:
     description:
@@ -70,7 +70,7 @@ options:
 
 RETURN = '''
 ---
-snat_list:
+snat_rules:
     description: List of SNAT rules.
     type: complex
     returned: On Success.
@@ -124,14 +124,15 @@ snat_list:
 
 EXAMPLES = '''
 # Get configs versions.
-- nat_snat_info:
+- nat_snat_rule_info:
+    rule: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
   register: sn
 
-- nat_snat_info:
+- nat_snat_rule_info:
     status: "ACTIVE"
   register: sn
 
-- nat_snat_info:
+- nat_snat_rule_info:
     status: "ACTIVE"
     source_type: "0"
   register: sn
@@ -140,77 +141,72 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class NATGatewayInfoModule(OTCModule):
+class SNATRuleInfoModule(OTCModule):
     argument_spec = dict(
         admin_state_up=dict(required=False),
         cidr=dict(required=False),
         created_at=dict(required=False),
         floating_ip_address=dict(required=False),
         floating_ip_id=dict(required=False),
-        id=dict(required=False),
         nat_gateway_id=dict(required=False),
         network_id=dict(required=False),
+        rule=dict(required=False),
         source_type=dict(required=False),
         status=dict(required=False),
         project_id=dict(required=False)
     )
 
     def run(self):
-        admin_state_up_filter = self.params['admin_state_up']
-        cidr_filter = self.params['cidr']
-        created_at_filter = self.params['created_at']
-        floating_ip_address_filter = self.params['floating_ip_address']
-        floating_ip_id_filter = self.params['floating_ip_id']
-        id_filter = self.params['id']
-        nat_gateway_id_filter = self.params['nat_gateway_id']
-        network_id_filter = self.params['network_id']
-        source_type_filter = self.params['source_type']
-        status_filter = self.params['status']
-        project_id_filter = self.params['project_id']
-
+      
         data = []
+        query = {}
 
-        for raw in self.conn.nat.snat_rules():
-            if (admin_state_up_filter is None):
-                pass
-            elif ((admin_state_up_filter and not raw.admin_state_up) or
-                    (not admin_state_up_filter and raw.admin_state_up)):
-                continue
-            if (cidr_filter and raw.cidr != cidr_filter):
-                continue
-            if (created_at_filter and raw.created_at != created_at_filter):
-                continue
-            if (floating_ip_address_filter and raw.floating_ip_address
-                    != floating_ip_address_filter):
-                continue
-            if (floating_ip_id_filter and raw.floating_ip_id
-                    != floating_ip_id_filter):
-                continue
-            if (id_filter and raw.id != id_filter):
-                continue
-            if (nat_gateway_id_filter and raw.nat_gateway_id
-                    != nat_gateway_id_filter):
-                continue
-            if (network_id_filter and raw.network_id != network_id_filter):
-                continue
-            if (source_type_filter and raw.source_type != source_type_filter):
-                continue
-            if (status_filter and raw.status != status_filter):
-                continue
-            if (project_id_filter and raw.project_id != project_id_filter):
-                continue
+        if self.params['rule']:
+            snat = self.conn.nat.get_snat_rule(snat_rule=self.params['rule'])
+            if snat:
+                query['id'] = snat.id
+            else:
+                self.exit(
+                    changed=False,
+                    snat_rules=[],
+                    message=('No SNAT rule found with id: %s' %
+                             self.params['rule'])
+                )
+
+        if self.params['admin_state_up']:
+            query['admin_state_up'] = self.params['admin_state_up']
+        if self.params['cidr']:
+            query['cidr'] = self.params['cidr']
+        if self.params['created_at']:
+            query['created_at'] = self.params['created_at']
+        if self.params['floating_ip_address']:
+            query['floating_ip_address'] = self.params['floating_ip_address']
+        if self.params['floating_ip_id']:
+            query['floating_ip_id'] = self.params['floating_ip_id']
+        if self.params['nat_gateway_id']:
+            query['nat_gateway_id'] = self.params['nat_gateway_id']
+        if self.params['network_id']:
+            query['network_id'] = self.params['network_id']
+        if self.params['project_id']:
+            query['project_id'] = self.params['project_id']
+        if self.params['source_type']:
+            query['source_type'] = self.params['source_type']
+        if self.params['status']:
+            query['status'] = self.params['status']
+
+        for raw in self.conn.nat.snat_rules(**query):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
 
         self.exit(
             changed=False,
-            snat_list=data
+            snat_rules=data
         )
 
 
 def main():
-    module = NATGatewayInfoModule()
+    module = SNATRuleInfoModule()
     module()
 
 

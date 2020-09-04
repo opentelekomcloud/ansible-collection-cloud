@@ -1,7 +1,7 @@
 ---
 - block:
     - name: Get DNAT rule info
-      nat_dnat_info:
+      nat_dnat_rule_info:
         cloud: "{{ test_cloud }}"
       register: dn
 
