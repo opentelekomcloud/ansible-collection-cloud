@@ -154,8 +154,8 @@ class NATGatewayInfoModule(OTCModule):
 
         if self.params['gateway']:
             gw = self.conn.nat.find_gateway(
-                     name_or_id=self.params['gateway'],
-                     ignore_missing=True)
+                name_or_id=self.params['gateway'],
+                ignore_missing=True)
             if gw:
                 query['id'] = gw.id
             else:
@@ -174,7 +174,7 @@ class NATGatewayInfoModule(OTCModule):
             query['description'] = self.params['description']
         if self.params['internal_network_id']:
             query['internal_network_id'] = self.params[
-                                               'internal_network_id']
+                'internal_network_id']
         if self.params['project_id']:
             query['project_id'] = self.params['project_id']
         if self.params['router_id']:
