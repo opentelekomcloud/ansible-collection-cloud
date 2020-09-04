@@ -207,7 +207,7 @@ class WafDomainModule(OTCModule):
             if domain:
                 # check attrs
                 if certificate_filter:
-                    if domain.certificate.id != query['certificate_id']:
+                    if domain.certificate_id != query['certificate_id']:
                         domain = self.conn.waf.update_domain(domain, **query)
                 self.exit(
                     changed=True,
