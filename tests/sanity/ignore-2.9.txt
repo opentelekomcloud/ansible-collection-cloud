@@ -4,6 +4,7 @@ plugins/modules/cce_cluster.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_cert_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_info.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer.py validate-modules:missing-gplv3-license
+plugins/modules/loadbalancer_info.py validate-modules:missing-gplv3-license
 plugins/modules/nat_dnat_rule_info.py validate-modules:missing-gplv3-license
 plugins/modules/nat_gateway_info.py validate-modules:missing-gplv3-license
 plugins/modules/nat_snat_rule_info.py validate-modules:missing-gplv3-license
