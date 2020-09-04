@@ -122,7 +122,7 @@
           - res is success
           - res.waf_domains is defined
           - res.waf_domains[0].id is defined
-          - res.waf_domains[0].certificate == cert2.waf_certificate.id
+          - res.waf_domains[0].certificate_id == cert2.waf_certificate.id
 
     - name: Get WAF Domain by ID
       waf_domain_info:
