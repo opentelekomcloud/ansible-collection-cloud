@@ -146,7 +146,7 @@ class WafDomainModule(OTCModule):
             return True
         return False
 
-    def check_server_client_protocol(self, server: list):
+    def _check_server_client_protocol(self, server: list):
         for srv in server:
             if srv['client_protocol'] is 'HTTPS':
                 return True
@@ -180,12 +180,19 @@ class WafDomainModule(OTCModule):
                 query['name'] = name_filter
 
             if server_filter:
-                if self.check_server_client_protocol(server_filter):
+                for srv in server_filter:
+                    srv['client_protocol'] = srv['client_protocol'].upper()
+                    srv['server_protocol'] = srv['server_protocol'].upper()
+                if self._check_server_client_protocol(server_filter):
                     if not certificate_filter:
                         self.fail_json(msg='certificate should by specified'
                                            ' when client_protocol is equal to HTTPS.')
                     else:
-                        query['certificate'] = self.conn.waf.find_certificate(name_or_id=certificate_filter).id
+                        try:
+                            res = self.conn.waf.find_certificate(name_or_id=certificate_filter)
+                            query['certificate'] = res.id
+                        except self.sdk.exceptions.ResourceNotFound:
+                            self.fail_json(msg='certificate not found.')
                 query['server'] = server_filter
             else:
                 self.fail_json(msg='server should by specified when state is set to present.')
