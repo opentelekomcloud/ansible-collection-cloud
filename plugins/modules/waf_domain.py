@@ -217,7 +217,6 @@ class WafDomainModule(OTCModule):
                     changed=True,
                     waf_domain=domain.to_dict()
                 )
-            self.fail_json(msg='Query is: %s' % query)
             domain = self.conn.waf.create_domain(**query)
             self.exit(
                 changed=True,
