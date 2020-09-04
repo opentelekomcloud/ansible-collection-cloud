@@ -190,7 +190,7 @@ class WafDomainModule(OTCModule):
                     else:
                         try:
                             res = self.conn.waf.find_certificate(name_or_id=certificate_filter)
-                            query['certificate'] = res.id
+                            query['certificate_id'] = res.id
                         except self.sdk.exceptions.ResourceNotFound:
                             self.fail_json(msg='certificate not found.')
                 query['server'] = server_filter
