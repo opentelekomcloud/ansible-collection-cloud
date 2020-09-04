@@ -32,17 +32,13 @@ options:
     description:
       - Description of the NAT gateway
     type: str
-  id:
+  gateway:
     description:
-      - ID of the NAT gateway.
+      - Name or ID of the NAT gateway.
     type: str
   internal_network_id:
     description:
       - Network ID where the NAT gateway is attached to.
-    type: str
-  name:
-    description:
-      - Name of the NAT gateway.
     type: str
   project_id:
     description:
@@ -85,14 +81,18 @@ nat_gateways:
             description: Description of the NAT gateway
             type: str
             sample: "My Gateway"
-        gateway:
-            description: Name or ID of the NAT gateway
+        id:
+            description: ID of the NAT gateway
             type: str
             sample: "my-gateway"
         internal_network_id:
             description: Network ID where the NAT gateway is attached to.
             type: str
             sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
+        name:
+            description: Name of the NAT gateway.
+            type: str
+            sample: "my-gateway"
         project_id:
             description: Project ID where the NAT gateway is located in.
             type: str
