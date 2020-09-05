@@ -135,6 +135,9 @@ class WafDomainModule(OTCModule):
         sip_header_list=dict(required=False, type='list', elements='str'),
         state=dict(default='present', choices=['absent', 'present']),
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     otce_min_version = '0.9.0'
 
@@ -167,6 +170,9 @@ class WafDomainModule(OTCModule):
         if domain:
             if not domain.server:
                 domain = self.conn.waf.get_domain(domain.id)
+
+        if self.check_mode:
+            self.exit_json(changed=self._system_state_change(domain))
 
         if self.params['state'] == 'absent':
             changed = False
