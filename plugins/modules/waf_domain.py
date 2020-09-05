@@ -30,10 +30,10 @@ options:
     type: str
   server:
     description: Specifies the origin server information.
-      Each element contains client_protocol: str (HTTP and HTTPS),
-      server_protocol: str (HTTP and HTTPS),
-      address: str (IP address or domain name),
-      port: int (from 0 to 65535)
+      Each element contains client_protocol (HTTP or HTTPS),
+      server_protocol (HTTP or HTTPS),
+      address (IP address or domain name),
+      port (from 0 to 65535)
     type: list
     elements: dict
   proxy:
@@ -115,7 +115,7 @@ EXAMPLES = '''
 - waf_domain:
     name: "{{ domain_name }}"
     certificate: "{{ cert_name }}"
-    
+
 # Delete Domain.
 - waf_domain:
     name: "{{ domain_id }}"
