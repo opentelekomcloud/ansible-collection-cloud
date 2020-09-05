@@ -194,15 +194,14 @@ class WafDomainModule(OTCModule):
                 for srv in server_filter:
                     srv['client_protocol'] = srv['client_protocol'].upper()
                     srv['server_protocol'] = srv['server_protocol'].upper()
+            if server_filter and not domain:
                 if self._check_server_client_protocol(server_filter):
                     if not certificate_filter:
                         self.fail_json(msg='certificate should by specified'
                                            ' when client_protocol is equal to HTTPS.')
                 query['server'] = server_filter
-            if not server_filter and not domain:
-                self.fail_json(msg='server should by specified when state is set to present.')
 
-            if proxy_filter:
+            if proxy_filter and not domain:
                 query['proxy'] = proxy_filter
                 if not sip_header_name_filter and not sip_header_list_filter:
                     self.fail_json(msg='sip_header_name and sip_header_list'
@@ -210,8 +209,6 @@ class WafDomainModule(OTCModule):
                 else:
                     query['sip_header_name'] = sip_header_name_filter
                     query['sip_header_list'] = sip_header_list_filter
-            if not proxy_filter and not domain:
-                self.fail_json(msg='proxy should by specified when state is set to present.')
 
             if domain:
                 mquery = {}
