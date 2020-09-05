@@ -126,9 +126,9 @@
           - domain_modified is success
           - domain_modified is changed
           - domain.waf_domain is defined
-          - domain.waf_domain.server[0].client_protocol == "HTTPS"
-          - domain.waf_domain.server[0].server_protocol == "HTTPS"
-          - domain.waf_domain.server[0].address == "4.3.2.1"
+          - "'HTTPS' in domain.waf_domain.server[0].client_protocol"
+          - "'HTTPS' domain.waf_domain.server[0].server_protocol"
+          - "'4.3.2.1' in domain.waf_domain.server[0].address"
           - domain.waf_domain.server[0].port|int == 8080
 
     - name: Update certificate reference in the domain
