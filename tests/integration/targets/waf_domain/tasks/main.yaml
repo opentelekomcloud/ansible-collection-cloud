@@ -105,7 +105,7 @@
           - domain.waf_domain is defined
           - domain.waf_domain.id is defined
 
-    - name: Update domain server
+    - name: Update domain server list
       waf_domain:
         state: present
         name: "{{ domain_name }}"
@@ -126,10 +126,7 @@
           - domain_modified is success
           - domain_modified is changed
           - domain.waf_domain is defined
-          - "'HTTPS' in domain.waf_domain.server[0].client_protocol"
-          - "'HTTPS' domain.waf_domain.server[0].server_protocol"
-          - "'4.3.2.1' in domain.waf_domain.server[0].address"
-          - domain.waf_domain.server[0].port|int == 8080
+          - domain.waf_domain.id is defined
 
     - name: Update certificate reference in the domain
       waf_domain:
