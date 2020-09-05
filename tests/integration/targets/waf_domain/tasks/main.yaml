@@ -105,6 +105,32 @@
           - domain.waf_domain is defined
           - domain.waf_domain.id is defined
 
+    - name: Update domain server
+      waf_domain:
+        state: present
+        name: "{{ domain_name }}"
+        server:
+          - client_protocol: https
+            server_protocol: https
+            address: 4.3.2.1
+            port: 8080
+        proxy: true
+        sip_header_name: default
+        sip_header_list:
+          - X-Forwarded-For
+      register: domain_modified
+
+    - name: assert result
+      assert:
+        that:
+          - domain_modified is success
+          - domain_modified is changed
+          - domain.waf_domain is defined
+          - domain.waf_domain.server[0].client_protocol == HTTPS
+          - domain.waf_domain.server[0].server_protocol == HTTPS
+          - domain.waf_domain.server[0].address == 4.3.2.1
+          - domain.waf_domain.server[0].port == 8080
+
     - name: Update certificate reference in the domain
       waf_domain:
         name: "{{ domain_name }}"

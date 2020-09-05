@@ -30,6 +30,10 @@ options:
     type: str
   server:
     description: Specifies the origin server information.
+      Each element contains client_protocol: str (HTTP and HTTPS),
+      server_protocol: str (HTTP and HTTPS),
+      address: str (IP address or domain name),
+      port: int (from 0 to 65535)
     type: list
     elements: dict
   proxy:
@@ -98,22 +102,23 @@ waf_domain:
 EXAMPLES = '''
 # Create Domain.
 - waf_domain:
+    name: test.domain.name
+    server:
+      - client_protocol: https
+        server_protocol: https
+        address: 4.3.2.1
+        port: 8080
+    proxy: False
+  state: present
 
 # Modify Domain.
 - waf_domain:
-    name: test.domain.name
-    server: [
-      {
-        client_protocol: HTTP,
-        server_protocol: HTTP,
-        address: 192.168.0.100,
-        port: 8888
-      }
-    ]
-  state: absent
-
+    name: "{{ domain_name }}"
+    certificate: "{{ cert_name }}"
+    
 # Delete Domain.
 - waf_domain:
+    name: "{{ domain_id }}"
   state: absent
 '''
 
@@ -147,6 +152,10 @@ class WafDomainModule(OTCModule):
             if srv['client_protocol'] == 'HTTPS':
                 return True
         return False
+
+    def _compare_servers_list(self, old, new):
+        pairs = zip(old, new)
+        return any(x != y for x, y in pairs)
 
     def run(self):
         name_filter = self.params['name']
@@ -205,10 +214,23 @@ class WafDomainModule(OTCModule):
                 self.fail_json(msg='proxy should by specified when state is set to present.')
 
             if domain:
-                # check attrs
+                mquery = {}
                 if certificate_filter:
                     if domain.certificate_id != query['certificate_id']:
-                        domain = self.conn.waf.update_domain(domain, **query)
+                        mquery['certificate_id'] = query['certificate_id']
+                if proxy_filter:
+                    if domain.proxy != query['proxy']:
+                        mquery['proxy'] = query['proxy']
+                if sip_header_name_filter:
+                    if domain.sip_header_name != query['sip_header_name']:
+                        mquery['sip_header_name'] = query['sip_header_name']
+                if sip_header_list_filter:
+                    if domain.sip_header_list != query['sip_header_list']:
+                        mquery['sip_header_list'] = query['sip_header_list']
+                if server_filter:
+                    if self._compare_servers_list(old=domain.server, new=query['server']):
+                        mquery['server'] = query['server']
+                domain = self.conn.waf.update_domain(domain, **mquery)
                 self.exit(
                     changed=True,
                     waf_domain=domain.to_dict()
