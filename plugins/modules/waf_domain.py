@@ -216,17 +216,17 @@ class WafDomainModule(OTCModule):
                     if domain.certificate_id != query['certificate_id']:
                         mquery['certificate_id'] = query['certificate_id']
                 if proxy_filter:
-                    if domain.proxy != query['proxy']:
-                        mquery['proxy'] = query['proxy']
+                    if domain.proxy != proxy_filter:
+                        mquery['proxy'] = proxy_filter
                 if sip_header_name_filter:
-                    if domain.sip_header_name != query['sip_header_name']:
-                        mquery['sip_header_name'] = query['sip_header_name']
+                    if domain.sip_header_name != sip_header_name_filter:
+                        mquery['sip_header_name'] = sip_header_name_filter
                 if sip_header_list_filter:
-                    if domain.sip_header_list != query['sip_header_list']:
-                        mquery['sip_header_list'] = query['sip_header_list']
+                    if domain.sip_header_list != sip_header_list_filter:
+                        mquery['sip_header_list'] = sip_header_list_filter
                 if server_filter:
-                    if self._compare_servers_list(old=domain.server, new=query['server']):
-                        mquery['server'] = query['server']
+                    if self._compare_servers_list(old=domain.server, new=server_filter):
+                        mquery['server'] = server_filter
                 domain = self.conn.waf.update_domain(domain, **mquery)
                 self.exit(
                     changed=True,
