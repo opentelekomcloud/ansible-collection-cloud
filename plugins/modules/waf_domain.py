@@ -163,7 +163,10 @@ class WafDomainModule(OTCModule):
         domain = None
         changed = False
 
-        domain = self.conn.waf.find_domain(name_or_id=name_filter)
+        domain = self.conn.waf.find_domain(name_or_id=name_filter, ignore_missing=True)
+        if domain:
+            if not domain.server:
+                domain = self.conn.waf.get_domain(domain.id)
 
         if self.params['state'] == 'absent':
             changed = False
