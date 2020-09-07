@@ -73,7 +73,9 @@ class WafCertificateInfoModule(OTCModule):
             raw = self.conn.waf.find_certificate(
                 self.params['name'], ignore_missing=True)
             if raw:
-                data.append(raw.to_dict().pop('location'))
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
         else:
             for raw in self.conn.waf.certificates():
                 dt = raw.to_dict()
