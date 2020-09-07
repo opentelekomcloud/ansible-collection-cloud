@@ -14,3 +14,5 @@ plugins/modules/volume_backup.py validate-modules:missing-gplv3-license
 plugins/modules/waf_certificate.py validate-modules:missing-gplv3-license
 plugins/modules/waf_certificate_info.py validate-modules:missing-gplv3-license
 plugins/modules/volume_snapshot_info.py validate-modules:missing-gplv3-license
+plugins/modules/waf_domain.py validate-modules:missing-gplv3-license
+plugins/modules/waf_domain_info.py validate-modules:missing-gplv3-license

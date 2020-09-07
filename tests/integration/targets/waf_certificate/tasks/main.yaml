@@ -100,7 +100,6 @@
         name: "{{ cert_name }}"
       register: result
 
-
     - name: assert result
       assert:
         that:
