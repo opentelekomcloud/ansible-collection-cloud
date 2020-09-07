@@ -80,6 +80,21 @@
         private_key: "{{ key }}"
       register: cert2
 
+    - name: Create domain - check mode
+      waf_domain:
+        state: present
+        name: "{{ domain_name }}"
+        server:
+          - client_protocol: http
+            server_protocol: http
+            address: 1.1.1.1
+            port: 80
+        proxy: true
+        sip_header_name: default
+        sip_header_list:
+          - X-Forwarded-For
+      check_mode: yes
+
     - name: Create domain
       waf_domain:
         state: present

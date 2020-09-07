@@ -147,6 +147,8 @@ class WafDomainModule(OTCModule):
                 return True
         elif state == 'absent' and domain:
             return True
+        elif state == 'present' and domain:
+            return True
         return False
 
     def _check_server_client_protocol(self, server: list):
@@ -170,13 +172,12 @@ class WafDomainModule(OTCModule):
             if not domain.server:
                 domain = self.conn.waf.get_domain(domain.id)
 
-        if self.ansible.check_mode:
-            self.exit_json(changed=self._system_state_change(domain))
-
         if self.params['state'] == 'absent':
             changed = False
 
             if domain:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=self._system_state_change(domain))
                 self.conn.waf.delete_domain(domain)
                 changed = True
 
@@ -235,12 +236,17 @@ class WafDomainModule(OTCModule):
                 if server_filter:
                     if self._compare_servers_list(old=domain.server, new=server_filter):
                         mquery['server'] = server_filter
+
+                if self.ansible.check_mode:
+                    self.exit_json(changed=self._system_state_change(domain))
                 domain = self.conn.waf.update_domain(domain, **mquery)
                 self.exit(
                     changed=True,
                     waf_domain=domain.to_dict()
                 )
 
+            if self.ansible.check_mode:
+                self.exit_json(changed=self._system_state_change(domain))
             domain = self.conn.waf.create_domain(**query)
             self.exit(
                 changed=True,
