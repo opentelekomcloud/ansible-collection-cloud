@@ -167,7 +167,6 @@ class WafDomainModule(OTCModule):
             if domain:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-
                 self.conn.waf.delete_domain(domain)
                 changed = True
 
