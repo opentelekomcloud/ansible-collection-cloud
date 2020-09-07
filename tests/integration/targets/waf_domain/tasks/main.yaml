@@ -93,7 +93,13 @@
         sip_header_name: default
         sip_header_list:
           - X-Forwarded-For
+      register: domain_check
       check_mode: yes
+
+    - name: assert result
+      assert:
+        that:
+          - domain_check is changed
 
     - name: Create domain
       waf_domain:

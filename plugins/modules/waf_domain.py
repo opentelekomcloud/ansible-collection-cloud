@@ -140,17 +140,6 @@ class WafDomainModule(OTCModule):
     )
     otce_min_version = '0.9.0'
 
-    def _system_state_change(self, domain):
-        state = self.params['state']
-        if state == 'present':
-            if not domain:
-                return True
-        elif state == 'absent' and domain:
-            return True
-        elif state == 'present' and domain:
-            return True
-        return False
-
     def _check_server_client_protocol(self, server: list):
         for srv in server:
             if srv['client_protocol'] == 'HTTPS':
@@ -177,7 +166,7 @@ class WafDomainModule(OTCModule):
 
             if domain:
                 if self.ansible.check_mode:
-                    self.exit_json(changed=self._system_state_change(domain))
+                    self.exit_json(changed=True)
 
                 self.conn.waf.delete_domain(domain)
                 changed = True
@@ -239,7 +228,7 @@ class WafDomainModule(OTCModule):
                         mquery['server'] = server_filter
 
                 if self.ansible.check_mode:
-                    self.exit_json(changed=self._system_state_change(domain))
+                    self.exit_json(changed=True)
                 domain = self.conn.waf.update_domain(domain, **mquery)
                 self.exit(
                     changed=True,
@@ -247,7 +236,7 @@ class WafDomainModule(OTCModule):
                 )
 
             if self.ansible.check_mode:
-                self.exit_json(changed=self._system_state_change(domain))
+                self.exit_json(changed=True)
             domain = self.conn.waf.create_domain(**query)
             self.exit(
                 changed=True,
