@@ -284,15 +284,6 @@ class LoadBalancerModule(OTCModule):
 
         return new_public_ip
 
-    def _system_state_change(self, lb):
-        state = self.params['state']
-        if state == 'present':
-            if not lb:
-                return True
-        elif state == 'absent' and lb:
-            return True
-        return False
-
     def run(self):
         vip_subnet = self.params['vip_subnet']
         public_vip_address = self.params['public_ip_address']
@@ -307,9 +298,6 @@ class LoadBalancerModule(OTCModule):
         lb = self.conn.network.find_load_balancer(
             name_or_id=self.params['name'])
 
-        if self.check_mode:
-            self.exit_json(changed=self._system_state_change(lb))
-
         if self.params['state'] == 'present':
             if not lb:
                 if vip_subnet:
@@ -320,6 +308,8 @@ class LoadBalancerModule(OTCModule):
                         )
                     vip_subnet_id = subnet.id
 
+                if self.check_mode:
+                    self.exit_json(changed=True)
                 lb = self.conn.network.create_load_balancer(
                     name=self.params['name'],
                     vip_subnet_id=vip_subnet_id,
@@ -360,6 +350,8 @@ class LoadBalancerModule(OTCModule):
             public_vip_address = None
 
             if lb:
+                if self.check_mode:
+                    self.exit_json(changed=True)
                 self.conn.network.delete(
                     '/lbaas/loadbalancers/{id}?cascade=true'.format(id=lb.id))
                 changed = True

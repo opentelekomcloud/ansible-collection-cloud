@@ -1,0 +1,132 @@
+---
+- module_defaults:
+    loadbalancer:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Create network for ELB
+      os_network:
+        name: my_test_network
+        state: present
+      register: lb_net
+
+    - name: Create subnet for ELB
+      os_subnet:
+        name: my_test_subnet
+        state: present
+        network_name: "{{ lb_net.network_name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: lb_net_subnet
+
+    - name: Create Router for ELB
+      os_router:
+        name: my_test_router
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ lb_net.network_name }}"
+            subnet: "{{ lb_net_subnet.subnet_name }}"
+      register: lb_net_router
+
+    - name: Create loadbalancer - check mode
+      loadbalancer:
+        state: present
+        name: my_test_lb
+        vip_subnet: my_test_subnet
+        timeout: 150
+      register: loadbalancer_check
+      check_mode: yes
+
+    - name: assert result
+      assert:
+        that:
+          - loadbalancer_check is changed
+
+    - name: Create loadbalancer
+      loadbalancer:
+        state: present
+        name: my_test_lb
+        vip_subnet: my_subnet
+        timeout: 150
+      register: lb
+
+    - name: assert result
+      assert:
+        that:
+          - lb is success
+          - lb is changed
+
+    - name: Get loadbalancer by ID
+      loadbalancer_info:
+        name: "{{ lb.loadbalancer.name }}"
+      register: res
+
+    - name: assert result
+      assert:
+        that:
+          - res is success
+          - res.otc_loadbalancers is defined
+          - res.otc_loadbalancers[0].id is defined
+
+    - name: Drop existing domain
+      loadbalancer:
+        # pass ID as name
+        name: "{{ lb.loadbalancer.id }}"
+        state: absent
+      register: lb
+
+    - name: assert result
+      assert:
+        that:
+          - lb is success
+          - lb is changed
+
+    - name: Drop not more existing domain
+      loadbalancer:
+        # pass ID as name
+        name: "{{ lb.loadbalancer.id }}"
+        state: absent
+      register: dropped
+
+    - name: assert result
+      assert:
+        that:
+          - dropped is success
+          - dropped is not changed
+
+  always:
+    - block:
+      # Cleanup
+      - name: Drop perhaps existing loadbalancer
+        loadbalancer:
+          name: "{{ lb.loadbalancer.id }}"
+          state: absent
+        register: lb
+        ignore_errors: true
+
+      - name: Drop existing network
+        os_network:
+          name: my_test_network
+          state: absent
+        register: lb_net
+
+    - name: Drop existing subnet
+      os_subnet:
+        name: my_test_subnet
+        state: absent
+        network_name: "{{ lb_net.network_name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: lb_net_subnet
+
+    - name: Drop existing Router
+      os_router:
+        name: my_test_router
+        state: absent
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ lb_net.network_name }}"
+            subnet: "{{ lb_net_subnet.subnet_name }}"
+      register: lb_net_router
