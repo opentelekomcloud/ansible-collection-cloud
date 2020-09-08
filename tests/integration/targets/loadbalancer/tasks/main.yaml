@@ -13,7 +13,7 @@
       os_subnet:
         name: my_test_subnet
         state: present
-        network_name: "{{ lb_net.name }}"
+        network_name: "{{ lb_net.network.name }}"
         cidr: "192.168.110.0/24"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
       register: lb_net_subnet
@@ -25,8 +25,8 @@
         network: admin_external_net
         enable_snat: True
         interfaces:
-          - net: "{{ lb_net.name }}"
-            subnet: "{{ lb_net_subnet.name }}"
+          - net: "{{ lb_net.network.name }}"
+            subnet: "{{ lb_net_subnet.subnet.name }}"
       register: lb_net_router
 
     - name: Create loadbalancer - check mode
@@ -115,7 +115,7 @@
       os_subnet:
         name: my_test_subnet
         state: absent
-        network_name: "{{ lb_net.name }}"
+        network_name: "{{ lb_net.network.name }}"
         cidr: "192.168.110.0/24"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
       register: lb_net_subnet
@@ -128,5 +128,5 @@
         enable_snat: True
         interfaces:
           - net: "{{ lb_net.name }}"
-            subnet: "{{ lb_net_subnet.name }}"
+            subnet: "{{ lb_net_subnet.subnet.name }}"
       register: lb_net_router
