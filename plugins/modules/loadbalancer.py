@@ -194,6 +194,9 @@ class LoadBalancerModule(OTCModule):
         auto_public_ip=dict(required=False, default=False, type='bool'),
         delete_public_ip=dict(required=False, default=False, type='bool'),
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def _wait_for_lb(self, lb, status, failures, interval=5):
         """Wait for load balancer to be in a particular provisioning status."""
@@ -308,7 +311,7 @@ class LoadBalancerModule(OTCModule):
                         )
                     vip_subnet_id = subnet.id
 
-                if self.check_mode:
+                if self.ansible.check_mode:
                     self.exit_json(changed=True)
                 lb = self.conn.network.create_load_balancer(
                     name=self.params['name'],
@@ -350,7 +353,7 @@ class LoadBalancerModule(OTCModule):
             public_vip_address = None
 
             if lb:
-                if self.check_mode:
+                if self.ansible.check_mode:
                     self.exit_json(changed=True)
                 self.conn.network.delete(
                     '/lbaas/loadbalancers/{id}?cascade=true'.format(id=lb.id))
