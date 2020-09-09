@@ -1,0 +1,27 @@
+---
+- module_defaults:
+    waf_domain_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get WAF Domains info
+      waf_domain_info:
+      register: domain
+
+    - name: assert result
+      assert:
+        that:
+          - domain is success
+          - domain is not changed
+          - domain.waf_domains is defined
+
+    - name: Get WAF Domain with name filter info
+      waf_domain_info:
+        name: www.fakedomain.otc
+      register: domain
+
+    - name: assert result
+      assert:
+        that:
+          - domain is success
+          - domain is not changed
+          - domain.waf_domains is defined
