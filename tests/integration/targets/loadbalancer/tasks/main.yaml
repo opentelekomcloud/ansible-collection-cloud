@@ -47,7 +47,7 @@
       loadbalancer:
         state: present
         name: my_test_lb
-        vip_subnet: my_subnet
+        vip_subnet: my_test_subnet
         timeout: 150
       register: lb
 
