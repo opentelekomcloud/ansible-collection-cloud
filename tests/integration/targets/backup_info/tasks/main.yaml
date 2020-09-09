@@ -1,0 +1,15 @@
+---
+- block:
+    - name: Get volume snapshot info
+      backup_info:
+      register: backup
+
+    - name: Debug backup
+      debug:
+        var: backup
+
+    - name: assert result
+      assert:
+        that:
+          - backup is success
+          - backup is not changed
