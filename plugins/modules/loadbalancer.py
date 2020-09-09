@@ -136,11 +136,6 @@ loadbalancer:
 EXAMPLES = '''
 # Create a load balancer by specifying the VIP subnet.
 - loadbalancer:
-    auth:
-      auth_url: https://identity.example.com
-      username: admin
-      password: passme
-      project_name: admin
     state: present
     name: my_lb
     vip_subnet: my_subnet
@@ -158,22 +153,12 @@ EXAMPLES = '''
 
 # Delete a load balancer(and all its related resources)
 - loadbalancer:
-    auth:
-      auth_url: https://identity.example.com
-      username: admin
-      password: passme
-      project_name: admin
     state: absent
     name: my_lb
 
 # Delete a load balancer(and all its related resources) together with the
 # public IP address(if any) attached to it.
 - loadbalancer:
-    auth:
-      auth_url: https://identity.example.com
-      username: admin
-      password: passme
-      project_name: admin
     state: absent
     name: my_lb
     delete_public_ip: yes

@@ -19,3 +19,4 @@ action_groups:
     - volume_snapshot_info
     - waf_domain
     - waf_domain_info
+    - lb_listener
