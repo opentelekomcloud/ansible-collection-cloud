@@ -57,6 +57,15 @@
           - lb is success
           - lb is changed
 
+    - name: Assign EIP to existing loadbalancer
+      loadbalancer:
+        name: my_test_lb
+        state: present
+        vip_subnet: my_test_subnet
+        auto_public_ip: yes
+        wait: yes
+        timeout: 600
+
     - name: Get loadbalancer by ID
       loadbalancer_info:
         name: "{{ lb.loadbalancer.name }}"
@@ -68,12 +77,14 @@
           - res is success
           - res.otc_loadbalancers is defined
           - res.otc_loadbalancers.id is defined
+          - res.otc_loadbalancers.vip_address is defined
 
     - name: Drop existing loadbalancer
       loadbalancer:
         # pass ID as name
         name: "{{ lb.loadbalancer.id }}"
         state: absent
+        delete_public_ip: yes
       register: dropped
 
     - name: assert result
@@ -102,6 +113,7 @@
         loadbalancer:
           name: "{{ lb.loadbalancer.id }}"
           state: absent
+          delete_public_ip: yes
         register: lb
         ignore_errors: true
 
