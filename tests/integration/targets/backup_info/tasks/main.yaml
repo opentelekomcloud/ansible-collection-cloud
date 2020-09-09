@@ -1,6 +1,6 @@
 ---
 - block:
-    - name: Get volume snapshot info
+    - name: Get backup info
       backup_info:
       register: backup
 
@@ -13,3 +13,4 @@
         that:
           - backup is success
           - backup is not changed
+          - backup.backups is defined
