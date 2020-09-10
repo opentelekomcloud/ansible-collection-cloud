@@ -153,8 +153,8 @@ class RdsBackupInfoModule(OTCModule):
             data.append(dt)
 
         self.exit(
-            changed = False,
-            rds_backups = data
+            changed=False,
+            rds_backups=data
         )
 
 
