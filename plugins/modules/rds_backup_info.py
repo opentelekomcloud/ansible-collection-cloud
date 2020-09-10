@@ -24,15 +24,15 @@ options:
   instance:
     description: Name or ID of the RDS instance
     type: str
-    sample: "a11a111a111a11111bbbbb2222ccc3333300" 
+    sample: "a11a111a111a11111bbbbb2222ccc3333300"
   backup:
     description: Name or ID of the RDS Backup
     type: str
-    sample: "a11a111a111a11111bbbbb2222ccc3333301" 
+    sample: "a11a111a111a11111bbbbb2222ccc3333301"
   backup_type:
     choices: [auto, manual, fragment, incremental]
     description: Backup type
-    type: str  
+    type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -42,16 +42,16 @@ rds_backups:
   type: complex
   returned: On Success
   contains:
-    id: 
+    id:
       description: Indicates the backup ID.
       type: str
       sample: "a11a111a111a11111bbbbb2222ccc3333302"
-    name: 
+    name:
       description: Indicates the backup name.
       type: str
       sample: "test01"
     type:
-      description: Indicates the backup type.     
+      description: Indicates the backup type.
       type: str
       choices[auto, manual, fragment, incremental]
     size:
@@ -72,7 +72,7 @@ rds_backups:
       sample: "2018-08-06T12:43:14+0800"
     datastore:
       description: Indicates the database version.
-      type: dict 
+      type: dict
     databases:
       description: Indicates a list of self-built databases that support partial backups.
       type: list
@@ -96,20 +96,20 @@ EXAMPLES = '''
     backup: "a11a111a111a11111bbbbb2222ccc3333307"
     backup_type: "manual"
   register: rds_backup
-  
+
 # Get RDS Backups (instance name and backup type are specified)
 - rds_backup_info:
     instance: "test_instance_name"
     backup_type: "manual"
   register: rds_backup
-  
-# Get RDS Backups (instance id and backup name are specified) 
+
+# Get RDS Backups (instance id and backup name are specified)
 - rds_backup_info:
     instance: "a11a111a111a11111bbbbb2222ccc3333305"
     backup: "test_backup_name"
   register: rds_backup
-  
-# Get RDS Backups (instance name is specified) 
+
+# Get RDS Backups (instance name is specified)
 - rds_backup_info:
     instance: "test_instance_name"
   register: rds_backup
@@ -120,9 +120,13 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class RdsBackupInfoModule(OTCModule):
     argument_spec = dict(
-        instance=dict(type='str', required=True),
-        backup=dict(type='str', required=False),
-        backup_type=dict(type='str', choices=['auto', 'manual', 'fragment', 'incremental'], required=False)
+        instance=dict(type='str',
+                      required=True),
+        backup=dict(type='str',
+                    required=False),
+        backup_type=dict(type='str',
+                         choices=['auto', 'manual', 'fragment', 'incremental'],
+                         required=False)
     )
 
     def run(self):
@@ -134,11 +138,11 @@ class RdsBackupInfoModule(OTCModule):
         data = []
         query = {}
         if instance_filter:
-            instance = self.conn.rds.find_instance(name_or_id = instance_filter)
+            instance = self.conn.rds.find_instance(name_or_id=instance_filter)
             query['instance'] = instance
             if backup_filter:
-                backup = self.conn.rds.find_backup(name_or_id = backup_filter,
-                                                   instance = instance)
+                backup = self.conn.rds.find_backup(name_or_id=backup_filter,
+                                                   instance=instance)
                 query['backup_id'] = backup.id
             if backup_type_filter:
                 query['backup_type'] = backup_type_filter
@@ -149,8 +153,8 @@ class RdsBackupInfoModule(OTCModule):
             data.append(dt)
 
         self.exit(
-            changed=False,
-            rds_backups=data
+            changed = False,
+            rds_backups = data
         )
 
 
