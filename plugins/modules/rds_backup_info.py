@@ -53,7 +53,7 @@ rds_backups:
     type:
       description: Indicates the backup type.
       type: str
-      choices[auto, manual, fragment, incremental]
+      choices: [auto, manual, fragment, incremental]
     size:
       description: Specifies the backup size in kB.
       type: int
