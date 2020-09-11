@@ -91,6 +91,13 @@
       lb_listener:
         state: absent
         name: my_test_listener
+      register: dropped
+
+    - name: assert result
+      assert:
+        that:
+          - dropped is success
+          - dropped is changed
 
     - name: Drop existing loadbalancer
       loadbalancer:

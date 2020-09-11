@@ -63,9 +63,9 @@ options:
       - Specifies whether to use HTTP/2 (valid only for TERMINATED_HTTPS).
     default: false
     type: bool
-  default_pool_id:
+  default_pool:
     description:
-      - Specifies the ID of the associated backend server group.
+      - Specifies the ID or Name of the associated backend server group.
     type: str
   default_tls_container_ref:
     description:
@@ -192,13 +192,13 @@ class LoadBalancerListenerModule(OTCModule):
         protocol_port=dict(required=False, type='int'),
         loadbalancer=dict(required=False, type='str'),
         connection_limit=dict(required=False, default=-1, type='int'),
-        admin_state_up=dict(required=False, type='int'),
+        admin_state_up=dict(required=False, type='bool'),
         http2_enable=dict(required=False, default=False, type='bool'),
-        default_pool_id=dict(required=False, type='str'),
-        default_tls_container_ref=dict(required=False, type='str'),
-        client_ca_tls_container_ref=dict(required=False, type='str'),
-        sni_container_refs=dict(required=False, type='list', elements='str'),
-        tls_ciphers_policy=dict(required=False, type='str'),
+        default_pool=dict(required=False, type='str'),
+        default_tls_container_ref=dict(required=False, default=None, type='str'),
+        client_ca_tls_container_ref=dict(required=False, default=None, type='str'),
+        sni_container_refs=dict(required=False, default=[], type='list', elements='str'),
+        tls_ciphers_policy=dict(required=False, default='tls-1-0', type='str'),
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -213,7 +213,7 @@ class LoadBalancerListenerModule(OTCModule):
         connection_limit_filter = self.params['connection_limit']
         admin_state_up_filter = self.params['admin_state_up']
         http2_enable_filter = self.params['http2_enable']
-        default_pool_id_filter = self.params['default_pool_id']
+        default_pool_filter = self.params['default_pool']
         default_tls_container_ref_filter = self.params['default_tls_container_ref']
         client_ca_tls_container_ref_filter = self.params['client_ca_tls_container_ref']
         sni_container_refs_filter = self.params['sni_container_refs']
@@ -227,6 +227,28 @@ class LoadBalancerListenerModule(OTCModule):
         if self.params['state'] == 'present':
             if not protocol_filter and not protocol_port_filter and not lb_filter:
                 self.fail_json(msg='Protocol, port and loadbalancer should be specified.')
+            if description_filter:
+                attrs['description'] = description_filter
+            if connection_limit_filter:
+                attrs['connection_limit'] = connection_limit_filter
+            if admin_state_up_filter:
+                attrs['admin_state_up'] = admin_state_up_filter
+            if default_pool_filter:
+                pool = self.conn.network.find_pool(default_pool_filter)
+                if pool:
+                    attrs['default_pool_id'] = pool.id
+
+            if protocol_filter.upper() == 'TERMINATED_HTTPS':
+                if http2_enable_filter:
+                    attrs['http2_enable'] = http2_enable_filter
+                if default_tls_container_ref_filter:
+                    attrs['default_tls_container_ref'] = default_tls_container_ref_filter
+                if client_ca_tls_container_ref_filter:
+                    attrs['client_ca_tls_container_ref'] = client_ca_tls_container_ref_filter
+                if sni_container_refs_filter:
+                    attrs['sni_container_refs'] = sni_container_refs_filter
+                if tls_ciphers_policy_filter:
+                    attrs['tls_ciphers_policy'] = tls_ciphers_policy_filter
 
             lb_filter = self.conn.network.find_load_balancer(name_or_id=lb_filter)
             if not lb_listener:
@@ -235,9 +257,10 @@ class LoadBalancerListenerModule(OTCModule):
 
                 lb_listener = self.conn.network.create_listener(
                     name=name_filter,
-                    protocol=protocol_filter,
+                    protocol=protocol_filter.upper(),
                     protocol_port=protocol_port_filter,
-                    loadbalancer_id=lb_filter.id
+                    loadbalancer_id=lb_filter.id,
+                    **attrs
                 )
                 changed = True
             self.exit_json(
