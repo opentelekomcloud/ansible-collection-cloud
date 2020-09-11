@@ -120,11 +120,11 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 
 class RdsBackupInfoModule(OTCModule):
-    argument_spec=dict(
+    argument_spec = dict(
         instance=dict(type='str',
                       required=True),
         backup=dict(type='str',
-                      required=False),
+                    required=False),
         backup_type=dict(type='str',
                          choices=['auto', 'manual', 'fragment', 'incremental'],
                          required=False)
