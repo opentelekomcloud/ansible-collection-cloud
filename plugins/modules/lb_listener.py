@@ -26,6 +26,7 @@ options:
     description:
       - Name that has to be given to the listener
     type: str
+    required: true 
   state:
     description:
       - Should the resource be present or absent.
@@ -91,6 +92,7 @@ options:
     description:
       - Specifies the security policy used by the listener (only for TERMINATED_HTTPS).
        (server certificates with a domain name) used by the listener.
+    default: tls-1-0
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
