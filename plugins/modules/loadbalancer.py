@@ -313,7 +313,6 @@ class LoadBalancerModule(OTCModule):
                     loadbalancer=lb.to_dict(),
                     id=lb.id
                 )
-                changed = False
 
             self._wait_for_lb(lb, "ACTIVE", ["ERROR"])
 

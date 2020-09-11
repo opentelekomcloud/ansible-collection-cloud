@@ -250,6 +250,7 @@ class LoadBalancerListenerModule(OTCModule):
             if lb_listener:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
+                self.fail_json(msg='listener: %s' % lb_listener)
                 self.conn.network.delete_listener(lb_listener)
                 changed = True
             self.exit_json(changed=changed)
