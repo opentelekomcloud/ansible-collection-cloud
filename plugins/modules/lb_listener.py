@@ -40,17 +40,14 @@ options:
     description:
       - Specifies the load balancer protocol.
     choices: [TCP, HTTP, UDP, TERMINATED_HTTPS]
-    required: true
     type: str
   protocol_port:
     description:
       - Specifies the port used by the load balancer.
-    required: true
     type: int
   loadbalancer:
     description:
       - Specifies the associated load balancer.
-    required: true
     type: str
   connection_limit:
     description:
@@ -191,9 +188,9 @@ class LoadBalancerListenerModule(OTCModule):
         name=dict(required=False),
         state=dict(default='present', choices=['absent', 'present']),
         description=dict(required=False),
-        protocol=dict(required=True, choices=['TCP', 'HTTP', 'UDP', 'TERMINATED_HTTPS']),
-        protocol_port=dict(required=True, type='int'),
-        loadbalancer=dict(required=True, type='str'),
+        protocol=dict(required=False, choices=['TCP', 'HTTP', 'UDP', 'TERMINATED_HTTPS']),
+        protocol_port=dict(required=False, type='int'),
+        loadbalancer=dict(required=False, type='str'),
         connection_limit=dict(required=False, default=-1, type='int'),
         admin_state_up=dict(required=False, type='int'),
         http2_enable=dict(required=False, default=False, type='bool'),

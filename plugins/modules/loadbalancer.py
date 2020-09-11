@@ -305,14 +305,15 @@ class LoadBalancerModule(OTCModule):
                 )
                 changed = True
 
-            if self.ansible.check_mode:
-                self.exit_json(changed=True)
             if not self.params['wait']:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=False)
                 self.exit_json(
                     changed=changed,
                     loadbalancer=lb.to_dict(),
                     id=lb.id
                 )
+                changed = False
 
             self._wait_for_lb(lb, "ACTIVE", ["ERROR"])
 

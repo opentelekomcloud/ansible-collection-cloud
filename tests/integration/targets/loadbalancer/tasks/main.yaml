@@ -71,10 +71,10 @@
         state: present
         protocol_port: 80
         protocol: TCP
-        loadbalancer_id: lb.loadbalancer.id
+        loadbalancer: "{{ lb.loadbalancer.id }}"
         name: my_test_listener
 
-    - name: Get loadbalancer by ID
+    - name: Get loadbalancer by Name
       loadbalancer_info:
         name: "{{ lb.loadbalancer.name }}"
       register: res
