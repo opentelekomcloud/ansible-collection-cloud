@@ -219,11 +219,10 @@ class LoadBalancerListenerModule(OTCModule):
         tls_ciphers_policy_filter = self.params['tls_ciphers_policy']
 
         lb_listener = None
-
+        attrs = {}
         changed = False
         lb_filter = self.conn.network.find_load_balancer(name_or_id=lb_filter)
-        lb_listener = self.conn.network.find_listener(
-            name_or_id=self.params['name'])
+        lb_listener = self.conn.network.find_listener(name_or_id=self.params['name'])
 
         if self.params['state'] == 'present':
             if not protocol_filter and not protocol_port_filter and not lb_filter:
@@ -247,6 +246,7 @@ class LoadBalancerListenerModule(OTCModule):
             )
         elif self.params['state'] == 'absent':
             changed = False
+            self.fail_json(msg='listener: %s, %s' % (lb_listener, changed))
             if lb_listener:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
