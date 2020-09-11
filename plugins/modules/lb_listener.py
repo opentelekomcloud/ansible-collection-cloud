@@ -176,14 +176,12 @@ EXAMPLES = '''
     name: listener-test
     admin_state_up: true
     sni_container_refs: ["e15d1b5000474adca383c3cd9ddc06d4", "5882325fd6dd4b95a88d33238d293a0f"]
-    
+
 # Delete a load balancer(and all its related resources)
 - lb_listener:
     state: absent
     name: listener-test
 '''
-
-import time
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
@@ -210,8 +208,48 @@ class LoadBalancerListenerModule(OTCModule):
     )
 
     def run(self):
+        description_filter = self.params['description']
+        protocol_filter = self.params['protocol']
+        protocol_port_filter = self.params['protocol_port']
+        loadbalancer_filter = self.params['loadbalancer']
+        connection_limit_filter = self.params['connection_limit']
+        admin_state_up_filter = self.params['admin_state_up']
+        http2_enable_filter = self.params['http2_enable']
+        default_pool_id_filter = self.params['default_pool_id']
+        default_tls_container_ref_filter = self.params['default_tls_container_ref']
+        client_ca_tls_container_ref_filter = self.params['client_ca_tls_container_ref']
+        sni_container_refs_filter = self.params['sni_container_refs']
+        tls_ciphers_policy_filter = self.params['tls_ciphers_policy']
+
+        lb_listener = None
+
         changed = False
-        self.exit_json(changed=changed)
+
+        lb_listener = self.conn.network.find_listener(
+            name_or_id=self.params['name'])
+
+        if self.params['state'] == 'present':
+            if not lb_listener:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
+
+                lb_listener = self.conn.loadbalancer.create_listener(
+                    name=self.params['name']
+                )
+                changed = True
+            self.exit_json(
+                changed=changed,
+                listenerr=lb_listener.to_dict(),
+                id=lb_listener.id
+            )
+        elif self.params['state'] == 'absent':
+            changed = False
+            if lb_listener:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
+                self.conn.loadbalancer.delete_listener(lb_listener)
+                changed = True
+            self.exit_json(changed=changed)
 
 
 def main():

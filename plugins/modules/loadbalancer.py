@@ -298,7 +298,7 @@ class LoadBalancerModule(OTCModule):
 
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                lb = self.conn.load_balancer.create_load_balancer(
+                lb = self.conn.network.create_load_balancer(
                     name=self.params['name'],
                     vip_subnet_id=vip_subnet_id,
                     vip_address=self.params['vip_address'],
@@ -324,7 +324,7 @@ class LoadBalancerModule(OTCModule):
 
             if floating_ip:
                 # Include public_vip_address in the result.
-                lb = self.conn.load_balancer.find_load_balancer(name_or_id=lb.id)
+                lb = self.conn.network.find_load_balancer(name_or_id=lb.id)
                 lb_dict = lb.to_dict()
                 lb_dict.update({"public_vip_address": floating_ip})
                 changed = True
@@ -342,7 +342,7 @@ class LoadBalancerModule(OTCModule):
             if lb:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                self.conn.load_balancer.delete_load_balancer(lb, cascade=True)
+                self.conn.network.delete_load_balancer(lb, cascade=True)
                 changed = True
 
                 if delete_fip and lb.vip_address:
