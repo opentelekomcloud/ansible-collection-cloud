@@ -66,6 +66,14 @@
         wait: yes
         timeout: 600
 
+    - name: Create listener for existing loadbalancer
+      lb_listener:
+        state: present
+        protocol_port: 80
+        protocol: TCP
+        loadbalancer_id: lb.loadbalancer.id
+        name: my_test_listener
+
     - name: Get loadbalancer by ID
       loadbalancer_info:
         name: "{{ lb.loadbalancer.name }}"
@@ -78,6 +86,11 @@
           - res.otc_loadbalancers is defined
           - res.otc_loadbalancers.id is defined
           - res.otc_loadbalancers.vip_address is defined
+
+    - name: Drop existing listener by name
+      lb_listener:
+        state: absent
+        name: my_test_listener
 
     - name: Drop existing loadbalancer
       loadbalancer:

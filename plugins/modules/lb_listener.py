@@ -211,7 +211,7 @@ class LoadBalancerListenerModule(OTCModule):
         description_filter = self.params['description']
         protocol_filter = self.params['protocol']
         protocol_port_filter = self.params['protocol_port']
-        loadbalancer_filter = self.params['loadbalancer']
+        lb_filter = self.params['loadbalancer']
         connection_limit_filter = self.params['connection_limit']
         admin_state_up_filter = self.params['admin_state_up']
         http2_enable_filter = self.params['http2_enable']
@@ -224,17 +224,23 @@ class LoadBalancerListenerModule(OTCModule):
         lb_listener = None
 
         changed = False
-
+        lb_filter = self.conn.network.find_load_balancer(name_or_id=lb_filter)
         lb_listener = self.conn.network.find_listener(
             name_or_id=self.params['name'])
 
         if self.params['state'] == 'present':
+            if not protocol_filter and not protocol_port_filter and not lb_filter:
+                self.fail_json(msg='Protocol, port and loadbalancer should be specified.')
+
             if not lb_listener:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
 
-                lb_listener = self.conn.loadbalancer.create_listener(
-                    name=self.params['name']
+                lb_listener = self.conn.network.create_listener(
+                    name=self.params['name'],
+                    protocol=protocol_filter,
+                    protocol_port=protocol_port_filter,
+                    loadbalancer_id=lb_filter.id
                 )
                 changed = True
             self.exit_json(
@@ -247,7 +253,7 @@ class LoadBalancerListenerModule(OTCModule):
             if lb_listener:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                self.conn.loadbalancer.delete_listener(lb_listener)
+                self.conn.network.delete_listener(lb_listener)
                 changed = True
             self.exit_json(changed=changed)
 
