@@ -185,7 +185,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class LoadBalancerListenerModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=False),
+        name=dict(required=True),
         state=dict(default='present', choices=['absent', 'present']),
         description=dict(required=False),
         protocol=dict(required=False, choices=['TCP', 'HTTP', 'UDP', 'TERMINATED_HTTPS']),
@@ -222,15 +222,13 @@ class LoadBalancerListenerModule(OTCModule):
         lb_listener = None
         attrs = {}
         changed = False
-        lb_filter = self.conn.network.find_load_balancer(name_or_id=lb_filter)
-        if self.params['state'] == 'absent':
-            self.fail_json(msg='%s' % name_filter)
         lb_listener = self.conn.network.find_listener(name_or_id=name_filter)
 
         if self.params['state'] == 'present':
             if not protocol_filter and not protocol_port_filter and not lb_filter:
                 self.fail_json(msg='Protocol, port and loadbalancer should be specified.')
 
+            lb_filter = self.conn.network.find_load_balancer(name_or_id=lb_filter)
             if not lb_listener:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
@@ -249,7 +247,6 @@ class LoadBalancerListenerModule(OTCModule):
             )
         elif self.params['state'] == 'absent':
             changed = False
-            self.fail_json(msg='listener: %s, %s' % (lb_listener, changed))
             if lb_listener:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
