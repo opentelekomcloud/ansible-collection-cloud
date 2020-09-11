@@ -121,13 +121,13 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class RdsBackupInfoModule(OTCModule):
     argument_spec = dict(
-        instance=dict(type='str',
-                      required=True),
-        backup=dict(type='str',
-                    required=False),
-        backup_type=dict(type='str',
-                         choices=['auto', 'manual', 'fragment', 'incremental'],
-                         required=False)
+        instance = dict(type = 'str',
+                        required = True),
+        backup = dict(type = 'str',
+                      required = False),
+        backup_type = dict(type = 'str',
+                           choices = ['auto', 'manual', 'fragment', 'incremental'],
+                           required = False)
     )
 
     def run(self):
@@ -139,11 +139,11 @@ class RdsBackupInfoModule(OTCModule):
         data = []
         query = {}
         if instance_filter:
-            instance = self.conn.rds.find_instance(name_or_id=instance_filter)
+            instance = self.conn.rds.find_instance(name_or_id = instance_filter)
             query['instance'] = instance
             if backup_filter:
-                backup = self.conn.rds.find_backup(name_or_id=backup_filter,
-                                                   instance=instance)
+                backup = self.conn.rds.find_backup(name_or_id = backup_filter,
+                                                   instance = instance)
                 query['backup_id'] = backup.id
             if backup_type_filter:
                 query['backup_type'] = backup_type_filter
@@ -154,8 +154,8 @@ class RdsBackupInfoModule(OTCModule):
             data.append(dt)
 
         self.exit(
-            changed=False,
-            rds_backups=data
+            changed = False,
+            rds_backups = data
         )
 
 
