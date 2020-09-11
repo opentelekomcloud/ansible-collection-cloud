@@ -23,15 +23,16 @@ description:
 options:
   instance:
     description: Name or ID of the RDS instance
+    required: true
     type: str
-    sample: "a11a111a111a11111bbbbb2222ccc3333300"
   backup:
     description: Name or ID of the RDS Backup
+    required: false
     type: str
-    sample: "a11a111a111a11111bbbbb2222ccc3333301"
   backup_type:
     choices: [auto, manual, fragment, incremental]
     description: Backup type
+    required: false
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -53,7 +54,7 @@ rds_backups:
     type:
       description: Indicates the backup type.
       type: str
-      choices: [auto, manual, fragment, incremental]
+      sample: "auto"
     size:
       description: Specifies the backup size in kB.
       type: int
@@ -61,7 +62,7 @@ rds_backups:
     status:
       description: Indicates the backup status.
       type: str
-      choices: [BUILDING, COMPLETED, FAILED, DELETING]
+      sample: "COMPLETED"
     begin_time:
       description: Indicates the backup start time in the "yyyy-mm-ddThh:mm:ssZ" format.
       type: str
