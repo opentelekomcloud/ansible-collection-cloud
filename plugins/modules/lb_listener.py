@@ -205,6 +205,7 @@ class LoadBalancerListenerModule(OTCModule):
     )
 
     def run(self):
+        name_filter = self.params['name']
         description_filter = self.params['description']
         protocol_filter = self.params['protocol']
         protocol_port_filter = self.params['protocol_port']
@@ -222,7 +223,9 @@ class LoadBalancerListenerModule(OTCModule):
         attrs = {}
         changed = False
         lb_filter = self.conn.network.find_load_balancer(name_or_id=lb_filter)
-        lb_listener = self.conn.network.find_listener(name_or_id=self.params['name'])
+        if self.params['state'] == 'absent':
+            self.fail_json(msg='%s' % name_filter)
+        lb_listener = self.conn.network.find_listener(name_or_id=name_filter)
 
         if self.params['state'] == 'present':
             if not protocol_filter and not protocol_port_filter and not lb_filter:
@@ -233,7 +236,7 @@ class LoadBalancerListenerModule(OTCModule):
                     self.exit_json(changed=True)
 
                 lb_listener = self.conn.network.create_listener(
-                    name=self.params['name'],
+                    name=name_filter,
                     protocol=protocol_filter,
                     protocol_port=protocol_port_filter,
                     loadbalancer_id=lb_filter.id
