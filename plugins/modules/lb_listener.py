@@ -26,7 +26,7 @@ options:
     description:
       - Name that has to be given to the listener
     type: str
-    required: true 
+    required: true
   state:
     description:
       - Should the resource be present or absent.
