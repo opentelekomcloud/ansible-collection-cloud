@@ -14,7 +14,7 @@
 DOCUMENTATION = '''
 ---
 module: tasks
-short_description: Get information about vpc peerings 
+short_description: Get information about vpc peerings
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.3"
 author: "Polina Gubina (@polina-gubina)"
@@ -33,7 +33,7 @@ options:
     type: str
   vpc_id:
     description: VPC ID.
-    type: str    
+    type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -63,7 +63,7 @@ peerings:
                 "vpc_id": "4dae5bac-0925-4d5b-add8-cb6667b8"
                 }"
     accept_vpc_info:
-      description:  Information about the peer VPC. 
+      description:  Information about the peer VPC.
       type: complex
       sample: "{
                 "tenant_id": "968u64a23945ab887012be95acf",
