@@ -234,7 +234,7 @@ class LoadBalancerListenerModule(OTCModule):
             if lb_filter:
                 lb = self.conn.network.find_load_balancer(name_or_id=lb_filter)
                 if lb:
-                    attrs['loadbalancer'] = lb.id
+                    attrs['loadbalancer_id'] = lb.id
             if protocol_port_filter:
                 attrs['protocol_port'] = protocol_port_filter
             if description_filter:
