@@ -84,9 +84,7 @@
     - name: Modify existing listener
       lb_listener:
         state: present
-        protocol_port: 8080
-        protocol: TCP
-        loadbalancer: "{{ lb.loadbalancer.id }}"
+        description: changed
         name: my_test_listener
       register: lstnr
 
@@ -95,7 +93,6 @@
         that:
           - lstnr is success
           - lstnr is changed
-          - lstnr.listener.protocol_port == 8080
 
     - name: Get loadbalancer by Name
       loadbalancer_info:
