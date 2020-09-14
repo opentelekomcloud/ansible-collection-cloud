@@ -28,13 +28,13 @@ options:
   status:
     description:
       - Peering connection status.
-    choices: [PENDING_ACCEPTANCE, REJECTED, EXPIRED, DELETED, ACTIVE]
+    choices: [pending_acceptance, rejected, expired, deleted, active]
     type: str
-  tenant_id:
+  project_id:
     description:
-      - Tenant ID.
+      - Project ID.
     type: str
-  vpc_id:
+  router_id:
     description:
       - VPC ID.
     type: str
@@ -94,17 +94,17 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class VPCPeeringInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
-        status=dict(required=False, choices=['PENDING_ACCEPTANCE', 'REJECTED', 'EXPIRED', 'DELETED', 'ACTIVE']),
-        tenant_id=dict(required=False),
-        vpc_id=dict(required=False),
+        status=dict(required=False, choices=['pending_acceptance', 'rejected', 'expired', 'deleted', 'active']),
+        project_id=dict(required=False),
+        router_id=dict(required=False),
     )
 
     def run(self):
 
         name_filter = self.params['name']
         status_filter = self.params['status']
-        tenant_id_filter = self.params['tenant_id']
-        vpc_id_filter = self.params['vpc_id']
+        project_id_filter = self.params['project_id']
+        router_id_filter = self.params['router_id']
 
         data = []
         query = {}
@@ -112,10 +112,10 @@ class VPCPeeringInfoModule(OTCModule):
             query['name'] = name_filter
         if status_filter:
             query['status'] = status_filter
-        if tenant_id_filter:
-            query['tenant_id'] = tenant_id_filter
-        if vpc_id_filter:
-            query['vpc_id'] = vpc_id_filter
+        if project_id_filter:
+            query['project_id'] = project_id_filter
+        if router_id_filter:
+            query['router_id'] = router_id_filter
 
         for raw in self.conn.vpc.peerings(**query):
             dt = raw.to_dict()
