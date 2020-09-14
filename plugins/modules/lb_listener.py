@@ -230,6 +230,20 @@ class LoadBalancerListenerModule(OTCModule):
             if name_filter:
                 attrs['name'] = name_filter
             if protocol_filter:
+                if protocol_filter.upper() == 'TERMINATED_HTTPS':
+                    if http2_enable_filter:
+                        attrs['http2_enable'] = http2_enable_filter
+                    if default_tls_container_ref_filter:
+                        attrs['default_tls_container_ref'] = default_tls_container_ref_filter
+                    else:
+                        self.fail_json(msg='default_tls_container_ref parameter is mandatory'
+                                           ' when protocol is set to TERMINATED_HTTPS.')
+                    if client_ca_tls_container_ref_filter:
+                        attrs['client_ca_tls_container_ref'] = client_ca_tls_container_ref_filter
+                    if sni_container_refs_filter:
+                        attrs['sni_container_refs'] = sni_container_refs_filter
+                    if tls_ciphers_policy_filter:
+                        attrs['tls_ciphers_policy'] = tls_ciphers_policy_filter
                 attrs['protocol'] = protocol_filter.upper()
             if lb_filter:
                 lb = self.conn.network.find_load_balancer(name_or_id=lb_filter)
@@ -247,21 +261,6 @@ class LoadBalancerListenerModule(OTCModule):
                 pool = self.conn.network.find_pool(default_pool_filter)
                 if pool:
                     attrs['default_pool_id'] = pool.id
-
-            if protocol_filter.upper() == 'TERMINATED_HTTPS':
-                if http2_enable_filter:
-                    attrs['http2_enable'] = http2_enable_filter
-                if default_tls_container_ref_filter:
-                    attrs['default_tls_container_ref'] = default_tls_container_ref_filter
-                else:
-                    self.fail_json(msg='default_tls_container_ref parameter is mandatory'
-                                       ' when protocol is set to TERMINATED_HTTPS.')
-                if client_ca_tls_container_ref_filter:
-                    attrs['client_ca_tls_container_ref'] = client_ca_tls_container_ref_filter
-                if sni_container_refs_filter:
-                    attrs['sni_container_refs'] = sni_container_refs_filter
-                if tls_ciphers_policy_filter:
-                    attrs['tls_ciphers_policy'] = tls_ciphers_policy_filter
 
             if lb_listener:
                 changed = True
