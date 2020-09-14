@@ -93,15 +93,22 @@ class LoadBalancerListenerInfoModule(OTCModule):
     )
 
     def run(self):
+        data = []
+
         if self.params['name']:
-            lb = self.conn.network.find_listener(
-                name_or_id=self.params['name'])
+            raw = self.conn.network.find_listener(name_or_id=self.params['name'])
+            dt = raw.to_dict()
+            dt.pop('location')
+            data.append(dt)
         else:
-            lb = list(self.conn.network.listeners())
+            for raw in self.conn.network.listeners():
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
 
         self.exit_json(
             changed=False,
-            listeners=lb
+            listeners=data
         )
 
 
