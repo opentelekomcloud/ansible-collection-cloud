@@ -5,13 +5,13 @@
   block:
     - name: Create network for ELB
       os_network:
-        name: my_test_network
+        name: my_test_network_lb
         state: present
       register: lb_net
 
     - name: Create subnet for ELB
       os_subnet:
-        name: my_test_subnet
+        name: my_test_subnet_lb
         state: present
         network_name: "{{ lb_net.network.name }}"
         cidr: "192.168.110.0/24"
@@ -20,7 +20,7 @@
 
     - name: Create Router for ELB
       os_router:
-        name: my_test_router
+        name: my_test_router_lb
         state: present
         network: admin_external_net
         enable_snat: True
@@ -33,7 +33,7 @@
       loadbalancer:
         state: present
         name: my_test_lb
-        vip_subnet: my_test_subnet
+        vip_subnet: my_test_subnet_lb
         timeout: 150
       register: loadbalancer_check
       check_mode: yes
@@ -47,7 +47,7 @@
       loadbalancer:
         state: present
         name: my_test_lb
-        vip_subnet: my_test_subnet
+        vip_subnet: my_test_subnet_lb
         timeout: 150
       register: lb
 
@@ -61,7 +61,7 @@
       loadbalancer:
         name: my_test_lb
         state: present
-        vip_subnet: my_test_subnet
+        vip_subnet: my_test_subnet_lb
         auto_public_ip: yes
         wait: yes
         timeout: 600
@@ -73,6 +73,28 @@
         protocol: TCP
         loadbalancer: "{{ lb.loadbalancer.id }}"
         name: my_test_listener
+      register: lstnr
+
+    - name: assert result
+      assert:
+        that:
+          - lstnr is success
+          - lstnr is changed
+
+    - name: Modify existing listener
+      lb_listener:
+        state: present
+        protocol_port: 8080
+        protocol: TCP
+        loadbalancer: "{{ lb.loadbalancer.id }}"
+        name: my_test_listener_changed
+      register: lstnr
+
+    - name: assert result
+      assert:
+        that:
+          - lstnr is success
+          - lstnr is changed
 
     - name: Get loadbalancer by Name
       loadbalancer_info:
@@ -139,18 +161,18 @@
 
       - name: Drop existing Router
         os_router:
-          name: my_test_router
+          name: my_test_router_lb
           state: absent
         register: lb_net_router
 
       - name: Drop existing subnet
         os_subnet:
-          name: my_test_subnet
+          name: my_test_subnet_lb
           state: absent
         register: lb_net_subnet
 
       - name: Drop existing network
         os_network:
-          name: my_test_network
+          name: my_test_network_lb
           state: absent
         register: lb_net
