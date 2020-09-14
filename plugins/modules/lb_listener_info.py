@@ -53,8 +53,8 @@ lb_listener_info:
       description: Specifies the port used by the load balancer.
       type: int
       sample: "80"
-    loadbalancers:
-      description: Specifies the ID of the associated load balancer.
+    load_balancer_ids:
+      description: Specifies the IDs of the associated load balancer.
       type: list
     connection_limit:
       description: Specifies the maximum number of connections.
@@ -64,15 +64,6 @@ lb_listener_info:
       type: bool
     default_pool_id:
       description: Specifies the ID of the associated backend server group.
-      type: str
-    tags:
-      description: Tags the listener.
-      type: str
-    created_at:
-      description: Specifies the time when the listener was created.
-      type: str
-    updated_at:
-      description: Specifies the time when the listener was updated.
       type: str
 '''
 
