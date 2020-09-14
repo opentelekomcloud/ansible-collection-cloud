@@ -13,7 +13,7 @@
 
 DOCUMENTATION = '''
 ---
-module: backup_info
+module: volume_backup_info
 short_description: Get Backups
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.3"
@@ -50,9 +50,9 @@ backups:
 
 EXAMPLES = '''
 # Get backups.
-- backup_info:
+- volume_backup_info:
   register: backup
-- backup_info:
+- volume_backup_info:
     name: my_fake_backup
   register: backup
 '''
@@ -60,7 +60,7 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class BackupInfoModule(OTCModule):
+class VolumeBackupInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
         volume=dict(required=False)
@@ -90,7 +90,7 @@ class BackupInfoModule(OTCModule):
 
 
 def main():
-    module = BackupInfoModule()
+    module = VolumeBackupInfoModule()
     module()
 
 

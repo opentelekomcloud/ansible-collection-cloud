@@ -1,7 +1,7 @@
 ---
 - block:
     - name: Get backup info
-      backup_info:
+      volume_backup_info:
       register: backup
 
     - name: Debug backup
