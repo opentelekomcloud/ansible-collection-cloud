@@ -227,8 +227,16 @@ class LoadBalancerListenerModule(OTCModule):
         lb_listener = self.conn.network.find_listener(name_or_id=name_filter)
 
         if self.params['state'] == 'present':
-            if not protocol_filter and not protocol_port_filter and not lb_filter:
-                self.fail_json(msg='Protocol, port and loadbalancer should be specified.')
+            if name_filter:
+                attrs['name'] = name_filter
+            if protocol_filter:
+                attrs['protocol'] = protocol_filter.upper()
+            if lb_filter:
+                lb = self.conn.network.find_load_balancer(name_or_id=lb_filter)
+                if lb:
+                    attrs['loadbalancer'] = lb.id
+            if protocol_port_filter:
+                attrs['protocol_port'] = protocol_port_filter
             if description_filter:
                 attrs['description'] = description_filter
             if connection_limit_filter:
@@ -245,6 +253,9 @@ class LoadBalancerListenerModule(OTCModule):
                     attrs['http2_enable'] = http2_enable_filter
                 if default_tls_container_ref_filter:
                     attrs['default_tls_container_ref'] = default_tls_container_ref_filter
+                else:
+                    self.fail_json(msg='default_tls_container_ref parameter is mandatory'
+                                       ' when protocol is set to TERMINATED_HTTPS.')
                 if client_ca_tls_container_ref_filter:
                     attrs['client_ca_tls_container_ref'] = client_ca_tls_container_ref_filter
                 if sni_container_refs_filter:
@@ -252,19 +263,21 @@ class LoadBalancerListenerModule(OTCModule):
                 if tls_ciphers_policy_filter:
                     attrs['tls_ciphers_policy'] = tls_ciphers_policy_filter
 
-            lb_filter = self.conn.network.find_load_balancer(name_or_id=lb_filter)
             if not lb_listener:
+                if not protocol_filter and not protocol_port_filter and not lb_filter:
+                    self.fail_json(msg='Protocol, Port and Loadbalancer should be specified.')
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
 
-                lb_listener = self.conn.network.create_listener(
-                    name=name_filter,
-                    protocol=protocol_filter.upper(),
-                    protocol_port=protocol_port_filter,
-                    loadbalancer_id=lb_filter.id,
-                    **attrs
-                )
+                lb_listener = self.conn.network.create_listener(**attrs)
                 changed = True
+            else:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
+
+                lb_listener = self.conn.network.update_listener(lb_listener, **attrs)
+                changed = True
+
             self.exit_json(
                 changed=changed,
                 listenerr=lb_listener.to_dict(),
