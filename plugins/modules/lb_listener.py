@@ -263,26 +263,31 @@ class LoadBalancerListenerModule(OTCModule):
                 if tls_ciphers_policy_filter:
                     attrs['tls_ciphers_policy'] = tls_ciphers_policy_filter
 
-            if not lb_listener:
-                if not protocol_filter and not protocol_port_filter and not lb_filter:
-                    self.fail_json(msg='Protocol, Port and Loadbalancer should be specified.')
-                if self.ansible.check_mode:
-                    self.exit_json(changed=True)
-
-                lb_listener = self.conn.network.create_listener(**attrs)
+            if lb_listener:
                 changed = True
-            else:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
 
                 lb_listener = self.conn.network.update_listener(lb_listener, **attrs)
-                changed = True
+                self.exit_json(
+                    changed=changed,
+                    listener=lb_listener.to_dict(),
+                    id=lb_listener.id
+                )
 
+            if not protocol_filter and not protocol_port_filter and not lb_filter:
+                self.fail_json(msg='Protocol, Port and Loadbalancer should be specified.')
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
+
+            lb_listener = self.conn.network.create_listener(**attrs)
+            changed = True
             self.exit_json(
                 changed=changed,
-                listenerr=lb_listener.to_dict(),
+                listener=lb_listener.to_dict(),
                 id=lb_listener.id
             )
+
         elif self.params['state'] == 'absent':
             changed = False
             if lb_listener:

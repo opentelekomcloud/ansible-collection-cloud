@@ -95,7 +95,7 @@
         that:
           - lstnr is success
           - lstnr is changed
-          - lstnr.listenerr.protocol_port == 8080
+          - lstnr.listener.protocol_port == 8080
 
     - name: Get loadbalancer by Name
       loadbalancer_info:
