@@ -87,7 +87,7 @@
         protocol_port: 8080
         protocol: TCP
         loadbalancer: "{{ lb.loadbalancer.id }}"
-        name: my_test_listener_changed
+        name: my_test_listener
       register: lstnr
 
     - name: assert result
@@ -95,6 +95,7 @@
         that:
           - lstnr is success
           - lstnr is changed
+          - lstnr.listenerr.protocol_port == 8080
 
     - name: Get loadbalancer by Name
       loadbalancer_info:
