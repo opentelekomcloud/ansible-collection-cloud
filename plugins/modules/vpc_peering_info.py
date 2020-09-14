@@ -13,7 +13,7 @@
 
 DOCUMENTATION = '''
 ---
-module: tasks
+module: vpc_peering_info
 short_description: Get information about vpc peerings
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.3"
@@ -57,14 +57,14 @@ peerings:
       sample: "ACTIVE"
     request_vpc_info:
       description: 	Information about the local VPC.
-      type: complex
+      type: dict
       sample: "{
                 "tenant_id": "76889f64a23945ab887012be95acf",
                 "vpc_id": "4dae5bac-0925-4d5b-add8-cb6667b8"
                 }"
     accept_vpc_info:
       description:  Information about the peer VPC.
-      type: complex
+      type: dict
       sample: "{
                 "tenant_id": "968u64a23945ab887012be95acf",
                 "vpc_id": "7dau5bac-0925-4d5b-add8-cb6667b8"
