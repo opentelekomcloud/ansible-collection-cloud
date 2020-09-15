@@ -34,9 +34,9 @@ options:
     description:
       - Project ID.
     type: str
-  router_id:
+  router:
     description:
-      - VPC ID.
+      - Router name.
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -96,7 +96,7 @@ class VPCPeeringInfoModule(OTCModule):
         name=dict(required=False),
         status=dict(required=False, choices=['pending_acceptance', 'rejected', 'expired', 'deleted', 'active']),
         project_id=dict(required=False),
-        router_id=dict(required=False),
+        router=dict(required=False),
     )
 
     def run(self):
@@ -104,18 +104,18 @@ class VPCPeeringInfoModule(OTCModule):
         name_filter = self.params['name']
         status_filter = self.params['status']
         project_id_filter = self.params['project_id']
-        router_id_filter = self.params['router_id']
+        router = self.params['router']
 
         data = []
         query = {}
         if name_filter:
             query['name'] = name_filter
         if status_filter:
-            query['status'] = status_filter
+            query['status'] = status_filter.upper()
         if project_id_filter:
             query['project_id'] = project_id_filter
-        if router_id_filter:
-            query['router_id'] = router_id_filter
+        if router:
+            query['router_id'] = self.conn.network.find_router(router)
 
         for raw in self.conn.vpc.peerings(**query):
             dt = raw.to_dict()
