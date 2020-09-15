@@ -1,0 +1,16 @@
+---
+- block:
+    - name: Get backup info
+      volume_backup_info:
+      register: backup
+
+    - name: Debug backup
+      debug:
+        var: backup
+
+    - name: assert result
+      assert:
+        that:
+          - backup is success
+          - backup is not changed
+          - backup.backups is defined
