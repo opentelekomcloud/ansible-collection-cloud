@@ -1,0 +1,16 @@
+---
+- block:
+    - name: Get vpc peerings info
+      vpc_peering_info:
+      register: vpc_peerings
+
+    - name: Debug vpc peerings
+      debug:
+        var: vpc_peerings
+
+    - name: assert result
+      assert:
+        that:
+          - vpc_peerings is success
+          - vpc_peerings is not changed
+          - vpc_peerings.vpc_peerings is defined
