@@ -24,3 +24,4 @@ action_groups:
     - waf_domain_info
     - lb_listener
     - lb_listener_info
+    - lb_pool_info
