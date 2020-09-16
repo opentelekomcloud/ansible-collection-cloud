@@ -105,7 +105,7 @@ class LoadBalancerPoolInfoModule(OTCModule):
 
         self.exit_json(
             changed=False,
-            listeners=data
+            server_group=data
         )
 
 
