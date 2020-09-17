@@ -70,7 +70,7 @@
       lb_listener:
         state: present
         protocol_port: 80
-        protocol: TCP
+        protocol: tcp
         loadbalancer: "{{ lb.loadbalancer.id }}"
         name: my_test_listener
       register: lstnr
