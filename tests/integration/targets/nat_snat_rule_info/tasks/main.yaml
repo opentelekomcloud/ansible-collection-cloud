@@ -1,0 +1,17 @@
+---
+- block:
+    - name: Get SNAT rule info
+      nat_snat_rule_info:
+        cloud: "{{ test_cloud }}"
+      register: sn
+
+    - name: debug configs
+      debug:
+        var: sn.snat_rules
+
+    - name: assert result
+      assert:
+        that:
+          - sn is success
+          - sn is not changed
+          - sn.snat_rules is defined
