@@ -40,7 +40,7 @@ options:
   protocol:
     description:
       - Specifies the load balancer protocol.
-    choices: [TCP, HTTP, UDP, TERMINATED_HTTPS]
+    choices: [tcp, http, udp, terminated_https]
     type: str
   protocol_port:
     description:
@@ -190,7 +190,7 @@ class LoadBalancerListenerModule(OTCModule):
         name=dict(required=True),
         state=dict(default='present', choices=['absent', 'present']),
         description=dict(required=False),
-        protocol=dict(required=False, choices=['TCP', 'HTTP', 'UDP', 'TERMINATED_HTTPS']),
+        protocol=dict(required=False, choices=['tcp', 'http', 'udp', 'terminated_https']),
         protocol_port=dict(required=False, type='int'),
         loadbalancer=dict(required=False, type='str'),
         connection_limit=dict(required=False, default=-1, type='int'),
