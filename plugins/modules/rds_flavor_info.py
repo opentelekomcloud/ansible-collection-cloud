@@ -57,14 +57,14 @@ rds_flavors:
         name:
             description: Name (version) of the datastore.
             type: str
-            sample: "10.0"
+            sample: "10"
 '''
 
 EXAMPLES = '''
 # Get a flavor.
 - rds_flavor_info:
     datastore: "postgresql"
-    version: "10.0"
+    version: "10"
   register: rds_flavor_info
 '''
 
