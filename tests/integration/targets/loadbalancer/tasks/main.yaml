@@ -127,9 +127,9 @@
       assert:
         that:
           - res is success
-          - res.otc_loadbalancers is defined
-          - res.otc_loadbalancers.id is defined
-          - res.otc_loadbalancers.vip_address is defined
+          - res.loadbalancers is defined
+          - res.loadbalancers.id is defined
+          - res.loadbalancers.vip_address is defined
 
     - name: Drop existing listener by name
       lb_listener:
