@@ -3,9 +3,9 @@
     loadbalancer:
       cloud: "{{ test_cloud }}"
   block:
-     - name: Set random prefix
-       set_fact:
-         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
       set_fact:
