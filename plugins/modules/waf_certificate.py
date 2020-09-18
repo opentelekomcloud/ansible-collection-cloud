@@ -131,7 +131,7 @@ class WafCertificateModule(OTCModule):
 
         elif self.params['state'] == 'present':
             private_key_filter = self.params['private_key'].strip()
-            content_filter = content = self.params['content'].strip()
+            content_filter = self.params['content'].strip()
 
             if certificate:
                 self.exit(changed=False)
@@ -142,7 +142,7 @@ class WafCertificateModule(OTCModule):
                 key = private_key_filter
 
             if self._is_path(content_filter):
-                key = self._read_content(content_filter)
+                content = self._read_content(content_filter)
             else:
                 content = content_filter
 
