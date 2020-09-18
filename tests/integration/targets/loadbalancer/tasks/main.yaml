@@ -45,7 +45,7 @@
       loadbalancer:
         state: present
         name: "{{ loadbalancer_name }}"
-        vip_subnet: my_test_subnet_lb
+        vip_subnet: "{{ subnet_name }}"
         timeout: 150
       register: loadbalancer_check
       check_mode: yes
@@ -59,7 +59,7 @@
       loadbalancer:
         state: present
         name: "{{ loadbalancer_name }}"
-        vip_subnet: my_test_subnet_lb
+        vip_subnet: "{{ subnet_name }}"
         timeout: 150
       register: lb
 
@@ -73,7 +73,7 @@
       loadbalancer:
         name: "{{ loadbalancer_name }}"
         state: present
-        vip_subnet: my_test_subnet_lb
+        vip_subnet: "{{ subnet_name }}"
         auto_public_ip: yes
         wait: yes
         timeout: 600
