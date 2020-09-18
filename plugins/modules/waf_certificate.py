@@ -137,6 +137,7 @@ class WafCertificateModule(OTCModule):
                 self.exit(changed=False)
 
             if self._is_path(private_key_filter):
+                self.fail_json(msg='is path: %s' % self._is_path(private_key_filter))
                 key = self._read_content(private_key_filter)
             else:
                 self.fail_json(msg='else')
