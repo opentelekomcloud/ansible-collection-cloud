@@ -4,16 +4,16 @@
       cloud: "{{ test_cloud }}"
   block:
      - name: Set random prefix
-      set_fact:
-        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+       set_fact:
+         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
       set_fact:
-        network_name: "{{ ( prefix + '_my_test_network_lb') }}"
-        subnet_name: "{{ ( prefix + '_my_test_subnet_lb') }}"
-        router_name: "{{ ( prefix + '_my_test_router_lb') }}"
-        loadbalancer_name: "{{ ( prefix + '_my_test_lb') }}"
-        listener_name: "{{ ( prefix + '_my_test_lstnr') }}"
+        network_name: "{{ ( prefix + '_acc-lb-network') }}"
+        subnet_name: "{{ ( prefix + '_acc-lb-subnet') }}"
+        router_name: "{{ ( prefix + '_acc-lb-router') }}"
+        loadbalancer_name: "{{ ( prefix + '_acc-lb') }}"
+        listener_name: "{{ ( prefix + '_acc-lb-lstnr') }}"
 
     - name: Create network for ELB
       os_network:
