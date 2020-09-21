@@ -75,8 +75,8 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class WafCertificateModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True, type='str'),
-        content=dict(type='str', no_log=False),
-        private_key=dict(type='str', no_log=False),
+        content=dict(type='str', no_log=True),
+        private_key=dict(type='str', no_log=True),
         state=dict(type='str', choices=['present', 'absent'],
                    default='present')
     )
@@ -98,7 +98,7 @@ class WafCertificateModule(OTCModule):
     def _read_content(path):
         with open(path, 'r') as file:
             content = file.read()
-        return content
+        return content.strip()
 
     def _system_state_change(self, obj):
         state = self.params['state']
