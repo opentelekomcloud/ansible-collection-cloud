@@ -136,11 +136,6 @@ loadbalancer:
 EXAMPLES = '''
 # Create a load balancer by specifying the VIP subnet.
 - loadbalancer:
-    auth:
-      auth_url: https://identity.example.com
-      username: admin
-      password: passme
-      project_name: admin
     state: present
     name: my_lb
     vip_subnet: my_subnet
@@ -158,22 +153,12 @@ EXAMPLES = '''
 
 # Delete a load balancer(and all its related resources)
 - loadbalancer:
-    auth:
-      auth_url: https://identity.example.com
-      username: admin
-      password: passme
-      project_name: admin
     state: absent
     name: my_lb
 
 # Delete a load balancer(and all its related resources) together with the
 # public IP address(if any) attached to it.
 - loadbalancer:
-    auth:
-      auth_url: https://identity.example.com
-      username: admin
-      password: passme
-      project_name: admin
     state: absent
     name: my_lb
     delete_public_ip: yes
@@ -193,6 +178,9 @@ class LoadBalancerModule(OTCModule):
         public_ip_address=dict(required=False, default=None),
         auto_public_ip=dict(required=False, default=False, type='bool'),
         delete_public_ip=dict(required=False, default=False, type='bool'),
+    )
+    module_kwargs = dict(
+        supports_check_mode=True
     )
 
     def _wait_for_lb(self, lb, status, failures, interval=5):
@@ -284,15 +272,6 @@ class LoadBalancerModule(OTCModule):
 
         return new_public_ip
 
-    def _system_state_change(self, lb):
-        state = self.params['state']
-        if state == 'present':
-            if not lb:
-                return True
-        elif state == 'absent' and lb:
-            return True
-        return False
-
     def run(self):
         vip_subnet = self.params['vip_subnet']
         public_vip_address = self.params['public_ip_address']
@@ -307,9 +286,6 @@ class LoadBalancerModule(OTCModule):
         lb = self.conn.network.find_load_balancer(
             name_or_id=self.params['name'])
 
-        if self.check_mode:
-            self.exit_json(changed=self._system_state_change(lb))
-
         if self.params['state'] == 'present':
             if not lb:
                 if vip_subnet:
@@ -320,6 +296,8 @@ class LoadBalancerModule(OTCModule):
                         )
                     vip_subnet_id = subnet.id
 
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
                 lb = self.conn.network.create_load_balancer(
                     name=self.params['name'],
                     vip_subnet_id=vip_subnet_id,
@@ -328,6 +306,8 @@ class LoadBalancerModule(OTCModule):
                 changed = True
 
             if not self.params['wait']:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=False)
                 self.exit_json(
                     changed=changed,
                     loadbalancer=lb.to_dict(),
@@ -360,6 +340,8 @@ class LoadBalancerModule(OTCModule):
             public_vip_address = None
 
             if lb:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
                 self.conn.network.delete(
                     '/lbaas/loadbalancers/{id}?cascade=true'.format(id=lb.id))
                 changed = True

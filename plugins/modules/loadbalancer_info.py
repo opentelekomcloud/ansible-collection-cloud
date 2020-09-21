@@ -23,14 +23,14 @@ description:
 options:
   name:
     description:
-      - Optinal name of the loadbalancer.
+      - Optional name of the loadbalancer.
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
 loadbalancers:
-    description: Distionary describing load balancers
+    description: Dictionary describing load balancers
     type: complex
     returned: On Success.
     contains:
@@ -116,7 +116,7 @@ class LoadBalancerInfoModule(OTCModule):
 
         self.exit_json(
             changed=False,
-            otc_loadbalancers=lb
+            loadbalancers=lb
         )
 
 
