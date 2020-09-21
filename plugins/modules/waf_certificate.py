@@ -26,10 +26,10 @@ options:
     type: str
     required: true
   content:
-    description: Certificate content. Required for creation.
+    description: Certificate content or path to file with content. Required for creation.
     type: str
   private_key:
-    description: Private key for the certificate. Required for creation.
+    description: Private key for the certificate or path to file with key. Required for creation.
     type: str
   state:
     choices: [present, absent]
