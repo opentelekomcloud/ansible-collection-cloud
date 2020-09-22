@@ -16,6 +16,7 @@
         subnet_name_2: "{{ ( prefix + 'vpc_peering_test-subnet_2') }}"
         router_name_2: "{{ ( prefix + 'vpc_peering_test-router_2') }}"
         vpc_peering_name: "{{ ( prefix + 'vpc_peering_test') }}"
+        new_peering_name: "{{ ( prefix + 'vpc_peering_test_2') }}"
         project_id: "76889f64a23945ab887012b180e95acf"
 
     - name: Create first network for test
@@ -24,16 +25,16 @@
         state: present
       register: test_network_1
 
-    - name: Create subnet for test
+    - name: Create first subnet for test
       os_subnet:
         name: "{{ subnet_name_1 }}"
         state: present
         network_name: "{{ test_network_1.network.name }}"
-        cidr: "192.168.110.0/24"
+        cidr: "192.168.115.0/24"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
       register: test_subnet_1
 
-    - name: Create router for test
+    - name: Create first router for test
       os_router:
         name: "{{ router_name_1 }}"
         state: present
@@ -44,12 +45,38 @@
             subnet: "{{ test_subnet_1.subnet.name }}"
       register: test_router_1
 
+    - name: Create second network for test
+      os_network:
+        name: "{{ network_name_2 }}"
+        state: present
+      register: test_network_2
+
+    - name: Create second subnet for test
+      os_subnet:
+        name: "{{ subnet_name_2 }}"
+        state: present
+        network_name: "{{ test_network_2.network.name }}"
+        cidr: "192.168.116.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: test_subnet_2
+
+    - name: Create second router for test
+      os_router:
+        name: "{{ router_name_2 }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ test_network_2.network.name }}"
+            subnet: "{{ test_subnet_2.subnet.name }}"
+      register: test_router_2
+
     - name: Create vpc peering - check mode
       vpc_peering:
         name: "{{ vpc_peering_name }}"
-        local_vpc_id: "{{ test_router_1.id }}"
+        local_vpc_id: "{{ test_router_1.router.id }}"
         project_id_local_vpc: "{{ project_id }}"
-        peer_vpc_id: "{{ test_router_2.id }}"
+        peer_vpc_id: "{{ test_router_2.router.id }}"
         project_id_peer_vpc: "{{ project_id }}"
       register: vpc_peering_check
       check_mode: yes
@@ -62,9 +89,9 @@
     - name: Create vpc peering
       vpc_peering:
         name: "{{ vpc_peering_name }}"
-        local_vpc_id: "{{ test_router_1.id }}"
+        local_vpc_id: "{{ test_router_1.router.id }}"
         project_id_local_vpc: "{{ project_id }}"
-        peer_vpc_id: "{{ test_router_2.id }}"
+        peer_vpc_id: "{{ test_router_2.router.id }}"
         project_id_peer_vpc: "{{ project_id }}"
       register: vpc_peering
 
@@ -73,3 +100,65 @@
         that:
           - vpc_peering is success
           - vpc_peering is changed
+
+    - name: Modify existing vpc peering
+      vpc_peering:
+        name: "{{ vpc_peering_name }}"
+        new_name: "{{ vpc_peering_name_2 }}"
+        local_vpc_id: "{{ test_router_1.id }}"
+        project_id_local_vpc: "{{ project_id }}"
+        peer_vpc_id: "{{ test_router_2.id }}"
+        project_id_peer_vpc: "{{ project_id }}"
+      register: updated_vpc_peering
+
+    - name: assert result
+      assert:
+        that:
+          - updated_vpc_peering is success
+          - updated_vpc_peering is changed
+
+    - name: Drop existing vpc peering
+      vpc_peering:
+        # pass ID as name
+        name: "{{ updated_vpc_peering.vpc_peering.name }}"
+        state: absent
+      register: dropped
+
+    - name: assert result
+      assert:
+        that:
+          - dropped is success
+          - dropped is changed
+
+  always:
+    - block:
+      # Cleanup
+      - name: Drop existing first router
+        os_router:
+          name: "{{ router_name_1 }}"
+          state: absent
+
+      - name: Drop existing first subnet
+        os_subnet:
+          name: "{{ subnet_name_1 }}"
+          state: absent
+
+      - name: Drop existing first network
+        os_network:
+          name: "{{ network_name_1 }}"
+          state: absent
+
+      - name: Drop existing second router
+        os_router:
+          name: "{{ router_name_2 }}"
+          state: absent
+
+      - name: Drop existing second subnet
+        os_subnet:
+          name: "{{ subnet_name_2 }}"
+          state: absent
+
+      - name: Drop existing second network
+        os_network:
+          name: "{{ network_name_2 }}"
+          state: absent
