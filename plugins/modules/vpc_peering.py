@@ -14,7 +14,7 @@
 
 DOCUMENTATION = '''
 ---
-module: vpc peering 
+module: vpc peering
 short_description: Add/Delete vpc peering connection from OpenTelekomCloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.1"
