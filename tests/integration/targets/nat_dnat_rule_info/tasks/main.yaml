@@ -1,0 +1,17 @@
+---
+- block:
+    - name: Get DNAT rule info
+      nat_dnat_rule_info:
+        cloud: "{{ test_cloud }}"
+      register: dn
+
+    - name: debug configs
+      debug:
+        var: dn.dnat_rules
+
+    - name: assert result
+      assert:
+        that:
+          - dn is success
+          - dn is not changed
+          - dn.dnat_rules is defined

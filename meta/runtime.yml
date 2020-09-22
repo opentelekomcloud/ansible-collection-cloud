@@ -9,6 +9,9 @@ action_groups:
     - cce_cluster_info
     - loadbalancer
     - loadbalancer_info
+    - nat_dnat_info
+    - nat_gateway_info
+    - nat_snat_info
     - rds_datastore_info
     - rds_flavor_info
     - rds_instance

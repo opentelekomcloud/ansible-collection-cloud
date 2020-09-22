@@ -3,15 +3,27 @@
     loadbalancer:
       cloud: "{{ test_cloud }}"
   block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        network_name: "{{ ( prefix + '_acc-lb-network') }}"
+        subnet_name: "{{ ( prefix + '_acc-lb-subnet') }}"
+        router_name: "{{ ( prefix + '_acc-lb-router') }}"
+        loadbalancer_name: "{{ ( prefix + '_acc-lb') }}"
+        listener_name: "{{ ( prefix + '_acc-lb-lstnr') }}"
+
     - name: Create network for ELB
       os_network:
-        name: my_test_network_lb
+        name: "{{ network_name }}"
         state: present
       register: lb_net
 
     - name: Create subnet for ELB
       os_subnet:
-        name: my_test_subnet_lb
+        name: "{{ subnet_name }}"
         state: present
         network_name: "{{ lb_net.network.name }}"
         cidr: "192.168.110.0/24"
@@ -20,7 +32,7 @@
 
     - name: Create Router for ELB
       os_router:
-        name: my_test_router_lb
+        name: "{{ router_name }}"
         state: present
         network: admin_external_net
         enable_snat: True
@@ -32,8 +44,8 @@
     - name: Create loadbalancer - check mode
       loadbalancer:
         state: present
-        name: my_test_lb
-        vip_subnet: my_test_subnet_lb
+        name: "{{ loadbalancer_name }}"
+        vip_subnet: "{{ subnet_name }}"
         timeout: 150
       register: loadbalancer_check
       check_mode: yes
@@ -46,8 +58,8 @@
     - name: Create loadbalancer
       loadbalancer:
         state: present
-        name: my_test_lb
-        vip_subnet: my_test_subnet_lb
+        name: "{{ loadbalancer_name }}"
+        vip_subnet: "{{ subnet_name }}"
         timeout: 150
       register: lb
 
@@ -59,9 +71,9 @@
 
     - name: Assign EIP to existing loadbalancer
       loadbalancer:
-        name: my_test_lb
+        name: "{{ loadbalancer_name }}"
         state: present
-        vip_subnet: my_test_subnet_lb
+        vip_subnet: "{{ subnet_name }}"
         auto_public_ip: yes
         wait: yes
         timeout: 600
@@ -70,9 +82,9 @@
       lb_listener:
         state: present
         protocol_port: 80
-        protocol: TCP
+        protocol: tcp
         loadbalancer: "{{ lb.loadbalancer.id }}"
-        name: my_test_listener
+        name: "{{ listener_name }}"
       register: lstnr
 
     - name: assert result
@@ -85,7 +97,7 @@
       lb_listener:
         state: present
         description: changed
-        name: my_test_listener
+        name: "{{ listener_name }}"
       register: lstnr
 
     - name: assert result
@@ -115,14 +127,14 @@
       assert:
         that:
           - res is success
-          - res.otc_loadbalancers is defined
-          - res.otc_loadbalancers.id is defined
-          - res.otc_loadbalancers.vip_address is defined
+          - res.loadbalancers is defined
+          - res.loadbalancers.id is defined
+          - res.loadbalancers.vip_address is defined
 
     - name: Drop existing listener by name
       lb_listener:
         state: absent
-        name: my_test_listener
+        name: "{{ listener_name }}"
       register: dropped
 
     - name: assert result
@@ -171,18 +183,18 @@
 
       - name: Drop existing Router
         os_router:
-          name: my_test_router_lb
+          name: "{{ router_name }}"
           state: absent
         register: lb_net_router
 
       - name: Drop existing subnet
         os_subnet:
-          name: my_test_subnet_lb
+          name: "{{ subnet_name }}"
           state: absent
         register: lb_net_subnet
 
       - name: Drop existing network
         os_network:
-          name: my_test_network_lb
+          name: "{{ network_name }}"
           state: absent
         register: lb_net

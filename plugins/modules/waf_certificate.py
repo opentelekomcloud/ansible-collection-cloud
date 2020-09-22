@@ -26,10 +26,10 @@ options:
     type: str
     required: true
   content:
-    description: Certificate content. Required for creation.
+    description: Certificate content or path to file with content. Required for creation.
     type: str
   private_key:
-    description: Private key for the certificate. Required for creation.
+    description: Private key for the certificate or path to file with key. Required for creation.
     type: str
   state:
     choices: [present, absent]
@@ -68,7 +68,7 @@ waf_certificate:
 EXAMPLES = '''
 '''
 
-
+import os
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
@@ -87,6 +87,18 @@ class WafCertificateModule(OTCModule):
     )
 
     otce_min_version = '0.8.0'
+
+    @staticmethod
+    def _is_path(path):
+        if os.path.isfile(path):
+            return True
+        return False
+
+    @staticmethod
+    def _read_content(path):
+        with open(path, 'r') as file:
+            content = file.read()
+        return content.strip()
 
     def _system_state_change(self, obj):
         state = self.params['state']
@@ -118,12 +130,21 @@ class WafCertificateModule(OTCModule):
             self.exit(changed=changed)
 
         elif self.params['state'] == 'present':
+            private_key_filter = self.params['private_key'].strip()
+            content_filter = self.params['content'].strip()
 
             if certificate:
                 self.exit(changed=False)
 
-            key = self.params['private_key'].strip()
-            content = self.params['content'].strip()
+            if self._is_path(private_key_filter):
+                key = self._read_content(private_key_filter)
+            else:
+                key = private_key_filter
+
+            if self._is_path(content_filter):
+                content = self._read_content(content_filter)
+            else:
+                content = content_filter
 
             cert = self.conn.waf.create_certificate(
                 name=self.params['name'],

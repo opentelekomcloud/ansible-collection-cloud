@@ -40,7 +40,7 @@ options:
   protocol:
     description:
       - Specifies the load balancer protocol.
-    choices: [TCP, HTTP, UDP, TERMINATED_HTTPS]
+    choices: [tcp, http, udp, terminated_https]
     type: str
   protocol_port:
     description:
@@ -61,7 +61,7 @@ options:
     type: bool
   http2_enable:
     description:
-      - Specifies whether to use HTTP/2 (valid only for TERMINATED_HTTPS).
+      - Specifies whether to use HTTP/2 (valid only for terminated_https).
     default: false
     type: bool
   default_pool:
@@ -71,26 +71,26 @@ options:
   default_tls_container_ref:
     description:
       - Specifies the ID of the server certificate used by the listener
-       (only for TERMINATED_HTTPS).
+       (only for terminated_https).
     default: null
     type: str
   client_ca_tls_container_ref:
     description:
       - Specifies the ID of the CA certificate used by the listener
-       (only for TERMINATED_HTTPS).
+       (only for terminated_https).
     default: null
     type: str
   sni_container_refs:
     description:
       - Lists the IDs of SNI certificates
        (server certificates with a domain name) used by the listener
-        (only for TERMINATED_HTTPS).
+        (only for terminated_https).
     default: []
     type: list
     elements: str
   tls_ciphers_policy:
     description:
-      - Specifies the security policy used by the listener (only for TERMINATED_HTTPS).
+      - Specifies the security policy used by the listener (only for terminated_https).
        (server certificates with a domain name) used by the listener.
     default: tls-1-0
     type: str
@@ -159,7 +159,7 @@ EXAMPLES = '''
 - lb_listener:
     state: present
     protocol_port: 443
-    protocol: TERMINATED_HTTPS
+    protocol: terminated_https
     default_tls_container_ref: "02dcd56799e045bf8b131533cc911dd6"
     loadbalancer_id: "0416b6f1-877f-4a51-987e-978b3f084253"
     name: listener-test
@@ -169,7 +169,7 @@ EXAMPLES = '''
 - lb_listener:
     state: present
     protocol_port: 443
-    protocol: TERMINATED_HTTPS
+    protocol: terminated_https
     default_tls_container_ref: "02dcd56799e045bf8b131533cc911dd6"
     loadbalancer_id: "0416b6f1-877f-4a51-987e-978b3f084253"
     name: listener-test
@@ -190,7 +190,7 @@ class LoadBalancerListenerModule(OTCModule):
         name=dict(required=True),
         state=dict(default='present', choices=['absent', 'present']),
         description=dict(required=False),
-        protocol=dict(required=False, choices=['TCP', 'HTTP', 'UDP', 'TERMINATED_HTTPS']),
+        protocol=dict(required=False, choices=['tcp', 'http', 'udp', 'terminated_https']),
         protocol_port=dict(required=False, type='int'),
         loadbalancer=dict(required=False, type='str'),
         connection_limit=dict(required=False, default=-1, type='int'),

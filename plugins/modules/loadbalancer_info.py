@@ -116,7 +116,7 @@ class LoadBalancerInfoModule(OTCModule):
 
         self.exit_json(
             changed=False,
-            otc_loadbalancers=lb
+            loadbalancers=lb
         )
 
 
