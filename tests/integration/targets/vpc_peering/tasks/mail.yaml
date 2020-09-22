@@ -1,0 +1,75 @@
+---
+- module_defaults:
+    vpc_peering:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        network_name_1: "{{ ( prefix + 'vpc_peering_test-network_1') }}"
+        subnet_name_1: "{{ ( prefix + 'vpc_peering_test-subnet_1') }}"
+        router_name_1: "{{ ( prefix + 'vpc_peering_test-router_1') }}"
+        network_name_2: "{{ ( prefix + 'vpc_peering_test-network_2') }}"
+        subnet_name_2: "{{ ( prefix + 'vpc_peering_test-subnet_2') }}"
+        router_name_2: "{{ ( prefix + 'vpc_peering_test-router_2') }}"
+        vpc_peering_name: "{{ ( prefix + 'vpc_peering_test') }}"
+        project_id: "76889f64a23945ab887012b180e95acf"
+
+    - name: Create first network for test
+      os_network:
+        name: "{{ network_name_1 }}"
+        state: present
+      register: test_network_1
+
+    - name: Create subnet for test
+      os_subnet:
+        name: "{{ subnet_name_1 }}"
+        state: present
+        network_name: "{{ test_network_1.network.name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: test_subnet_1
+
+    - name: Create router for test
+      os_router:
+        name: "{{ router_name_1 }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ test_network_1.network.name }}"
+            subnet: "{{ test_subnet_1.subnet.name }}"
+      register: test_router_1
+
+    - name: Create vpc peering - check mode
+      vpc_peering:
+        name: "{{ vpc_peering_name }}"
+        local_vpc_id: "{{ test_router_1.id }}"
+        project_id_local_vpc: "{{ project_id }}"
+        peer_vpc_id: "{{ test_router_2.id }}"
+        project_id_peer_vpc: "{{ project_id }}"
+      register: vpc_peering_check
+      check_mode: yes
+
+    - name: assert result
+      assert:
+        that:
+          - vpc_peering_check is changed
+
+    - name: Create vpc peering
+      vpc_peering:
+        name: "{{ vpc_peering_name }}"
+        local_vpc_id: "{{ test_router_1.id }}"
+        project_id_local_vpc: "{{ project_id }}"
+        peer_vpc_id: "{{ test_router_2.id }}"
+        project_id_peer_vpc: "{{ project_id }}"
+      register: vpc_peering
+
+    - name: assert result
+      assert:
+        that:
+          - vpc_peering is success
+          - vpc_peering is changed
