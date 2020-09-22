@@ -12,9 +12,11 @@
         network_name_1: "{{ ( prefix + 'vpc_peering_test-network_1') }}"
         subnet_name_1: "{{ ( prefix + 'vpc_peering_test-subnet_1') }}"
         router_name_1: "{{ ( prefix + 'vpc_peering_test-router_1') }}"
+        cidr_block_1: "192.168.115"
         network_name_2: "{{ ( prefix + 'vpc_peering_test-network_2') }}"
         subnet_name_2: "{{ ( prefix + 'vpc_peering_test-subnet_2') }}"
         router_name_2: "{{ ( prefix + 'vpc_peering_test-router_2') }}"
+        cidr_block_2: "192.168.116"
         vpc_peering_name: "{{ ( prefix + 'vpc_peering_test') }}"
         new_peering_name: "{{ ( prefix + 'vpc_peering_test_2') }}"
         project_id: "76889f64a23945ab887012b180e95acf"
@@ -30,7 +32,7 @@
         name: "{{ subnet_name_1 }}"
         state: present
         network_name: "{{ test_network_1.network.name }}"
-        cidr: "192.168.115.0/24"
+        cidr: "{{ cidr_block_1 }}.0/24"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
       register: test_subnet_1
 
@@ -56,7 +58,7 @@
         name: "{{ subnet_name_2 }}"
         state: present
         network_name: "{{ test_network_2.network.name }}"
-        cidr: "192.168.116.0/24"
+        cidr: "{{ cidr_block_2 }}.0/24"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
       register: test_subnet_2
 
