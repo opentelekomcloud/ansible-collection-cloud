@@ -109,7 +109,7 @@ lb_pool:
       description: Lists the IDs of load balancers associated with the backend server group.
       type: list
     session_persistence:
-      description: Specifies whether to enable the sticky session feature. 
+      description: Specifies whether to enable the sticky session feature.
       type: str
 '''
 
@@ -163,6 +163,13 @@ class LoadBalancerPoolModule(OTCModule):
 
     def run(self):
         name_filter = self.params['name']
+        description_filter = self.params['description']
+        lb_algorithm_filter = self.params['lb_algorithm']
+        protocol_filter = self.params['protocol']
+        listener_filter = self.params['listener']
+        loadbalancer_filter = self.params['loadbalancer']
+        admin_state_up_filter = self.params['admin_state_up']
+        session_persistence_filter = self.params['session_persistence']
 
         lb_pool = None
         attrs = {}
@@ -170,11 +177,46 @@ class LoadBalancerPoolModule(OTCModule):
         lb_pool = self.conn.network.find_pool(name_or_id=name_filter)
 
         if self.params['state'] == 'present':
+            if name_filter:
+                attrs['name'] = name_filter
+            if description_filter:
+                attrs['description'] = description_filter
+            if lb_algorithm_filter:
+                attrs['lb_algorithm'] = lb_algorithm_filter.upper()
+            if protocol_filter:
+                attrs['protocol'] = protocol_filter.upper()
+            if listener_filter:
+                lstnr = self.conn.network.find_listener(name_or_id=listener_filter)
+                if lstnr:
+                    attrs['listener_id'] = lstnr.id
+            if loadbalancer_filter:
+                lb = self.conn.network.find_load_balancer(name_or_id=loadbalancer_filter)
+                if lb:
+                    attrs['loadbalancer_id'] = lb.id
+            if admin_state_up_filter:
+                attrs['admin_state_up'] = admin_state_up_filter
+            if session_persistence_filter:
+                attrs['session_persistence'] = session_persistence_filter
 
             if lb_pool:
                 changed = True
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
+                lb_pool = self.conn.network.update_listener(lb_pool, **attrs)
+                self.exit_json(
+                    changed=changed,
+                    server_group=lb_pool.to_dict(),
+                    id=lb_pool.id
+                )
+
+            if not protocol_filter and not listener_filter\
+                    and not loadbalancer_filter and not lb_algorithm_filter:
+                self.fail_json(msg='Protocol, Listener, Loadbalancer and lb algorithm must be specified.')
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
+
+            lb_pool = self.conn.network.create_pool(**attrs)
+            changed = True
             self.exit_json(
                 changed=changed,
                 server_group=lb_pool.to_dict(),
