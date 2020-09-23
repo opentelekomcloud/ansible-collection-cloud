@@ -34,45 +34,43 @@ options:
   local_vpc_id:
     description: ID of the local vpc.
     type: str
-    sample: "59007a7e-ee4f-4d13-8283-b4da2e037c69"
   project_id_local_vpc:
     description: Specifies the ID of the project to which a local VPC belongs.
     type:  str
-    sample: "89007a7e-ee4f-4d13-8283-b4da2e037c69"
   peer_vpc_id:
     description: ID of the peer vpc.
     type: str
-    sample: "69007a7e-ee4f-4d13-8283-b4da2e037c69"
   project_id_peer_vpc:
     description: Specifies the ID of the project to which a peer VPC belongs.
     type: str
-    sample: "90007a7e-ee4f-4d13-8283-b4da2e037c69"
   new name:
     description: Specifies a new name to an existing vpc peering.
     type: str
-    sample: "New_name_for_vpc_peering_1"
   description:
     description: Provides supplementary information about the VPC peering connection.
     type: str
-    sample: ""
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
 id:
     description: Specifies the VPC peering connection ID.
+    returned: On success when C(state=present)
     type: str
     sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
 name:
     description: Specifies the VPC peering connection name.
+    returned: On success when C(state=present)
     type: str
     sample: "vpc_peering1"
 status:
     description: Specifies the VPC peering connection status.
+    returned: On success when C(state=present)
     type: str
     sample: "accepted"
 request_vpc_info:
     description: Dictionary describing the local vpc.
+    returned: On success when C(state=present)
     type: complex
     contains:
         vpc_id:
@@ -85,6 +83,7 @@ request_vpc_info:
             sample: "45007a7e-ee4f-4d13-8283-b4da2e037c69"
 accept_vpc_info:
     description: Dictionary describing the local vpc.
+    returned: On success when C(state=present)
     type: complex
     contains:
         vpc_id:
@@ -97,16 +96,44 @@ accept_vpc_info:
             sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
 description:
     description: Provides supplementary information about the VPC peering connection.
+    returned: On success when C(state=present)
     type: str
     sample: ""
 created_at:
     description: Specifies the time (UTC) when the VPC peering connection is created.
+    returned: On success when C(state=present)
     type: str
     sample: "2020-09-13T20:38:02"
 updated_at:
     description: Specifies the time (UTC) when the VPC peering connection is updated.
+    returned: On success when C(state=present)
     type: str
     sample: "2020-09-13T20:38:02"
+'''
+
+EXAMPLES = '''
+# Create a vpc peering.
+- vpc_peering:
+    name: "peering1"
+    local_vpc_id: "814b516f-7e4f-4252-9574-0a9de735a508"
+    project_id_local_vpc: "959db9b6017d4a1fa1c6fd17b6820f55"
+    peer_vpc_id: "14067794-975d-461e-b502-dd40c0383d26"
+    project_id_peer_vpc: "959db9b6017d4a1fa1c6fd17b6820f55"
+
+# Change name of the vpc peering
+- loadbalancer:
+- vpc_peering:
+    name: "peering1"
+    new_name: "peering2"
+    local_vpc_id: "814b516f-7e4f-4252-9574-0a9de735a508"
+    project_id_local_vpc: "959db9b6017d4a1fa1c6fd17b6820f55"
+    peer_vpc_id: "14067794-975d-461e-b502-dd40c0383d26"
+    project_id_peer_vpc: "959db9b6017d4a1fa1c6fd17b6820f55"
+
+# Delete a load balancer(and all its related resources)
+- vpc_peering:
+    name: "peering2"
+    state: absent
 '''
 
 
