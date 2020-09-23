@@ -31,16 +31,16 @@ options:
     choices: [present, absent]
     default: present
     type: str
-  local_vpc_id:
-    description: ID of the local vpc.
+  local_router_name:
+    description: Name of the local router.
     type: str
-  project_id_local_vpc:
+  project_id_local:
     description: Specifies the ID of the project to which a local VPC belongs.
     type:  str
-  peer_vpc_id:
-    description: ID of the peer vpc.
+  peer_router_name:
+    description: Name of the peer router.
     type: str
-  project_id_peer_vpc:
+  project_id_peer:
     description: Specifies the ID of the project to which a peer VPC belongs.
     type: str
   new_name:
@@ -115,20 +115,20 @@ EXAMPLES = '''
 # Create a vpc peering.
 - vpc_peering:
     name: "peering1"
-    local_vpc_id: "814b516f-7e4f-4252-9574-0a9de735a508"
-    project_id_local_vpc: "959db9b6017d4a1fa1c6fd17b6820f55"
-    peer_vpc_id: "14067794-975d-461e-b502-dd40c0383d26"
-    project_id_peer_vpc: "959db9b6017d4a1fa1c6fd17b6820f55"
+    local_router_name: "local-router"
+    project_id_local: "959db9b6017d4a1fa1c6fd17b6820f55"
+    peer_router_name: "peer-router"
+    project_id_peer: "959db9b6017d4a1fa1c6fd17b6820f55"
 
 # Change name of the vpc peering
 - loadbalancer:
 - vpc_peering:
     name: "peering1"
     new_name: "peering2"
-    local_vpc_id: "814b516f-7e4f-4252-9574-0a9de735a508"
-    project_id_local_vpc: "959db9b6017d4a1fa1c6fd17b6820f55"
-    peer_vpc_id: "14067794-975d-461e-b502-dd40c0383d26"
-    project_id_peer_vpc: "959db9b6017d4a1fa1c6fd17b6820f55"
+    local_router_name: "local-router"
+    project_id_local: "959db9b6017d4a1fa1c6fd17b6820f55"
+    peer_router_name: "peer-router"
+    project_id_peer: "959db9b6017d4a1fa1c6fd17b6820f55"
 
 # Delete a load balancer(and all its related resources)
 - vpc_peering:
@@ -144,16 +144,16 @@ class VPCPeeringModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True, type='str'),
         state=dict(default='present', choices=['absent', 'present']),
-        local_vpc_id=dict(type='str'),
-        project_id_local_vpc=dict(type='str'),
-        peer_vpc_id=dict(type='str'),
-        project_id_peer_vpc=dict(type='str'),
+        local_router_name=dict(type='str'),
+        project_id_local=dict(type='str'),
+        peer_router_name=dict(type='str'),
+        project_id_peer=dict(type='str'),
         new_name=dict(type='str'),
         description=dict(type='str', default="")
     )
     module_kwargs = dict(
         required_if=[
-            ('state', 'present', ['local_vpc_id', 'project_id_local_vpc', 'peer_vpc_id', 'project_id_peer_vpc'])
+            ('state', 'present', ['local_router_name', 'project_id_local', 'peer_router_name', 'project_id_peer'])
         ]
     )
 
@@ -166,12 +166,9 @@ class VPCPeeringModule(OTCModule):
             return True
         return False
 
-    def _check_peering(self):
+    def _check_peering(self, local_vpc_id, peer_vpc_id):
 
         result = True
-
-        local_vpc_id = self.params['local_vpc_id']
-        peer_vpc_id = self.params['peer_vpc_id']
 
         peerings = []
 
@@ -190,15 +187,18 @@ class VPCPeeringModule(OTCModule):
 
     def run(self):
         name = self.params['name']
-        local_vpc_id = self.params['local_vpc_id']
-        project_id_local_vpc = self.params['project_id_local_vpc']
-        peer_vpc_id = self.params['peer_vpc_id']
-        project_id_peer_vpc = self.params['project_id_peer_vpc']
+        local_router_name = self.params['local_router_name']
+        project_id_local = self.params['project_id_local']
+        peer_router_name = self.params['peer_router_name']
+        project_id_peer = self.params['project_id_peer']
         new_name = self.params['new_name']
         description = self.params['description']
 
         changed = False
         vpc_peering = None
+
+        local_vpc_id = self.conn.network.find_router(local_router_name)
+        peer_vpc_id = self.conn.network.find_router(peer_router_name)
 
         try:
             vpc_peering = self.conn.vpc.find_peering(name)
@@ -230,15 +230,15 @@ class VPCPeeringModule(OTCModule):
                     'name': name
                 }
 
-                local_vpc = {'vpc_id': local_vpc_id, 'project_id': project_id_local_vpc}
+                local_vpc = {'vpc_id': local_vpc_id, 'project_id': project_id_local}
                 attrs['local_vpc_info'] = local_vpc
-                peer_vpc = {'vpc_id': peer_vpc_id, 'project_id': project_id_peer_vpc}
+                peer_vpc = {'vpc_id': peer_vpc_id, 'project_id': project_id_peer}
                 attrs['peer_vpc_info'] = peer_vpc
 
                 if description:
                     attrs['description'] = self.params['description']
 
-                if self._check_peering():
+                if self._check_peering(local_vpc_id, peer_vpc_id):
                     vpc_peering = self.conn.vpc.create_peering(**attrs)
                     changed = True
 
