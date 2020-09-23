@@ -43,7 +43,7 @@ options:
   project_id_peer_vpc:
     description: Specifies the ID of the project to which a peer VPC belongs.
     type: str
-  new name:
+  new_name:
     description: Specifies a new name to an existing vpc peering.
     type: str
   description:
