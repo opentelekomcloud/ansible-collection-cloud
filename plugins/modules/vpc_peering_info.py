@@ -86,7 +86,6 @@ EXAMPLES = '''
 - vpc_peering_info:
     name: vpc_peering1
   register: vpc_peering
-  
 - vpc_peering_info:
     router: "76889f64a23945ab887012be95acf"
   register: vpc_peering
