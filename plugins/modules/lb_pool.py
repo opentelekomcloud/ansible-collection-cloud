@@ -202,7 +202,7 @@ class LoadBalancerPoolModule(OTCModule):
                 changed = True
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                lb_pool = self.conn.network.update_listener(lb_pool, **attrs)
+                lb_pool = self.conn.network.update_pool(lb_pool, **attrs)
                 self.exit_json(
                     changed=changed,
                     server_group=lb_pool.to_dict(),
