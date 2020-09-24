@@ -123,6 +123,33 @@
           - pool is success
           - pool is changed
 
+    - name: Modify Backend Server Group
+      lb_pool:
+        state: present
+        name: my_test_pool
+        session_persistence:
+          cookie_name: app
+          type: app_cookie
+      register: pool
+
+    - name: assert result
+      assert:
+        that:
+          - pool is success
+          - pool is changed
+
+    - name: Get pool by name
+      lb_pool_info:
+        name: "{{ pool.server_group.name }}"
+      register: res
+
+    - name: assert result
+      assert:
+        that:
+          - res is success
+          - res.server_groups is defined
+          - res.server_groups[0].id is defined
+
     - name: Get listener by name
       lb_listener_info:
         name: "{{ lstnr.listener.name }}"

@@ -133,7 +133,6 @@ EXAMPLES = '''
     loadbalancer: "0416b6f1-877f-4a51-987e-978b3f084253"
     session_persistence:
       - type: http_cookie
-      - cookie_name: name
       - persistence_timeout: 60
 
 # Delete a load balancer(and all its related resources)
@@ -212,7 +211,7 @@ class LoadBalancerPoolModule(OTCModule):
 
             if not protocol_filter and not listener_filter\
                     and not loadbalancer_filter and not lb_algorithm_filter:
-                self.fail_json(msg='Protocol, Listener, Loadbalancer and lb algorithm must be specified.')
+                self.fail_json(msg='Protocol, Listener, Loadbalancer and LB Algorithm must be specified.')
             if self.ansible.check_mode:
                 self.exit_json(changed=True)
 
