@@ -148,10 +148,10 @@
           - res.loadbalancers.id is defined
           - res.loadbalancers.vip_address is defined
 
-    - name: Drop existing pool by name
-      lb_pool:
+    - name: Drop existing listener by name
+      lb_listener:
         state: absent
-        name: "{{ pool_name }}"
+        name: "{{ listener_name }}"
       register: dropped
 
     - name: assert result
@@ -160,10 +160,10 @@
           - dropped is success
           - dropped is changed
 
-    - name: Drop existing listener by name
-      lb_listener:
+    - name: Drop existing pool by name
+      lb_pool:
         state: absent
-        name: "{{ listener_name }}"
+        name: "{{ pool_name }}"
       register: dropped
 
     - name: assert result
