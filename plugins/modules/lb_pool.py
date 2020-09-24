@@ -196,7 +196,7 @@ class LoadBalancerPoolModule(OTCModule):
             if admin_state_up_filter:
                 attrs['admin_state_up'] = admin_state_up_filter
             if session_persistence_filter:
-                session_persistence_filter['type'].upper()
+                session_persistence_filter['type'] = session_persistence_filter['type'].upper()
                 attrs['session_persistence'] = session_persistence_filter
 
             if lb_pool:
