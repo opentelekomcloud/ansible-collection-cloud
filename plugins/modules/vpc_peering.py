@@ -196,12 +196,6 @@ class VPCPeeringModule(OTCModule):
         changed = False
         vpc_peering = None
 
-        local_vpc = self.conn.network.find_router(local_router)
-        peer_vpc = self.conn.network.find_router(peer_router)
-
-        local_vpc_id = local_vpc['id']
-        peer_vpc_id = peer_vpc['id']
-
         try:
             vpc_peering = self.conn.vpc.find_peering(name)
         except self.sdk.exceptions.ResourceNotFound:
@@ -225,6 +219,12 @@ class VPCPeeringModule(OTCModule):
                 )
 
         if self.params['state'] == 'present':
+
+            local_vpc = self.conn.network.find_router(local_router)
+            peer_vpc = self.conn.network.find_router(peer_router)
+
+            local_vpc_id = local_vpc['id']
+            peer_vpc_id = peer_vpc['id']
 
             if not vpc_peering:
 
