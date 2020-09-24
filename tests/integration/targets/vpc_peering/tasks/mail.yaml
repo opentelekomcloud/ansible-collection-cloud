@@ -76,10 +76,10 @@
     - name: Create vpc peering - check mode
       vpc_peering:
         name: "{{ vpc_peering_name }}"
-        local_vpc_id: "{{ test_router_1.router.id }}"
-        project_id_local_vpc: "{{ project_id }}"
-        peer_vpc_id: "{{ test_router_2.router.id }}"
-        project_id_peer_vpc: "{{ project_id }}"
+        local_router: "{{ test_router_1.router.id }}"
+        project_id_local: "{{ project_id }}"
+        peer_router: "{{ test_router_2.router.id }}"
+        project_id_peer: "{{ project_id }}"
       register: vpc_peering_check
       check_mode: yes
 
@@ -91,10 +91,10 @@
     - name: Create vpc peering
       vpc_peering:
         name: "{{ vpc_peering_name }}"
-        local_vpc_id: "{{ test_router_1.router.id }}"
-        project_id_local_vpc: "{{ project_id }}"
-        peer_vpc_id: "{{ test_router_2.router.id }}"
-        project_id_peer_vpc: "{{ project_id }}"
+        local_router: "{{ test_router_1.router.name }}"
+        project_id_local: "{{ project_id }}"
+        peer_router: "{{ test_router_2.router.name }}"
+        project_id_peer: "{{ project_id }}"
       register: vpc_peering
 
     - name: assert result
@@ -107,10 +107,10 @@
       vpc_peering:
         name: "{{ vpc_peering_name }}"
         new_name: "{{ vpc_peering_name_2 }}"
-        local_vpc_id: "{{ test_router_1.id }}"
-        project_id_local_vpc: "{{ project_id }}"
-        peer_vpc_id: "{{ test_router_2.id }}"
-        project_id_peer_vpc: "{{ project_id }}"
+        local_router: "{{ test_router_1.router.name }}"
+        project_id_local: "{{ project_id }}"
+        peer_router: "{{ test_router_2.router.name }}"
+        project_id_peer: "{{ project_id }}"
       register: updated_vpc_peering
 
     - name: assert result
