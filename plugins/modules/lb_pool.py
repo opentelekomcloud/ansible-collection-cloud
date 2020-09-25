@@ -60,7 +60,7 @@ options:
   loadbalancer:
     description:
       - Specifies the ID or Name of the load balancer associated with the backend server group.
-    type: bool
+    type: str
   session_persistence:
     description:
       - Specifies the sticky session timeout duration in minutes.
@@ -153,7 +153,7 @@ class LoadBalancerPoolModule(OTCModule):
         protocol=dict(required=False, choices=['tcp', 'http', 'udp', 'terminated_https']),
         listener=dict(required=False, type='str'),
         loadbalancer=dict(required=False, type='str'),
-        admin_state_up=dict(required=False, type='bool'),
+        admin_state_up=dict(required=False, default=True, type='bool'),
         session_persistence=dict(required=False, type='dict'),
     )
     module_kwargs = dict(
