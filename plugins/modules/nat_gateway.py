@@ -24,32 +24,31 @@ options:
     description:
       - NAT gateway state.
     type: bool
-  created_at:
-    description:
-      - Creation time of the NAT gateway
-    type: str
   description:
     description:
       - Description of the NAT gateway
     type: str
-  gateway:
+  internal_network:
     description:
-      - Name or ID of the NAT gateway.
-    type: str
-  internal_network_id:
-    description:
-      - Network ID where the NAT gateway is attached to.
+      - Name or ID of the network where the NAT gateway is attached to.
       - Mandatory for creating gateway instance.
     type: str
-  project_id:
+    required: true
+  name:
     description:
-      - Filters NAT gateways of the project ID.
+      - Name of the NAT gateway.
     type: str
-  router_id:
+    required: true
+  project:
     description:
-      - ID of the router where the NAT gateway is attached.
+      - ID or name of the project where the NAT gateway is attached to.
+    type: str
+  router:
+    description:
+      - ID or name of the router where the NAT gateway is attached.
       - Mandatory for creating gateway instance.
     type: str
+    required: true
   spec:
     description:
       - Specifies the type of the NAT gateway. 1 (small 10.000 connections),
@@ -62,10 +61,6 @@ options:
     choices: [present, absent]
     default: present
     description: Instance state
-    type: str
-  status:
-    description:
-      - Specifies the status of the NAT gateway
     type: str
 
 requirements: ["openstacksdk", "otcextensions"]
@@ -104,7 +99,7 @@ nat_gateways:
         project_id:
             description: Project ID where the NAT gateway is located in.
             type: str
-            sample: "16d53a84a13b49529d2e2c3646612345"
+            sample: "25d24fc8-d019-4a34-9fff-0a09fde6a567"
         router_id:
             description: VPC / Router ID where the NAT gateway is attached to.
             type: str
@@ -121,13 +116,11 @@ nat_gateways:
 
 EXAMPLES = '''
 # Get configs versions.
-- nat_gateway_info:
-    internal_network:id "1234f0c7-82e3-478d-8433-dc5984859e3b"
-    name: "my_gateway"
-    router_id: "1234f70c-6d1d-471e-a911-6924b7ec6ea9"
+- nat_gateway:
+    internal_network_id: 1234f0c7-82e3-478d-8433-dc5984859e3b
+    name: my_gateway
+    router: 1234f70c-6d1d-471e-a911-6924b7ec6ea9
     state: present
-  register: gw
-
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -141,7 +134,7 @@ class NATGatewayModule(OTCModule):
         name=dict(required=True),
         project=dict(required=False),
         router=dict(required=True),
-        spec=dict(required=True, default='1', choices=["1", "2", "3", "4"]),
+        spec=dict(required=False, default='1', choices=["1", "2", "3", "4"]),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
 
@@ -160,7 +153,8 @@ class NATGatewayModule(OTCModule):
         changed = False
 
         gateway = self.conn.nat.find_gateway(
-            name_or_id=name)
+            name_or_id=name,
+            ignore_missing=True)
 
         if self.ansible.check_mode:
             self.exit(changed=self._system_state_change(gateway))
@@ -173,11 +167,34 @@ class NATGatewayModule(OTCModule):
                 changed = True
 
         elif self.params['state'] == 'present':
+            attrs = {}
 
             if gateway:
-                self.exit(changed=False)
-            
-            attrs = {}
+                if gateway.description != self.params['description']:
+                    attrs['description'] = self.params['description']
+                if gateway.spec != self.params['spec']:
+                    attrs['spec'] = self.params['spec']
+                if self.params['internal_network']:
+                    nw = self.conn.network.find_network(
+                        name_or_id=self.params['internal_network'],
+                        ignore_missing=True)
+                    if not nw or nw.id != gateway.internal_network_id:
+                        self.exit(
+                            changed=False,
+                            message=('Existing NAT gateway has different '
+                                     'network than %s and cannot be modified. '
+                                     'Please delete existing NAT gateway, '
+                                     'first to attach a new network.'
+                                     % self.params['internal_network']),
+                            failed=True
+                        )
+                
+                if attrs:
+                    gateway = self.conn.nat.update_gateway(
+                        gateway=gateway,
+                        **attrs)
+                    self.exit(changed=True, gateway=gateway.to_dict())
+                self.exit(changed=False, gateway=gateway.to_dict())
 
             if self.params['admin_state_up']:
                 attrs['admin_state_up'] = self.params['admin_state_up']
@@ -194,13 +211,13 @@ class NATGatewayModule(OTCModule):
                     changed=False,
                     snat_rules=[],
                     message=('No network found with name or id: %s' %
-                            self.params['internal_network'])
+                             self.params['internal_network'])
                 )
 
             attrs['name'] = self.params['name']
             if self.params['project']:
                 attrs['project_id'] = self.params['project']
-            
+
             rt = self.conn.network.find_router(
                 name_or_id=self.params['router'],
                 ignore_missing=True)
@@ -210,9 +227,9 @@ class NATGatewayModule(OTCModule):
                 self.exit(
                     changed=False,
                     message=('No router found with name or id: %s' %
-                            self.params['router'])
+                             self.params['router'])
                 )
-            
+
             if self.params['spec']:
                 attrs['spec'] = self.params['spec']
 
