@@ -40,7 +40,7 @@ options:
   protocol:
     description:
       - Specifies the protocol that the backend server group uses to receive requests.
-      Should be same as load balancer listener protocol
+        Should be same as load balancer listener protocol
     choices: [tcp, http, udp, terminated_https]
     type: str
   lb_algorithm:
