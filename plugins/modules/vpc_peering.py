@@ -14,10 +14,10 @@
 
 DOCUMENTATION = '''
 ---
-module: vpc peering
+module: vpc_peering
 short_description: Add/Delete vpc peering connection from OpenTelekomCloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.0.3"
 author: "Polina Gubina (@polina-gubina)"
 description:
   - Add or Remove vpc peering from the OTC.
@@ -121,7 +121,6 @@ EXAMPLES = '''
     project_id_peer: "959db9b6017d4a1fa1c6fd17b6820f55"
 
 # Change name of the vpc peering
-- loadbalancer:
 - vpc_peering:
     name: "peering1"
     new_name: "peering2"
@@ -135,7 +134,6 @@ EXAMPLES = '''
     name: "peering2"
     state: absent
 '''
-
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
@@ -178,8 +176,10 @@ class VPCPeeringModule(OTCModule):
 
         if peerings:
             for peering in peerings:
-                if (peering['local_vpc_info']['vpc_id'] == local_vpc_id and peering['peer_vpc_info']['vpc_id'] == peer_vpc_id) or\
-                        (peering['local_vpc_info']['vpc_id'] == peer_vpc_id and peering['peer_vpc_info']['vpc_id'] == local_vpc_id):
+                if (peering['local_vpc_info']['vpc_id'] == local_vpc_id and
+                   peering['peer_vpc_info']['vpc_id'] == peer_vpc_id) or\
+                   (peering['local_vpc_info']['vpc_id'] == peer_vpc_id and
+                   peering['peer_vpc_info']['vpc_id'] == local_vpc_id):
                     result = False
 
         return result
