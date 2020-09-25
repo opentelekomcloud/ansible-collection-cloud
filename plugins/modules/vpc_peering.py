@@ -159,7 +159,7 @@ class VPCPeeringModule(OTCModule):
     def _system_state_change(self, obj):
         state = self.params['state']
         if state == 'present':
-            if not object:
+            if not obj:
                 return True
         elif state == 'absent' and obj:
             return True
