@@ -176,7 +176,7 @@ class VPCPeeringModule(OTCModule):
 
         if peerings:
             for peering in peerings:
-                if (peering['local_vpc_info']['vpc_id'] == local_vpc_id and peering['peer_vpc_info'][ 'vpc_id'] == peer_vpc_id) or \
+                if (peering['local_vpc_info']['vpc_id'] == local_vpc_id and peering['peer_vpc_info']['vpc_id'] == peer_vpc_id) or \
                         (peering['local_vpc_info']['vpc_id'] == peer_vpc_id and peering['peer_vpc_info']['vpc_id'] == local_vpc_id):
                     result = False
 
