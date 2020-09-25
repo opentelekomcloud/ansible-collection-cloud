@@ -106,7 +106,7 @@
     - name: Modify existing vpc peering
       vpc_peering:
         name: "{{ vpc_peering_name }}"
-        new_name: "{{ vpc_peering_name_2 }}"
+        new_name: "{{ new_peering_name }}"
         local_router: "{{ test_router_1.router.name }}"
         project_id_local: "{{ project_id }}"
         peer_router: "{{ test_router_2.router.name }}"
