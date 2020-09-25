@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: lb_pool
 short_description: Add/Delete backend server group for load balancer from OpenTelekomCloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.3"
+version_added: "0.0.4"
 author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Add or Remove a backend server group for Enhanced Load Balancer from the OTC load-balancer
