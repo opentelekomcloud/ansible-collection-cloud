@@ -152,7 +152,8 @@ class VPCPeeringModule(OTCModule):
     module_kwargs = dict(
         required_if=[
             ('state', 'present', ['local_router', 'project_id_local', 'peer_router', 'project_id_peer'])
-        ]
+        ],
+        supports_check_mode=True
     )
 
     def _system_state_change(self, obj):
