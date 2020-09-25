@@ -126,7 +126,7 @@
     - name: Modify Backend Server Group
       lb_pool:
         state: present
-        name: my_test_pool
+        name: "{{ pool_name }}"
         session_persistence:
           cookie_name: app
           type: app_cookie
