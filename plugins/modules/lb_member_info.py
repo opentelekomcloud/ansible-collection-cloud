@@ -25,6 +25,11 @@ options:
     description:
       - Optional name or id of the member
     type: str
+  pool:
+    description:
+      - Specifies the ID or Name of the backend server group.
+    type: str
+    required: true
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -78,19 +83,20 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class LoadBalancerMemberInfoModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=False)
+        name=dict(required=False),
+        pool=dict(required=True)
     )
 
     def run(self):
         data = []
-
+        pool = self.conn.network.find_pool(name_or_id=self.params['pool'])
         if self.params['name']:
-            raw = self.conn.network.find_pool_member(name_or_id=self.params['name'])
+            raw = self.conn.network.find_pool_member(pool=pool, name_or_id=self.params['name'])
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
         else:
-            for raw in self.conn.network.pool_members():
+            for raw in self.conn.network.pool_members(pool=pool):
                 dt = raw.to_dict()
                 dt.pop('location')
                 data.append(dt)
