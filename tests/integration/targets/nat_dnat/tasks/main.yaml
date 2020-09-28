@@ -1,0 +1,14 @@
+---
+- block:
+  - name: Create DNAT rule
+    nat_dnat:
+      cloud: otc
+      description: miau
+      nat_gateway: 2b725feb-f0b7-4dcc-a7b4-e0233686702b 
+      internal_service_port: 88
+      external_service_port: 88
+      port_id: 730bbea5-aaf8-40b9-bf17-cc081a785d67
+      floating_ip: f44ef6e6-a4b3-42be-a501-b7dfe251bfae
+      protocol: tcp
+      state: present
+    register: dnr
