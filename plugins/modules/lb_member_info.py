@@ -103,7 +103,7 @@ class LoadBalancerMemberInfoModule(OTCModule):
 
         self.exit_json(
             changed=False,
-            listeners=data
+            members=data
         )
 
 
