@@ -159,6 +159,7 @@ class NATGatewayModule(OTCModule):
         if self.ansible.check_mode:
             self.exit(changed=self._system_state_change(gateway))
 
+        # Gateway deletion
         if self.params['state'] == 'absent':
             changed = False
 
@@ -166,14 +167,20 @@ class NATGatewayModule(OTCModule):
                 self.conn.nat.delete_gateway(gateway)
                 changed = True
 
+        # Gateway creation
         elif self.params['state'] == 'present':
             attrs = {}
 
+            # Gateway already exists
             if gateway:
+                # Modify existing gateway
                 if gateway.description != self.params['description']:
                     attrs['description'] = self.params['description']
                 if gateway.spec != self.params['spec']:
                     attrs['spec'] = self.params['spec']
+                
+                # Specs which cannot be modified and playbook fails if
+                # a change is requested
                 if self.params['internal_network']:
                     nw = self.conn.network.find_network(
                         name_or_id=self.params['internal_network'],
@@ -182,10 +189,41 @@ class NATGatewayModule(OTCModule):
                         self.exit(
                             changed=False,
                             message=('Existing NAT gateway has different '
-                                     'network than %s and cannot be modified. '
+                                     'network than %s or network does not '
+                                     'exist. The gateway cannot be modified. '
                                      'Please delete existing NAT gateway, '
-                                     'first to attach a new network.'
+                                     'first to change the network.'
                                      % self.params['internal_network']),
+                            failed=True
+                        )
+                if self.params['project']:
+                    pj = self.conn.identity.find_project(
+                        name_or_id=self.params['project'],
+                        ignore_missing=True)
+                    if not pj or pj.id != gateway.project_id:
+                        self.exit(
+                            changed=False,
+                            message=('Existing NAT gateway has different '
+                                     'project than %s or project does not '
+                                     'exist. The gateway cannot be modified. '
+                                     'Please delete existing NAT gateway, '
+                                     'first to change the project.'
+                                     % self.params['project']),
+                            failed=True
+                        )
+                if self.params['router']:
+                    rt = self.conn.network.find_router(
+                        name_or_id=self.params['router'],
+                        ignore_missing=True)
+                    if not rt or rt.id != gateway.router_id:
+                        self.exit(
+                            changed=False,
+                            message=('Existing NAT gateway has different '
+                                     'router than %s or router does not '
+                                     'exist. The gateway cannot be modified. '
+                                     'Please delete existing NAT gateway, '
+                                     'first to change the router.'
+                                     % self.params['router']),
                             failed=True
                         )
                 
@@ -194,8 +232,10 @@ class NATGatewayModule(OTCModule):
                         gateway=gateway,
                         **attrs)
                     self.exit(changed=True, gateway=gateway.to_dict())
+                # Gateway with same specs exists
                 self.exit(changed=False, gateway=gateway.to_dict())
 
+            # New gateway creatioon
             if self.params['admin_state_up']:
                 attrs['admin_state_up'] = self.params['admin_state_up']
             if self.params['description']:
@@ -211,7 +251,8 @@ class NATGatewayModule(OTCModule):
                     changed=False,
                     snat_rules=[],
                     message=('No network found with name or id: %s' %
-                             self.params['internal_network'])
+                             self.params['internal_network']),
+                    failed=True
                 )
 
             attrs['name'] = self.params['name']
@@ -227,7 +268,8 @@ class NATGatewayModule(OTCModule):
                 self.exit(
                     changed=False,
                     message=('No router found with name or id: %s' %
-                             self.params['router'])
+                             self.params['router']),
+                    failed=True
                 )
 
             if self.params['spec']:
