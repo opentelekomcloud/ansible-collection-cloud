@@ -85,12 +85,12 @@ class LoadBalancerMemberInfoModule(OTCModule):
         data = []
 
         if self.params['name']:
-            raw = self.conn.network.find_pool(name_or_id=self.params['name'])
+            raw = self.conn.network.find_pool_member(name_or_id=self.params['name'])
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
         else:
-            for raw in self.conn.network.pools():
+            for raw in self.conn.network.pool_members():
                 dt = raw.to_dict()
                 dt.pop('location')
                 data.append(dt)
