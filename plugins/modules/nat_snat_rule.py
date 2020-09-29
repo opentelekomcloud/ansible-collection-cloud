@@ -116,12 +116,23 @@ snat_rule:
 '''
 
 EXAMPLES = '''
-# Get configs versions.
+# Create snat_rule with cidr
 - nat_snat_rule:
-    internal_network_id: 1234f0c7-82e3-478d-8433-dc5984859e3b
-    name: my_gateway
-    router: 1234f70c-6d1d-471e-a911-6924b7ec6ea9
+    cloud: otc
+    nat_gateway: 0035136a-9b29-4232-b456-1059ca11a123
+    floating_ip: '80.158.47.5'
+    cidr: '192.168.0.0/32'
     state: present
+  register: snat
+
+# Create SNAT rule with network
+- nat_snat_rule:
+    cloud: otc
+    nat_gateway: 0035136a-9b29-4232-b456-1059ca11a123
+    floating_ip: '80.158.47.5'
+    network: c6b2dbc9-ca80-4b49-bbbb-85ea9b96f123
+    state: present
+  register: snat
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
