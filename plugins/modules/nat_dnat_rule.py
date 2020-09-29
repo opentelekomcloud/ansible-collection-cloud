@@ -154,7 +154,7 @@ nat_dnat:
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class NATDnatModule(OTCModule):
+class NatDnatModule(OTCModule):
     argument_spec = dict(
         admin_state_up=dict(required=False, type='bool'),
         description=dict(required=False),
@@ -293,7 +293,7 @@ class NATDnatModule(OTCModule):
 
 
 def main():
-    module = NATDnatModule()
+    module = NatDnatModule()
     module()
 
 
