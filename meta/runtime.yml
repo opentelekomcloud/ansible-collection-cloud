@@ -29,4 +29,5 @@ action_groups:
     - lb_listener_info
     - lb_pool
     - lb_pool_info
+    - lb_member
     - lb_member_info
