@@ -28,15 +28,29 @@ options:
     description:
       - Description of the DNAT rule
     type: str
-  nat_gateway:
+  external_service_port:
     description:
-      - ID or Name of the NAT gateway
+      - Specifies the port for providing external services.
+    type: str
+  floating_ip:
+    description:
+      - ID or Name of the floating IP
     type: str
     required: true
   id:
     description:
       - ID of the DNAT rule
     type: str
+  internal_service_port:
+    description:
+      - Specifies the port used by ECSs or BMSs to provide services for external systems
+    type: str
+    required: true
+  nat_gateway:
+    description:
+      - ID or Name of the NAT gateway
+    type: str
+    required: true
   port_id:
     description:
       - Specifies the port ID of an ECS or a BMS. This parameter and private_ip are alternative
@@ -45,16 +59,6 @@ options:
     description:
       - Specifies the private IP address, for example, the IP address of a Direct Connect connection. This parameter and port_id are alternative
     type: str
-  internal_service_port:
-    description:
-      - Specifies the port used by ECSs or BMSs to provide services for external systems
-    type: str
-    required: true
-  floating_ip:
-    description:
-      - ID or Name of the floating IP
-    type: str
-    required: true
   protocol:
     description:
       - Specifies the protocol type. Currently, TCP, UDP, and ANY are supported.
@@ -63,10 +67,6 @@ options:
   project_id:
     description:
       - Specifies the project ID
-    type: str
-  external_service_port:
-    description:
-      - Specifies the port for providing external services.
     type: str
   state:
     choices: [present, absent]
@@ -94,38 +94,38 @@ nat_gateways:
             description: Description of the DNAT rule
             type: str
             sample: "My Rule"
-        id:
-            description: ID of the DNAT rule
-            type: str
-            sample: "5dfab424-69fb-4408-93d1-b2801b306827"
         external_service_port:
             description: Specifies the port for providing external services.
             type: str
             sample: "88"
-        project_id:
-            description: Project ID where the DNAT rule is located in.
-            type: str
-            sample: "25d24fc8-d019-4a34-9fff-0a09fde6a567"
         floating_ip:
             description: IP / ID of the floating IP Address assigned to the rule.
             type: str
             sample: "123.12.1.12"
-        nat_gateway_id:
-            description: Id of the assigned Nat gateway.
+        id:
+            description: ID of the DNAT rule
             type: str
-            sample: "2b725feb-f0b7-4dcc-a7b4-e0233686702b"
+            sample: "5acab424-69fb-4408-93d1-b2801b306827"
         internal_service_port:
             description: Specifies the port used by ECSs or BMSs to provide services for external systems
             type: str
             sample: "88"
+        nat_gateway_id:
+            description: Id of the assigned Nat gateway.
+            type: str
+            sample: "2aa32feb-f0b7-4dcc-a7b4-e0233686702b"
         port_id:
             description: Specifies the port ID of an ECS or a BMS. This parameter and private_ip are alternative
             type: str
-            sample: "730bbea5-aaf8-40b9-bf17-cc081a785d67"
+            sample: "736abea5-aaf8-40b9-bf17-cc081a785d67"
         private_ip:
             description: Specifies the private IP address, for example, the IP address of a Direct Connect connection. This parameter and port_id are alternative
             type: str
             sample: "192.168.2.1"
+        project_id:
+            description: Project ID where the DNAT rule is located in.
+            type: str
+            sample: "25dc3fc8-d019-4a34-9fff-0a09fde6a567"
         protocol:
             description: Used protocol
             type: str
@@ -144,8 +144,8 @@ nat_dnat:
     nat_gateway: 2b725feb-f0b7-4dcc-a7b4-e0233686702b
     internal_service_port: 88
     external_service_port: 88
-    port_id: 730bbea5-aaf8-40b9-bf17-cc081a785d67
-    floating_ip: f44ef6e6-a4b3-42be-a501-b7dfe251bfae
+    port_id: 840bbea5-aaf8-40b9-bf17-cc081a785d67
+    floating_ip: f39ef6e6-a4b3-42be-a501-b7dfe251bfae
     protocol: tcp
     state: present
 
