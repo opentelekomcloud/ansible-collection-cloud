@@ -12,10 +12,10 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: nat_dnat
+module: NatDnatModule
 short_description: Manage NAT DNAT rules
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.2"
+version_added: "0.0.6"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Manage NAT DNAT rules
@@ -119,7 +119,7 @@ nat_gateways:
             type: str
             sample: "736abea5-aaf8-40b9-bf17-cc081a785d67"
         private_ip:
-            description: Specifies the private IP address, for example, the IP address of a Direct Connect connection. This parameter and port_id are alternative
+            description: Specifies the private IP address, e.g. the IP address of a Direct Connect connection. This parameter and port_id are alternative
             type: str
             sample: "192.168.2.1"
         project_id:
@@ -156,17 +156,17 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class NATDNATModule(OTCModule):
     argument_spec = dict(
-        nat_gateway=dict(required=True),
-        id=dict(required=False),
-        port_id=dict(required=False),
-        private_ip=dict(required=False),
-        internal_service_port=dict(required=True),
-        floating_ip=dict(required=True),
-        protocol=dict(required=True),
-        project_id=dict(required=False),
         admin_state_up=dict(required=False, type='bool'),
         description=dict(required=False),
         external_service_port=dict(required=False),
+        floating_ip=dict(required=True),
+        id=dict(required=False),
+        internal_service_port=dict(required=True),
+        nat_gateway=dict(required=True),
+        port_id=dict(required=False),
+        private_ip=dict(required=False),
+        protocol=dict(required=True),
+        project_id=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
 
