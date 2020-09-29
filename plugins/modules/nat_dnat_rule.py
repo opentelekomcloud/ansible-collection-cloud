@@ -160,7 +160,6 @@ class NATDNATModule(OTCModule):
         description=dict(required=False),
         external_service_port=dict(required=False),
         floating_ip=dict(required=True),
-        id=dict(required=False),
         internal_service_port=dict(required=True),
         nat_gateway=dict(required=True),
         port_id=dict(required=False),
@@ -181,21 +180,35 @@ class NATDNATModule(OTCModule):
 
     def run(self):
         changed = False
-        if self.params['id']:
-            name = self.params['id']
-            dnat_rule = self.conn.nat.get_dnat_rule(
-                id=name,
-                ignore_missing=True)
 
         if self.ansible.check_mode:
             self.exit(changed=self._system_state_change(dnat_rule))
 
+
         if self.params['state'] == 'absent':
             changed = False
+            query = {}
+            if self.params['floating_ip']:
+                fi = self.conn.network.find_ip(
+                    name_or_id=self.params['floating_ip'],
+                    ignore_missing=True)
+                if fi:
+                    query['floating_ip_id'] = fi.id
+                else:
+                    self.exit(
+                    changed=False,
+                    message=('No floating IP found with name or id: %s' %
+                             self.params['floating_ip'])
+                )
 
-            if dnat_rule:
-                self.conn.nat.delete_dnat_rule(dnat_rule)
+            for raw in self.conn.nat.dnat_rules(**query):
+                #raise Exception("\n\n\nTEST\n\n\n", raw.id)
+                ruleid=raw.id
+            
+            if ruleid:
+                self.conn.nat.delete_dnat_rule(ruleid)
                 changed = True
+
 
         elif self.params['state'] == 'present':
             attrs = {}
