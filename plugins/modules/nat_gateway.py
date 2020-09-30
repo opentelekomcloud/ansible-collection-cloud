@@ -178,7 +178,7 @@ class NATGatewayModule(OTCModule):
                     attrs['description'] = self.params['description']
                 if gateway.spec != self.params['spec']:
                     attrs['spec'] = self.params['spec']
-                
+
                 # Specs which cannot be modified and playbook fails if
                 # a change is requested
                 if self.params['internal_network']:
@@ -226,7 +226,7 @@ class NATGatewayModule(OTCModule):
                                      % self.params['router']),
                             failed=True
                         )
-                
+
                 if attrs:
                     gateway = self.conn.nat.update_gateway(
                         gateway=gateway,
