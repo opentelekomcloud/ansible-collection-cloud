@@ -12,7 +12,7 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: NatDnatModule
+module: nat_dnat_rule
 short_description: Manage NAT DNAT rules
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.6"
