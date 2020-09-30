@@ -286,6 +286,13 @@ class NatDnatModule(OTCModule):
             if self.params['protocol']:
                 attrs['protocol'] = self.params['protocol']
 
+            for rule in self.conn.nat.dnat_rules(**attrs):
+                if rule.id:
+                    self.exit(
+                        changed=False,
+                        snat_rule=rule.to_dict()
+                    )
+
             dnat_rule = self.conn.nat.create_dnat_rule(**attrs)
             self.exit(changed=True, dnat_rule=dnat_rule.to_dict())
 
