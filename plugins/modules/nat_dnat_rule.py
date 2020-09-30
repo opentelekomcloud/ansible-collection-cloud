@@ -182,9 +182,6 @@ class NatDnatModule(OTCModule):
     def run(self):
         changed = False
 
-        if self.ansible.check_mode:
-            self.exit(changed=self._system_state_change(dnat_rule))
-
         if self.params['state'] == 'absent':
             changed = False
             query = {}
