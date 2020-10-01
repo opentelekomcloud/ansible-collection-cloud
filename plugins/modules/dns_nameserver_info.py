@@ -15,10 +15,10 @@ DOCUMENTATION = '''
 module: dns_nameserver_info
 short_description: Get DNS Nameserver Infos
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.0.3"
 author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Get NAT gateway info from the OTC.
+  - Get DNS Namerserver infos from the OTC.
 options:
   address:
     description:
@@ -67,7 +67,7 @@ dns_nameservers:
 '''
 
 EXAMPLES = '''
-# Get Nameserver INfo about a zone:
+# Get Nameserver Info about a zone:
 
 - name: Get nameserver Info
   dns_nameserver_info:
