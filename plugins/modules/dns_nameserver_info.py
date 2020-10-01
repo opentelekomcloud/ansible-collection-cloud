@@ -20,15 +20,6 @@ author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get NAT gateway info from the OTC.
 options:
-  zone:
-    description:
-      - DNS Zone ID
-    type: str
-    required: true
-  priority:
-    description:
-      - Priority of a name server
-    type: str
   address:
     description:
       - IP address of a DNS Server
@@ -37,7 +28,15 @@ options:
     description:
       - Hostname of a DNS server
     type: str
-
+  priority:
+    description:
+      - Priority of a name server
+    type: str
+  zone:
+    description:
+      - DNS Zone ID
+    type: str
+    required: true
 
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -48,14 +47,6 @@ dns_nameservers:
     type: complex
     returned: On Success.
     contains:
-        zone:
-            description: Specifies the DNS zone
-            type: str
-            sample: "fe40808272701cbe0172cbca17f91882"
-        priority:
-            description: Priority of a name server
-            type: str
-            sample: "1"
         address:
             description: IP address of a DNS server
             type: str
@@ -64,25 +55,23 @@ dns_nameservers:
             description: Hostname of a DNS server
             type: str
             sample: "Myhostname"
+        priority:
+            description: Priority of a name server
+            type: str
+            sample: "1"
+        zone:
+            description: Specifies the DNS zone
+            type: str
+            sample: "fe40808272701cbe0172cbca17f91882"
+        
 '''
 
 EXAMPLES = '''
-# Get configs versions.
-- nat_gateway_info:
-  register: gw
+# Get Nameserver INfo about a zone:
 
-- nat_gateway_info:
-    gateway: "my_gateway"
-  register: gw
-
-- nat_gateway_info:
-    spec: "1"
-  register: gw
-
-- nat_gateway_info:
-    status: "ACTIVE"
-    spec: "1"
-  register: gw
+- name: Get nameserver Info
+  dns_nameserver_info:
+    zone: fe40808272701cbe0172cbca17f91882
 
 '''
 
@@ -91,10 +80,11 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DNSNameserverInfoModule(OTCModule):
     argument_spec = dict(
-        zone=dict(required=True),
-        priority=dict(required=False),
         address=dict(required=False),
-        hostname=dict(required=False)
+        hostname=dict(required=False),
+        priority=dict(required=False),
+        zone=dict(required=True)
+        
     )
 
     def run(self):
