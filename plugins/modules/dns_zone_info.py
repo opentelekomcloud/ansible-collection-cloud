@@ -121,33 +121,67 @@ class DNSZoneInfoModule(OTCModule):
             dt.pop('location')
             data.append(dt)
 
-        output = data
-
+        # Filter data by deleting all entries without the right criteria
         i=0
         while i<len(data):
             if self.params['status']:
                 if data[i]['status'] != self.params['status']:
-                    del output[i]
+                    del data[i]
                     i=0
                     continue
             if self.params['record_num']:
                 if data[i]['record_num'] != self.params['record_num']:
-                    del output[i]
+                    del data[i]
                     i=0
                     continue
             if self.params['name']:
                 if data[i]['name'] != self.params['name']:
-                    del output[i]
+                    del data[i]
                     i=0
                     continue
             if self.params['zone_id']:
                 if data[i]['zone_id'] != self.params['zone_id']:
-                    del output[i]
+                    del data[i]
                     i=0
                     continue
             if self.params['description']:
                 if data[i]['description'] != self.params['description']:
-                    del output[i]
+                    del data[i]
+                    i=0
+                    continue
+            if self.params['email']:
+                if data[i]['email'] != self.params['email']:
+                    del data[i]
+                    i=0
+                    continue
+            if self.params['ttl']:
+                if data[i]['ttl'] != self.params['ttl']:
+                    del data[i]
+                    i=0
+                    continue
+            if self.params['serial']:
+                if data[i]['serial'] != self.params['serial']:
+                    del data[i]
+                    i=0
+                    continue
+            if self.params['pool_id']:
+                if data[i]['pool_id'] != self.params['pool_id']:
+                    del data[i]
+                    i=0
+                    continue
+            if self.params['project_id']:
+                if data[i]['project_id'] != self.params['project_id']:
+                    del data[i]
+                    i=0
+                    continue
+            if self.params['created_at']:
+                if data[i]['created_at'] != self.params['created_at']:
+                    del data[i]
+                    i=0
+                    continue
+            if self.params['updated_at']:
+                if data[i]['updated_at'] != self.params['updated_at']:
+                    del data[i]
                     i=0
                     continue
             
