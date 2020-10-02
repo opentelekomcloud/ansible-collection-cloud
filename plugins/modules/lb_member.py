@@ -87,11 +87,11 @@ lb_member:
       type: str
       sample: "192.168.0.10"
     protocol_port:
-      description: Specifies the port used by the backend server. 
+      description: Specifies the port used by the backend server.
       type: int
       sample: 8080
     subnet_id:
-      description: Specifies the ID of the subnet where the backend server works. 
+      description: Specifies the ID of the subnet where the backend server works.
       type: str
     admin_state_up:
       description: Specifies the administrative status of the backend server.
