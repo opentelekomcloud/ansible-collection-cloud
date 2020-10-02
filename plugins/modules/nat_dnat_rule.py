@@ -111,7 +111,7 @@ nat_gateways:
             type: str
             sample: "88"
         nat_gateway_id:
-            description: Id of the assigned Nat gateway.
+            description: ID or name of the assigned Nat gateway.
             type: str
             sample: "2aa32feb-f0b7-4dcc-a7b4-e0233686702b"
         port_id:
@@ -122,10 +122,6 @@ nat_gateways:
             description: Specifies the private IP address, e.g. the IP address of a Direct Connect connection. This parameter and port_id are alternative
             type: str
             sample: "192.168.2.1"
-        project_id:
-            description: Project ID where the DNAT rule is located in.
-            type: str
-            sample: "25dc3fc8-d019-4a34-9fff-0a09fde6a567"
         protocol:
             description: Used protocol
             type: str
@@ -169,15 +165,6 @@ class NatDnatModule(OTCModule):
         project_id=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
-
-    def _system_state_change(self, obj):
-        state = self.params['state']
-        if state == 'present':
-            if not obj:
-                return True
-        elif state == 'absent' and obj:
-            return True
-        return False
 
     def run(self):
         changed = False
