@@ -36,7 +36,6 @@ options:
     description:
       - Name or ID of the NAT gateway
     type: str
-    required: true
   network:
     description:
       - ID or Name of the network for the SNAT rule.
@@ -143,7 +142,7 @@ class NatSnatModule(OTCModule):
         cidr=dict(required=False),
         floating_ip=dict(required=False),
         id=dict(required=False),
-        nat_gateway=dict(required=True),
+        nat_gateway=dict(required=False),
         network=dict(required=False),
         source_type=dict(required=False, type='int', choices=[0, 1]),
         state=dict(type='str', choices=['present', 'absent'], default='present')
@@ -161,18 +160,7 @@ class NatSnatModule(OTCModule):
     def run(self):
         changed = False
 
-        gateway = self.conn.nat.find_gateway(
-            name_or_id=self.params['nat_gateway'],
-            ignore_missing=True)
-
         # pre flight checks
-        if not gateway:
-            self.exit(
-                changed=False,
-                message=('NAT gateway %s does not exist.'
-                         % self.params['nat_gateway']),
-                failed=True
-            )
         if self.params['network'] and self.params['cidr']:
             self.exit(
                 changed=False,
@@ -183,7 +171,7 @@ class NatSnatModule(OTCModule):
 
         # gathering main facts for creation and deletion
         attrs = {}
-        attrs['nat_gateway_id'] = gateway.id
+
         if self.params['cidr']:
             attrs['cidr'] = self.params['cidr']
         if self.params['network']:
@@ -240,6 +228,18 @@ class NatSnatModule(OTCModule):
 
         # SNAT rule creation
         elif self.params['state'] == 'present':
+
+            gateway = self.conn.nat.find_gateway(
+                name_or_id=self.params['nat_gateway'],
+                ignore_missing=True)
+            if not gateway:
+                self.exit(
+                    changed=False,
+                    message=('NAT gateway %s does not exist.'
+                             % self.params['nat_gateway']),
+                    failed=True
+                )
+            attrs['nat_gateway_id'] = gateway.id
 
             if self.params['source_type']:
                 attrs['source_type'] = self.params['source_type']
