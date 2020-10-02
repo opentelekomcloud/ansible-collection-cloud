@@ -63,7 +63,6 @@ dns_nameservers:
             description: Specifies the DNS zone
             type: str
             sample: "fe40808272701cbe0172cbca17f91882"
-        
 '''
 
 EXAMPLES = '''
@@ -84,7 +83,6 @@ class DNSNameserverInfoModule(OTCModule):
         hostname=dict(required=False),
         priority=dict(required=False),
         zone=dict(required=True)
-        
     )
 
     def run(self):
