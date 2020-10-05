@@ -42,17 +42,14 @@ options:
     description:
       - Specifies the private IP address of the backend server.
     type: str
-    required: true
   protocol_port:
     description:
       - Specifies the port used by the backend server.
     type: int
-    required: true
   subnet:
     description:
       - Specifies the ID of the subnet where the backend server works.
     type: str
-    required: true
   admin_state_up:
     description:
       - Specifies the administrative status of the backend server.
@@ -120,6 +117,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class LoadBalancerMemberModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True),
+        state=dict(default='present', choices=['absent', 'present']),
         pool=dict(required=True),
         address=dict(required=False, type='str'),
         protocol_port=dict(required=False, type='int'),
