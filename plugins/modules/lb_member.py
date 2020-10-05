@@ -82,10 +82,6 @@ lb_member:
       description: Specifies the private IP address of the backend server.
       type: str
       sample: "192.168.0.10"
-    address:
-      description: Specifies the private IP address of the backend server.
-      type: str
-      sample: "192.168.0.10"
     protocol_port:
       description: Specifies the port used by the backend server.
       type: int
@@ -124,13 +120,25 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class LoadBalancerMemberModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True),
-        pool=dict(required=True)
+        pool=dict(required=True),
+        address=dict(required=False, type='str'),
+        protocol_port=dict(required=False, type='int'),
+        subnet=dict(required=False, type='str'),
+        admin_state_up=dict(required=False, type='bool'),
+        weight=dict(required=False, type='int')
     )
     module_kwargs = dict(
         supports_check_mode=True
     )
 
     def run(self):
+        name_filter = self.params['name']
+        address_filter = self.params['address']
+        protocol_port_filter = self.params['protocol_port']
+        subnet_filter = self.params['subnet']
+        admin_state_filter = self.params['admin_state_up']
+        weight_filter = self.params['weight']
+
         lb_member = None
         attrs = {}
         changed = False
@@ -138,22 +146,42 @@ class LoadBalancerMemberModule(OTCModule):
         lb_member = self.conn.network.find_pool_member(pool=lb_pool, name_or_id=self.params['name'])
 
         if self.params['state'] == 'present':
+            if name_filter:
+                attrs['name'] = name_filter
+            if admin_state_filter:
+                attrs['admin_state_up'] = admin_state_filter
+            if weight_filter:
+                attrs['weight'] = weight_filter
 
-            if lb_member:
+            if not lb_member:
+                if address_filter:
+                    attrs['address'] = address_filter
+                else:
+                    self.fail_json(msg='address parameter is mandatory')
+                if protocol_port_filter:
+                    attrs['protocol_port'] = protocol_port_filter
+                else:
+                    self.fail_json(msg='protocol_port parameter is mandatory')
+                if subnet_filter:
+                    attrs['subnet'] = subnet_filter
+                else:
+                    self.fail_json(msg='subnet parameter is mandatory')
+
+            if lb_member and lb_pool:
                 changed = True
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                lb_pool = self.conn.network.update_pool_member(lb_member, **attrs)
+                lb_member = self.conn.network.update_pool_member(pool_member=lb_member, pool=lb_pool, **attrs)
                 self.exit_json(
                     changed=changed,
-                    server_group=lb_pool.to_dict(),
-                    id=lb_pool.id
+                    server_group=lb_member.to_dict(),
+                    id=lb_member.id
                 )
 
             if self.ansible.check_mode:
                 self.exit_json(changed=True)
 
-            lb_member = self.conn.network.create_pool_member(**attrs)
+            lb_member = self.conn.network.create_pool_member(pool=lb_pool, **attrs)
             changed = True
             self.exit_json(
                 changed=changed,
@@ -163,10 +191,10 @@ class LoadBalancerMemberModule(OTCModule):
 
         elif self.params['state'] == 'absent':
             changed = False
-            if lb_member:
+            if lb_member and lb_pool:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                self.conn.network.delete_pool_member(lb_member)
+                self.conn.network.delete_pool_member(pool_member=lb_member, pool=lb_pool)
                 changed = True
             self.exit_json(changed=changed)
 
