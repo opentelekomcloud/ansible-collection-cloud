@@ -1,4 +1,0 @@
-- name: Testing
-  dns_zone_info:
-    record_num: "3"
-    zone_type: "private"

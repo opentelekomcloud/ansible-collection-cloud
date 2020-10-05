@@ -1,4 +1,0 @@
-- name: Get Nameserver info
-  dns_nameserver_info:
-    zone: fe12345672701cbe0172cbca17f91882 
- 
