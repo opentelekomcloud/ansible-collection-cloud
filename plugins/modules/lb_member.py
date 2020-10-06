@@ -161,7 +161,7 @@ class LoadBalancerMemberModule(OTCModule):
                 else:
                     self.fail_json(msg='protocol_port parameter is mandatory')
                 if subnet_filter:
-                    subnet = self.conn.find_subnet(name_or_id=subnet_filter)
+                    subnet = self.conn.network.find_subnet(name_or_id=subnet_filter)
                     attrs['subnet_id'] = subnet.id
                 else:
                     self.fail_json(msg='subnet parameter is mandatory')
