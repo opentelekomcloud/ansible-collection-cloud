@@ -31,3 +31,4 @@ action_groups:
     - lb_pool_info
     - lb_member
     - lb_member_info
+    - lb_healthmonitor_info
