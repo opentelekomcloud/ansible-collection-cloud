@@ -48,7 +48,7 @@ options:
     type: int
   subnet:
     description:
-      - Specifies the ID of the subnet where the backend server works.
+      - Specifies the ID or Name of the subnet where the backend server works.
     type: str
   admin_state_up:
     description:
@@ -161,7 +161,8 @@ class LoadBalancerMemberModule(OTCModule):
                 else:
                     self.fail_json(msg='protocol_port parameter is mandatory')
                 if subnet_filter:
-                    attrs['subnet'] = subnet_filter
+                    subnet = self.conn.find_subnet(name_or_id=subnet_filter)
+                    attrs['subnet_id'] = subnet.id
                 else:
                     self.fail_json(msg='subnet parameter is mandatory')
 
