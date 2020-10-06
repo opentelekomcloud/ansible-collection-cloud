@@ -49,7 +49,7 @@ options:
   http_method:
     description:
       - Optional health check HTTP request method
-    choices=[get, head, post, put, delete, trace, options, connect, patch]
+    choices: [get, head, post, put, delete, trace, options, connect, patch]
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
