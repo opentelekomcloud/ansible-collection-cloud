@@ -102,7 +102,10 @@ EXAMPLES = '''
 - lb_member:
     state: present
     name: member
-    pool: pool
+    pool: "{{ pool }}"
+    address: "{{ server_address }}"
+    subnet: "{{ subnet_name_id }}"
+    protocol_port: 8080
 
 # Delete a server group member from load balancer.
 - lb_member:
