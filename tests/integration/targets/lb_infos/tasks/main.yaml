@@ -17,3 +17,18 @@
           - hm is success
           - hm is not changed
           - hm.healthmonitors is defined
+
+    - name: Get backend servers info
+      lb_member_info:
+      register: bs
+
+    - name: debug configs
+      debug:
+        var: bs.members
+
+    - name: assert result
+      assert:
+        that:
+          - bs is success
+          - bs is not changed
+          - bs.members is defined

@@ -143,7 +143,7 @@ class LoadBalancerHealthMonitorInfoModule(OTCModule):
         data = []
         args = {}
         if type_filter:
-            args['type'] = type_filter
+            args['type'] = type_filter.upper()
         if monitor_port_filter:
             args['monitor_port'] = monitor_port_filter
         if expected_codes_filter:
@@ -151,7 +151,7 @@ class LoadBalancerHealthMonitorInfoModule(OTCModule):
         if domain_name_filter:
             args['domain_name'] = domain_name_filter
         if http_method_filter:
-            args['http_method'] = http_method_filter
+            args['http_method'] = http_method_filter.upper()
 
         if self.params['name']:
             raw = self.conn.network.find_health_monitor(name_or_id=self.params['name'])

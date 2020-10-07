@@ -176,7 +176,7 @@ class LoadBalancerMemberModule(OTCModule):
                 lb_member = self.conn.network.update_pool_member(pool_member=lb_member, pool=lb_pool, **attrs)
                 self.exit_json(
                     changed=changed,
-                    server_group=lb_member.to_dict(),
+                    member=lb_member.to_dict(),
                     id=lb_member.id
                 )
 
@@ -187,7 +187,7 @@ class LoadBalancerMemberModule(OTCModule):
             changed = True
             self.exit_json(
                 changed=changed,
-                server_group=lb_member.to_dict(),
+                member=lb_member.to_dict(),
                 id=lb_member.id
             )
 
