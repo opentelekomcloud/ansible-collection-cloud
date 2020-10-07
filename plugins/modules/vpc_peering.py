@@ -195,10 +195,7 @@ class VPCPeeringModule(OTCModule):
         changed = False
         vpc_peering = None
 
-        try:
-            vpc_peering = self.conn.vpc.find_peering(name)
-        except self.sdk.exceptions.ResourceNotFound:
-            pass
+        vpc_peering = self.conn.vpc.find_peering(name)
 
         if self.ansible.check_mode:
             self.exit_json(changed=self._system_state_change(vpc_peering))
@@ -206,12 +203,15 @@ class VPCPeeringModule(OTCModule):
         if new_name:
             attrs = {'name': new_name}
             if vpc_peering:
-                updated_vpc_peering = self.conn.vpc.update_peering(vpc_peering, **attrs)
-                changed = True
-                self.exit_json(
-                    changed=changed,
-                    vpc_peering=updated_vpc_peering
-                )
+                if self.ansible.check_mode:
+                    self.exit_json(changed=False)
+                else:
+                    updated_vpc_peering = self.conn.vpc.update_peering(vpc_peering, **attrs)
+                    changed = True
+                    self.exit_json(
+                        changed=changed,
+                        vpc_peering=updated_vpc_peering
+                    )
             else:
                 self.fail_json(
                     msg="A VPC peering with this name doesn't exist"
