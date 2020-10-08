@@ -22,13 +22,13 @@
         project_id: "76889f64a23945ab887012b180e95acf"
 
     - name: Create first network for test
-      os_network:
+      openstack.cloud.network:
         name: "{{ network_name_1 }}"
         state: present
       register: test_network_1
 
     - name: Create first subnet for test
-      os_subnet:
+      openstack.cloud.subnet:
         name: "{{ subnet_name_1 }}"
         state: present
         network_name: "{{ test_network_1.network.name }}"
@@ -37,7 +37,7 @@
       register: test_subnet_1
 
     - name: Create first router for test
-      os_router:
+      openstack.cloud.router:
         name: "{{ router_name_1 }}"
         state: present
         network: admin_external_net
@@ -48,13 +48,13 @@
       register: test_router_1
 
     - name: Create second network for test
-      os_network:
+      openstack.cloud.network:
         name: "{{ network_name_2 }}"
         state: present
       register: test_network_2
 
     - name: Create second subnet for test
-      os_subnet:
+      openstack.cloud.subnet:
         name: "{{ subnet_name_2 }}"
         state: present
         network_name: "{{ test_network_2.network.name }}"
@@ -63,7 +63,7 @@
       register: test_subnet_2
 
     - name: Create second router for test
-      os_router:
+      openstack.cloud.router:
         name: "{{ router_name_2 }}"
         state: present
         network: admin_external_net
@@ -136,31 +136,31 @@
     - block:
       # Cleanup
       - name: Drop existing first router
-        os_router:
+        openstack.cloud.router:
           name: "{{ router_name_1 }}"
           state: absent
 
       - name: Drop existing first subnet
-        os_subnet:
+        openstack.cloud.subnet:
           name: "{{ subnet_name_1 }}"
           state: absent
 
       - name: Drop existing first network
-        os_network:
+        openstack.cloud.network:
           name: "{{ network_name_1 }}"
           state: absent
 
       - name: Drop existing second router
-        os_router:
+        openstack.cloud.router:
           name: "{{ router_name_2 }}"
           state: absent
 
       - name: Drop existing second subnet
-        os_subnet:
+        openstack.cloud.subnet:
           name: "{{ subnet_name_2 }}"
           state: absent
 
       - name: Drop existing second network
-        os_network:
+        openstack.cloud.network:
           name: "{{ network_name_2 }}"
           state: absent

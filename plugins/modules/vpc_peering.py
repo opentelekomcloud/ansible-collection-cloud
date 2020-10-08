@@ -195,7 +195,7 @@ class VPCPeeringModule(OTCModule):
         changed = False
         vpc_peering = None
 
-        vpc_peering = self.conn.vpc.find_peering(name)
+        vpc_peering = self.conn.vpc.find_peering(name, ignore_missing=True)
 
         if self.ansible.check_mode:
             self.exit_json(changed=self._system_state_change(vpc_peering))
