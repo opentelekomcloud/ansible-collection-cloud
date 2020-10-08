@@ -145,7 +145,7 @@ EXAMPLES = '''
     max_retries: 3
     timeout: 15
     type: tcp
-    
+
 # Update a health check to backed server group in ELB.
 - lb_healthmonitor:
     state: present
@@ -155,7 +155,7 @@ EXAMPLES = '''
     max_retries: 1
     timeout: 1
     type: tcp
-    
+
 # Delete a server group member from load balancer.
 - lb_healthmonitor:
     state: absent
@@ -207,10 +207,46 @@ class LoadBalancerHealthmonitorModule(OTCModule):
 
         if self.params['state'] == 'present':
 
-            if pool_filter:
-                pool = self.conn.network.find_pool(name_or_id=pool_filter)
-                if pool:
-                    attrs['pool_id'] = pool.id
+            if not lb_monitor:
+                if pool_filter:
+                    pool = self.conn.network.find_pool(name_or_id=pool_filter)
+                    if pool:
+                        attrs['pool_id'] = pool.id
+                else:
+                    self.fail_json(msg='pool parameter is mandatory')
+
+                if delay_filter:
+                    attrs['delay'] = delay_filter
+                else:
+                    self.fail_json(msg='delay parameter is mandatory')
+
+                if max_retries_filter:
+                    attrs['max_retries'] = max_retries_filter
+                else:
+                    self.fail_json(msg='max_retries parameter is mandatory')
+
+                if timeout_filter:
+                    attrs['timeout'] = timeout_filter
+                else:
+                    self.fail_json(msg='timeout parameter is mandatory')
+
+                if type_filter:
+                    attrs['type'] = type_filter
+                else:
+                    self.fail_json(msg='type parameter is mandatory')
+
+            if admin_state_filter:
+                attrs['admin_state_up'] = admin_state_filter
+            if monitor_port_filter:
+                attrs['monitor_port'] = monitor_port_filter
+            if domain_name_filter:
+                attrs['domain_name'] = domain_name_filter
+            if url_path_filter:
+                attrs['url_path'] = url_path_filter
+            if expected_codes_filter:
+                attrs['expected_codes'] = expected_codes_filter
+            if http_method_filter:
+                attrs['http_method'] = http_method_filter
 
             if lb_monitor:
                 changed = True
