@@ -206,35 +206,20 @@ class LoadBalancerHealthmonitorModule(OTCModule):
         lb_monitor = self.conn.network.find_health_monitor(name_or_id=name_filter)
 
         if self.params['state'] == 'present':
-
-            if not lb_monitor:
-                if pool_filter:
-                    pool = self.conn.network.find_pool(name_or_id=pool_filter)
-                    if pool:
-                        attrs['pool_id'] = pool.id
-                else:
-                    self.fail_json(msg='pool parameter is mandatory')
-
-                if delay_filter:
-                    attrs['delay'] = delay_filter
-                else:
-                    self.fail_json(msg='delay parameter is mandatory')
-
-                if max_retries_filter:
-                    attrs['max_retries'] = max_retries_filter
-                else:
-                    self.fail_json(msg='max_retries parameter is mandatory')
-
-                if timeout_filter:
-                    attrs['timeout'] = timeout_filter
-                else:
-                    self.fail_json(msg='timeout parameter is mandatory')
-
-                if type_filter:
-                    attrs['type'] = type_filter
-                else:
-                    self.fail_json(msg='type parameter is mandatory')
-
+            if name_filter:
+                attrs['name'] = name_filter
+            if pool_filter:
+                pool = self.conn.network.find_pool(name_or_id=pool_filter)
+                if pool:
+                    attrs['pool_id'] = pool.id
+            if delay_filter:
+                attrs['delay'] = delay_filter
+            if max_retries_filter:
+                attrs['max_retries'] = max_retries_filter
+            if timeout_filter:
+                attrs['timeout'] = timeout_filter
+            if type_filter:
+                attrs['type'] = type_filter
             if admin_state_filter:
                 attrs['admin_state_up'] = admin_state_filter
             if monitor_port_filter:
@@ -252,13 +237,16 @@ class LoadBalancerHealthmonitorModule(OTCModule):
                 changed = True
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                lb_monitor = self.conn.network.update_health_monitor(health_monitor=lb_monitor)
+                lb_monitor = self.conn.network.update_health_monitor(health_monitor=lb_monitor, **attrs)
                 self.exit_json(
                     changed=changed,
                     member=lb_monitor.to_dict(),
                     id=lb_monitor.id
                 )
 
+            if not pool_filter and not delay_filter and not max_retries_filter\
+                    and not timeout_filter and not type_filter:
+                self.fail_json(msg='Pool, delay, max_retries, timeout and type must be specified.')
             if self.ansible.check_mode:
                 self.exit_json(changed=True)
 

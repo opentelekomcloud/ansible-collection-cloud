@@ -153,21 +153,13 @@ class LoadBalancerMemberModule(OTCModule):
                 attrs['admin_state_up'] = admin_state_filter
             if weight_filter:
                 attrs['weight'] = weight_filter
-
-            if not lb_member:
-                if address_filter:
-                    attrs['address'] = address_filter
-                else:
-                    self.fail_json(msg='address parameter is mandatory')
-                if protocol_port_filter:
-                    attrs['protocol_port'] = protocol_port_filter
-                else:
-                    self.fail_json(msg='protocol_port parameter is mandatory')
-                if subnet_filter:
-                    subnet = self.conn.network.find_subnet(name_or_id=subnet_filter)
-                    attrs['subnet_id'] = subnet.id
-                else:
-                    self.fail_json(msg='subnet parameter is mandatory')
+            if address_filter:
+                attrs['address'] = address_filter
+            if protocol_port_filter:
+                attrs['protocol_port'] = protocol_port_filter
+            if subnet_filter:
+                subnet = self.conn.network.find_subnet(name_or_id=subnet_filter)
+                attrs['subnet_id'] = subnet.id
 
             if lb_member and lb_pool:
                 changed = True
@@ -179,6 +171,9 @@ class LoadBalancerMemberModule(OTCModule):
                     member=lb_member.to_dict(),
                     id=lb_member.id
                 )
+
+            if not address_filter and not protocol_port_filter and not subnet_filter:
+                self.fail_json(msg='Address, protocol port and subnet must be specified.')
 
             if self.ansible.check_mode:
                 self.exit_json(changed=True)
