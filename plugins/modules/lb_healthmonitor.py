@@ -263,7 +263,7 @@ class LoadBalancerHealthmonitorModule(OTCModule):
             if lb_monitor:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                self.conn.network.delete_health_monitor(ealth_monitor=lb_monitor)
+                self.conn.network.delete_health_monitor(health_monitor=lb_monitor)
                 changed = True
             self.exit_json(changed=changed)
 
