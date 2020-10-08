@@ -49,7 +49,7 @@ options:
     description:
       - Specifies the administrative status of the health check.
     type: bool
-  timeout:
+  monitor_timeout:
     description:
       - Specifies the health check timeout duration in the unit of second (1-50).
     type: int
@@ -143,7 +143,7 @@ EXAMPLES = '''
     pool: "{{ pool_name_or_id }}"
     delay: 5
     max_retries: 3
-    timeout: 15
+    monitor_timeout: 15
     type: tcp
 
 # Update a health check to backed server group in ELB.
@@ -153,7 +153,7 @@ EXAMPLES = '''
     pool: "{{ pool_name_or_id }}"
     delay: 1
     max_retries: 1
-    timeout: 1
+    monitor_timeout: 1
     type: tcp
 
 # Delete a server group member from load balancer.
@@ -172,9 +172,9 @@ class LoadBalancerHealthmonitorModule(OTCModule):
         delay=dict(required=False, type='int'),
         max_retries=dict(required=False, type='int'),
         pool=dict(required=False, type='str'),
-        admin_state_up=dict(required=False, type='str'),
-        timeout=dict(required=False, type='int'),
-        type=dict(required=False, choices=['tcp', 'udp_connect', 'http']),
+        admin_state_up=dict(required=False, type='bool'),
+        monitor_timeout=dict(required=False, type='int'),
+        type=dict(required=False, choices=['tcp', 'upd_connect', 'http']),
         monitor_port=dict(required=False, type='int'),
         domain_name=dict(required=False, type='str'),
         url_path=dict(required=False, type='str'),
@@ -192,7 +192,7 @@ class LoadBalancerHealthmonitorModule(OTCModule):
         max_retries_filter = self.params['max_retries']
         pool_filter = self.params['pool']
         admin_state_filter = self.params['admin_state_up']
-        timeout_filter = self.params['timeout']
+        timeout_filter = self.params['monitor_timeout']
         type_filter = self.params['type']
         monitor_port_filter = self.params['monitor_port']
         domain_name_filter = self.params['domain_name']
@@ -219,7 +219,7 @@ class LoadBalancerHealthmonitorModule(OTCModule):
             if timeout_filter:
                 attrs['timeout'] = timeout_filter
             if type_filter:
-                attrs['type'] = type_filter
+                attrs['type'] = type_filter.upper()
             if admin_state_filter:
                 attrs['admin_state_up'] = admin_state_filter
             if monitor_port_filter:
@@ -231,7 +231,7 @@ class LoadBalancerHealthmonitorModule(OTCModule):
             if expected_codes_filter:
                 attrs['expected_codes'] = expected_codes_filter
             if http_method_filter:
-                attrs['http_method'] = http_method_filter
+                attrs['http_method'] = http_method_filter.upper()
 
             if lb_monitor:
                 changed = True
