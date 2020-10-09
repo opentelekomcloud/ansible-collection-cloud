@@ -20,26 +20,25 @@ author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get DNS PTR Records from the OTC.
 options:
-  address:
-    description:
-      - EIP address
-    type: str
   description:
     description:
       - Description of the Record
     type: str
-  id:
+  floating_ip:
     description:
-      - PTR record ID
+      - Name or ID of the floating ip
     type: str
+    required: true
   ptrdname:
     description:
-      - Domain name of the PTR record
+      - Domain name of the PTR record required if updating/creating rule
     type: str
-  status:
+  state:
     description:
-      - Resource status
+      - Resource state
     type: str
+    choices: [present, absent]
+    default: present
   ttl:
     description:
       - PTR record cache duration (in second) on a local DNS server
@@ -54,20 +53,16 @@ ptr_records:
     type: complex
     returned: On Success.
     contains:
-        address:
-            description: EIP address
-            type: str
-            sample: "100.138.123.199"
         description:
             description: Description of the Record
             type: str
             sample: "MyRecord123"
-        id:
-            description: PTR record id
+        floating_ip:
+            description: Name or ID of the floating ip
             type: str
-            sample: "eu-de:fe864230-d3bc-4391-8a32-394c3e9ca22d"
+            sample: "123.123.123.123"
         ptrdname:
-            description: Domain name of the PTR record
+            description: Domain name of the PTR record required if updating/creating rule
             type: str
             sample: "example.com"
         status:
@@ -82,10 +77,15 @@ ptr_records:
 '''
 
 EXAMPLES = '''
-# Get Nameserver Info about a zone:
-- name: Getting Info
-  dns_floating_ip_info:
-    description: "Test"
+# Creating a record:
+- name: Creating a record
+  dns_floating_ip:
+    floating_ip: 123.123.123.123
+    ptrdname: "test2.com."
+    description: "test2nownow"
+    ttl: 300
+    state: present
+
 
 '''
 
@@ -118,39 +118,39 @@ class DNSFloatingIpModule(OTCModule):
         if self.params['state'] == 'absent':
             changed = False
             # Set eu-de: in front of the id to comly with the API. Nothing else as eu-de is available currently
-            self.conn.dns.unset_floating_ip(floating_ip = ('eu-de:' + fl.id))
+            self.conn.dns.unset_floating_ip(floating_ip=('eu-de:' + fl.id))
             changed = True
 
         if self.params['state'] == 'present':
             attrs = {}
             if not self.params['ptrdname']:
-              self.exit(
-                changed=False,
-                message=('No ptrdname specified but required for creation')
-            )
+                self.exit(
+                    changed=False,
+                    message=('No ptrdname specified but required for creation')
+                )
             else:
-              attrs['ptrdname'] = self.params['ptrdname']
+                attrs['ptrdname'] = self.params['ptrdname']
             if self.params['description']:
-              attrs['description'] = self.params['description']
+                attrs['description'] = self.params['description']
             if self.params['ttl']:
-              attrs['ttl'] = self.params['ttl']
-            
-            #get_floating_ip doesn't support ignore_missing and throws an error when there's nothing found. So we need to catch the error
+                attrs['ttl'] = self.params['ttl']
+
+            # get_floating_ip doesn't support ignore_missing and throws an error when there's nothing found. So we need to catch the error
             try:
-              self.conn.dns.get_floating_ip(floating_ip = ('eu-de:' + fl.id))
-            except:
-              output = self.conn.dns.set_floating_ip(floating_ip = ('eu-de:' + fl.id), **attrs)
-              self.exit(
-                changed = True,
-                ptr = output.to_dict()
-              )
+                self.conn.dns.get_floating_ip(floating_ip=('eu-de:' + fl.id))
+            except Exception:
+                output = self.conn.dns.set_floating_ip(floating_ip=('eu-de:' + fl.id), **attrs)
+                self.exit(
+                    changed=True,
+                    ptr=output.to_dict()
+                )
             else:
-              output = self.conn.dns.update_floating_ip(floating_ip = ('eu-de:' + fl.id), **attrs)
-              self.exit(
-                changed = True,
-                ptr = output.to_dict()
-              )
-              
+                output = self.conn.dns.update_floating_ip(floating_ip=('eu-de:' + fl.id), **attrs)
+                self.exit(
+                    changed=True,
+                    ptr=output.to_dict()
+                )
+
         self.exit(
             changed=changed
         )
