@@ -130,7 +130,7 @@ class VPCRouteInfoModule(OTCModule):
 
 
 def main():
-    module = VPCPeeringInfoModule()
+    module = VPCRouteInfoModule()
     module()
 
 
