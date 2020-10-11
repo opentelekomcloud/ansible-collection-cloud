@@ -170,9 +170,9 @@ class VPCRouteModule(OTCModule):
             if self.ansible.check_mode:
                 self.exit_json(changed=self._system_state_change(check))
 
-            try:
+            if check:
                 self.conn.vpc.delete_route(route_id)
-            except self.sdk.exceptions.ResourceNotFound:
+            else:
                 self.fail_json(
                     msg="Resource with this id doesn't exist"
                 )
