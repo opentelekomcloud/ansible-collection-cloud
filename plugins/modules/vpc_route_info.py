@@ -88,7 +88,7 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class VPCPeeringInfoModule(OTCModule):
+class VPCRouteInfoModule(OTCModule):
     argument_spec = dict(
         id=dict(required=False),
         tenant_id=dict(required=False),
