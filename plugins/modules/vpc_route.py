@@ -33,18 +33,15 @@ options:
   nexthop:
     description: 
       -  The next hop. If type is peering, it is the VPC peering connection ID
-    required: true
     type: str
   type:
     description:
       -  Type of a route.
-    required: true
     default: peering
     type: str
   vpc_id:
     description:
       -  ID of the VPC ID requesting for creating a route.
-    required: true
     type: str
   state:
     description:
@@ -54,7 +51,6 @@ options:
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
-
 
 RETURN = '''
 id:
@@ -101,20 +97,19 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class VPCRoute(OTCModule):
+class VPCRouteModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=True, type='str'),
+        route_id=dict(type='str'),
+        destination=dict(type='str'),
+        nexthop=dict(type='str'),
+        type=dict(default='peering', type='str'),
+        vpc_id=dict(type='str'),
         state=dict(default='present', choices=['absent', 'present']),
-        local_router=dict(type='str'),
-        project_id_local=dict(type='str'),
-        peer_router=dict(type='str'),
-        project_id_peer=dict(type='str'),
-        new_name=dict(type='str'),
-        description=dict(type='str', default="")
     )
     module_kwargs = dict(
         required_if=[
-            ('state', 'present', ['local_router', 'project_id_local', 'peer_router', 'project_id_peer'])
+            ('state', 'present', ['destination', 'nexthop', 'type', 'vpc_id']),
+            ('state' 'absent', ['route_id'])
         ],
         supports_check_mode=True
     )
@@ -128,97 +123,74 @@ class VPCRoute(OTCModule):
             return True
         return False
 
+    def _check_route(self, destination, vpc_id):
+
+        query = {}
+        result = True
+
+        query['destination'] = destination
+        query['vpc_id'] = vpc_id
+
+        vpc_route = self.conn.vpc.routes(**query)
+        if vpc_route:
+            result = False
+
+        return result
+
 
     def run(self):
-        name = self.params['name']
-        local_router = self.params['local_router']
-        project_id_local = self.params['project_id_local']
-        peer_router = self.params['peer_router']
-        project_id_peer = self.params['project_id_peer']
-        new_name = self.params['new_name']
-        description = self.params['description']
+        route_id = self.params['route_id']
+        destination = self.params['destination']
+        nexthop = self.params['nexthop']
+        type = self.params['type']
+        vpc_id = self.params['vpc_id']
+        state = self.params['state']
 
         changed = False
-        vpc_peering = None
+        vpc_route = None
 
         vpc_peering = self.conn.vpc.find_peering(name, ignore_missing=True)
 
         if self.ansible.check_mode:
             self.exit_json(changed=self._system_state_change(vpc_peering))
 
-        if new_name:
-            attrs = {'name': new_name}
-            if vpc_peering:
-                if self.ansible.check_mode:
-                    self.exit_json(changed=False)
-                else:
-                    updated_vpc_peering = self.conn.vpc.update_peering(vpc_peering, **attrs)
-                    changed = True
-                    self.exit_json(
-                        changed=changed,
-                        vpc_peering=updated_vpc_peering
-                    )
-            else:
-                self.fail_json(
-                    msg="A VPC peering with this name doesn't exist"
-                )
-
         if self.params['state'] == 'present':
+            attrs = {}
+            attrs['destination'] = self.params['destination']
+            attrs['nexthop'] = self.params['nexthop']
+            attrs['type'] = self.params['type']
+            attrs['vpc_id'] = self.params['vpc_id']
 
-            local_vpc = self.conn.network.find_router(local_router)
-            peer_vpc = self.conn.network.find_router(peer_router)
+            if self.check_route(attrs['destination'], attrs['vpc_id']):
+                vpc_route = self.conn.vpc.create_route(**attrs)
+                changed = True
+                self.exit_json(
+                    changed=changed,
+                    vpc_route=vpc_route
+                )
 
-            local_vpc_id = local_vpc['id']
-            peer_vpc_id = peer_vpc['id']
-
-            if not vpc_peering:
-
-                attrs = {
-                    'name': name
-                }
-
-                local_vpc = {'vpc_id': local_vpc_id, 'project_id': project_id_local}
-                attrs['local_vpc_info'] = local_vpc
-                peer_vpc = {'vpc_id': peer_vpc_id, 'project_id': project_id_peer}
-                attrs['peer_vpc_info'] = peer_vpc
-
-                if description:
-                    attrs['description'] = self.params['description']
-
-                if self._check_peering(local_vpc_id, peer_vpc_id):
-                    vpc_peering = self.conn.vpc.create_peering(**attrs)
-                    changed = True
-
-                    self.exit_json(
-                        changed=changed,
-                        vpc_peering=vpc_peering
-                    )
-                else:
-                    self.fail_json(
-                        msg="A VPC peering connection already exists between the two VPCs."
-                    )
             else:
                 self.fail_json(
-                    msg="VPC peering with this name already exists"
+                    msg="Resource with this destination already exists"
                 )
+
 
         elif self.params['state'] == 'absent':
-            if vpc_peering:
-                self.conn.vpc.delete_peering(vpc_peering)
+            try:
+                self.conn.vpc.delete_route(vpc_route)
                 changed = True
                 self.exit_json(
                     changed=changed,
                     result="Resource was deleted"
                 )
-
-            else:
+            except self.sdk.exceptions.ResourceNotFound:
                 self.fail_json(
-                    msg="Resource with this name doesn't exist"
+                    msg="Resource with this id doesn't exist"
                 )
 
 
 def main():
-    module = VPCPeeringModule()
+    module = VPCRouteModule()
     module()
 
 
