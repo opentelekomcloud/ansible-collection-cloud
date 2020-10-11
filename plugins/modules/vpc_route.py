@@ -13,39 +13,32 @@
 
 DOCUMENTATION = '''
 ---
-module: vpc_route_info
-short_description: Get information about vpc routes info
+module: vpc_route
+short_description: Creation and deleting of vpc routes
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.2"
-author: "Polina Gubina (@polina-gubina)"
+author: "Polina Gubina (@polina-gubina)"    `
 description:
-  - Get a generator of vpc routes info from the OTC.
+  - Creation and deleting of vpc routes.
 options:
   route_id:
-    description:
-      - Route ID.
+    description: Route ID.
     type: str
   destination:
-    description:
-      -  Route destination address (CIDR).
-    required: true
+    description:  Route destination address (CIDR).
     type: str
   nexthop:
-    description: 
-      -  The next hop. If type is peering, it is the VPC peering connection ID
+    description: The next hop. If type is peering, it is the VPC peering connection ID
     type: str
   type:
-    description:
-      -  Type of a route.
+    description: Type of a route.
     default: peering
     type: str
   vpc_id:
-    description:
-      -  ID of the VPC ID requesting for creating a route.
+    description: ID of the VPC ID requesting for creating a route.
     type: str
   state:
-    description:
-      -  ID of the VPC ID requesting for creating a route.
+    description: ID of the VPC ID requesting for creating a route.
     choices: [present, absent]
     default: present
     type: str
@@ -108,8 +101,7 @@ class VPCRouteModule(OTCModule):
     )
     module_kwargs = dict(
         required_if=[
-            ('state', 'present', ['destination', 'nexthop', 'type', 'vpc_id']),
-            ('state' 'absent', ['route_id'])
+            ('state', 'present', ['destination', 'nexthop', 'vpc_id'])
         ],
         supports_check_mode=True
     )
@@ -153,13 +145,13 @@ class VPCRouteModule(OTCModule):
             attrs['type'] = self.params['type']
             attrs['vpc_id'] = self.params['vpc_id']
 
-            check = self.check_route(attrs['destination'], attrs['vpc_id'])
+            check = self._check_route(attrs['destination'], attrs['vpc_id'])
 
             if self.ansible.check_mode:
                 self.exit_json(changed=check)
 
             if check:
-                vpc_route = self.conn.vpc.create_route(**attrs)
+                vpc_route = self.conn.vpc.add_route(**attrs)
                 changed = True
                 self.exit_json(
                     changed=changed,
