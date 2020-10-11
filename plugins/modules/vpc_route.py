@@ -114,15 +114,6 @@ class VPCRouteModule(OTCModule):
         supports_check_mode=True
     )
 
-    def _system_state_change(self, obj):
-        state = self.params['state']
-        if state == 'present':
-            if not obj:
-                return True
-        elif state == 'absent' and obj:
-            return True
-        return False
-
     def _check_route(self, destination, vpc_id):
 
         query = {}
@@ -130,29 +121,30 @@ class VPCRouteModule(OTCModule):
 
         query['destination'] = destination
         query['vpc_id'] = vpc_id
+        data = []
 
-        vpc_route = self.conn.vpc.routes(**query)
-        if vpc_route:
+        for raw in self.conn.vpc.routes(**query):
+            dt = raw.to_dict()
+            dt.pop('location')
+            data.append(dt)
+
+        if data:
             result = False
 
         return result
 
+    def _check_route_by_id(self, route_id):
+
+        result = True
+
+        try:
+            vpc_route = self.conn.vpc.get_route(route_id)
+        except self.sdk.exceptions.ResourceNotFound:
+            result = False
+
+        return result
 
     def run(self):
-        route_id = self.params['route_id']
-        destination = self.params['destination']
-        nexthop = self.params['nexthop']
-        type = self.params['type']
-        vpc_id = self.params['vpc_id']
-        state = self.params['state']
-
-        changed = False
-        vpc_route = None
-
-        vpc_peering = self.conn.vpc.find_peering(name, ignore_missing=True)
-
-        if self.ansible.check_mode:
-            self.exit_json(changed=self._system_state_change(vpc_peering))
 
         if self.params['state'] == 'present':
             attrs = {}
@@ -161,7 +153,12 @@ class VPCRouteModule(OTCModule):
             attrs['type'] = self.params['type']
             attrs['vpc_id'] = self.params['vpc_id']
 
-            if self.check_route(attrs['destination'], attrs['vpc_id']):
+            check = self.check_route(attrs['destination'], attrs['vpc_id'])
+
+            if self.ansible.check_mode:
+                self.exit_json(changed=check)
+
+            if check:
                 vpc_route = self.conn.vpc.create_route(**attrs)
                 changed = True
                 self.exit_json(
@@ -174,19 +171,24 @@ class VPCRouteModule(OTCModule):
                     msg="Resource with this destination already exists"
                 )
 
-
         elif self.params['state'] == 'absent':
+            route_id = self.params['route_id']
+
+            check = self._check_route_by_id(route_id)
+            if self.ansible.check_mode:
+                self.exit_json(changed=self._system_state_change(check))
+
             try:
-                self.conn.vpc.delete_route(vpc_route)
-                changed = True
-                self.exit_json(
-                    changed=changed,
-                    result="Resource was deleted"
-                )
+                self.conn.vpc.delete_route(route_id)
             except self.sdk.exceptions.ResourceNotFound:
                 self.fail_json(
                     msg="Resource with this id doesn't exist"
                 )
+            changed = True
+            self.exit_json(
+                changed=changed,
+                result="Resource was deleted"
+            )
 
 
 def main():
