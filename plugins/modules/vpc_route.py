@@ -11,16 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 DOCUMENTATION = '''
 ---
 module: vpc_route
-short_description: Creation and deleting of vpc routes
+short_description: Add/Delete vpc route from OpenTelekomCloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.3"
-author: "Polina Gubina (@polina-gubina)"    `
+author: "Polina Gubina (@polina-gubina)"
 description:
-  - Creation and deleting of vpc routes.
+  - Add or Remove VPC route from the OTC VPC Route service.
 options:
   route_id:
     description: Route ID.
@@ -106,13 +105,14 @@ class VPCRouteModule(OTCModule):
         route_id=dict(type='str'),
         destination=dict(type='str'),
         nexthop=dict(type='str'),
-        type=dict(type='str'),
+        type=dict(default='peering', type='str'),
         vpc_id=dict(type='str'),
-        state=dict(choices=['present', 'absent']),
+        state=dict(default='present', choices=['present', 'absent']),
     )
     module_kwargs = dict(
         required_if=[
-            ('state', 'present', ['destination', 'nexthop', 'vpc_id'])
+            ('state', 'present', ['destination', 'nexthop', 'vpc_id']),
+            ('state', 'absent', ['route_id'])
         ],
         supports_check_mode=True
     )
