@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 DOCUMENTATION = '''
 ---
 module: vpc_route
@@ -46,30 +47,41 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-id:
-    description:  Route ID.
-    type: str
-    sample: "4dae5bac-0925-4d5b-add8-cb6667b8"
-destination:
-    description:  Destination address in the CIDR notation format.
-    type: str
-    sample: "192.168.200.0/24"
-nexthop:
-    description: The next hop. If type is peering, it is the VPC peering connection ID
-    type: str
-    sample: "7375f1cd-6fe1-4d47-8888-c5c5a64298d8"
-type:
-    description: The route type.
-    type: str
-    sample: "peering"
-vpc_id:
-    description:  The VPC of the route.
-    type: str
-    sample: "4dae5bac-0725-2d5b-add8-cb6667b8"
-tenant_id:
-    description: Project id.
-    type: str
-    sample: "6ysa5bac-0925-4d5b-add8-cb6667b8"
+vpc_route:
+  description: Specifies the vpc route.
+  type: complex
+  returned: On Success.
+  contains:
+    id:
+        description:  Route ID.
+        returned: On success when C(state=present)
+        type: str
+        sample: "4dae5bac-0925-4d5b-add8-cb6667b8"
+    destination:
+        description:  Destination address in the CIDR notation format.
+        returned: On success when C(state=present)
+        type: str
+        sample: "192.168.200.0/24"
+    nexthop:
+        description: The next hop. If type is peering, it is the VPC peering connection ID
+        returned: On success when C(state=present)
+        type: str
+        sample: "7375f1cd-6fe1-4d47-8888-c5c5a64298d8"
+    type:
+        description: The route type.
+        returned: On success when C(state=present)
+        type: str
+        sample: "peering"
+    vpc_id:
+        description:  The VPC of the route.
+        returned: On success when C(state=present)
+        type: str
+        sample: "4dae5bac-0725-2d5b-add8-cb6667b8"
+    tenant_id:
+        description: Project id.
+        returned: On success when C(state=present)
+        type: str
+        sample: "6ysa5bac-0925-4d5b-add8-cb6667b8"
 '''
 
 EXAMPLES = '''
@@ -77,7 +89,6 @@ EXAMPLES = '''
 - vpc_route:
     destination: "6ysa5bac-0925-6d5b-add8-cb6667b8"
     nexthop: "67sa5bac-0925-4p5b-add8-cb6667b8"
-    type: "peering"
     vpc_id: "89sa5bac-0925-9h7b-add8-cb6667b8"
   register: vpc_route
 
@@ -95,9 +106,9 @@ class VPCRouteModule(OTCModule):
         route_id=dict(type='str'),
         destination=dict(type='str'),
         nexthop=dict(type='str'),
-        type=dict(default='peering', type='str'),
+        type=dict(type='str'),
         vpc_id=dict(type='str'),
-        state=dict(default='present', choices=['present', 'absent']),
+        state=dict(choices=['present', 'absent']),
     )
     module_kwargs = dict(
         required_if=[
