@@ -125,7 +125,6 @@ class VPCRouteModule(OTCModule):
 
         return result
 
-
     def _check_route_by_id(self, route_id):
 
         result = True
