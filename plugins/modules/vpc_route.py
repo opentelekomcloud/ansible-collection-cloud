@@ -80,8 +80,8 @@ EXAMPLES = '''
     type: "peering"
     vpc_id: "89sa5bac-0925-9h7b-add8-cb6667b8"
   register: vpc_route
-  
-# Delete vpc route 
+
+# Delete vpc route
 - vpc_route:
     name: "peering2"
     state: absent
