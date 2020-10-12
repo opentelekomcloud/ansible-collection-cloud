@@ -1,0 +1,155 @@
+---
+- module_defaults:
+    vpc_peering:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        network_name_1: "{{ ( prefix + 'vpc_peering_test-network_1') }}"
+        subnet_name_1: "{{ ( prefix + 'vpc_peering_test-subnet_1') }}"
+        router_name_1: "{{ ( prefix + 'vpc_peering_test-router_1') }}"
+        cidr_block_1: "192.168.115"
+        network_name_2: "{{ ( prefix + 'vpc_peering_test-network_2') }}"
+        subnet_name_2: "{{ ( prefix + 'vpc_peering_test-subnet_2') }}"
+        router_name_2: "{{ ( prefix + 'vpc_peering_test-router_2') }}"
+        cidr_block_2: "192.168.116"
+        vpc_peering_name: "{{ ( prefix + 'vpc_peering_test') }}"
+        new_peering_name: "{{ ( prefix + 'vpc_peering_test_2') }}"
+        project_id: "76889f64a23945ab887012b180e95acf"
+
+    - name: Create first network for test
+      openstack.cloud.network:
+        name: "{{ network_name_1 }}"
+        state: present
+      register: test_network_1
+
+    - name: Create first subnet for test
+      openstack.cloud.subnet:
+        name: "{{ subnet_name_1 }}"
+        state: present
+        network_name: "{{ test_network_1.network.name }}"
+        cidr: "{{ cidr_block_1 }}.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: test_subnet_1
+
+    - name: Create first router for test
+      openstack.cloud.router:
+        name: "{{ router_name_1 }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ test_network_1.network.name }}"
+            subnet: "{{ test_subnet_1.subnet.name }}"
+      register: test_router_1
+
+    - name: Create second network for test
+      openstack.cloud.network:
+        name: "{{ network_name_2 }}"
+        state: present
+      register: test_network_2
+
+    - name: Create second subnet for test
+      openstack.cloud.subnet:
+        name: "{{ subnet_name_2 }}"
+        state: present
+        network_name: "{{ test_network_2.network.name }}"
+        cidr: "{{ cidr_block_2 }}.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: test_subnet_2
+
+    - name: Create second router for test
+      openstack.cloud.router:
+        name: "{{ router_name_2 }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ test_network_2.network.name }}"
+            subnet: "{{ test_subnet_2.subnet.name }}"
+      register: test_router_2
+
+    - name: Create vpc peering
+      vpc_peering:
+        name: "{{ vpc_peering_name }}"
+        local_router: "{{ test_router_1.router.name }}"
+        project_id_local: "{{ project_id }}"
+        peer_router: "{{ test_router_2.router.name }}"
+        project_id_peer: "{{ project_id }}"
+      register: vpc_peering
+
+    - name: Create vpc route -check mode
+      vpc_route:
+        destination: "{{ test_subnet_2.subnet.cidr }}"
+        nexthop: "{{ vpc_peering.vpc_peering.id }}"
+        vpc_id: "{{ test_network_1.network.id }}"
+      register: vpc_route_check
+      check_mode: true
+
+    - name: assert result
+      assert:
+        that:
+          - vpc_route_check is changed
+
+    - name: Create vpc route
+      vpc_route:
+        destination: "{{ test_subnet_2.subnet.cidr }}"
+        nexthop: "{{ vpc_peering.vpc_peering.id }}"
+        vpc_id: "{{ test_network_1.network.id }}"
+      register: vpc_route
+
+    - name: assert result
+      assert:
+        that:
+          - vpc_route is success
+          - vpc_route is changed
+
+    - name: Drop existing vpc route
+      vpc_route:
+        # pass ID as name
+        route_id: "{{ vpc_route.vpc_route.id }}"
+        state: absent
+      register: dropped
+
+    - name: assert result
+      assert:
+        that:
+          - dropped is success
+          - dropped is changed
+
+  always:
+    - block:
+      # Cleanup
+      - name: Drop existing first router
+        openstack.cloud.router:
+          name: "{{ router_name_1 }}"
+          state: absent
+
+      - name: Drop existing first subnet
+        openstack.cloud.subnet:
+          name: "{{ subnet_name_1 }}"
+          state: absent
+
+      - name: Drop existing first network
+        openstack.cloud.network:
+          name: "{{ network_name_1 }}"
+          state: absent
+
+      - name: Drop existing second router
+        openstack.cloud.router:
+          name: "{{ router_name_2 }}"
+          state: absent
+
+      - name: Drop existing second subnet
+        openstack.cloud.subnet:
+          name: "{{ subnet_name_2 }}"
+          state: absent
+
+      - name: Drop existing second network
+        openstack.cloud.network:
+          name: "{{ network_name_2 }}"
+          state: absent

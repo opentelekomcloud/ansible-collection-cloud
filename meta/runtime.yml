@@ -24,6 +24,7 @@ action_groups:
     - volume_snapshot_info
     - vpc_peering
     - vpc_peering_info
+    - vpc_route
     - vpc_route_info
     - waf_domain
     - waf_domain_info
