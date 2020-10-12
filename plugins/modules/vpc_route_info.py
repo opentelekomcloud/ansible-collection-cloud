@@ -94,7 +94,7 @@ class VPCRouteInfoModule(OTCModule):
         tenant_id=dict(required=False),
         vpc_id=dict(required=False),
         destination=dict(required=False),
-        type=dict(required=False)
+        type=dict(default='peering', required=False)
     )
 
     def run(self):
