@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: vpc_route
 short_description: Creation and deleting of vpc routes
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.2"
+version_added: "0.0.3"
 author: "Polina Gubina (@polina-gubina)"    `
 description:
   - Creation and deleting of vpc routes.
@@ -47,29 +47,29 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 id:
-  description:  Route ID.
-  type: str
-  sample: "4dae5bac-0925-4d5b-add8-cb6667b8"
+    description:  Route ID.
+    type: str
+    sample: "4dae5bac-0925-4d5b-add8-cb6667b8"
 destination:
-  description:  Destination address in the CIDR notation format.
-  type: str
-  sample: "192.168.200.0/24"
+    description:  Destination address in the CIDR notation format.
+    type: str
+    sample: "192.168.200.0/24"
 nexthop:
-  description: The next hop. If type is peering, it is the VPC peering connection ID
-  type: str
-  sample: "7375f1cd-6fe1-4d47-8888-c5c5a64298d8"
+    description: The next hop. If type is peering, it is the VPC peering connection ID
+    type: str
+    sample: "7375f1cd-6fe1-4d47-8888-c5c5a64298d8"
 type:
-  description: The route type.
-  type: str
-  sample: "peering"
+    description: The route type.
+    type: str
+    sample: "peering"
 vpc_id:
-  description:  The VPC of the route.
-  type: str
-  sample: "4dae5bac-0725-2d5b-add8-cb6667b8"
+    description:  The VPC of the route.
+    type: str
+    sample: "4dae5bac-0725-2d5b-add8-cb6667b8"
 tenant_id:
-  description: Project id.
-  type: str
-  sample: "6ysa5bac-0925-4d5b-add8-cb6667b8"
+    description: Project id.
+    type: str
+    sample: "6ysa5bac-0925-4d5b-add8-cb6667b8"
 '''
 
 EXAMPLES = '''
@@ -97,7 +97,7 @@ class VPCRouteModule(OTCModule):
         nexthop=dict(type='str'),
         type=dict(default='peering', type='str'),
         vpc_id=dict(type='str'),
-        state=dict(default='present', choices=['absent', 'present']),
+        state=dict(default='present', choices=['present', 'absent']),
     )
     module_kwargs = dict(
         required_if=[
