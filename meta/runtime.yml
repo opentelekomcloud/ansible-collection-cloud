@@ -22,7 +22,6 @@ action_groups:
     - waf_certificate_info
     - volume_backup_info
     - volume_snapshot_info
-    - vpc_peering
     - vpc_peering_info
     - vpc_route_info
     - waf_domain
