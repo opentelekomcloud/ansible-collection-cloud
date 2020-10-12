@@ -130,7 +130,7 @@ class VPCRouteModule(OTCModule):
         result = True
 
         try:
-            vpc_route = self.conn.vpc.get_route(route_id)
+            vpc_route = self.conn.vpc.get_route(route_id)  # noqa: F841
         except self.sdk.exceptions.ResourceNotFound:
             result = False
 
