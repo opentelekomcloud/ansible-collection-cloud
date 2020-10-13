@@ -27,7 +27,7 @@ options:
     type: str
   ipv4_address_scope_id:
     description:
-      - The ID of the IPv4 address scope for the network
+      - The ID of the IPv4 address scope for the network.
     type: str
   ipv6_address_scope_id:
     description:
@@ -101,7 +101,7 @@ networks:
     dns_domain:
       description: Specifies the default private network DNS domain address.
       type: str
-      sample: "eu-de.compute.internal."
+      sample: ""
     id:
       description: Specifies the network ID.
       type: str
@@ -135,11 +135,11 @@ networks:
       type: bool
       sample: "true"
     is_vlan_transparent:
-      description: 
+      description:
       type: str
       sample: "null"
     mtu:
-      description: 
+      description:
       type: str
       sample: "null"
     name:
@@ -181,7 +181,7 @@ networks:
     subnet_ids:
       description: IDs of the subnets aasociated with this network.
       type: list
-      sample: "["20447648-718a-4ec1-8476-9db0f49828ee"]"
+      sample: '["20447648-718a-4ec1-8476-9db0f49828ee"]'
     tags:
       description:
       type: list
@@ -209,9 +209,9 @@ class VPCNetworkInfoModule(OTCModule):
         ipv4_address_scope_id=dict(required=False),
         ipv6_address_scope_id=dict(required=False),
         is_admin_state_up=dict(required=False),
-        is_port_security_enabled=dict(required=False),
-        is_router_external=dict(required=False),
-        is_shared=dict(required=False),
+        is_port_security_enabled=dict(required=False, type='bool'),
+        is_router_external=dict(required=False, type='bool'),
+        is_shared=dict(required=False, type='bool'),
         name=dict(required=False),
         status=dict(required=False),
         project_id=dict(required=False),
@@ -231,11 +231,10 @@ class VPCNetworkInfoModule(OTCModule):
         is_shared_filter = self.params['is_shared']
         name_filter = self.params['name']
         status_filter = self.params['status']
-        project_id_filter= self.params['project_id']
+        project_id_filter = self.params['project_id']
         provider_network_type_filter = self.params['provider_network_type']
         provider_physical_network_filter = self.params['provider_physical_network']
         provider_segmentation_id_filter = self.params['provider_segmentation_id']
-
 
         data = []
         query = {}
