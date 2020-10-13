@@ -119,9 +119,8 @@ networks:
       type: bool
       sample: "true"
     is_default:
-      description:
+      description: Some description.
       type: str
-      sample: "null"
     is_port_security_enabled:
       description: Specifies whether the security option is enabled for the port.
       type: bool
@@ -135,13 +134,11 @@ networks:
       type: bool
       sample: "true"
     is_vlan_transparent:
-      description:
+      description: Some description
       type: str
-      sample: "null"
     mtu:
-      description:
+      description: Some description.
       type: str
-      sample: "null"
     name:
       description: Network name.
       type: str
@@ -159,33 +156,27 @@ networks:
       type: str
       sample: "vxlan"
     provider_segmentation_id:
-      description:
+      description: Some description.
       type: str
-      sample: "null"
     qos_policy_id:
-      description:
+      description: Some description.
       type: str
-      sample: "null"
     revision_number:
       description: Network status.
       type: str
-      sample: "null"
     segments:
-      description:
+      description: Some description.
       type: str
-      sample: "null"
     status:
       description: Network status.
       type: str
-      sample: "null"
     subnet_ids:
       description: IDs of the subnets aasociated with this network.
       type: list
-      sample: '["20447648-718a-4ec1-8476-9db0f49828ee"]'
+      sample: "[20447648-718a-4ec1-8476-9db0f49828ee]"
     tags:
-      description:
+      description: List of tags.
       type: list
-      sample:""
     updated_at:
       description: Specifies the time (UTC) when the network is updated.
       type: str
