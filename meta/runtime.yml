@@ -12,6 +12,7 @@ action_groups:
     - nat_dnat_info
     - nat_gateway_info
     - nat_snat_info
+    - network_info
     - rds_datastore_info
     - rds_flavor_info
     - rds_instance

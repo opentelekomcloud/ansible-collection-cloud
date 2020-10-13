@@ -1,0 +1,12 @@
+---
+- block:
+    - name: Get vpc networks info
+      networks_info:
+      register: networks
+
+    - name: assert result
+      assert:
+        that:
+          - networks is success
+          - networks is not changed
+          - networks.networks is defined
