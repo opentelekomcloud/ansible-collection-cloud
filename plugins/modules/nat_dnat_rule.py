@@ -36,7 +36,6 @@ options:
     description:
       - ID or Name of the floating IP
     type: str
-    required: true
   id:
     description:
       - ID of the DNAT rule
@@ -45,25 +44,23 @@ options:
     description:
       - Specifies the port used by ECSs or BMSs to provide services for external systems
     type: str
-    required: true
   nat_gateway:
     description:
       - ID or Name of the NAT gateway
     type: str
-    required: true
-  port_id:
+  port:
     description:
       - Specifies the port ID of an ECS or a BMS. This parameter and private_ip are alternative
     type: str
   private_ip:
     description:
-      - Specifies the private IP address, for example, the IP address of a Direct Connect connection. This parameter and port_id are alternative
+      - Specifies the private IP address, for example, the IP address of a Direct Connect connection. This parameter and port are alternative
     type: str
   protocol:
     description:
       - Specifies the protocol type. Currently, TCP, UDP, and ANY are supported.
     type: str
-    required: true
+    choices: [tcp, udp, any]
   project_id:
     description:
       - Specifies the project ID
@@ -114,12 +111,12 @@ nat_gateways:
             description: ID or name of the assigned Nat gateway.
             type: str
             sample: "2aa32feb-f0b7-4dcc-a7b4-e0233686702b"
-        port_id:
+        port:
             description: Specifies the port ID of an ECS or a BMS. This parameter and private_ip are alternative
             type: str
             sample: "736abea5-aaf8-40b9-bf17-cc081a785d67"
         private_ip:
-            description: Specifies the private IP address, e.g. the IP address of a Direct Connect connection. This parameter and port_id are alternative
+            description: Specifies the private IP address, e.g. the IP address of a Direct Connect connection. This parameter and port are alternative
             type: str
             sample: "192.168.2.1"
         protocol:
@@ -137,11 +134,11 @@ EXAMPLES = '''
 nat_dnat:
     cloud: otc
     description: miau
-    nat_gateway: 2b725feb-f0b7-4dcc-a7b4-e0233686702b
-    internal_service_port: 88
-    external_service_port: 88
-    port_id: 840bbea5-aaf8-40b9-bf17-cc081a785d67
-    floating_ip: f39ef6e6-a4b3-42be-a501-b7dfe251bfae
+    nat_gateway: 2b725feb-f0b7-4dcc-a7b4-e02336867123
+    internal_service_port: 80
+    external_service_port: 80
+    port: 840bbea5-aaf8-40b9-bf17-cc081a785123
+    floating_ip: f39ef6e6-a4b3-42be-a501-b7dfe251b123
     protocol: tcp
     state: present
 
@@ -155,13 +152,13 @@ class NatDnatModule(OTCModule):
         admin_state_up=dict(required=False, type='bool'),
         description=dict(required=False),
         external_service_port=dict(required=False),
-        floating_ip=dict(required=True),
+        floating_ip=dict(required=False),
         id=dict(required=False),
-        internal_service_port=dict(required=True),
-        nat_gateway=dict(required=True),
-        port_id=dict(required=False),
+        internal_service_port=dict(required=False),
+        nat_gateway=dict(required=False),
+        port=dict(required=False),
         private_ip=dict(required=False),
-        protocol=dict(required=True),
+        protocol=dict(required=False, choices=['tcp', 'udp', 'any']),
         project_id=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
@@ -171,42 +168,26 @@ class NatDnatModule(OTCModule):
 
         if self.params['state'] == 'absent':
             changed = False
-            query = {}
 
             if self.params['id']:
-                name = self.params['id']
                 dnat_rule = self.conn.nat.get_dnat_rule(
-                    id=name,
-                    ignore_missing=True)
-
+                    dnat_rule=self.params['id']
+                )
                 if dnat_rule:
                     self.conn.nat.delete_dnat_rule(dnat_rule)
                     changed = True
-
-            elif self.params['floating_ip']:
-                fi = self.conn.network.find_ip(
-                    name_or_id=self.params['floating_ip'],
-                    ignore_missing=True)
-                if fi:
-                    query['floating_ip_id'] = fi.id
                 else:
                     self.exit(
                         changed=False,
-                        message=('No floating IP found with name or id: %s' %
-                                 self.params['floating_ip'])
+                        message=('No DNAT rule found with name or id: %s' %
+                                 self.params['id'])
                     )
-
-                for raw in self.conn.nat.dnat_rules(**query):
-                    ruleid = raw.id
-
-                if ruleid:
-                    self.conn.nat.delete_dnat_rule(ruleid)
-                    changed = True
-
             else:
                 self.exit(
                     changed=False,
-                    message=('Neither ID nor floating IP specified')
+                    message=('Parameter id is missing to delete DNAT '
+                             'rule.'),
+                    failed=True
                 )
 
         elif self.params['state'] == 'present':
@@ -216,59 +197,106 @@ class NatDnatModule(OTCModule):
                 attrs['admin_state_up'] = self.params['admin_state_up']
             if self.params['description']:
                 attrs['description'] = self.params['description']
-
-            nw = self.conn.network.find_ip(
-                name_or_id=self.params['floating_ip'],
-                ignore_missing=True)
-            if nw:
-                attrs['floating_ip_id'] = nw.id
+            if self.params['floating_ip']:
+                fip = self.conn.network.find_ip(
+                    name_or_id=self.params['floating_ip'],
+                    ignore_missing=True
+                )
+                if fip:
+                    attrs['floating_ip_id'] = fip.id
+                else:
+                    self.exit(
+                        changed=False,
+                        message=('No floating IP found with name or id: %s' %
+                                 self.params['floating_ip'])
+                    )
             else:
                 self.exit(
                     changed=False,
-                    message=('No floating IP found with name or id: %s' %
-                             self.params['floating_ip'])
+                    message=('floating_ip parameter is required to create '
+                             'a DNAT rule.'),
+                    failed=True
                 )
-
             if self.params['internal_service_port']:
                 attrs['internal_service_port'] = self.params['internal_service_port']
-            if self.params['external_service_port']:
-                attrs['external_service_port'] = self.params['external_service_port']
-            if self.params['project_id']:
-                attrs['project_id'] = self.params['project_id']
-            gw = self.conn.nat.find_gateway(
-                name_or_id=self.params['nat_gateway'],
-                ignore_missing=True
-            )
-            if gw:
-                attrs['nat_gateway_id'] = gw.id
             else:
                 self.exit(
                     changed=False,
-                    message=('No gateway found with name or id: %s' %
-                             self.params['nat_gateway'])
+                    message=('Parameter internal_service_port is required to '
+                             'create a DNAT rule.'),
+                    failed=True
+                )
+            if self.params['external_service_port']:
+                attrs['external_service_port'] = self.params['external_service_port']
+            else:
+                self.exit(
+                    changed=False,
+                    message=('Parameter external_service_port is required to '
+                             'create a DNAT rule.'),
+                    failed=True
+                )
+            if self.params['project_id']:
+                attrs['project_id'] = self.params['project_id']
+            if self.params['nat_gateway']:
+                gw = self.conn.nat.find_gateway(
+                    name_or_id=self.params['nat_gateway'],
+                    ignore_missing=True
+                )
+                if gw:
+                    attrs['nat_gateway_id'] = gw.id
+                else:
+                    self.exit(
+                        changed=False,
+                        message=('No gateway found with name or id: %s' %
+                                 self.params['nat_gateway'])
+                    )
+            else:
+                self.exit(
+                    changed=False,
+                    message=('nat_gateway parameter is required to create'
+                             'DNAT rule.')
                 )
             if self.params['private_ip']:
                 attrs['private_ip'] = self.params['private_ip']
 
-            if self.params['port_id']:
+            if self.params['port']:
                 if self.params['private_ip']:
                     self.exit(
                         changed=False,
-                        message=('Either specify port_id OR private_ip')
+                        message=('Either specify port OR private_ip')
                     )
                 else:
-                    attrs['port_id'] = self.params['port_id']
+                    p = self.conn.network.find_port(
+                        name_or_id=self.params['port'],
+                        ignore_missing=True
+                    )
+                    if not p:
+                        self.exit(
+                            changed=False,
+                            message=('No port found with name or id: %s' %
+                                     self.params['port']),
+                            failed=True
+                        )
+                    attrs['port_id'] = p.id
             if self.params['private_ip']:
-                if self.params['port_id']:
+                if self.params['port']:
                     self.exit(
                         changed=False,
-                        message=('Either specify port_id OR private_ip')
+                        message=('Either specify port OR private_ip'),
+                        failed=True
                     )
                 else:
                     attrs['private_ip'] = self.params['private_ip']
 
             if self.params['protocol']:
                 attrs['protocol'] = self.params['protocol']
+            else:
+                self.exit(
+                    changed=False,
+                    message=('protocol parameter is required to create '
+                             'a DNAT rule.'),
+                    failed=True
+                )
 
             for rule in self.conn.nat.dnat_rules(**attrs):
                 if rule.id:
