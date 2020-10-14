@@ -109,7 +109,7 @@ class LoadBalancerMemberInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
         pool=dict(required=True),
-        project_id =dict(required=False, type='str'),
+        project_id=dict(required=False, type='str'),
         address=dict(required=False, type='str'),
         protocol_port=dict(required=False, type='int'),
         subnet=dict(required=False, type='str'),
