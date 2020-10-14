@@ -1,0 +1,23 @@
+---
+- block:
+    - name: Create network
+      network:
+        name: "test-network-module"
+      register: created_network
+
+    - name: assert result
+      assert:
+        that:
+          - created_network is success
+          - created_network is changed
+
+    - name: Remove network
+      network:
+        name: "test-network-module"
+      register: removed_network
+
+    - name: assert result
+      assert:
+        that:
+          - removed_network is success
+          - removed_network is changed
