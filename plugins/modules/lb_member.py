@@ -35,9 +35,8 @@ options:
     required: true
   name:
     description:
-      - Specifies the backend server group name.
+      - Specifies the backend server name.
     type: str
-    required: true
   address:
     description:
       - Specifies the private IP address of the backend server.
@@ -119,7 +118,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class LoadBalancerMemberModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=True),
+        name=dict(required=False),
         state=dict(default='present', choices=['absent', 'present']),
         pool=dict(required=True),
         address=dict(required=False, type='str'),

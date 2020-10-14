@@ -31,7 +31,6 @@ options:
     description:
       - Specifies the health check name.
     type: str
-    required: true
   delay:
     description:
       - Specifies the interval between health checks in the unit of second (1-50).
@@ -136,7 +135,7 @@ lb_healthmonitor:
 '''
 
 EXAMPLES = '''
-# Add a health check to backed server group in ELB.
+# Add a health check to backend server group in ELB.
 - lb_healthmonitor:
     state: present
     name: member
@@ -146,7 +145,7 @@ EXAMPLES = '''
     monitor_timeout: 15
     type: tcp
 
-# Update a health check to backed server group in ELB.
+# Update a health check to backend server group in ELB.
 - lb_healthmonitor:
     state: present
     name: member
@@ -168,7 +167,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class LoadBalancerHealthmonitorModule(OTCModule):
     argument_spec = dict(
         state=dict(default='present', choices=['absent', 'present']),
-        name=dict(required=True),
+        name=dict(required=False),
         delay=dict(required=False, type='int'),
         max_retries=dict(required=False, type='int'),
         pool=dict(required=False, type='str'),

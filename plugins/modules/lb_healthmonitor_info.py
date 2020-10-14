@@ -25,6 +25,23 @@ options:
     description:
       - Optional name or id of the health check
     type: str
+  delay:
+    description:
+      - Optional the interval between health checks in the unit of second.
+    type: int
+  max_retries:
+    description:
+      - Optional the number of consecutive health checks when the health check
+        result of a backend server changes from fail to success.
+    type: int
+  admin_state_up:
+    description:
+      - Optional the administrative status of the health check.
+    type: bool
+  timeout:
+    description:
+      - Optional the health check timeout duration in the unit of second.
+    type: int
   type:
     description:
       - Optional health check protocol
@@ -124,6 +141,10 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class LoadBalancerHealthMonitorInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
+        delay=dict(required=False, type='int'),
+        max_retries=dict(required=False, type='int'),
+        admin_state_up=dict(required=False, type='bool'),
+        timeout=dict(required=False, type='int'),
         type=dict(required=False, choices=['tcp', 'udp_connect', 'http']),
         monitor_port=dict(required=False, type='int'),
         expected_codes=dict(required=False, type='str'),
@@ -134,6 +155,11 @@ class LoadBalancerHealthMonitorInfoModule(OTCModule):
     )
 
     def run(self):
+        name_filter = self.params['name']
+        delay_filter = self.params['delay']
+        max_retries_filter = self.params['max_retries']
+        admin_state_filter = self.params['admin_state_up']
+        timeout_filter = self.params['timeout']
         type_filter = self.params['type']
         monitor_port_filter = self.params['monitor_port']
         expected_codes_filter = self.params['expected_codes']
@@ -142,6 +168,16 @@ class LoadBalancerHealthMonitorInfoModule(OTCModule):
 
         data = []
         args = {}
+        if name_filter:
+            args['name'] = name_filter
+        if delay_filter:
+            args['delay'] = delay_filter
+        if max_retries_filter:
+            args['max_retries'] = max_retries_filter
+        if admin_state_filter:
+            args['admin_state_up'] = admin_state_filter
+        if timeout_filter:
+            args['timeout'] = timeout_filter
         if type_filter:
             args['type'] = type_filter.upper()
         if monitor_port_filter:
@@ -153,8 +189,8 @@ class LoadBalancerHealthMonitorInfoModule(OTCModule):
         if http_method_filter:
             args['http_method'] = http_method_filter.upper()
 
-        if self.params['name']:
-            raw = self.conn.network.find_health_monitor(name_or_id=self.params['name'])
+        if name_filter:
+            raw = self.conn.network.find_health_monitor(name_or_id=name_filter)
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)

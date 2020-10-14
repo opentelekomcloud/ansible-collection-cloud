@@ -23,8 +23,32 @@ description:
 options:
   name:
     description:
-      - Optional name or id of the member
+      - Optional name or id of the member.
     type: str
+  project_id:
+    description:
+      - Optional the ID of the project where the backend server is used.
+    type: str
+  address:
+    description:
+      - Optional the private IP address of the backend server.
+    type: str
+  protocol_port:
+    description:
+      - Optional the port used by the backend server.
+    type: int
+  subnet:
+    description:
+      - Optional the ID or Name of the subnet where the backend server works.
+    type: str
+  admin_state_up:
+    description:
+      - Optional the administrative status of the backend server.
+    type: bool
+  weight:
+    description:
+      - Optional the backend server weight.
+    type: int
   pool:
     description:
       - Specifies the ID or Name of the backend server group.
@@ -84,19 +108,52 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class LoadBalancerMemberInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
-        pool=dict(required=True)
+        pool=dict(required=True),
+        project_id =dict(required=False, type='str'),
+        address=dict(required=False, type='str'),
+        protocol_port=dict(required=False, type='int'),
+        subnet=dict(required=False, type='str'),
+        admin_state_up=dict(required=False, type='bool'),
+        weight=dict(required=False, type='int')
     )
 
     def run(self):
+        name_filter = self.params['name']
+        project_id_filter = self.params['project_id']
+        address_filter = self.params['address']
+        protocol_port_filter = self.params['protocol_port']
+        subnet_filter = self.params['subnet']
+        admin_state_filter = self.params['admin_state_up']
+        weight_filter = self.params['weight']
+
         data = []
+        args = {}
+
+        if name_filter:
+            args['name'] = name_filter
+        if project_id_filter:
+            args['tenant_id'] = project_id_filter
+        if address_filter:
+            args['address'] = address_filter
+        if protocol_port_filter:
+            args['protocol_port'] = protocol_port_filter
+        if subnet_filter:
+            subnet = self.conn.network.find_subnet(name_or_id=name_filter)
+            if subnet:
+                args['subnet_id'] = subnet.id
+        if admin_state_filter:
+            args['admin_state_up'] = admin_state_filter
+        if weight_filter:
+            args['weight'] = weight_filter
+
         pool = self.conn.network.find_pool(name_or_id=self.params['pool'])
         if self.params['name']:
-            raw = self.conn.network.find_pool_member(pool=pool, name_or_id=self.params['name'])
+            raw = self.conn.network.find_pool_member(pool=pool, name_or_id=name_filter)
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
         else:
-            for raw in self.conn.network.pool_members(pool=pool):
+            for raw in self.conn.network.pool_members(pool=pool, **args):
                 dt = raw.to_dict()
                 dt.pop('location')
                 data.append(dt)
