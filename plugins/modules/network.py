@@ -259,7 +259,7 @@ class VPCNetworkModule(OTCModule):
                 self.exit_json(
                    changed=changed,
                    network=network
-                )
+                   )
             else:
                 self.fail_json(
                     msg="Network already exists"

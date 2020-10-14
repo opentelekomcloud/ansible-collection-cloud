@@ -14,6 +14,7 @@ action_groups:
     - nat_gateway_info
     - nat_gateway
     - nat_snat_info
+    - nat_snat_rule
     - network
     - rds_datastore_info
     - rds_flavor_info
