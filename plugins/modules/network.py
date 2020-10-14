@@ -259,6 +259,7 @@ class VPCNetworkModule(OTCModule):
 
             else:
                 network = self.conn.network.update_network(network, **attrs)
+                changed = True
                 self.exit_json(
                     changed=changed,
                     network=network
