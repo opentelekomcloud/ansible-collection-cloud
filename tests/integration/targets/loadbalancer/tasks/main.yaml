@@ -14,6 +14,7 @@
         router_name: "{{ ( prefix + '_acc-lb-router') }}"
         loadbalancer_name: "{{ ( prefix + '_acc-lb') }}"
         listener_name: "{{ ( prefix + '_acc-lb-lstnr') }}"
+        pool_name: "{{ ( prefix + '_acc-lb-pool') }}"
 
     - name: Create network for ELB
       os_network:
@@ -78,6 +79,19 @@
         wait: yes
         timeout: 600
 
+    - name: Get loadbalancer by Name
+      loadbalancer_info:
+        name: "{{ lb.loadbalancer.name }}"
+      register: res
+
+    - name: assert result
+      assert:
+        that:
+          - res is success
+          - res.loadbalancers is defined
+          - res.loadbalancers.id is defined
+          - res.loadbalancers.vip_address is defined
+
     - name: Create listener for existing loadbalancer
       lb_listener:
         state: present
@@ -118,18 +132,60 @@
           - res.listeners is defined
           - res.listeners[0].id is defined
 
-    - name: Get loadbalancer by Name
-      loadbalancer_info:
-        name: "{{ lb.loadbalancer.name }}"
+    - name: Create Backend Server Group
+      lb_pool:
+        state: present
+        name: "{{ pool_name }}"
+        protocol: tcp
+        lb_algorithm: round_robin
+        listener: "{{ lstnr.listener.id }}"
+        loadbalancer: "{{ lb.loadbalancer.id }}"
+      register: pool
+
+    - name: assert result
+      assert:
+        that:
+          - pool is success
+          - pool is changed
+
+    - name: Modify Backend Server Group
+      lb_pool:
+        state: present
+        name: "{{ pool_name }}"
+        session_persistence:
+          cookie_name: app
+          type: app_cookie
+      register: pool
+
+    - name: assert result
+      assert:
+        that:
+          - pool is success
+          - pool is changed
+
+    - name: Get Backend Server Group by name
+      lb_pool_info:
+        name: "{{ pool.server_group.name }}"
       register: res
 
     - name: assert result
       assert:
         that:
           - res is success
-          - res.loadbalancers is defined
-          - res.loadbalancers.id is defined
-          - res.loadbalancers.vip_address is defined
+          - res.server_groups is defined
+          - res.server_groups[0].id is defined
+
+    - name: Drop existing pool by name
+      lb_pool:
+        state: absent
+        name: "{{ pool_name }}"
+      register: dropped
+
+    - name: assert result
+      assert:
+        that:
+          - dropped is success
+          - dropped is changed
 
     - name: Drop existing listener by name
       lb_listener:
