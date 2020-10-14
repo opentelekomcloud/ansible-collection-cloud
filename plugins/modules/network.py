@@ -222,34 +222,32 @@ class VPCNetworkModule(OTCModule):
 
         if self.params['state'] == 'present':
 
+            attrs = {}
+
+            if name:
+                attrs['name'] = self.params['name']
+            if description:
+                attrs['description'] = self.params['description']
+            if ipv4_address_scope_id:
+                attrs['ipv4_address_scope_id'] = self.params['ipv4_address_scope_id']
+            if ipv6_address_scope_id:
+                attrs['ipv6_address_scope_id'] = self.params['ipv6_address_scope_id']
+            if is_admin_state_up:
+                attrs['is_admin_state_up'] = self.params['is_admin_state_up']
+            if is_port_security_enabled:
+                attrs['is_port_security_enabled'] = self.params['is_port_security_enabled']
+            if is_router_external:
+                attrs['is_router_external'] = self.params['is_router_external']
+            if is_shared:
+                attrs['is_shared'] = self.params['is_shared']
+            if provider_network_type:
+                attrs['provider_network_type'] = self.params['provider_network_type']
+            if provider_physical_network:
+                attrs['provider_physical_network'] = self.params['provider_physical_network']
+            if provider_segmentation_id:
+                attrs['provider_segmentation_id'] = self.params['provider_segmentation_id']
+
             if not network:
-
-                attrs = {}
-
-                if name:
-                    attrs['name'] = self.params['name']
-                if description:
-                    attrs['description'] = self.params['description']
-                if ipv4_address_scope_id:
-                    attrs['ipv4_address_scope_id'] = self.params['ipv4_address_scope_id']
-                if ipv6_address_scope_id:
-                    attrs['ipv6_address_scope_id'] = self.params['ipv6_address_scope_id']
-                if is_admin_state_up:
-                    attrs['is_admin_state_up'] = self.params['is_admin_state_up']
-                if is_port_security_enabled:
-                    attrs['is_port_security_enabled'] = self.params['is_port_security_enabled']
-                if is_router_external:
-                    attrs['is_router_external'] = self.params['is_router_external']
-                if is_shared:
-                    attrs['is_shared'] = self.params['is_shared']
-                if project_id:
-                    attrs['project_id'] = self.params['project_id']
-                if provider_network_type:
-                    attrs['provider_network_type'] = self.params['provider_network_type']
-                if provider_physical_network:
-                    attrs['provider_physical_network'] = self.params['provider_physical_network']
-                if provider_segmentation_id:
-                    attrs['provider_segmentation_id'] = self.params['provider_segmentation_id']
 
                 network = self.conn.network.create_network(**attrs)
                 changed = True
@@ -260,8 +258,10 @@ class VPCNetworkModule(OTCModule):
                 )
 
             else:
-                self.fail_json(
-                    msg="Network already exists"
+                network = self.conn.network.update_network(network, **attrs)
+                self.exit_json(
+                    changed=changed,
+                    network=network
                 )
 
         elif self.params['state'] == 'absent':
