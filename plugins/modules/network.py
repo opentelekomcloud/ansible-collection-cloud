@@ -196,7 +196,6 @@ class VPCNetworkModule(OTCModule):
         is_router_external=dict(required=False, type='bool'),
         is_shared=dict(required=False, type='bool'),
         name=dict(required=False),
-        project_id=dict(required=False),
         provider_network_type=dict(required=False),
         provider_physical_network=dict(required=False),
         provider_segmentation_id=dict(required=False),
@@ -213,7 +212,6 @@ class VPCNetworkModule(OTCModule):
         is_router_external = self.params['is_router_external']
         is_shared = self.params['is_shared']
         name = self.params['name']
-        project_id = self.params['project_id']
         provider_network_type = self.params['provider_network_type']
         provider_physical_network = self.params['provider_physical_network']
         provider_segmentation_id = self.params['provider_segmentation_id']
@@ -257,13 +255,14 @@ class VPCNetworkModule(OTCModule):
                 changed = True
 
                 self.exit_json(
-                   changed=changed,
-                   network=network
-                   )
+                    changed=changed,
+                    network=network
+                )
+
             else:
                 self.fail_json(
                     msg="Network already exists"
-                    )
+                )
 
         elif self.params['state'] == 'absent':
             if network:
