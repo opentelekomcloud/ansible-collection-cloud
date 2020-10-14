@@ -1,0 +1,82 @@
+---
+# author: @tischrei
+- module_defaults:
+    nat_gateway:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      set_fact:
+        # prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+        prefix: test-prefix
+
+    - name: Set initial facts
+      set_fact:
+        network_name: "{{ ( prefix + '_nat-network') }}"
+        subnet_name: "{{ ( prefix + '_nat-subnet') }}"
+        router_name: "{{ ( prefix + '_nat-router') }}"
+        nat_gateway_name: "{{ ( prefix + '_nat-gateway') }}"
+
+
+    - name: Create network for NAT
+      os_network:
+        name: "{{ network_name }}"
+        state: present
+      register: nat_net
+
+    - name: Create subnet for NAT
+      os_subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ nat_net.network.name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: nat_subnet
+
+    - name: Create Router for NAT
+      os_router:
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: False
+        interfaces:
+          - net: "{{ nat_net.network.name }}"
+            subnet: "{{ nat_subnet.subnet.name }}"
+      register: nat_router
+
+    - name: Create NAT gateway
+      nat_gateway:
+        name: "{{ nat_gateway_name }}"
+        internal_network: "{{ network_name }}"
+        router: "{{ router_name }}"
+      register: nat_gw
+    
+    - name: assert result
+      assert:
+        that:
+          - nat_gw is changed
+          - nat_gw is success
+    
+    - name: Add NAT gateway description
+      nat_gateway:
+        name: "{{ nat_gw.gateway.name }}"
+        description: test-description
+      register: nat_gw
+
+    - name: assert result
+      assert:
+        that:
+          - nat_gw is changed
+          - nat_gw.gateway.description is defined
+
+    - name: Add SNAT rule
+      nat_snat_rule:
+        nat_gateway: "{{ nat_gw.gateway.name }}"
+        name: "{{ nat_gw.gateway.name }}"
+        description: test-description
+      register: nat_gw
+
+    - name: assert result
+      assert:
+        that:
+          - nat_gw is changed
+          - nat_gw.gateway.description is defined

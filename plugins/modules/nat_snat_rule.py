@@ -23,7 +23,7 @@ options:
   cidr:
     description:
       - Specifies a subset of the VPC subnet CIDR block or
-      - a CIDR blocl of Direct Connect connection.
+      - a CIDR block of Direct Connect connection.
     type: str
   floating_ip:
     description:
