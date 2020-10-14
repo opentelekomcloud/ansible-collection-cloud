@@ -38,7 +38,7 @@ options:
     description:
       - Optional the administrative status of the health check.
     type: bool
-  timeout:
+  monitor_timeout:
     description:
       - Optional the health check timeout duration in the unit of second.
     type: int
@@ -144,7 +144,7 @@ class LoadBalancerHealthMonitorInfoModule(OTCModule):
         delay=dict(required=False, type='int'),
         max_retries=dict(required=False, type='int'),
         admin_state_up=dict(required=False, type='bool'),
-        timeout=dict(required=False, type='int'),
+        monitor_timeout=dict(required=False, type='int'),
         type=dict(required=False, choices=['tcp', 'udp_connect', 'http']),
         monitor_port=dict(required=False, type='int'),
         expected_codes=dict(required=False, type='str'),
@@ -159,7 +159,7 @@ class LoadBalancerHealthMonitorInfoModule(OTCModule):
         delay_filter = self.params['delay']
         max_retries_filter = self.params['max_retries']
         admin_state_filter = self.params['admin_state_up']
-        timeout_filter = self.params['timeout']
+        timeout_filter = self.params['monitor_timeout']
         type_filter = self.params['type']
         monitor_port_filter = self.params['monitor_port']
         expected_codes_filter = self.params['expected_codes']
