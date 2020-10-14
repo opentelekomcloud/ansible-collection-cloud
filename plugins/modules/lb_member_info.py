@@ -58,7 +58,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-lb_member_info:
+members:
   description: Dictionary describing members.
   type: complex
   returned: On Success.

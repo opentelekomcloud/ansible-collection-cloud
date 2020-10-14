@@ -72,7 +72,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-lb_healthmonitor_info:
+healthmonitors:
   description: Dictionary describing members.
   type: complex
   returned: On Success.

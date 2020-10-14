@@ -82,7 +82,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-lb_healthmonitor:
+healthmonitor:
   description: Specifies the health check.
   type: complex
   returned: On Success.
@@ -239,7 +239,7 @@ class LoadBalancerHealthmonitorModule(OTCModule):
                 lb_monitor = self.conn.network.update_health_monitor(health_monitor=lb_monitor, **attrs)
                 self.exit_json(
                     changed=changed,
-                    member=lb_monitor.to_dict(),
+                    healthmonitor=lb_monitor.to_dict(),
                     id=lb_monitor.id
                 )
 
@@ -253,7 +253,7 @@ class LoadBalancerHealthmonitorModule(OTCModule):
             changed = True
             self.exit_json(
                 changed=changed,
-                member=lb_monitor.to_dict(),
+                healthmonitor=lb_monitor.to_dict(),
                 id=lb_monitor.id
             )
 

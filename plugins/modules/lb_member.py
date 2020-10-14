@@ -61,7 +61,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-lb_member:
+member:
   description: Specifies the member.
   type: complex
   returned: On Success.
