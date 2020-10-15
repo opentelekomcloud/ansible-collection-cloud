@@ -20,6 +20,7 @@ action_groups:
     - rds_flavor_info
     - rds_instance
     - rds_backup_info
+    - subnet_info
     - tag
     - volume_backup
     - waf_certificate

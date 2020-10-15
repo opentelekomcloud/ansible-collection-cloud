@@ -1,0 +1,12 @@
+---
+- block:
+    - name: Get subnets info
+      subnet_info:
+      register: subnets
+
+    - name: assert result
+      assert:
+        that:
+          - subnets is success
+          - subnets is not changed
+          - subnets.subnets is defined

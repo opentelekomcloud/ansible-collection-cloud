@@ -27,7 +27,7 @@ options:
     type: str
   description:
     description:
-      - The subnet description.
+      - The subnet_info description.
     type: str
   gateway_ip:
     description:
@@ -63,23 +63,23 @@ options:
     type: str
   subnet_pool_id:
     description:
-      -  The subnet pool ID from which to obtain a CIDR.
+      -  The subnet_info pool ID from which to obtain a CIDR.
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
 subnets:
-  description: The subnet object list.
+  description: The subnet_info object list.
   type: complex
   returned: On Success.
   contains:
     id:
-      description: Specifies the subnet ID.
+      description: Specifies the subnet_info ID.
       type: str
       sample: "4dae5bac-0925-4d5b-add8-cb6667b8"
     name:
-      description: Specifies the subnet name.
+      description: Specifies the subnet_info name.
       type: str
       sample: "subnet1"
     ip_version:
@@ -92,7 +92,7 @@ subnets:
       description: Specifies the IPv6 route broadcast mode.
       type: str
     network_id:
-      description: Specifies the ID of the network to which the subnet belongs.
+      description: Specifies the ID of the network to which the subnet_info belongs.
       type: str
     cidr:
       description: Specifies the CIDR format.
@@ -120,10 +120,10 @@ subnets:
       description: Specifies the project ID.
       type: str
     created_at:
-      description: Specifies the time (UTC) when the subnet is created.
+      description: Specifies the time (UTC) when the subnet_info is created.
       type: str
     updated_at:
-      description: Specifies the time (UTC) when the subnet is updated.
+      description: Specifies the time (UTC) when the subnet_info is updated.
       type: str
 '''
 
@@ -138,39 +138,67 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class SubnetInfoModule(OTCModule):
     argument_spec = dict(
+        cidr=dict(required=False),
+        description=dict(required=False),
+        gateway_ip=dict(required=False),
+        ip_version=dict(required=False),
+        ipv6_address_mode=dict(required=False),
+        ipv6_ra_mode=dict(required=False),
+        is_dhcp_enabled=dict(required=False, type='bool'),
         name=dict(required=False),
-        status=dict(required=False, choices=['pending_acceptance', 'rejected', 'expired', 'deleted', 'active']),
+        network_id=dict(required=False),
         project_id=dict(required=False),
-        router=dict(required=False),
+        subnet_pool_id=dict(required=False),
     )
 
     def run(self):
 
+        cidr_filter = self.params['cidr']
+        description_filter = self.params['description']
+        gateway_ip_filter = self.params['gateway_ip']
+        ip_version_filter = self.params['ip_version']
+        ipv6_address_mode_filter = self.params['ipv6_address_mode']
+        ipv6_ra_mode_filter = self.params['ipv6_ra_mode']
+        is_dhcp_enabled_filter = self.params['is_dhcp_enabled']
         name_filter = self.params['name']
-        status_filter = self.params['status']
+        network_id_filter = self.params['network_id']
         project_id_filter = self.params['project_id']
-        router = self.params['router']
+        subnet_pool_id_filter = self.params['subnet_pool_id']
+
 
         data = []
         query = {}
+        if cidr_filter:
+            query['cidr'] = cidr_filter
+        if description_filter:
+            query['description'] = description_filter
+        if gateway_ip_filter:
+            query['gateway_ip'] = gateway_ip_filter
+        if ip_version_filter:
+            query['ip_version'] = ip_version_filter
+        if ipv6_address_mode_filter:
+            query['ipv6_address_mode'] = ipv6_address_mode_filter
+        if ipv6_ra_mode_filter:
+            query['ipv6_ra_mode'] = ipv6_ra_mode_filter
+        if is_dhcp_enabled_filter:
+            query['is_dhcp_enabled'] = is_dhcp_enabled_filter
         if name_filter:
             query['name'] = name_filter
-        if status_filter:
-            query['status'] = status_filter.upper()
+        if network_id_filter:
+            query['network_id'] = network_id_filter
         if project_id_filter:
             query['project_id'] = project_id_filter
-        if router:
-            router_obj = self.conn.network.find_router(router)
-            query['vpc_id'] = router_obj['id']
+        if subnet_pool_id_filter:
+            query['subnet_pool_id'] = subnet_pool_id_filter
 
-        for raw in self.conn.vpc.peerings(**query):
+        for raw in self.conn.network.subnets(**query):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
 
         self.exit_json(
             changed=False,
-            vpc_peerings=data
+            subnets=data
         )
 
 
