@@ -193,7 +193,7 @@ class VPCNetworkInfoModule(OTCModule):
         description=dict(required=False),
         ipv4_address_scope_id=dict(required=False),
         ipv6_address_scope_id=dict(required=False),
-        is_admin_state_up=dict(required=False),
+        is_admin_state_up=dict(required=False, type='bool'),
         is_port_security_enabled=dict(required=False, type='bool'),
         is_router_external=dict(required=False, type='bool'),
         is_shared=dict(required=False, type='bool'),
