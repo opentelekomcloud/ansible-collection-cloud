@@ -190,7 +190,7 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class VPCNetworkModule(OTCModule):
+class NetworkModule(OTCModule):
     argument_spec = dict(
         description=dict(required=False),
         ipv4_address_scope_id=dict(required=False),
@@ -304,7 +304,7 @@ class VPCNetworkModule(OTCModule):
 
 
 def main():
-    module = VPCNetworkModule()
+    module = NetworkModule()
     module()
 
 
