@@ -3,10 +3,14 @@ plugins/modules/as_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_cert_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_info.py validate-modules:missing-gplv3-license
+plugins/modules/floating_ip.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer_info.py validate-modules:missing-gplv3-license
 plugins/modules/nat_dnat_rule_info.py validate-modules:missing-gplv3-license
+plugins/modules/nat_dnat_rule.py validate-modules:missing-gplv3-license
+plugins/modules/nat_gateway.py validate-modules:missing-gplv3-license
 plugins/modules/nat_gateway_info.py validate-modules:missing-gplv3-license
+plugins/modules/nat_snat_rule.py validate-modules:missing-gplv3-license
 plugins/modules/nat_snat_rule_info.py validate-modules:missing-gplv3-license
 plugins/modules/network_info.py validate-modules:missing-gplv3-license
 plugins/modules/rds_datastore_info.py validate-modules:missing-gplv3-license
@@ -27,3 +31,7 @@ plugins/modules/lb_listener.py validate-modules:missing-gplv3-license
 plugins/modules/lb_listener_info.py validate-modules:missing-gplv3-license
 plugins/modules/lb_pool.py validate-modules:missing-gplv3-license
 plugins/modules/lb_pool_info.py validate-modules:missing-gplv3-license
+plugins/modules/lb_member.py validate-modules:missing-gplv3-license
+plugins/modules/lb_member_info.py validate-modules:missing-gplv3-license
+plugins/modules/lb_healthmonitor.py validate-modules:missing-gplv3-license
+plugins/modules/lb_healthmonitor_info.py validate-modules:missing-gplv3-license
