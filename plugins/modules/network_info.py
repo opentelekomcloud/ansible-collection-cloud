@@ -14,7 +14,7 @@
 DOCUMENTATION = '''
 ---
 module: network_info
-short_description: Get information about networks
+short_description: Get information about networks from the OTC.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.4"
 author: "Polina Gubina (@polina-gubina)"
@@ -36,7 +36,7 @@ options:
   is_admin_state_up:
     description:
       -  Network administrative state.
-    type: str
+    type: bool
   is_port_security_enabled:
     description:
       - The port security status.
@@ -63,11 +63,11 @@ options:
     type: str
   provider_network_type:
     description:
-      - Network physical mechanism.
+      - The type of physical network that maps to this network resource.
     type: str
   provider_physical_network:
     description:
-      - Physical network.
+      - The physical network where this network object must be implemented.
     type: str
   provider_segmentation_id:
     description:
@@ -119,7 +119,7 @@ networks:
       type: bool
       sample: "true"
     is_default:
-      description: Some description.
+      description: Whether or not this is the default external network.
       type: str
     is_port_security_enabled:
       description: Specifies whether the security option is enabled for the port.
@@ -134,11 +134,11 @@ networks:
       type: bool
       sample: "true"
     is_vlan_transparent:
-      description: Some description
-      type: str
+      description: Indicates the VLAN transparency mode of the network.
+      type: bool
     mtu:
-      description: Some description.
-      type: str
+      description: The maximum transmission unit (MTU) of the network resource.
+      type: int
     name:
       description: Network name.
       type: str
@@ -148,24 +148,21 @@ networks:
       type: str
       sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
     provider_network_type:
-      description: Network physical mechanism.
+      description: The type of physical network that maps to this network resource.
       type: str
       sample: "vxlan"
     provider_physical_network:
-      description: Physical network.
+      description: The physical network where this network object is implemented.
       type: str
       sample: "vxlan"
     provider_segmentation_id:
-      description: Some description.
+      description: An isolated segment ID on the physical network. The provider network type defines the segmentation model.
       type: str
     qos_policy_id:
-      description: Some description.
-      type: str
-    revision_number:
-      description: Network status.
+      description: The ID of the QoS policy attached to the port.
       type: str
     segments:
-      description: Some description.
+      description: A list of provider segment objects.
       type: str
     status:
       description: Network status.
@@ -174,9 +171,6 @@ networks:
       description: IDs of the subnets aasociated with this network.
       type: list
       sample: "[20447648-718a-4ec1-8476-9db0f49828ee]"
-    tags:
-      description: List of tags.
-      type: list
     updated_at:
       description: Specifies the time (UTC) when the network is updated.
       type: str
