@@ -165,7 +165,6 @@ class SubnetInfoModule(OTCModule):
         project_id_filter = self.params['project_id']
         subnet_pool_id_filter = self.params['subnet_pool_id']
 
-
         data = []
         query = {}
         if cidr_filter:
@@ -209,4 +208,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
