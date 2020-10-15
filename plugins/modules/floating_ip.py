@@ -207,7 +207,6 @@ class FloatingIpModule(OTCModule):
         purge = self.params['purge']
 
         cloud = self.conn
-        sdk = self.sdk
 
         if state == 'present':
             changed = False
