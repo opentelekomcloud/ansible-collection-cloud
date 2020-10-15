@@ -53,6 +53,10 @@ options:
     description:
       - The name of the network.
     type: str
+  network_id:
+    description:
+      - The id of the network.
+    type: str
   provider_network_type:
     description:
       - The type of physical network that maps to this network resource.
@@ -196,10 +200,17 @@ class VPCNetworkModule(OTCModule):
         is_router_external=dict(required=False, type='bool'),
         is_shared=dict(required=False, type='bool'),
         name=dict(required=False),
+        network_id=dict(required=False),
         provider_network_type=dict(required=False),
         provider_physical_network=dict(required=False),
         provider_segmentation_id=dict(required=False),
         state=dict(required=False, default='present', choices=['present', 'absent'])
+    )
+    module_kwargs = dict(
+        required_if=[
+            ('name', None, ['network_id']),
+            ('network_id', None, ['name'])],
+        supports_check_mode=True
     )
 
     def run(self):
@@ -212,13 +223,17 @@ class VPCNetworkModule(OTCModule):
         is_router_external = self.params['is_router_external']
         is_shared = self.params['is_shared']
         name = self.params['name']
+        network_id = self.params['network_id']
         provider_network_type = self.params['provider_network_type']
         provider_physical_network = self.params['provider_physical_network']
         provider_segmentation_id = self.params['provider_segmentation_id']
 
         changed = False
 
-        network = self.conn.network.find_network(name, ignore_missing=True)
+        if network_id:
+            network = self.conn.network.find_network(network_id, ignore_missing=True)
+        else:
+            network = self.conn.network.find_network(name, ignore_missing=True)
 
         if self.params['state'] == 'present':
 
@@ -248,6 +263,8 @@ class VPCNetworkModule(OTCModule):
                 attrs['provider_segmentation_id'] = self.params['provider_segmentation_id']
 
             if not network:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
 
                 network = self.conn.network.create_network(**attrs)
                 changed = True
@@ -258,6 +275,8 @@ class VPCNetworkModule(OTCModule):
                 )
 
             else:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
                 network = self.conn.network.update_network(network, **attrs)
                 changed = True
                 self.exit_json(
@@ -267,6 +286,8 @@ class VPCNetworkModule(OTCModule):
 
         elif self.params['state'] == 'absent':
             if network:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
                 self.conn.network.delete_network(network)
                 changed = True
                 self.exit_json(
@@ -275,6 +296,8 @@ class VPCNetworkModule(OTCModule):
                 )
 
             else:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=False)
                 self.fail_json(
                     msg="Resource with this name doesn't exist"
                 )

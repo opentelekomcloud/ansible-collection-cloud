@@ -5,6 +5,17 @@
       set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
+    - name: Create network - check mode
+      network:
+        name: "{{ ( prefix + '_network' ) }}"
+      check_mode: true
+      register: check_network
+
+    - name: assert result
+      assert:
+        that:
+          - check_network is changed
+
     - name: Create network
       network:
         name: "{{ ( prefix + '_network' ) }}"
