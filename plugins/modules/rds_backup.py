@@ -52,7 +52,7 @@ options:
   timeout:
     description:
       - The amount of time the module should wait.
-    default: 180
+    default: 200
     type: int
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -110,9 +110,6 @@ class RdsBackupModule(OTCModule):
                      default = 'present')
     )
     module_kwargs = dict(
-        required_if=[
-            'state','present', ['name']
-        ],
         supports_check_mode=True
     )
 
@@ -168,13 +165,13 @@ class RdsBackupModule(OTCModule):
                                       id=backup.id)
                         except self.sdk.exceptions.ResourceTimeout:
                             self.fail(msg='Timeout failure waiting for backup '
-                                          'to complete')
+                                          'with name %s to complete' % name)
 
                 else:
                     changed = False
                     self.exit(changed=changed,
-                              msg = "RDS backup with name %s already exists" % name
-                    )
+                              msg = 'RDS backup with name %s '
+                                    'already exists' % name)
             elif self.params['state'] == 'absent':
 
                 if backup:
@@ -184,24 +181,23 @@ class RdsBackupModule(OTCModule):
                     if self.params['wait']:
                         try:
                             self.sdk.resource.wait_for_delete(
-                                backup,
+                                self.conn.rds,
+                                resource=backup,
                                 interval=2,
                                 wait=timeout
                             )
                         except self.sdk.exceptions.ResourceTimeout:
                             self.fail(msg='Timeout failure waiting for backup '
-                                          'to be deleted')
+                                          'with name %s to be deleted' % name)
                     self.exit(changed=changed,
-                              msg='RDS backup was deleted')
+                              msg='RDS backup with name %s was deleted' % name)
 
                 else:
                     changed = False
                     self.exit(changed=changed,
-                              msg='RDS backup not exists')
+                              msg='RDS backup with name %s not exists' % name)
         else:
-            self.fail(
-                msg="RDS instance %s isn't exist" % instance
-            )
+            self.fail(msg='RDS instance %s is not exist' % instance)
 
 
 def main():
