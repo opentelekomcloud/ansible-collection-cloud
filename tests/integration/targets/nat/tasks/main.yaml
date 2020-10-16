@@ -22,7 +22,6 @@
         server_image: c8983e9e-1dda-479a-9a95-b41fe325a703
         server_flavor: "s2.medium.2"
 
-
     - name: Create network for NAT
       os_network:
         name: "{{ network_name }}"
