@@ -28,17 +28,22 @@ options:
   floating_ip:
     description:
       - Address or ID of the floating IP where the SNAT rule is attached to.
+      - Mandatory for SNAT rule creation
     type: str
   id:
-    description: ID of the NAT SNAT rule
+    description:
+      - ID of the NAT SNAT rule
+      - Mandatory for SNAT rule deletion
     type: str
   nat_gateway:
     description:
       - Name or ID of the NAT gateway
+      - Mandatory for SNAT rule creation
     type: str
   network:
     description:
       - ID or Name of the network for the SNAT rule.
+      - Mandatory for SNAT rule creation
     type: str
   source_type:
     description:

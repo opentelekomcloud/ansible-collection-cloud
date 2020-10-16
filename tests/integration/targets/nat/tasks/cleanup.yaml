@@ -1,8 +1,5 @@
 
-  always:
-    - block:
-      # Cleanup
-      
+
       - name: Drop existing NAT gateway
         nat_gateway:
           name: "{{ nat_gateway_name }}"
@@ -26,4 +23,3 @@
           name: "{{ network_name }}"
           state: absent
         register: nat_net
-        

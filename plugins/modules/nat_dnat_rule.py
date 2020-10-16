@@ -24,17 +24,15 @@ options:
     description:
       - DNAT rule state.
     type: bool
-  description:
-    description:
-      - Description of the DNAT rule
-    type: str
   external_service_port:
     description:
       - Specifies the port for providing external services.
-    type: str
+      - Mandatory for DNAT rule creation
+    type: int
   floating_ip:
     description:
       - ID or Name of the floating IP
+      - Mandatory for DNAT rule creation
     type: str
   id:
     description:
@@ -43,10 +41,12 @@ options:
   internal_service_port:
     description:
       - Specifies the port used by ECSs or BMSs to provide services for external systems
-    type: str
+      - Mandatory for DNAT rule creation
+    type: int
   nat_gateway:
     description:
       - ID or Name of the NAT gateway
+      - Mandatory for DNAT rule creation
     type: str
   port:
     description:
@@ -59,7 +59,9 @@ options:
   protocol:
     description:
       - Specifies the protocol type. Currently, TCP, UDP, and ANY are supported.
+      - Mandatory for DNAT rule creation
     type: str
+    default: tcp
     choices: [tcp, udp, any]
   project_id:
     description:
@@ -74,7 +76,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-nat_gateways:
+dnat_rule:
     description: List of dictionaries describing DNAT rules.
     type: complex
     returned: On Success.
@@ -87,14 +89,10 @@ nat_gateways:
             description: Creation time of the DNAT rule
             type: str
             sample: "yyyy-mm-dd hh:mm:ss"
-        description:
-            description: Description of the DNAT rule
-            type: str
-            sample: "My Rule"
         external_service_port:
             description: Specifies the port for providing external services.
-            type: str
-            sample: "88"
+            type: int
+            sample: 80
         floating_ip:
             description: IP / ID of the floating IP Address assigned to the rule.
             type: str
@@ -105,8 +103,8 @@ nat_gateways:
             sample: "5acab424-69fb-4408-93d1-b2801b306827"
         internal_service_port:
             description: Specifies the port used by ECSs or BMSs to provide services for external systems
-            type: str
-            sample: "88"
+            type: int
+            sample: 80
         nat_gateway_id:
             description: ID or name of the assigned Nat gateway.
             type: str
@@ -133,7 +131,6 @@ EXAMPLES = '''
 # create DNAT rule
 nat_dnat:
     cloud: otc
-    description: miau
     nat_gateway: 2b725feb-f0b7-4dcc-a7b4-e02336867123
     internal_service_port: 80
     external_service_port: 80
@@ -150,15 +147,15 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class NatDnatModule(OTCModule):
     argument_spec = dict(
         admin_state_up=dict(required=False, type='bool'),
-        description=dict(required=False),
-        external_service_port=dict(required=False),
+        external_service_port=dict(required=False, type='int'),
         floating_ip=dict(required=False),
         id=dict(required=False),
-        internal_service_port=dict(required=False),
+        internal_service_port=dict(required=False, type='int'),
         nat_gateway=dict(required=False),
         port=dict(required=False),
         private_ip=dict(required=False),
-        protocol=dict(required=False, choices=['tcp', 'udp', 'any']),
+        protocol=dict(required=False, choices=['tcp', 'udp', 'any'],
+                      default='tcp'),
         project_id=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
@@ -195,8 +192,6 @@ class NatDnatModule(OTCModule):
 
             if self.params['admin_state_up']:
                 attrs['admin_state_up'] = self.params['admin_state_up']
-            if self.params['description']:
-                attrs['description'] = self.params['description']
             if self.params['floating_ip']:
                 fip = self.conn.network.find_ip(
                     name_or_id=self.params['floating_ip'],

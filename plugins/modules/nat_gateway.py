@@ -65,7 +65,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-nat_gateways:
+gateway:
     description: List of dictionaries describing NAT gateways.
     type: complex
     returned: On Success.
@@ -172,7 +172,8 @@ class NATGatewayModule(OTCModule):
             # Gateway already exists
             if gateway:
                 # Modify existing gateway
-                if gateway.description != self.params['description']:
+                if ((gateway.description != self.params['description']) and
+                        (self.params['description'] is not None)):
                     attrs['description'] = self.params['description']
                 if gateway.spec != self.params['spec']:
                     attrs['spec'] = self.params['spec']

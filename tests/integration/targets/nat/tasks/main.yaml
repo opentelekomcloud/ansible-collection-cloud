@@ -3,11 +3,14 @@
 - module_defaults:
     nat_gateway:
       cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.floating_ip:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.server:
+      cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
       set_fact:
-        # prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
-        prefix: test-prefix
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
       set_fact:
@@ -15,6 +18,9 @@
         subnet_name: "{{ ( prefix + '_nat-subnet') }}"
         router_name: "{{ ( prefix + '_nat-router') }}"
         nat_gateway_name: "{{ ( prefix + '_nat-gateway') }}"
+        server_name: "{{ ( prefix + '_nat-server') }}"
+        server_image: c8983e9e-1dda-479a-9a95-b41fe325a703
+        server_flavor: "s2.medium.2"
 
 
     - name: Create network for NAT
@@ -53,8 +59,8 @@
     - name: assert result
       assert:
         that:
-          - nat_gw is changed
           - nat_gw is success
+          - nat_gw.gateway.id is defined
     
     - name: Add NAT gateway description
       nat_gateway:
@@ -65,18 +71,134 @@
     - name: assert result
       assert:
         that:
-          - nat_gw is changed
+          - nat_gw is success
           - nat_gw.gateway.description is defined
+    
+    - name: Allocate EIP for SNAT rule
+      opentelekomcloud.cloud.floating_ip:
+        network: admin_external_net
+      register: fip
+    
+    - name: assert result
+      assert:
+        that:
+          - fip is success
+          - fip.floating_ip.floating_ip_address is defined
 
     - name: Add SNAT rule
       nat_snat_rule:
         nat_gateway: "{{ nat_gw.gateway.name }}"
-        name: "{{ nat_gw.gateway.name }}"
-        description: test-description
-      register: nat_gw
+        network: "{{ network_name }}"
+        floating_ip: "{{ fip.floating_ip.floating_ip_address }}"
+      register: snat
 
     - name: assert result
       assert:
         that:
-          - nat_gw is changed
-          - nat_gw.gateway.description is defined
+          - snat is success
+          - snat.snat_rule.id is defined
+    
+    - name: Launch a server instance
+      openstack.cloud.server:
+        name: "{{ server_name }}"
+        image: "{{ server_image }}"
+        network: "{{ network_name }}"
+        flavor: "{{ server_flavor }}"
+        auto_ip: false
+      register: server
+
+    - name: assert result
+      assert:
+        that:
+          - server is success
+          - server.server.id is defined
+
+    - name: Allocate EIP for DNAT rule
+      opentelekomcloud.cloud.floating_ip:
+        network: admin_external_net
+      register: fip2
+        
+    - name: assert result
+      assert:
+        that:
+          - fip2 is success
+          - fip2.floating_ip.floating_ip_address is defined
+
+    - name: Add DNAT rule
+      nat_dnat_rule:
+        nat_gateway: "{{ nat_gw.gateway.name }}"
+        floating_ip: "{{ fip2.floating_ip.floating_ip_address }}"
+        internal_service_port: 80
+        external_service_port: 80
+        protocol: tcp
+        private_ip: "{{ server.server.private_v4 }}"
+      register: dnat
+
+    - name: assert result
+      assert:
+        that:
+          - dnat is success
+          - dnat.dnat_rule.id is defined
+
+  always:
+    - block:
+      # Cleanup      
+      - name: Drop SNAT rule
+        nat_snat_rule:
+          id: "{{ snat.snat_rule.id }}"
+          state: absent
+        when: snat is defined
+        register: snat
+      
+      - name: Drop EIP for snal rule
+        opentelekomcloud.cloud.floating_ip:
+          floating_ip_address: "{{ fip.floating_ip.floating_ip_address }}"
+          purge: true
+          state: absent
+        when: fip is defined
+        register: fip
+
+      - name: Drop DNAT rule
+        nat_dnat_rule:
+          id: "{{ dnat.dnat_rule.id }}"
+          state: absent
+        when: dnat is defined
+        register: dnat
+      
+      - name: Drop EIP for dnat rule
+        opentelekomcloud.cloud.floating_ip:
+          floating_ip_address: "{{ fip2.floating_ip.floating_ip_address }}"
+          purge: true
+          state: absent
+        when: fip2 is defined
+        register: fip2
+
+      - name: Drop server instance
+        openstack.cloud.server:
+          name: "{{ server_name }}"
+          state: absent
+        register: server
+
+      - name: Drop existing NAT gateway
+        nat_gateway:
+          name: "{{ nat_gateway_name }}"
+          state: absent
+        register: nat_gw
+
+      - name: Drop existing Router
+        os_router:
+          name: "{{ router_name }}"
+          state: absent
+        register: nat_router
+
+      - name: Drop existing subnet
+        os_subnet:
+          name: "{{ subnet_name }}"
+          state: absent
+        register: nat_subnet
+
+      - name: Drop existing network
+        os_network:
+          name: "{{ network_name }}"
+          state: absent
+        register: nat_net
