@@ -202,6 +202,8 @@ class SubnetModule(OTCModule):
 
         changed = False
 
+        subnet = self.conn.network.find_subnet(name, ignore_missing=True)
+
         if self.params['state'] == 'present':
 
             attrs = {}
@@ -241,10 +243,17 @@ class SubnetModule(OTCModule):
                 subnet=subnet
             )
 
+        elif self.params['state'] == 'absent':
+            subnet = self.conn.network.delete_subnet(subnet)
+            changed = True
+            self.exit_json(
+                changed=changed
+            )
+
 
 
 def main():
-    module = NetworkModule()
+    module = SubnetModule()
     module()
 
 
