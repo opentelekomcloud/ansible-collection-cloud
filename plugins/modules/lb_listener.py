@@ -258,7 +258,7 @@ class LoadBalancerListenerModule(OTCModule):
             if admin_state_up_filter:
                 attrs['admin_state_up'] = admin_state_up_filter
             if default_pool_filter:
-                pool = self.conn.network.find_pool(default_pool_filter)
+                pool = self.conn.network.find_pool(name_or_id=default_pool_filter)
                 if pool:
                     attrs['default_pool_id'] = pool.id
 
