@@ -172,8 +172,8 @@ class NATGatewayModule(OTCModule):
             # Gateway already exists
             if gateway:
                 # Modify existing gateway
-                if ((gateway.description != self.params['description']) and
-                        (self.params['description'] is not None)):
+                if ((gateway.description != self.params['description'])
+                        and (self.params['description'] is not None)):
                     attrs['description'] = self.params['description']
                 if gateway.spec != self.params['spec']:
                     attrs['spec'] = self.params['spec']
