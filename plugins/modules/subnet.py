@@ -25,6 +25,7 @@ options:
     description:
       - Specifies the available IP address pool. For details, see the allocation_pool objects.
     type: list
+    elements: dict
   cidr:
     description:
       - Subnet cidr.
@@ -85,10 +86,12 @@ options:
     description:
       - A list of host routes.
     type: list
+    elements: str
   dns_nameservers:
     description:
       - A list of dns servers.
     type: list
+    elements: str
   use_default_pool_id:
     description:
       -  Whether to use the default subnet pool to obtain a CIDR.
@@ -173,23 +176,23 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class SubnetModule(OTCModule):
     argument_spec = dict(
-        allocation_pools=dict(required=False, type='list'),
+        allocation_pools=dict(required=False, type='list', elements='dict'),
         cidr=dict(required=False),
         subnet_id=dict(required=False),
         description=dict(required=False),
         gateway_ip=dict(required=False),
         dns_publish_fixed_ip=dict(required=False, type='bool'),
-        ip_version=dict(required=False, type='bool'),
-        ipv6_address_mode=dict(required=False, type='bool'),
+        ip_version=dict(required=False),
+        ipv6_address_mode=dict(required=False),
         ipv6_ra_mode=dict(required=False),
-        is_dhcp_enabled=dict(required=False),
+        is_dhcp_enabled=dict(required=False, type='bool'),
         name=dict(required=False),
         network_id=dict(required=False),
         project_id=dict(required=False),
         segment_id=dict(required=False),
         subnet_pool_id=dict(required=False),
-        host_routes=dict(required=False, type='list'),
-        dns_nameservers=dict(required=False, type='list'),
+        host_routes=dict(required=False, type='list', elements='str'),
+        dns_nameservers=dict(required=False, type='list', elements='str'),
         use_default_pool_id=dict(required=False, type='bool'),
         state=dict(required=False, default='present', choices=['present', 'absent'])
     )
@@ -285,7 +288,8 @@ class SubnetModule(OTCModule):
                     self.exit_json(changed=True)
                 self.conn.network.update_subnet(subnet, **attrs)
                 self.exit_json(
-                    changed=changed
+                    changed=changed,
+                    subnet=subnet
                 )
 
         elif self.params['state'] == 'absent':

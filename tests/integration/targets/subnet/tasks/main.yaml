@@ -9,7 +9,7 @@
 
     - name: Create network
       openstack.cloud.network:
-        name: "{{ network_name }}"
+        name: "{{ ( prefix + '_network' ) }}"
         state: present
       register: network
 
@@ -43,6 +43,8 @@
       subnet:
         subnet_id: "{{ subnet.subnet.id }}"
         name: "{{ ( prefix + '_updated_subnet') }}"
+        cidr: "10.0.0.0/24"
+        network_id: "{{ network.network.id }}"
       register: updated_subnet
 
     - name: assert result
@@ -53,7 +55,8 @@
 
     - name: Remove subnet
       subnet:
-        name: "{{ ( prefix + '_subnet') }}"
+        name: "{{ updated_subnet.subnet.name }}"
+        state: absent
       register: removed_subnet
 
     - name: assert result
