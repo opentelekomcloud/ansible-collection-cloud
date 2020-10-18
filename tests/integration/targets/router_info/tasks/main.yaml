@@ -1,0 +1,12 @@
+---
+- block:
+    - name: Get routers info
+      router_info:
+      register: routers
+
+    - name: assert result
+      assert:
+        that:
+          - routers is success
+          - routers is not changed
+          - routers.routers is defined
