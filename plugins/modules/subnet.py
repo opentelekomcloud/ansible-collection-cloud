@@ -25,12 +25,14 @@ options:
     description:
       - Specifies the available IP address pool. For details, see the allocation_pool objects.
     type: list
-    elements: str
   cidr:
     description:
       - Subnet cidr.
     type: str
-    required: true
+  subnet_id:
+    description:
+      - Subnet id.
+    type: str
   description:
     description:
       - The subnet_info description.
@@ -67,7 +69,6 @@ options:
     description:
       - ID of network that owns the subnets.
     type: str
-    required: true
   project_id:
     description:
       - Owner tenant ID.
@@ -80,6 +81,14 @@ options:
     description:
       -  The subnet_info pool ID from which to obtain a CIDR.
     type: str
+  host_routes:
+    description:
+      - A list of host routes.
+    type: list
+  dns_nameservers:
+    description:
+      - A list of dns servers.
+    type: list
   use_default_pool_id:
     description:
       -  Whether to use the default subnet pool to obtain a CIDR.
@@ -164,8 +173,9 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class SubnetModule(OTCModule):
     argument_spec = dict(
-        allocation_pools=dict(required=False, type='list', elements='str'),
-        cidr=dict(required=True),
+        allocation_pools=dict(required=False, type='list'),
+        cidr=dict(required=False),
+        subnet_id=dict(required=False),
         description=dict(required=False),
         gateway_ip=dict(required=False),
         dns_publish_fixed_ip=dict(required=False, type='bool'),
@@ -174,18 +184,29 @@ class SubnetModule(OTCModule):
         ipv6_ra_mode=dict(required=False),
         is_dhcp_enabled=dict(required=False),
         name=dict(required=False),
-        network_id=dict(required=True),
+        network_id=dict(required=False),
         project_id=dict(required=False),
         segment_id=dict(required=False),
         subnet_pool_id=dict(required=False),
+        host_routes=dict(required=False, type='list'),
+        dns_nameservers=dict(required=False, type='list'),
         use_default_pool_id=dict(required=False, type='bool'),
         state=dict(required=False, default='present', choices=['present', 'absent'])
+    )
+
+    module_kwargs = dict(
+        required_if=[
+            ('name', None, ['subnet_id']),
+            ('subnet_id', None, ['name']),
+            ('state', 'present', ['cidr']),
+            ('state', 'present', ['network_id'])
+        ],
+        supports_check_mode=True
     )
 
     def run(self):
 
         allocation_pools = self.params['allocation_pools']
-        cidr = self.params['cidr']
         description = self.params['description']
         gateway_ip = self.params['gateway_ip']
         dns_publish_fixed_ip = self.params['dns_publish_fixed_ip']
@@ -195,21 +216,26 @@ class SubnetModule(OTCModule):
         is_dhcp_enabled = self.params['is_dhcp_enabled']
         name = self.params['name']
         network_id = self.params['network_id']
+        subnet_id = self.params['subnet_id']
         segment_id = self.params['segment_id']
         subnet_pool_id = self.params['subnet_pool_id']
+        host_routes = self.params['host_routes']
+        dns_nameservers = self.params['dns_nameservers']
         use_default_pool_id = self.params['use_default_pool_id']
-        state = self.params['state']
 
         changed = False
 
-        subnet = self.conn.network.find_subnet(name, ignore_missing=True)
+        if subnet_id:
+            subnet = self.conn.network.find_subnet(subnet_id, ignore_missing=True)
+        else:
+            subnet = self.conn.network.find_subnet(name, ignore_missing=True)
 
         if self.params['state'] == 'present':
 
             attrs = {}
 
-            attrs['network_id'] = self.params['network_id']
             attrs['cidr'] = self.params['cidr']
+            attrs['network_id'] = self.params['network_id']
 
             if allocation_pools:
                 attrs['allocation_pools'] = self.params['allocation_pools']
@@ -229,26 +255,55 @@ class SubnetModule(OTCModule):
                 attrs['name'] = self.params['name']
             if is_dhcp_enabled:
                 attrs['is_dhcp_enabled'] = self.params['is_dhcp_enabled']
+            if network_id:
+                attrs['network_id'] = self.params['network_id']
             if segment_id:
                 attrs['segment_id'] = self.params['segment_id']
             if subnet_pool_id:
                 attrs['subnet_pool_id'] = self.params['subnet_pool_id']
+            if dns_nameservers:
+                attrs['dns_nameservers'] = self.params['dns_nameservers']
+            if host_routes:
+                attrs['host_routes'] = self.params['host_routes']
             if use_default_pool_id:
                 attrs['use_default_pool_id'] = self.params['use_default_pool_id']
 
-            subnet = self.conn.network.create_subnet(**attrs)
-            changed = True
-            self.exit_json(
-                changed=changed,
-                subnet=subnet
-            )
+            if not subnet:
+
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
+                subnet = self.conn.network.create_subnet(**attrs)
+                changed = True
+                self.exit_json(
+                    changed=changed,
+                    subnet=subnet
+                )
+
+            else:
+                changed = True
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
+                self.conn.network.update_subnet(subnet, **attrs)
+                self.exit_json(
+                    changed=changed
+                )
 
         elif self.params['state'] == 'absent':
-            subnet = self.conn.network.delete_subnet(subnet)
-            changed = True
-            self.exit_json(
-                changed=changed
-            )
+
+            if subnet:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
+                self.conn.network.delete_subnet(subnet)
+                changed = True
+                self.exit_json(
+                    changed=changed
+                )
+            else:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=False)
+                self.fail_json(
+                    msg="Resource doesn't exist"
+                )
 
 
 

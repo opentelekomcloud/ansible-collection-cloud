@@ -1,0 +1,63 @@
+---
+- module_defaults:
+    loadbalancer:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Create network
+      openstack.cloud.network:
+        name: "{{ network_name }}"
+        state: present
+      register: network
+
+    - name: Create subnet -check mode
+      subnet:
+        name: "{{ ( prefix + '_subnet') }}"
+        cidr: "10.0.0.0/24"
+        network_id: "{{ network.network.id }}"
+      check_mode: yes
+      register: check_subnet
+
+    - name: assert result
+      assert:
+        that:
+          - check_subnet is changed
+
+    - name: Create subnet
+      subnet:
+        name: "{{ ( prefix + '_subnet') }}"
+        cidr: "10.0.0.0/24"
+        network_id: "{{ network.network.id }}"
+      register: subnet
+
+    - name: assert result
+      assert:
+        that:
+          - subnet is success
+          - subnet is changed
+
+    - name: Update subnet
+      subnet:
+        subnet_id: "{{ subnet.subnet.id }}"
+        name: "{{ ( prefix + '_updated_subnet') }}"
+      register: updated_subnet
+
+    - name: assert result
+      assert:
+        that:
+          - updated_subnet is success
+          - updated_subnet is changed
+
+    - name: Remove subnet
+      subnet:
+        name: "{{ ( prefix + '_subnet') }}"
+      register: removed_subnet
+
+    - name: assert result
+      assert:
+        that:
+          - removed_subnet is success
+          - removed_subnet is changed
