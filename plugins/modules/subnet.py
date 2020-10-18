@@ -306,7 +306,6 @@ class SubnetModule(OTCModule):
                 )
 
 
-
 def main():
     module = SubnetModule()
     module()
