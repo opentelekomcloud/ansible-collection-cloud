@@ -1,0 +1,93 @@
+---
+- module_defaults:
+    route:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        network_name: "{{ ( prefix + '-network') }}"
+        subnet_name: "{{ ( prefix + '-subnet') }}"
+        router_name: "{{ ( prefix + '-router') }}"
+        new_router_name: "{{ ( prefix + '-router-2') }}"
+        cidr_block: "192.168.115"
+        project_id: "76889f64a23945ab887012b180e95acf"
+
+    - name: Create network for test
+      openstack.cloud.network:
+        name: "{{ network_name }}"
+        state: present
+      register: test_network
+
+    - name: Create subnet for test
+      openstack.cloud.subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ test_network.network.name }}"
+        cidr: "{{ cidr_block_1 }}.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: test_subnet
+
+    - name: Create router for test - check mode
+      router:
+        name: "{{ router_name }}"
+        is_admin_state_up: true
+      check_mode: yes
+      register: test_router_check
+
+    - name: assert result
+      assert:
+        that:
+          - test_router_check is changed
+
+    - name: Create router for test
+      router:
+        name: "{{ router_name }}"
+        is_admin_state_up: true
+      register: test_router
+
+    - name: assert result
+      assert:
+        that:
+          - test_router is success
+          - test_router is changed
+
+    - name: Modify existing router
+      router:
+        router_id: "{{ test_router.router.id }}"
+        name: "{{ new_router_name }}"
+      register: updated_router
+
+    - name: assert result
+      assert:
+        that:
+          - updated_router is success
+          - updated_router is changed
+
+    - name: Drop existing router
+      router:
+        name: "{{ new_router_name }}"
+        state: absent
+      register: dropped
+
+    - name: assert result
+      assert:
+        that:
+          - dropped is success
+          - dropped is changed
+
+  always:
+    - block:
+
+      - name: Drop existing  subnet
+        openstack.cloud.subnet:
+          name: "{{ subnet_name}}"
+          state: absent
+
+      - name: Drop existing network
+        openstack.cloud.network:
+          name: "{{ network_name }}"
+          state: absent
