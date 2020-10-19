@@ -106,8 +106,8 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-subnets:
-  description: The subnet_info object list.
+subnet:
+  description: Dictionary describing a subnet.
   type: complex
   returned: On Success.
   contains:
@@ -166,7 +166,10 @@ subnets:
 
 EXAMPLES = '''
 # Get configs versions.
-- subnet_info:
+- subnet:
+    name: "test-subnet"
+    cidr: "10.10.0.0/24"
+    network_id: "14067794-975d-461e-b502-dd40c0383d26"
   register: subnets
 '''
 
