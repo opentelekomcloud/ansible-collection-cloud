@@ -33,7 +33,6 @@ options:
       - Name or ID of the network where the NAT gateway is attached to.
       - Mandatory for creating gateway instance.
     type: str
-    required: true
   name:
     description:
       - Name of the NAT gateway.
@@ -48,7 +47,6 @@ options:
       - ID or name of the router where the NAT gateway is attached.
       - Mandatory for creating gateway instance.
     type: str
-    required: true
   spec:
     description:
       - Specifies the type of the NAT gateway. 1 (small 10.000 connections),
@@ -67,7 +65,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-nat_gateways:
+gateway:
     description: List of dictionaries describing NAT gateways.
     type: complex
     returned: On Success.
@@ -130,10 +128,10 @@ class NATGatewayModule(OTCModule):
     argument_spec = dict(
         admin_state_up=dict(required=False, type='bool'),
         description=dict(required=False),
-        internal_network=dict(required=True),
+        internal_network=dict(required=False),
         name=dict(required=True),
         project=dict(required=False),
-        router=dict(required=True),
+        router=dict(required=False),
         spec=dict(required=False, default='1', choices=["1", "2", "3", "4"]),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
@@ -174,7 +172,8 @@ class NATGatewayModule(OTCModule):
             # Gateway already exists
             if gateway:
                 # Modify existing gateway
-                if gateway.description != self.params['description']:
+                if ((gateway.description != self.params['description'])
+                        and (self.params['description'] is not None)):
                     attrs['description'] = self.params['description']
                 if gateway.spec != self.params['spec']:
                     attrs['spec'] = self.params['spec']
