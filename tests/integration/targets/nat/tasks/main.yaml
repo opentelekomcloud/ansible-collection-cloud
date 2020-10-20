@@ -23,13 +23,13 @@
         server_flavor: "s2.medium.2"
 
     - name: Create network for NAT
-      os_network:
+      openstack.cloud.network:
         name: "{{ network_name }}"
         state: present
       register: nat_net
 
     - name: Create subnet for NAT
-      os_subnet:
+      openstack.cloud.subnet:
         name: "{{ subnet_name }}"
         state: present
         network_name: "{{ nat_net.network.name }}"
@@ -38,7 +38,7 @@
       register: nat_subnet
 
     - name: Create Router for NAT
-      os_router:
+      openstack.cloud.router:
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
@@ -205,19 +205,19 @@
         register: nat_gw
 
       - name: Drop existing Router
-        os_router:
+        openstack.cloud.router:
           name: "{{ router_name }}"
           state: absent
         register: nat_router
 
       - name: Drop existing subnet
-        os_subnet:
+        openstack.cloud.subnet:
           name: "{{ subnet_name }}"
           state: absent
         register: nat_subnet
 
       - name: Drop existing network
-        os_network:
+        openstack.cloud.network:
           name: "{{ network_name }}"
           state: absent
         register: nat_net
