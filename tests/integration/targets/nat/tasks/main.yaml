@@ -142,14 +142,24 @@
   always:
     - block:
       # Cleanup      
-      - name: Drop SNAT rule
+      - name: List SNAT rules of gateway
+        nat_snat_rule_info:
+          gateway: "{{ nat_gateway_name }}"
+        when: 
+          - nat_gw.gateway.id is defined
+        register: snat_rules
+
+      - name: Drop SNAT rules
         nat_snat_rule:
-          id: "{{ snat.snat_rule.id }}"
+          id: "{{ item.id }}"
           state: absent
-        when: snat is defined
+        loop: "{{ snat_rules.snat_rules }}"
+        when: 
+          - nat_gw.gateway.id is defined
+          - snat_rules.snat_rules is defined
         register: snat
-      
-      - name: Drop EIP for snal rule
+
+      - name: Drop EIP for snat rule
         opentelekomcloud.cloud.floating_ip:
           floating_ip_address: "{{ fip.floating_ip.floating_ip_address }}"
           purge: true
@@ -157,13 +167,23 @@
         when: fip is defined
         register: fip
 
-      - name: Drop DNAT rule
+      - name: List DNAT rules of gateway
+        nat_dnat_rule_info:
+          gateway: "{{ nat_gateway_name }}"
+        when: 
+          - nat_gw.gateway.id is defined
+        register: dnat_rules
+
+      - name: Drop DNAT rules
         nat_dnat_rule:
-          id: "{{ dnat.dnat_rule.id }}"
+          id: "{{ item.id }}"
           state: absent
-        when: dnat is defined
+        loop: "{{ dnat_rules.dnat_rules }}"
+        when: 
+          - nat_gw.gateway.id is defined
+          - dnat_rules.dnat_rules is defined
         register: dnat
-      
+
       - name: Drop EIP for dnat rule
         opentelekomcloud.cloud.floating_ip:
           floating_ip_address: "{{ fip2.floating_ip.floating_ip_address }}"
