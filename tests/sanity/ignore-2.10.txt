@@ -15,6 +15,7 @@ plugins/modules/rds_datastore_info.py validate-modules:missing-gplv3-license
 plugins/modules/rds_flavor_info.py validate-modules:missing-gplv3-license
 plugins/modules/rds_instance.py validate-modules:missing-gplv3-license
 plugins/modules/rds_instance_info.py validate-modules:missing-gplv3-license
+plugins/modules/security_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/tag.py validate-modules:missing-gplv3-license
 plugins/modules/volume_backup.py validate-modules:missing-gplv3-license
 plugins/modules/waf_certificate.py validate-modules:missing-gplv3-license
