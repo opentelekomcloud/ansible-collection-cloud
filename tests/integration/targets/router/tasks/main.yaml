@@ -27,7 +27,7 @@
         name: "{{ subnet_name }}"
         state: present
         network_name: "{{ test_network.network.name }}"
-        cidr: "{{ cidr_block_1 }}.0/24"
+        cidr: "{{ cidr_block }}.0/24"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
       register: test_subnet
 
