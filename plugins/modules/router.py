@@ -69,7 +69,6 @@ options:
     description:
       - Specifies the external gateway.
     type: dict
-    elements: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -130,14 +129,12 @@ EXAMPLES = '''
 # Create a router.
 - router:
     name: "test-router"
-    is_admin_state_up: "true
+    is_admin_state_up: "true"
     flavor_id: "959db9b6017d4a1fa1c6fd17b6820f55"
-
 # Change name of the router
 - router:
     router_id: "563db9b60564r4a1fa1c6fd17b6820f45"
     name: "test-router-2"
-
 # Delete a router
 - router:
     name: "test-router-2"
@@ -149,8 +146,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class RouterModule(OTCModule):
     argument_spec = dict(
-        availability_zone_hints=dict(required=False),
-        availability_zones=dict(required=False),
+        availability_zone_hints=dict(required=False, type='list', elements='str'),
         name=dict(required=False),
         router_id=dict(required=False),
         description=dict(required=False),
@@ -159,7 +155,7 @@ class RouterModule(OTCModule):
         is_distributed=dict(required=False, type='bool'),
         is_ha=dict(required=False, type='bool'),
         project_id=dict(required=False),
-        external_gateway_info=dict(required=False, type='dict', elements='str'),
+        external_gateway_info=dict(required=False, type='dict'),
         state=dict(required=False, default='present', choices=['present', 'absent'])
     )
 
