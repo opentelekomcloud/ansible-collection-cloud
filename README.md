@@ -1,4 +1,5 @@
-# ansible-collections
+# Ansible Collection opentelekomcloud.cloud
+
 Ansible Collections for using with OTC (addition to the native OpenStack
 modules)
 
@@ -11,9 +12,9 @@ modules)
 - otcextension
 - openstacksdk (installed via otcextensions)
 
-## Installation of the ansible collecton opentelekomcloud.cloud
+## Installation
 
-.. code-block: console
+.. code-block:: console
 
    $ ansible-galaxy collection install opentelekomcloud.cloud
 
