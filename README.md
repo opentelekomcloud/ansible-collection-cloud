@@ -128,7 +128,7 @@ your cloud:
  
 Paste in the following content with your credentials:
 
-```bash
+```yaml
 # clouds.yaml
 
 clouds:
@@ -153,7 +153,9 @@ all dependencies:
 
 ```bash
 (ansiblevenv) $ vim opentelekomcloud.yaml
+```
 
+```yaml
 # opentelekomcloud.yaml
 
 - hosts: localhost
