@@ -121,9 +121,9 @@ Prepare credential file ``clouds.yaml`` and necessary folders to connect to
 your cloud:
 
 ```bash
-(ansiblevenv) $ mkdir -p .config/openstack/
-(ansiblevenv) $ touch .config/openstack/clouds.yaml
-(ansiblevenv) $ chmod 700 -R .config/
+(ansiblevenv) $ mkdir -p ~/.config/openstack/
+(ansiblevenv) $ touch ~/.config/openstack/clouds.yaml
+(ansiblevenv) $ chmod 700 -R ~/.config/
 ```
  
 Paste in the following content with your credentials:
