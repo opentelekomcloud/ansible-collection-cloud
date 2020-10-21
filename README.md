@@ -1,11 +1,137 @@
 # ansible-collections
-Ansible Collections for using with OTC (addition to the native OpenStack modules)
+Ansible Collections for using with OTC (addition to the native OpenStack
+modules)
 
-* cloud - collection containing additional ansible modules for managing OTC
-  specific resources (or modified OpenStack modules in case of behavioral
+* ``cloud`` - collection containing additional ansible modules for managing
+  OTC specific resources (or modified OpenStack modules in case of behavioral
   differencies)
 
 ## Requirements
+
+- otcextension
+- openstacksdk (installed via otcextensions)
+
+## Installation of the ansible collecton opentelekomcloud.cloud
+
+.. code-block:
+
+  $ ansible-galaxy collection install opentelekomcloud.cloud
+
+## Installation on a blank system in a Python virtual environment
+
+Installation was tested on Ubuntu 20.04
+
+Install ``python3-venv`` for Python virtual environment:
+
+.. code-block::
+
+  $ sudo apt-get install python3-venv
+
+Create virtual environment ``ansiblevenv``:
+
+.. code-block::
+
+  $ python3 -m venv ansiblevenv
+
+Install dependencies for python package
+`otcextensions <https://github.com/opentelekomcloud/python-otcextensions>`_
+which are described in its
+`documentation <https://python-otcextensions.readthedocs.io/en/latest/>`_:
+
+.. code-block::
+
+  $ sudo apt-get install gcc libssl-dev python3-dev
+
+Enable virtual environment ``ansiblevenv``:
+
+.. code-block::
+
+  $ source ansiblevenv/bin/activate
+
+Install ``wheel``, ``ansible`` and ``otcextensions``:
+
+.. code-block::
+
+  (ansiblevenv) $ pip install wheel ansible otcextensions
+
+Install opentelekomcloud.cloud collection from Ansible-Galaxy:
+
+.. code-block::
+
+  (ansiblevenv) $ ansible-galaxy collection install opentelekomcloud.cloud
+
+Prepare credential file ``clouds.yaml`` and necessary folders to connect to
+your cloud:
+
+.. code-block::
+
+  (ansiblevenv) $ mkdir -p .config/openstack/
+  (ansiblevenv) $ touch .config/openstack/clouds.yaml
+  (ansiblevenv) $ chmod 700 -R .config/
+
+Paste in the following content with your credentials:
+
+.. code-block::
+
+  # clouds.yaml
+
+  clouds:
+  otc:
+    profile: otc
+    auth:
+      username: '<USER_NAME>'
+      password: '<PASSWORD>'
+      project_name: '<eu-de_project>'
+      # or project_id: '<123456_PROJECT_ID>'
+      user_domain_name: 'OTC00000000001000000xxx'
+      # or user_domain_id: '<123456_DOMAIN_ID>'
+      auth_url: 'https://iam.eu-de.otc.t-systems.com:443/v3'
+    interface: 'public'
+    identity_api_version: 3 # !Important
+    ak: '<AK_VALUE>' # AK/SK pair for access to OBS
+    sk: '<SK_VALUE>'
+
+Verify the installation process by creating a sample playbook which invokes
+all dependencies:
+
+.. code-block::
+
+  (ansiblevenv) $ vim opentelekomcloud.yaml
+
+  # opentelekomcloud.yaml
+
+  - hosts: localhost
+  tasks:
+    - name: Get NAT gateway info
+      opentelekomcloud.cloud.nat_gateway_info:
+        cloud: otc
+      register: gw
+
+    - name: debug configs
+      debug:
+        var: gw.nat_gateways
+
+Run the playbook to verify the functionality:
+
+.. code-block::
+
+  (ansiblevenv) $ ansible-playbook opentelekomcloud.yaml
+
+  # output without NAT gateways enabled
+
+  PLAY [localhost] ***************************************************************
+
+  TASK [Gathering Facts] *********************************************************
+  ok: [localhost]
+
+  TASK [Get NAT gateway info] ****************************************************
+  ok: [localhost]
+
+  TASK [debug configs] ***********************************************************
+  ok: [localhost] => {
+      "gw.nat_gateways": []
+  }
+
 
 <!--start requires_ansible-->
 ## Ansible version compatibility
