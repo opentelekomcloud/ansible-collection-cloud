@@ -13,7 +13,7 @@ modules)
 
 ## Installation of the ansible collecton opentelekomcloud.cloud
 
-.. code-block:: none
+.. code-block: console
 
    $ ansible-galaxy collection install opentelekomcloud.cloud
 
@@ -23,13 +23,13 @@ Installation was tested on Ubuntu 20.04
 
 Install ``python3-venv`` for Python virtual environment:
 
-.. code-block:: bash
+.. code-block:: console
 
    $ sudo apt-get install python3-venv
 
 Create virtual environment ``ansiblevenv``:
 
-.. code-block:: bash
+.. code-block:: console
 
    $ python3 -m venv ansiblevenv
 
@@ -38,32 +38,32 @@ Install dependencies for python package
 which are described in its
 `documentation <https://python-otcextensions.readthedocs.io/en/latest/>`_:
 
-.. code-block:: bash
+.. code-block:: console
 
    $ sudo apt-get install gcc libssl-dev python3-dev
 
 Enable virtual environment ``ansiblevenv``:
 
-.. code-block:: bash
+.. code-block:: console
 
    $ source ansiblevenv/bin/activate
 
 Install ``wheel``, ``ansible`` and ``otcextensions``:
 
-.. code-block:: bash
+.. code-block:: console
 
    (ansiblevenv) $ pip install wheel ansible otcextensions
 
 Install opentelekomcloud.cloud collection from Ansible-Galaxy:
 
-.. code-block:: bash
+.. code-block:: console
 
    (ansiblevenv) $ ansible-galaxy collection install opentelekomcloud.cloud
 
 Prepare credential file ``clouds.yaml`` and necessary folders to connect to
 your cloud:
 
-.. code-block:: bash
+.. code-block:: console
 
    (ansiblevenv) $ mkdir -p .config/openstack/
    (ansiblevenv) $ touch .config/openstack/clouds.yaml
@@ -71,7 +71,7 @@ your cloud:
  
 Paste in the following content with your credentials:
 
-.. code-block:: bash
+.. code-block:: console
 
    # clouds.yaml
  
@@ -94,7 +94,7 @@ Paste in the following content with your credentials:
 Verify the installation process by creating a sample playbook which invokes
 all dependencies:
 
-.. code-block:: bash
+.. code-block:: console
 
    (ansiblevenv) $ vim opentelekomcloud.yaml
  
@@ -113,7 +113,7 @@ all dependencies:
 
 Run the playbook to verify the functionality:
 
-.. code-block:: bash
+.. code-block:: console
 
    (ansiblevenv) $ ansible-playbook opentelekomcloud.yaml
  
