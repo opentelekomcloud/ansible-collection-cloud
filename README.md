@@ -7,16 +7,21 @@ modules)
   OTC specific resources (or modified OpenStack modules in case of behavioral
   differencies)
 
-## Requirements
-
-- otcextension
-- openstacksdk (installed via otcextensions)
-
 ## Installation
+
+Run the following command to install the collection.
 
 ```bash
 $ ansible-galaxy collection install opentelekomcloud.cloud
 ```
+
+> If you need further information to get started, please see section:
+> ```Installation on a blank system in a Python virtual environment```
+
+## Requirements
+
+- otcextension
+- openstacksdk (installed via otcextensions)
 
 <!--start requires_ansible-->
 ## Ansible version compatibility
@@ -27,8 +32,6 @@ Plugins and modules within a collection may be tested with only specific Ansible
 A collection may contain metadata that identifies these versions.
 PEP440 is the schema used to describe the versions of Ansible.
 <!--end requires_ansible-->
-
-## Collection: opentelekomcloud.cloud
 
 <!--start collection content-->
 ### Modules
