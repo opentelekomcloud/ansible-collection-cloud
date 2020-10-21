@@ -13,7 +13,7 @@ modules)
 
 ## Installation of the ansible collecton opentelekomcloud.cloud
 
-.. code-block:: bash
+.. code-block:: none
 
    $ ansible-galaxy collection install opentelekomcloud.cloud
 
