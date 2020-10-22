@@ -126,6 +126,20 @@ class RdsBackupModule(OTCModule):
             return True
         return False
 
+    def _wait_for_delete(self, backup, instance, interval, wait):
+        """Wait for backup to be deleted"""
+        orig_backup = backup
+        for count in self.sdk.utils.iterate_timeout(
+                timeout=wait,
+                message="Timeout waiting for backup to delete",
+                wait=interval):
+            backup = self.conn.rds.find_backup(name_or_id=backup.name,
+                                               instance=instance)
+            if backup.status.lower() == 'deleting':
+                return orig_backup
+            if backup is None:
+                return backup
+
     def run(self):
         name = self.params['name']
         backup_description = self.params['description']
@@ -137,7 +151,7 @@ class RdsBackupModule(OTCModule):
         if instance:
             changed = False
 
-            backup = self.conn.rds.find_backup(name_or_id = name,
+            backup = self.conn.rds.find_backup(name_or_id=name,
                                                instance=instance)
 
             if self.ansible.check_mode:
@@ -186,11 +200,11 @@ class RdsBackupModule(OTCModule):
 
                     else:
                         try:
-                            self.sdk.resource.wait_for_delete(
-                                self.conn.rds,
-                                backup,
-                                2,
-                                timeout
+                            self._wait_for_delete(
+                                backup=backup,
+                                instance=instance,
+                                interval=10,
+                                wait=timeout
                             )
                         except self.sdk.exceptions.ResourceTimeout:
                             self.fail(msg='Timeout failure waiting for backup '
