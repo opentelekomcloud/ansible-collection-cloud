@@ -7,11 +7,15 @@ action_groups:
     - cce_cluster
     - cce_cluster_cert_info
     - cce_cluster_info
+    - floating_ip
     - loadbalancer
     - loadbalancer_info
     - nat_dnat_info
+    - nat_dnat_rule
     - nat_gateway_info
+    - nat_gateway
     - nat_snat_info
+    - nat_snat_rule
     - rds_datastore_info
     - rds_flavor_info
     - rds_instance
@@ -29,3 +33,7 @@ action_groups:
     - lb_listener_info
     - lb_pool
     - lb_pool_info
+    - lb_member
+    - lb_member_info
+    - lb_healthmonitor
+    - lb_healthmonitor_info
