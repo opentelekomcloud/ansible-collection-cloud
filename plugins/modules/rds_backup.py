@@ -234,20 +234,17 @@ class RdsBackupModule(OTCModule):
                     backup = self.conn.rds.create_backup(instance, **attrs)
                     changed = True
 
-                    if not self.params['wait']:
-                        self.exit(changed=changed,
-                                  backup=backup.to_dict(),
-                                  id=backup.id)
-                    else:
+                    if self.params['wait']:
                         try:
                             backup = self.conn.rds.wait_for_backup(backup,
                                                                    wait=timeout)
-                            self.exit(changed=changed,
-                                      backup=backup.to_dict(),
-                                      id=backup.id)
                         except self.sdk.exceptions.ResourceTimeout:
                             self.fail(msg='Timeout failure waiting for backup '
                                           'with name %s to complete' % name)
+                    self.exit(changed=changed,
+                              backup=backup.to_dict(),
+                              id=backup.id,
+                              msg='RDS backup with name %s was created' % name)
 
                 else:
                     changed = False
@@ -261,10 +258,7 @@ class RdsBackupModule(OTCModule):
                     self.conn.rds.delete_backup(backup)
                     changed = True
 
-                    if not self.params['wait']:
-                        self.exit(changed=changed)
-
-                    else:
+                    if self.params['wait']:
                         try:
                             self._wait_for_delete(
                                 backup=backup,
@@ -275,8 +269,8 @@ class RdsBackupModule(OTCModule):
                         except self.sdk.exceptions.ResourceTimeout:
                             self.fail(msg='Timeout failure waiting for backup '
                                           'with name %s to be deleted' % name)
-                        self.exit(changed=changed,
-                                  msg='RDS backup with name %s was deleted' % name)
+                    self.exit(changed=changed,
+                              msg='RDS backup with name %s was deleted' % name)
 
                 else:
                     changed = False
