@@ -39,6 +39,12 @@ options:
       - Backup description can't contain symbols: >!<"&'= .
     type: str
     aliases: ['description']
+  databases:
+    description:
+      - Specified a list of self-built databases that are partially backed up.
+      - Only Microsoft SQL Server support partial backups.
+    type: list
+    elements: str
   state:
     description: Should the resource be present or absent.
     choices: [present, absent]
@@ -63,6 +69,33 @@ backup:
     type: complex
     returned: On Success when C(state=present)
     contains:
+      begin_time:
+        description: Indicates the backup start time in the "yyyy-mm-ddThh:mm:ssZ" format.
+        type: str
+        sample: "2020-09-12T01:17:05"
+      databases:
+        description: Indicates a list of self-built MS SQL Server databases (partial backup).
+        type: list
+        elements: str
+      datastore:
+        description: Indicates the database version.
+        type: complex
+        returned: On Success
+          contains:
+            type:
+              description: Indicates the DB engine.
+              type: str
+            version:
+              description: Indicates the database version
+              type: str
+      description:
+        description: Indicates the backup description.
+        type: str
+        sample: "This is a description"
+      end_time:
+        description: Indicates the backup end time in the "yyyy-mm-ddThh:mm:ssZ" format.
+        type: str
+        sample: "2020-09-12T01:20:33"
       id:
         description: Indicates the backup ID.
         type: str
@@ -70,19 +103,15 @@ backup:
       instance_id:
         description: Indicates the DB instance ID.
         type: str
-        sample: "d8e6ca5a624745bcb546a227aa3ae1cfin01"
+        sample: "d8e6ca5a624745bcb546a227aa3ae1cfin01" 
       name:
         description: Indicates the backup name.
         type: str
         sample: "backup_test"
-      description:
-        description: Indicates the backup description.
-        type: str
-        sample: "This is a description"
-      begin_time:
-        description: Indicates the backup start time in the "yyyy-mm-ddThh:mm:ssZ" format.
-        type: str
-        sample: "2020-09-12T01:17:05"
+      size:
+        description: Indicates the backup size in kB.
+        type: int
+        sample: 220276
       status:
         description: Indicates the backup status.
         type: str
