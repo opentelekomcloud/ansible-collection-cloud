@@ -1,0 +1,17 @@
+---
+- module_defaults:
+    rds_backup:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get error message that rds instance is absent
+      rds_backup:
+        instance: "test-db"
+        name: "test_ansible_module"
+      register: rds_backup
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - rds_backup is success
+          - rds_backup is not changed
