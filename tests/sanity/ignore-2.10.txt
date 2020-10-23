@@ -24,6 +24,7 @@ plugins/modules/volume_snapshot_info.py validate-modules:missing-gplv3-license
 plugins/modules/vpc_peering_info.py validate-modules:missing-gplv3-license
 plugins/modules/waf_domain.py validate-modules:missing-gplv3-license
 plugins/modules/waf_domain_info.py validate-modules:missing-gplv3-license
+plugins/modules/rds_backup.py validate-modules:missing-gplv3-license
 plugins/modules/rds_backup_info.py validate-modules:missing-gplv3-license
 plugins/modules/lb_listener.py validate-modules:missing-gplv3-license
 plugins/modules/lb_listener_info.py validate-modules:missing-gplv3-license
