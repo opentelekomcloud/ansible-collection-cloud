@@ -25,20 +25,18 @@ options:
     description: Name or ID of RDS instance.
     required: true
     type: str
-  backup_name:
+  name:
     description:
       - Name of RDS backup name must be start with letter.
       - Name must be 4 to 64 characters in length.
       - The backup name must be unique.
     required: true
     type: str
-    aliases: ['name']
-  backup_description:
+  description:
     description:
       - Backup description contains a maximum of 256 characters.
-      - Backup description can't contain symbols: >!<"&'= .
+      - Backup description can't contain special symbols.
     type: str
-    aliases: ['description']
   databases:
     description:
       - Specified a list of self-built databases that are partially backed up.
@@ -81,13 +79,13 @@ backup:
         description: Indicates the database version.
         type: complex
         returned: On Success
-          contains:
-            type:
-              description: Indicates the DB engine.
-              type: str
-            version:
-              description: Indicates the database version
-              type: str
+        contains:
+          type:
+            description: Indicates the DB engine.
+            type: str
+          version:
+            description: Indicates the database version
+            type: str
       description:
         description: Indicates the backup description.
         type: str
@@ -103,7 +101,7 @@ backup:
       instance_id:
         description: Indicates the DB instance ID.
         type: str
-        sample: "d8e6ca5a624745bcb546a227aa3ae1cfin01" 
+        sample: "d8e6ca5a624745bcb546a227aa3ae1cfin01"
       name:
         description: Indicates the backup name.
         type: str
@@ -169,12 +167,13 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class RdsBackupModule(OTCModule):
     argument_spec = dict(
-        instance=dict(type='str'),
-        name=dict(type='str'),
-        description=dict(type='str'),
-        state = dict(type = 'str',
-                     choices = ['present', 'absent'],
-                     default = 'present'),
+        instance=dict(type='str', required=True),
+        name=dict(type='str', required=True),
+        databases=dict(type='list', elements='str', required=False),
+        description=dict(type='str', required=False),
+        state=dict(type='str',
+                   choices=['present', 'absent'],
+                   default='present'),
         wait=dict(type='bool', default=True),
         timeout=dict(type='int', default=200)
     )
@@ -253,8 +252,8 @@ class RdsBackupModule(OTCModule):
                 else:
                     changed = False
                     self.exit(changed=changed,
-                              msg = 'RDS backup with name %s '
-                                    'already exists' % name)
+                              msg='RDS backup with name %s '
+                                  'already exists' % name)
 
             elif self.params['state'] == 'absent':
 
