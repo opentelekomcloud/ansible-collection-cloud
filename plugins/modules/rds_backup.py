@@ -281,9 +281,9 @@ class RdsBackupModule(OTCModule):
                 else:
                     changed = False
                     self.exit(changed=changed,
-                              msg='RDS backup with name %s not exists' % name)
+                              msg='RDS backup with name %s does not exist' % name)
         else:
-            self.exit(msg='RDS instance %s is not exist' % instance)
+            self.exit(msg='RDS instance %s does not exist' % self.params['instance'])
 
 
 def main():

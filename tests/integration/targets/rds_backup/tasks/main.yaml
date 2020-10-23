@@ -15,3 +15,4 @@
         that:
           - rds_backup is success
           - rds_backup is not changed
+          - 'rds_backup.msg == "RDS instance test-db does not exist"'
