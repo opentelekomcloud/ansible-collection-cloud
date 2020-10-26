@@ -197,9 +197,7 @@ class ASGroupModule(OTCModule):
     module_kwargs = dict(
         required_if=[
             ('state', 'present', ['scaling_group_name', 'networks', 'vpc']),
-            ('scaling_group_name', None, ['scaling_group_id']),
-            ('lb_listener', None, ['lbaas_listeners']),
-            ('lbaas_listeners', None, ['lb_listener']),
+            ('scaling_group_name', None, ['scaling_group_id'])
         ],
         supports_check_mode=True
     )
@@ -274,7 +272,7 @@ class ASGroupModule(OTCModule):
         delete_publicip = self.params['delete_publicip']
         delete_volume = self.params['delete_volume']
         enterprise_project_id = self.params['enterprise_project_id']
-        multi_az_priority_policy = self.params['multi_az_priority_policy']
+        multi_az_priority_policy = self.params['multi_az_priority_policy'].upper()
 
         as_group = None
 
@@ -294,12 +292,16 @@ class ASGroupModule(OTCModule):
             if not attrs['scaling_configuration_id']:
                 self.fail_json("Scaling configuration not found")
 
+            if self.params['lb_listener'] and self.params['lbaas_listener']:
+                self.fail_json(msg="Either 'lb_listener' or 'lbaas_listener' can be specified")
+
             if self.params['lb_listener']:
                 attrs['lb_listener_id'] = self.conn.network.find_listener(self.params['lb_listener'],
                                                                           ignore_missing=True)
                 if not attrs['lb_listener_id']:
                     self.fail_json("lb_listener no found")
-            else:
+
+            if self.params['lbaas_listeners']:
                 attrs['lbaas_listeners'] = self.params['lbaas_listeners']
 
             attrs['vpc_id'] = self.conn.network.find_router(self.params['vpc'], ignore_missing=True)

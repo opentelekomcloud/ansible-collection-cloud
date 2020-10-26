@@ -1,0 +1,134 @@
+---
+- module_defaults:
+    loadbalancer:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        network_name: "{{ ( prefix + '_as-network' ) }}"
+        subnet_name: "{{ ( prefix + '_as-subnet' ) }}"
+        router_name: "{{ ( prefix + '_as-router' ) }}"
+        loadbalancer_name: "{{ ( prefix + '_as-lb' ) }}"
+        listener_name: "{{ ( prefix + '_as-lb-lstnr') }}"
+        pool_name: "{{ ( prefix + '_as-lb-pool') }}"
+        as_group_name: "{{ ( prefix + '_as-as-group' ) }}"
+
+    - name: Create network for ELB
+      os_network:
+        name: "{{ network_name }}"
+        state: present
+      register: lb_net
+
+    - name: Create subnet for ELB
+      os_subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ lb_net.network.name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: lb_net_subnet
+
+    - name: Create Router for ELB
+      os_router:
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ lb_net.network.name }}"
+            subnet: "{{ lb_net_subnet.subnet.name }}"
+      register: lb_net_router
+
+    - name: Create loadbalancer
+      loadbalancer:
+        state: present
+        name: "{{ loadbalancer_name }}"
+        vip_subnet: "{{ subnet_name }}"
+        timeout: 150
+      register: lb
+
+    - name: Create as_config
+      openstack.cloud.as_config:
+        state: present
+        name: "{{ loadbalancer_name }}"
+        vip_subnet: "{{ subnet_name }}"
+        timeout: 150
+      register: lb
+
+
+    - name: Create as_config
+      openstack.cloud.as_config:
+        state: present
+        name: "{{ loadbalancer_name }}"
+        vip_subnet: "{{ subnet_name }}"
+        timeout: 150
+      register: lb
+
+    - name: Create as_group
+      as_group:
+        state: present
+        name: "{{ loadbalancer_name }}"
+        vip_subnet: "{{ subnet_name }}"
+        timeout: 150
+      register: lb
+
+
+    - name: Drop existing loadbalancer
+      loadbalancer:
+        # pass ID as name
+        name: "{{ lb.loadbalancer.id }}"
+        state: absent
+        delete_public_ip: yes
+      register: dropped
+
+    - name: assert result
+      assert:
+        that:
+          - dropped is success
+          - dropped is changed
+
+    - name: Drop not more existing loadbalancer
+      loadbalancer:
+        # pass ID as name
+        name: "{{ lb.loadbalancer.id }}"
+        state: absent
+      register: dropped
+
+    - name: assert result
+      assert:
+        that:
+          - dropped is success
+          - dropped is not changed
+
+  always:
+    - block:
+      # Cleanup
+      - name: Drop perhaps existing loadbalancer
+        loadbalancer:
+          name: "{{ lb.loadbalancer.id }}"
+          state: absent
+          delete_public_ip: yes
+        register: lb
+        ignore_errors: true
+
+      - name: Drop existing Router
+        os_router:
+          name: "{{ router_name }}"
+          state: absent
+        register: lb_net_router
+
+      - name: Drop existing subnet
+        os_subnet:
+          name: "{{ subnet_name }}"
+          state: absent
+        register: lb_net_subnet
+
+      - name: Drop existing network
+        os_network:
+          name: "{{ network_name }}"
+          state: absent
+        register: lb_net
