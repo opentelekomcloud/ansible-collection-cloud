@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: deh_host_info
 short_description: Get Dedicated host info
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.0.2"
 author: "Tino Schreiber (@tischrei)"
 description:
   - Get Dedicated host info.
@@ -128,24 +128,24 @@ deh_hosts:
 
 EXAMPLES = '''
 # Query all DeH hosts
-- deh_host_info:
+- opentelekomcloud.cloud.deh_host_info:
     cloud: "{{ test_cloud }}"
   register: deh
 
 # Query specific Dedicated host by ID
-- deh_host_info:
+- opentelekomcloud.cloud.deh_host_info:
     cloud: "{{ test_cloud }}"
     host: "9b20bd80-c1aa-438c-a499-f5b5308ac123"
   register: deh
 
 # Query DeH hosts with flavor s2-medium
-- deh_host_info:
+- opentelekomcloud.cloud.deh_host_info:
     cloud: "{{ test_cloud }}"
     host_type: "s2-medium"
   register: deh
 
 # Query all parameters
-- deh_host_info:
+- opentelekomcloud.cloud.deh_host_info:
     cloud: "{{ test_cloud }}"
     availability_zone: az01
     flavor: s2.medium.8

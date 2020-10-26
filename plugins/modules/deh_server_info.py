@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: deh_server_info
 short_description: Get info about ECSs on a Dedicated host
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.0.2"
 author: "Tino Schreiber (@tischrei)"
 description:
   - Get info about ECSs on a Dedicated host
@@ -110,7 +110,7 @@ deh_servers:
 
 EXAMPLES = '''
 # Query all ECSs on DeH host
-- deh_server_info:
+- opentelekomcloud.cloud.deh_server_info:
     dedicated_host: 123456-host-id
   register: server
 '''
