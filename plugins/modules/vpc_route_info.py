@@ -25,13 +25,13 @@ options:
     description:
       - Route ID.
     type: str
-  tenant_id:
+  project_id:
     description:
-      - Tenant id.
+      - Project id.
     type: str
-  vpc_id:
+  router:
     description:
-      - VPC ID.
+      - Router id or name.
     type: str
   destination:
     description:
@@ -67,11 +67,11 @@ vpc_routes:
       description: The route type.
       type: str
       sample: "peering"
-    vpc_id:
-      description:  The VPC of the route.
+    router_id:
+      description:  The router of the route.
       type: dict
       sample: "4dae5bac-0725-2d5b-add8-cb6667b8"
-    tenant_id:
+    project_id:
       description: Project id.
       type: str
       sample: "6ysa5bac-0925-4d5b-add8-cb6667b8"
@@ -80,7 +80,7 @@ vpc_routes:
 EXAMPLES = '''
 # Get configs versions.
 - vpc_route_info:
-    vpc_id: "6ysa5bac-0925-4d5b-add8-cb6667b8"
+    router: "6ysa5bac-0925-4d5b-add8-cb6667b8"
   register: vpc_routes
 '''
 
@@ -91,8 +91,8 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class VPCRouteInfoModule(OTCModule):
     argument_spec = dict(
         id=dict(required=False),
-        tenant_id=dict(required=False),
-        vpc_id=dict(required=False),
+        project_id=dict(required=False),
+        router=dict(required=False),
         destination=dict(required=False),
         type=dict(default='peering', required=False)
     )
@@ -100,8 +100,8 @@ class VPCRouteInfoModule(OTCModule):
     def run(self):
 
         id_filter = self.params['id']
-        tenant_id_filter = self.params['tenant_id']
-        vpc_id_filter = self.params['vpc_id']
+        project_id_filter = self.params['project_id']
+        router_filter = self.params['router']
         destination_filter = self.params['destination']
         type_filter = self.params['type']
 
@@ -109,10 +109,12 @@ class VPCRouteInfoModule(OTCModule):
         query = {}
         if id_filter:
             query['id'] = id_filter
-        if tenant_id_filter:
-            query['status'] = tenant_id_filter
-        if vpc_id_filter:
-            query['project_id'] = vpc_id_filter
+        if project_id_filter:
+            query['project_id'] = project_id_filter
+        if router_filter:
+            query['vpc_id'] = self.conn.network.find_router(router_filter, ignore_missing=True).id
+            if not query['vpc_id']:
+                self.fail_json(msg='Router not found')
         if destination_filter:
             query['destination'] = destination_filter
         if type_filter:
