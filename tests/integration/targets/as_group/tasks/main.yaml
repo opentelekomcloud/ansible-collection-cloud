@@ -53,10 +53,14 @@
 
     - name: Create as_config
       openstack.cloud.as_config:
+<<<<<<< HEAD
         state: present
         name: "{{ loadbalancer_name }}"
         vip_subnet: "{{ subnet_name }}"
         timeout: 150
+=======
+
+>>>>>>> 50585a1... Add tests
       register: lb
 
 
