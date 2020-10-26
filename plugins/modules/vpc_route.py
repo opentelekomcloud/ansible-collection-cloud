@@ -28,14 +28,14 @@ options:
     description:  Route destination address (CIDR).
     type: str
   nexthop:
-    description: The next hop. If type is peering, it is the VPC peering connection ID
+    description: The next hop. If type is peering, it is the VPC peering connection name or id.
     type: str
   type:
     description: Type of a route.
     default: peering
     type: str
-  vpc_id:
-    description: ID of the VPC ID requesting for creating a route.
+  router:
+    description: ID or name of the router requesting for creating a route.
     type: str
   state:
     description: ID of the VPC ID requesting for creating a route.
@@ -71,12 +71,12 @@ vpc_route:
         returned: On success when C(state=present)
         type: str
         sample: "peering"
-    vpc_id:
-        description:  The VPC of the route.
+    router_id:
+        description: The router of the route.
         returned: On success when C(state=present)
         type: str
         sample: "4dae5bac-0725-2d5b-add8-cb6667b8"
-    tenant_id:
+    project_id:
         description: Project id.
         returned: On success when C(state=present)
         type: str
@@ -88,7 +88,7 @@ EXAMPLES = '''
 - vpc_route:
     destination: "6ysa5bac-0925-6d5b-add8-cb6667b8"
     nexthop: "67sa5bac-0925-4p5b-add8-cb6667b8"
-    vpc_id: "89sa5bac-0925-9h7b-add8-cb6667b8"
+    router_id: "89sa5bac-0925-9h7b-add8-cb6667b8"
   register: vpc_route
 
 # Delete vpc route
@@ -106,24 +106,24 @@ class VPCRouteModule(OTCModule):
         destination=dict(type='str'),
         nexthop=dict(type='str'),
         type=dict(default='peering', type='str'),
-        vpc_id=dict(type='str'),
+        router=dict(type='str'),
         state=dict(default='present', choices=['present', 'absent']),
     )
     module_kwargs = dict(
         required_if=[
-            ('state', 'present', ['destination', 'nexthop', 'vpc_id']),
+            ('state', 'present', ['destination', 'nexthop', 'router']),
             ('state', 'absent', ['route_id'])
         ],
         supports_check_mode=True
     )
 
-    def _check_route(self, destination, vpc_id):
+    def _check_route(self, destination, router_id):
 
         query = {}
         result = True
 
         query['destination'] = destination
-        query['vpc_id'] = vpc_id
+        query['vpc_id'] = router_id
         data = []
 
         for raw in self.conn.vpc.routes(**query):
@@ -152,9 +152,18 @@ class VPCRouteModule(OTCModule):
         if self.params['state'] == 'present':
             attrs = {}
             attrs['destination'] = self.params['destination']
-            attrs['nexthop'] = self.params['nexthop']
             attrs['type'] = self.params['type']
-            attrs['vpc_id'] = self.params['vpc_id']
+            attrs['vpc_id'] = self.conn.network.find_router(self.params['router'], ignore_missing=True).id
+
+            if not attrs['vpc_id']:
+                self.fail_json(msg='Router not found')
+
+            if self.params['type'] == 'peering':
+                attrs['nexthop'] = self.conn.vpc.find_peering(self.params['nexthop'], ignore_missimg=True).id
+                if not attrs['nexthop']:
+                    self.fail_json(msg="vpc peering connection ('nexthop') not found")
+            else:
+                attrs['nexthop'] = self.params['nexthop']
 
             check = self._check_route(attrs['destination'], attrs['vpc_id'])
 

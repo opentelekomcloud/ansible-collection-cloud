@@ -86,7 +86,7 @@
       vpc_route:
         destination: "{{ test_subnet_2.subnet.cidr }}"
         nexthop: "{{ vpc_peering.vpc_peering.id }}"
-        vpc_id: "{{ test_network_1.network.id }}"
+        router: "{{ test_network_1.network.id }}"
       register: vpc_route_check
       check_mode: true
 
@@ -99,7 +99,7 @@
       vpc_route:
         destination: "{{ test_subnet_2.subnet.cidr }}"
         nexthop: "{{ vpc_peering.vpc_peering.id }}"
-        vpc_id: "{{ test_network_1.network.id }}"
+        router: "{{ test_network_1.network.id }}"
       register: vpc_route
 
     - name: assert result
