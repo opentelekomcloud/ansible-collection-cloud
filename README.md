@@ -23,7 +23,7 @@ $ ansible-galaxy collection install opentelekomcloud.cloud
 > If you need further information to get started, please see section:
 > ```Installation on a blank system in a Python virtual environment```
 
-## Installation on a blank system in a Python virtual environment
+## Get started on a blank system in a Python virtual environment
 
 Installation was tested on Ubuntu 20.04
 
