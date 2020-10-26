@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: security_group_info
 short_description: Lists security groups
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.1.2"
 author: "Tino Schreiber (@tischrei)"
 description:
   - List security groups
@@ -28,7 +28,7 @@ options:
     description:
       - Specifies the project id as filter criteria
     type: str
-  security_group:
+  name:
     description:
       - Name or id of the security group.
     type: str
@@ -101,12 +101,12 @@ security_groups:
 EXAMPLES = '''
 # Get specific security group
 - opentelekomcloud.cloud.security_group_info:
-    security_group: "{{ my_sg }}"
+    name: "{{ my_sg }}"
   register: sg
 
 # Get all security groups
 - opentelekomcloud.cloud.security_group_info:
-  register: security_groups
+  register: sg
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -115,7 +115,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class SecurityGroupInfoModule(OTCModule):
     argument_spec = dict(
         description=dict(required=False),
-        security_group=dict(required=False),
+        name=dict(required=False),
         project_id=dict(required=False)
     )
 
@@ -124,9 +124,9 @@ class SecurityGroupInfoModule(OTCModule):
         data = []
         query = {}
 
-        if self.params['security_group']:
+        if self.params['name']:
             sg = self.conn.network.find_security_group(
-                name_or_id=self.params['security_group'],
+                name_or_id=self.params['name'],
                 ignore_missing=True)
             if sg:
                 query['id'] = sg.id
@@ -135,7 +135,7 @@ class SecurityGroupInfoModule(OTCModule):
                     changed=False,
                     security_groups=[],
                     message=('No security group found with name or id: %s' %
-                             self.params['security_group'])
+                             self.params['name'])
                 )
 
         if self.params['description']:
