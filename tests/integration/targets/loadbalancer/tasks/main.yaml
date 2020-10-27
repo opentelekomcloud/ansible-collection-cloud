@@ -235,7 +235,6 @@
           state: absent
           delete_public_ip: yes
         register: lb
-        ignore_errors: true
 
       - name: Drop existing Router
         os_router:
@@ -254,3 +253,4 @@
           name: "{{ network_name }}"
           state: absent
         register: lb_net
+      ignore_errors: true

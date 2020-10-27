@@ -342,12 +342,21 @@ class LoadBalancerModule(OTCModule):
             if lb:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
+                if delete_fip:
+                    ips = self.conn.network.ips(
+                        port_id=lb.vip_port_id,
+                        fixed_ip_address=lb.vip_address
+                    )
+                    ips = list(ips)
+                    if ips:
+                        public_vip_address = ips[0]
+
                 self.conn.network.delete(
                     '/lbaas/loadbalancers/{id}?cascade=true'.format(id=lb.id))
                 changed = True
 
-                if delete_fip and lb.vip_address:
-                    self.conn.network.delete_ip(lb.vip_address)
+                if delete_fip and public_vip_address:
+                    self.conn.network.delete_ip(public_vip_address)
                     changed = True
 
             self.exit_json(changed=changed)
