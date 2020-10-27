@@ -8,6 +8,7 @@
         instance: "test-db"
         name: "test_ansible_module"
       register: rds_backup
+      check_mode: true
       ignore_errors: yes
 
     - name: assert result
