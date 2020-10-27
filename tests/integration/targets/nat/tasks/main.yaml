@@ -221,3 +221,4 @@
           name: "{{ network_name }}"
           state: absent
         register: nat_net
+      ignore_errors: yes
