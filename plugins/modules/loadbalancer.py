@@ -331,7 +331,7 @@ class LoadBalancerModule(OTCModule):
 
             self.exit_json(
                 changed=changed,
-                loadbalancer=lb.to_dict(),
+                loadbalancer=lb_dict,
                 id=lb.id
             )
 
