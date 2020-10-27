@@ -329,9 +329,15 @@ class LoadBalancerModule(OTCModule):
                 lb_dict.update({"public_vip_address": floating_ip})
                 changed = True
 
+                self.exit_json(
+                    changed=changed,
+                    loadbalancer=lb_dict,
+                    id=lb.id
+                )
+
             self.exit_json(
                 changed=changed,
-                loadbalancer=lb_dict,
+                loadbalancer=lb.to_dict(),
                 id=lb.id
             )
 
