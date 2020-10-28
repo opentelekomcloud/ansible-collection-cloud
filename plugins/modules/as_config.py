@@ -33,16 +33,19 @@ options:
   instance_id:
     description:
       - Specifies the ECS ID.
-      - When using the existing ECS specifications as the template to create AS configurations, specify this parameter. In this case, the flavorRef, imageRef, disk, and security_groups fields do not take effect.
+      - When using the existing ECS specifications as the template to create AS configurations, specify this parameter.\
+       In this case, the flavorRef, imageRef, disk, and security_groups fields do not take effect.
       - If not specified, flavorRef, imageRef, and disk fields are mandatory.
     type: str
   flavor:
     description:
-      - Specifies the ECS flavor ID or name. A maximum of 10 flavors can be selected. Use a comma (,) to separate multiple flavor IDs.
+      - Specifies the ECS flavor ID or name. A maximum of 10 flavors can be selected.\
+       Use a comma (,) to separate multiple flavor IDs.
     type: str
   image:
     description:
-      - Specifies the image ID or name. Its value is the same as that of image_id for specifying the image selected during ECS creation.
+      - Specifies the image ID or name. Its value is the same as that of image_id for specifying the image\
+       selected during ECS creation.
     type: str
   disk:
     description:
@@ -80,7 +83,8 @@ options:
             type: str
         snapshot_id:
             description: 
-                - Specifies the disk backup snapshot ID for restoring the system disk and data disks using a full-ECS backup when a full-ECS image is used.
+                - Specifies the disk backup snapshot ID for restoring the system disk and data disks using a full-ECS\
+                 backup when a full-ECS image is used.
             type: str
         metadata:
             description: 
@@ -89,13 +93,14 @@ options:
             suboptions:
                 __system__encrypted:
                     description: 
-                        - Specifies encryption in metadata. The value can be 0 (encryption disabled) or 1 (encryption enabled).
+                        - Specifies encryption in metadata. The value can be 0 (encryption disabled)\
+                         or 1 (encryption enabled).
                     type: str
-                    choices: [ 0, 1 ]
+                    choices: [ '0', '1' ]
                     default: 0
                 __system__cmkid:
                     description: 
-                        - Specifies the CMK ID, which indicates encryption in metadata.
+                        - Specifies the CMK ID, which indicates encryption in metadata.  This parameter is used with __system__encrypted.
                     type: str
   key_name:
     description:
@@ -104,7 +109,8 @@ options:
     type: str
   personality:
     description:
-      - Specifies information about the injected file. Only text files can be injected. A maximum of five files can be injected at a time and the maximum size of each file is 1 KB.
+      - Specifies information about the injected file. Only text files can be injected.\
+       A maximum of five files can be injected at a time and the maximum size of each file is 1 KB.
     type: list
     elements: dict
     suboptions:
@@ -123,7 +129,8 @@ options:
   public_ip:
     description:
       - Specifies the EIP of the ECS.
-      - The EIP can be configured in two ways. 1.Do not use an EIP. 2. Automatically assign an EIP. You need to specify the information about the new EIP.
+      - The EIP can be configured in two ways. 1.Do not use an EIP. 2. Automatically assign an EIP. You need to specify\
+       the information about the new EIP.
     type: dict
     suboptions:
         eip:
@@ -134,40 +141,42 @@ options:
             required: true
             suboptions:
                 ip_type:
-                    description: 
+                    description:
                         - Specifies the EIP type.
                         - Mandatory.
                     type: str
                     required: true
                 bandwidth:
-                    description: 
+                    description:
                         - Specifies the bandwidth of an IP address.
                         - Mandatory.
                     type: dict
                     required: true
                     suboptions:
                         size:
-                            description: 
+                            description:
                                 - Specifies the bandwidth (Mbit/s).
                                 - Mandatory.
                             type: int
                             required: true
                         share_type:
-                            description: 
+                            description:
                                 - Specifies the bandwidth sharing type.
                                 - Mandatory.
                             type: str
                             required: true
                         charging_mode:
-                            description: 
+                            description:
                                 - Specifies the bandwidth billing mode.
                                 - Mandatory.
                             type: str
                             required: true
   user_data:
     description:
-      - Specifies the user data to be injected during the ECS creation process. Text, text files, and gzip files can be injected.
-      - The content to be injected must be encoded with base64. The maximum size of the content to be injected (before encoding) is 32 KB.
+      - Specifies the user data to be injected during the ECS creation process. Text, text files,\
+       and gzip files can be injected.
+      - The content to be injected must be encoded with base64. The maximum size of the content \
+      to be injected (before encoding) is 32 KB.
     type: str
   metadata:
     description:
@@ -176,7 +185,9 @@ options:
     suboptions:
         admin_pass:
             description: 
-                - Specifies the initial login password of the administrator account for logging in to an ECS using password authentication. The Linux administrator is root, and the Windows administrator is Administrator.
+                - Specifies the initial login password of the administrator account for logging in to \
+                an ECS using password authentication. The Linux administrator is root, \
+                and the Windows administrator is Administrator.
             type: str
   security_groups:
     description:
@@ -186,7 +197,7 @@ options:
     elements: dict
     suboptions:
         id:
-            description: 
+            description:
                 - Specifies the ID of the security group.
                 - Mandatory.
             type: str
@@ -221,7 +232,6 @@ EXAMPLES = '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
-
 class ASConfigModule(OTCModule):
     argument_spec = dict(
         scaling_configuration_name=dict(required=False),
@@ -247,21 +257,44 @@ class ASConfigModule(OTCModule):
         supports_check_mode=True
     )
 
+    def _parse_disk_metadata(self, metadata):
+        m = metadata
+        parsed_metadata = {}
+
+        if m.get('__system__encrypted'):
+            parsed_metadata['__system__encrypted'] = m.get('__system__encrypted')
+        else:
+            parsed_metadata['__system__encrypted'] = "0"
+
+        if m.get('__system__cmkid'):
+            parsed_metadata['_system__cmkid'] = m.get('__system__cmkid')
+
+        return parsed_metadata
+
+    def _parse_disks(self):
+        disks = self.params['disk']
+        parsed_disks = []
+        for disk in disks:
+            parsed_disk = {}
+            parsed_disk['size'] = disk.get('size') if disk.get('size') else self.fail_json(msg="'size' is required for 'disk'")
+            parsed_disk['volume_type'] = disk.get('volume_type').upper() if disk.get('volume_type') else self.fail_json(msg="'volume_type' is required for 'disk'")
+            parsed_disk['disk_type'] = disk.get('disk_type').upper() if disk.get('disk_type') else self.fail_json(msg="'disk_type' is required for 'disk'")
+            if disk.get('dedicated_storage_id'):
+                parsed_disk['dedicated_storage_id'] = disk.get('dedicated_storage_id')
+            if disk.get('data_disk_image_id'):
+                parsed_disk['data_disk_image_id'] = disk.get('data_disk_image_id')
+            if disk.get('snapshot_id'):
+                parsed_disk['snapshot_id'] = disk.get('snapshot_id')
+            if disk.get('metadata'):
+                parsed_disk['metadata'] = self._parse_disk_metadata(disk.get('metadata'))
+            parsed_disks.append(parsed_disk)
+        return parsed_disks
+
     def run(self):
 
         scaling_configuration_name = self.params['scaling_configuration_name']
         scaling_configuration_id = self.params['scaling_configuration_id']
-        instance_id = self.params['instance_id']
-        flavor = self.params['flavor']
-        image = self.params['image']
-        disk = self.params['disk']
         key_name = self.params['key_name']
-        personality = self.params['personality']
-        public_ip = self.params['public_ip']
-        user_data = self.params['user_data']
-        metadata = self.params['metadata']
-        security_groups = self.params['security_groups']
-        state = self.params['state']
 
         as_config = None
 
@@ -284,14 +317,23 @@ class ASConfigModule(OTCModule):
                     attrs['flavorRef'] = flavor.id
                 else:
                     self.fail_json(msg="Flavor not found")
+            else:
+                self.fail_json(msg="Flavor is mandatory for creating AS configuration \
+through creating new specifications template.")
             if self.params['image']:
-                image = self.conn.image.find_image(self.params['image'], ignore_missing=True)
+                image = self.conn.compute.find_image(self.params['image'], ignore_missing=True)
                 if image:
                     attrs['imageRef'] = image.id
                 else:
                     self.fail_json(msg="Image not found")
+            else:
+                self.fail_json(msg="Image is mandatory for creating AS configuration \
+through creating new specifications template.")
             if self.params['disk']:
-                attrs['disk'] = self.params['disk']
+                attrs['disk'] = self._parse_disks()
+            else:
+                self.fail_json(msg="Disk is mandatory for creating AS configuration \
+through creating new specifications template.")
             if self.params['personality']:
                 attrs['personality'] = self.params['personality']
             if self.params['public_ip']:
@@ -325,13 +367,12 @@ class ASConfigModule(OTCModule):
             if as_config:
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                self.conn.auto_scaling.delete_config()
+                self.conn.auto_scaling.delete_config(as_config)
+                self.exit_json(changed=True, msg="Resource was deleted")
             else:
                 if self.ansible.check_mode:
                     self.exit_json(changed=False)
                 self.fail_json("The AS configuration doesn't exist")
-
-
 
 
 def main():
