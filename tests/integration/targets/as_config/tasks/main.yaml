@@ -12,7 +12,7 @@
 
     - name: Create as config
       as_config:
-        scaling_configuration_name: "as-config-test"
+        scaling_configuration_name: "{{ config_name }}"
         key_name: "as-config-test"
         image: "9e4322d2-fc79-4d20-966b-41ff78fb7c48"
         flavor: "c4.2xlarge.2"
@@ -20,4 +20,10 @@
           - size: 10
             volume_type: 'SAS'
             disk_type: 'SYS'
+      register: as_config
+
+    - name: Create as config
+      as_config:
+        scaling_configuration_name: "{{ config_name }}"
+        state: absent
       register: as_config
