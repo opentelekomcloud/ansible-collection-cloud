@@ -1,0 +1,31 @@
+---
+- hosts: localhost
+  tasks:
+
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        image_name: "{{ ( prefix + '_image') }}"
+        server_name: "{{ ( prefix + '_server) }}"
+        config_name: "{{ ( prefix + '_config') }}"
+
+    - name: Create ecs
+      os_image:
+        name: "{{ image_name }}"
+      register: image
+
+    - name: Create ecs
+      os_server:
+        name: "{{ server_name }}"
+        image: "{{ image.image.id }}"
+      register: as_config
+
+    - name: Create subnet for ELB
+      as_config:
+        scaling_configuration_name: "as-config-test"
+        key_name: "test-kp_check-ssh-between-vpcs"
+        instance_id: "dbf06205-58e1-4dba-8f60-1e1bb55cee1c"
+      register: as_config
