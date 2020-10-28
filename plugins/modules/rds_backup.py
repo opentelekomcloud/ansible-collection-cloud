@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: rds_backup
 short_description: Manage RDS backup
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.2.0"
 author: "Irina Pereiaslavskaia (@irina-pereiaslavskaia)"
 description:
   - Manage RDS backups
@@ -55,7 +55,7 @@ options:
     default: 'yes'
   timeout:
     description:
-      - The amount of time the module should wait.
+      - The duration in seconds that module should wait.
     default: 200
     type: int
 requirements: ["openstacksdk", "otcextensions"]
@@ -122,26 +122,26 @@ backup:
 
 EXAMPLES = '''
 #Create RDS backup (only required parameters are specified)
-- rds_backup:
+- opentelekomcloud.cloud.rds_backup:
     instance: "test-db"
     name: "test_ansible_module"
   register: rds_backup
 
 #Delete RDS backup
-- rds_backup:
+- opentelekomcloud.cloud.rds_backup:
     instance: "test-db"
     name: "test_ansible_module"
     state: absent
   register: rds_backup
 
 #Create RDS backup (ID instance is specified)
-- rds_backup:
+- opentelekomcloud.cloud.rds_backup:
     instance: 3870b5c9d92643efb078c32d2fcdffbein03
     name: "test_ansible_module"
   register: rds_backup
 
 #Create RDS backup (All parameters are specified)
-- rds_backup:
+- opentelekomcloud.cloud.rds_backup:
     instance: "test-db"
     name: "test_ansible_module"
     description: "This is a description"
@@ -151,7 +151,7 @@ EXAMPLES = '''
   register: rds_backup
 
 #Delete RDS backup (All parameters are specified)
-- rds_backup:
+- opentelekomcloud.cloud.rds_backup:
     instance: 3870b5c9d92643efb078c32d2fcdffbein03
     name: "test_ansible_module"
     description: "This is a description"
