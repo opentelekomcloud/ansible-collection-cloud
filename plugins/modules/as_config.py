@@ -222,7 +222,7 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class ASGroupModule(OTCModule):
+class ASConfigModule(OTCModule):
     argument_spec = dict(
         scaling_configuration_name=dict(required=False),
         scaling_configuration_id=dict(required=False),
@@ -307,7 +307,7 @@ class ASGroupModule(OTCModule):
 
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                as_config = self.conn.auto_scaling.create_config(scaling_configuration_name, **attrs)
+                as_config = self.conn.auto_scaling.create_config(name=scaling_configuration_name, instance_config=attrs)
 
                 changed = True
 
@@ -335,7 +335,7 @@ class ASGroupModule(OTCModule):
 
 
 def main():
-    module = ASGroupModule()
+    module = ASConfigModule()
     module()
 
 
