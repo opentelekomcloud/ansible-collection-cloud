@@ -54,52 +54,52 @@ options:
     elements: dict
     suboptions:
         size:
-            description: 
+            description:
                 - Specifies the disk size. The unit is GB.
                 - Mandatory.
             type: int
             required: true
         volume_type:
-            description: 
+            description:
                 - Specifies the ECS system disk type.
                 - Mandatory.
             type: str
             choices: ['sata', 'sas', 'ssd', 'co-p1', 'uh-l1']
             required: true
         disk_type:
-            description: 
+            description:
                 - Specifies a disk type.
                 - Mandatory.
             type: str
             choices: ['data', 'sys']
             required: true
         dedicated_storage_id:
-            description: 
+            description:
                 - Specifies a DSS device ID for creating an ECS disk.
             type: str
         data_disk_image_id:
-            description: 
+            description:
                 - Specifies the ID of a data disk image used to export data disks of an ECS.
             type: str
         snapshot_id:
-            description: 
+            description:
                 - Specifies the disk backup snapshot ID for restoring the system disk and data disks using a full-ECS\
                  backup when a full-ECS image is used.
             type: str
         metadata:
-            description: 
+            description:
                 - Specifies the metadata for creating disks.
             type: dict
             suboptions:
                 __system__encrypted:
-                    description: 
+                    description:
                         - Specifies encryption in metadata. The value can be 0 (encryption disabled)\
                          or 1 (encryption enabled).
                     type: str
                     choices: [ '0', '1' ]
                     default: 0
                 __system__cmkid:
-                    description: 
+                    description:
                         - Specifies the CMK ID, which indicates encryption in metadata.  This parameter is used with __system__encrypted.
                     type: str
   key_name:
@@ -115,13 +115,13 @@ options:
     elements: dict
     suboptions:
         path:
-            description: 
+            description:
                 - Specifies the path of the injected file.
                 - Mandatory.
             type: str
             required: true
         content:
-            description: 
+            description:
                 - Specifies the content of the injected file.
                 - Mandatory.
             type: str
@@ -134,7 +134,7 @@ options:
     type: dict
     suboptions:
         eip:
-            description: 
+            description:
                 - Specifies the EIP automatically assigned to the ECS.
                 - Mandatory.
             type: dict
@@ -184,7 +184,7 @@ options:
     type: dict
     suboptions:
         admin_pass:
-            description: 
+            description:
                 - Specifies the initial login password of the administrator account for logging in to \
                 an ECS using password authentication. The Linux administrator is root, \
                 and the Windows administrator is Administrator.
@@ -231,6 +231,7 @@ EXAMPLES = '''
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
+
 
 class ASConfigModule(OTCModule):
     argument_spec = dict(
