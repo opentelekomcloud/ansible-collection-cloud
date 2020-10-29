@@ -13,7 +13,7 @@
         key_name: "{{ ( prefix + '_key') }}"
 
     - name: Create keypair
-      os_keypair:
+      openstack.cloud.os_keypair:
           name: "{{ key_name }}"
 
     - name: Create as config - check_mode
@@ -66,6 +66,6 @@
 
 
     - name: Delete keypair
-      os_keypair:
+      openstack.cloud.os_keypair:
           name: "{{ key_name }}"
           state: absent
