@@ -37,7 +37,7 @@
     - name: Create as config
       as_config:
         scaling_configuration_name: "{{ config_name }}"
-        key_name: "as-config-test"
+        key_name: "{{ key_name }}"
         image: "Standard_Debian_9_latest"
         flavor: "c4.2xlarge.2"
         disk:
