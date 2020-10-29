@@ -70,7 +70,7 @@ options:
     elements: dict
     suboptions:
       pool_id:
-          description: 
+          description:
             - Specifies the backend ECS group ID.
             - Mandatory.
           type: str
@@ -83,7 +83,7 @@ options:
           type: int
           required: true
       weight:
-          description: 
+          description:
             - Specifies the weight, which determines the portion\
           of requests a backend ECS processes when being compared to other \
           backend ECSs added to the same listener.
@@ -105,7 +105,7 @@ options:
     elements: dict
     suboptions:
       id:
-        description: 
+        description:
           - Specifies the network ID.
           - Mandatory.
         type: str
@@ -113,20 +113,20 @@ options:
   security_groups:
     description:
       - Specifies the security group. If the security group is specified both in the AS configuration and AS group,\
-       the security group specified in the AS configuration prevails. 
+       the security group specified in the AS configuration prevails.
       - If the security group is not specified in either of them, the default security group is used.
     type: list
     elements: dict
     suboptions:
       id:
-        description: 
+        description:
           - Specifies the security group ID.
           - Mandatory.
         type: str
         required: true
   vpc:
     description:
-      - The VPC ID or name. 
+      - The VPC ID or name.
       - Mandatory for creating resource.
     type: str
   health_periodic_audit_method:
@@ -249,8 +249,8 @@ class ASGroupModule(OTCModule):
         health_periodic_audit_time=dict(required=False, type='int', default=5),
         health_periodic_audit_grace_period=dict(required=False, type='int', default=600),
         instance_terminate_policy=dict(required=False,
-                        choices=['old_config_old_instance', 'old_config_new_instance','old_instance', 'new_instance'],
-                        default='old_config_old_instance' ),
+                                       choices=['old_config_old_instance', 'old_config_new_instance',
+                                                'old_instance', 'new_instance'], default='old_config_old_instance'),
         notifications=dict(required=False, type='list', elements='str'),
         delete_publicip=dict(required=False, type='bool', default=False),
         delete_volume=dict(required=False, type='bool', default=False),
@@ -330,7 +330,6 @@ class ASGroupModule(OTCModule):
             if as_group.multi_az_priority_policy != attrs['multi_az_priority_policy']:
                 changed = True
         return changed
-
 
     def run(self):
 

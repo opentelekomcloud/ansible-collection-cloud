@@ -11,10 +11,39 @@
       set_fact:
         config_name: "{{ ( prefix + '_config') }}"
         key_name: "{{ ( prefix + '_key') }}"
+        network_name: "{{ ( prefix + '_network') }}"
+        subnet_name: "{{ ( prefix + '_subnet') }}"
+        router_name:  "{{ ( prefix + '_router') }}"
 
     - name: Create keypair
       openstack.cloud.os_keypair:
           name: "{{ key_name }}"
+
+    - name: Create network for ELB
+      os_network:
+        name: "{{ network_name }}"
+        state: present
+      register: network
+
+    - name: Create subnet for ELB
+      os_subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ network.network.name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: subnet
+
+    - name: Create Router for ELB
+      os_router:
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ network.network.name }}"
+            subnet: "{{ network.subnet.name }}"
+      register: router
 
     - name: Create as config
       as_config:
@@ -28,11 +57,14 @@
             disk_type: 'SYS'
       register: as_config
 
-    - name: assert result
-      assert:
-        that:
-          - as_config is changed
-          - as_config is success
+    - name: Create as group
+      as_config:
+        scaling_configuration_name: "{{ config_name }}"
+        scaling_configuration_id: "{{ as_config.as_config.id }}"
+        networks: [{'id': "{{ network.network.id }}"}]
+        vpc_id:
+      register: as_config
+
 
     - name: Delete as config
       as_config:
@@ -46,8 +78,27 @@
           - dropped_as_config is success
           - dropped_as_config is changed
 
+  always:
+    - block:
+      # Cleanup
 
     - name: Delete keypair
       openstack.cloud.os_keypair:
           name: "{{ key_name }}"
           state: absent
+
+      - name: Drop existing Router
+        os_router:
+          name: "{{ router_name }}"
+          state: absent
+
+      - name: Drop existing subnet
+        os_subnet:
+          name: "{{ subnet_name }}"
+          state: absent
+
+      - name: Drop existing network
+        os_network:
+          name: "{{ network_name }}"
+          state: absent
+
