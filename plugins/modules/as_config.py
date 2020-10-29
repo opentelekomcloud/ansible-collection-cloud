@@ -12,11 +12,10 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
----
 module: as_config
 short_description: Create/Remove AutoScaling configuration from the OTC
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.0.4"
 author: "Polina Gubina (@Polina-Gubina)"
 description:
   - Create/Remove AutoScaling configuration from the OTC.
@@ -27,6 +26,7 @@ options:
       - Mandatory for creating AS configuration.
     type: str
   scaling_configuration_id:
+    description:
       - Specifies the AS configuration id.
       - Mandatory for deleting AS configuration.
     type: str
@@ -100,7 +100,8 @@ options:
                     default: 0
                 __system__cmkid:
                     description:
-                        - Specifies the CMK ID, which indicates encryption in metadata.  This parameter is used with __system__encrypted.
+                        - Specifies the CMK ID, which indicates encryption in metadata.\
+                          This parameter is used with __system__encrypted.
                     type: str
   key_name:
     description:
@@ -192,7 +193,9 @@ options:
   security_groups:
     description:
       - Specifies security groups.
-      - If the security group is specified both in the AS configuration and AS group, the security group specified in the AS configuration prevails. If the security group is not specified in either of them, the default security group is used.
+      - If the security group is specified both in the AS configuration and AS group, \
+      the security group specified in the AS configuration prevails.\
+       If the security group is not specified in either of them, the default security group is used.
     type: list
     elements: dict
     suboptions:
@@ -224,10 +227,20 @@ as_group:
 '''
 
 EXAMPLES = '''
-# Create as group.
-- as_config:
-    name: my_prod_as_group
-  register: data
+# Create as configuration.
+as_config:
+        scaling_configuration_name: "as-config-test2"
+        key_name: "as-config-test"
+        image: "9e4322d2-fc79-4d20-966b-41ff78fb7c48"
+        flavor: "c4.2xlarge.2"
+        disk:
+          - size: 10
+            volume_type: 'sas'
+            disk_type: 'sys'
+          - size: 10
+            volume_type: 'sas'
+            disk_type: 'data'
+
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -253,7 +266,7 @@ class ASConfigModule(OTCModule):
         required_if=[
             ('state', 'present', ['scaling_configuration_name', 'key_name']),
             ('instance_id', None, ['flavor', 'image', 'disk']),
-            ('scaling_group_name', None, ['scaling_configuration_id'])
+            ('scaling_configuration_name', None, ['scaling_configuration_id'])
         ],
         supports_check_mode=True
     )
@@ -277,9 +290,12 @@ class ASConfigModule(OTCModule):
         parsed_disks = []
         for disk in disks:
             parsed_disk = {}
-            parsed_disk['size'] = disk.get('size') if disk.get('size') else self.fail_json(msg="'size' is required for 'disk'")
-            parsed_disk['volume_type'] = disk.get('volume_type').upper() if disk.get('volume_type') else self.fail_json(msg="'volume_type' is required for 'disk'")
-            parsed_disk['disk_type'] = disk.get('disk_type').upper() if disk.get('disk_type') else self.fail_json(msg="'disk_type' is required for 'disk'")
+            parsed_disk['size'] = disk.get('size')\
+                if disk.get('size') else self.fail_json(msg="'size' is required for 'disk'")
+            parsed_disk['volume_type'] = disk.get('volume_type').upper() \
+                if disk.get('volume_type') else self.fail_json(msg="'volume_type' is required for 'disk'")
+            parsed_disk['disk_type'] = disk.get('disk_type').upper()\
+                if disk.get('disk_type') else self.fail_json(msg="'disk_type' is required for 'disk'")
             if disk.get('dedicated_storage_id'):
                 parsed_disk['dedicated_storage_id'] = disk.get('dedicated_storage_id')
             if disk.get('data_disk_image_id'):
