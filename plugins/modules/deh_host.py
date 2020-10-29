@@ -56,7 +56,7 @@ options:
     description:
       - Specifies the DeH tags.
     type: list
-    elements: str
+    elements: dict
   state:
     choices: [present, absent]
     default: present
@@ -170,7 +170,7 @@ class DehHostModule(OTCModule):
         id=dict(required=False),
         name=dict(required=False),
         quantity=dict(required=False, type='int', default=1),
-        tags=dict(required=False, type='list', elements='str'),
+        tags=dict(required=False, type='list', elements='dict'),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
 
@@ -223,6 +223,7 @@ class DehHostModule(OTCModule):
             attrs = {}
 
             if host:
+                # DeH host modification
                 if self.params['auto_placement'] and (self.params['auto_placement'] != host.auto_placement):
                     attrs['auto_placement'] = self.params['auto_placement']
                 if self.params['name'] and (self.params['name'] != host.name):
@@ -250,8 +251,7 @@ class DehHostModule(OTCModule):
                 if self.params['tags']:
                     attrs['tags'] = self.params['tags']
                 host = self.conn.deh.create_host(**attrs)
-            self.exit(changed=True, deh_host=host.to_dict())
-
+                self.exit(changed=True, deh_host=host.to_dict())
         self.exit(changed=changed)
 
 

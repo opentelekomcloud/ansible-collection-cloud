@@ -1,0 +1,9 @@
+  always:
+    - block:
+      # Cleanup      
+      - name: Drop existing DeH host
+        deh_host:
+          name: "{{ deh_host_name }}"
+          state: absent
+        register: deh
+      ignore_errors: yes
