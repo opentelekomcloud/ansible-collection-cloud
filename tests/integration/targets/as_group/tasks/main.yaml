@@ -9,6 +9,7 @@
 
     - name: Set initial facts
       set_fact:
+        as_group_name: "{{ ( prefix + '_as_group') }}"
         config_name: "{{ ( prefix + '_config') }}"
         key_name: "{{ ( prefix + '_key') }}"
         network_name: "{{ ( prefix + '_network') }}"
@@ -20,13 +21,13 @@
           name: "{{ key_name }}"
 
     - name: Create network for ELB
-      os_network:
+      openstack.cloud.os_network:
         name: "{{ network_name }}"
         state: present
       register: network
 
     - name: Create subnet for ELB
-      os_subnet:
+      openstack.cloud.os_subnet:
         name: "{{ subnet_name }}"
         state: present
         network_name: "{{ network.network.name }}"
@@ -35,7 +36,7 @@
       register: subnet
 
     - name: Create Router for ELB
-      os_router:
+      openstack.cloud.os_router:
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
@@ -58,29 +59,40 @@
       register: as_config
 
     - name: Create as group
-      as_config:
-        scaling_configuration_name: "{{ config_name }}"
+      as_group:
+        scaling_group_name: "{{ as_group_name}}"
         scaling_configuration_id: "{{ as_config.as_config.id }}"
         networks: [{'id': "{{ network.network.id }}"}]
-        vpc_id:
-      register: as_config
+        vpc_id: "{{ router.router.id }}"
+      register: as_group
 
+    - name: assert result
+      assert:
+        that:
+          - as_group is success
+          - as_group is changed
+
+    - name: Delete as group
+      as_group:
+        scaling_group_name: "{{ as_group_name }}"
+        state: absent
+      register: dropped_as_group
+
+    - name: assert result
+      assert:
+        that:
+          - dropped_as_group is success
+          - dropped_as_group is changed
+
+  always:
+    - block:
+      # Cleanup
 
     - name: Delete as config
       as_config:
         scaling_configuration_name: "{{ config_name }}"
         state: absent
       register: dropped_as_config
-
-    - name: assert result
-      assert:
-        that:
-          - dropped_as_config is success
-          - dropped_as_config is changed
-
-  always:
-    - block:
-      # Cleanup
 
     - name: Delete keypair
       openstack.cloud.os_keypair:
