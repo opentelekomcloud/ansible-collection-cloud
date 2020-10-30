@@ -153,17 +153,19 @@ class VPCRouteModule(OTCModule):
             attrs = {}
             attrs['destination'] = self.params['destination']
             attrs['type'] = self.params['type']
-            attrs['vpc_id'] = self.conn.network.find_router(self.params['router'], ignore_missing=True).id
 
-            if not attrs['vpc_id']:
-                self.fail_json(msg='Router not found')
+            router = self.conn.network.find_router(self.params['router'], ignore_missing=True)
+            if router:
+                attrs['vpc_id'] = router.id
+            else:
+                self.fail_json(msg="Router requesting for creating a route not found")
 
             if self.params['type'] == 'peering':
-                attrs['nexthop'] = self.conn.vpc.find_peering(self.params['nexthop'], ignore_missimg=True).id
-                if not attrs['nexthop']:
+                nexthop = self.conn.vpc.find_peering(self.params['nexthop'], ignore_missimg=True).id
+                if nexthop:
+                    attrs['nexthop'] = nexthop.id
+                else:
                     self.fail_json(msg="vpc peering connection ('nexthop') not found")
-            else:
-                attrs['nexthop'] = self.params['nexthop']
 
             check = self._check_route(attrs['destination'], attrs['vpc_id'])
 
