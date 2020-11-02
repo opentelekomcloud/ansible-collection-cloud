@@ -9,16 +9,16 @@
 
     - name: Set initial facts
       set_fact:
-        network_name_1: "{{ ( prefix + 'vpc_peering_test-network_1') }}"
-        subnet_name_1: "{{ ( prefix + 'vpc_peering_test-subnet_1') }}"
-        router_name_1: "{{ ( prefix + 'vpc_peering_test-router_1') }}"
+        network_name_1: "{{ ( prefix + 'vpc_route_test-network_1') }}"
+        subnet_name_1: "{{ ( prefix + 'vpc_route_test-subnet_1') }}"
+        router_name_1: "{{ ( prefix + 'vpc_route_test-router_1') }}"
         cidr_block_1: "192.168.115"
-        network_name_2: "{{ ( prefix + 'vpc_peering_test-network_2') }}"
-        subnet_name_2: "{{ ( prefix + 'vpc_peering_test-subnet_2') }}"
-        router_name_2: "{{ ( prefix + 'vpc_peering_test-router_2') }}"
+        network_name_2: "{{ ( prefix + 'vpc_route_test-network_2') }}"
+        subnet_name_2: "{{ ( prefix + 'vpc_route_test-subnet_2') }}"
+        router_name_2: "{{ ( prefix + 'vpc_route_test-router_2') }}"
         cidr_block_2: "192.168.116"
-        vpc_peering_name: "{{ ( prefix + 'vpc_peering_test') }}"
-        new_peering_name: "{{ ( prefix + 'vpc_peering_test_2') }}"
+        vpc_peering_name: "{{ ( prefix + 'vpc_route_test') }}"
+        new_peering_name: "{{ ( prefix + 'vpc_route_test_2') }}"
         project_id: "76889f64a23945ab887012b180e95acf"
 
     - name: Create first network for test
