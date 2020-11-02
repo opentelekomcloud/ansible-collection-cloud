@@ -60,7 +60,7 @@
 
     - name: Create as group
       as_group:
-        scaling_group_name: "{{ as_group_name}}"
+        scaling_group_name: "{{ as_group_name }}"
         scaling_configuration_id: "{{ as_config.as_config.id }}"
         networks: [{'id': "{{ network.network.id }}"}]
         vpc_id: "{{ router.router.id }}"

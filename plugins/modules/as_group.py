@@ -262,7 +262,7 @@ class ASGroupModule(OTCModule):
     )
     module_kwargs = dict(
         required_if=[
-            ('scaling_group_name', None, ['scaling_group_id'])
+            ('scaling_group_id', None, ['scaling_group_name'])
         ],
         supports_check_mode=True
     )
@@ -271,7 +271,7 @@ class ASGroupModule(OTCModule):
         changed = False
 
         if self.params['scaling_group_name']:
-            if as_group.scaling_group_name != attrs['scaling_group_name']:
+            if as_group.name != attrs['scaling_group_name']:
                 changed = True
         if self.params['scaling_configuration']:
             if as_group.scaling_configuration_id != attrs['scaling_configuration_id']:
@@ -302,13 +302,15 @@ class ASGroupModule(OTCModule):
                 changed = True
         if self.params['security_groups']:
             if as_group.security_groups != attrs['security_groups']:
+                self.fail_json(msg=11)
                 changed = True
         if self.params['health_periodic_audit_method']:
             if as_group.health_periodic_audit_method != attrs['health_periodic_audit_method']:
                 changed = True
-        if self.params['health_periodic_audit_grace_period']:
-            if as_group.health_periodic_audit_grace_period != attrs['health_periodic_audit_grace_period']:
-                changed = True
+    #   if self.params['health_periodic_audit_grace_period']:
+    #   if self.params['health_periodic_audit_grace_period']:
+    #        if as_group.health_periodic_audit_grace_period != attrs['health_periodic_audit_grace_period']:
+    #            changed = True
         if self.params['instance_terminate_policy']:
             if as_group.instance_terminate_policy != attrs['instance_terminate_policy']:
                 changed = True
@@ -327,9 +329,9 @@ class ASGroupModule(OTCModule):
         if self.params['enterprise_project_id']:
             if as_group.enterprise_project_id != attrs['enterprise_project_id']:
                 changed = True
-        if self.params['multi_az_priority_policy']:
-            if as_group.multi_az_priority_policy != attrs['multi_az_priority_policy']:
-                changed = True
+ #       if self.params['multi_az_priority_policy']:
+ #           if as_group.multi_az_priority_policy != attrs['multi_az_priority_policy']:
+  #              changed = True
         return changed
 
     def run(self):
@@ -339,10 +341,12 @@ class ASGroupModule(OTCModule):
 
         as_group = None
 
-        if scaling_group_name:
+        if scaling_group_id:
+            as_group = self.conn.auto_scaling.find_group(scaling_group_id, ignore_missing=True)
+        elif scaling_group_name:
             as_group = self.conn.auto_scaling.find_group(scaling_group_name, ignore_missing=True)
         else:
-            as_group = self.conn.auto_scaling.find_group(scaling_group_id, ignore_missing=True)
+            self.fail_json(msg="Either 'scaling_group_name' or 'scaling_group_id' must be specified")
 
         if self.params['state'] == 'present':
 
@@ -396,25 +400,28 @@ class ASGroupModule(OTCModule):
             if self.params['security_groups']:
                 attrs['security_groups'] = self.params['security_groups']
             if self.params['instance_terminate_policy']:
-                attrs['instance_terminate_policy'] = self.params['instance_terminate_policy']
+                attrs['instance_terminate_policy'] = self.params['instance_terminate_policy'].upper()
             if self.params['notifications']:
                 attrs['notifications'] = self.params['notifications']
             if self.params['enterprise_project_id']:
                 attrs['enterprise_project_id'] = self.params['enterprise_project_id']
             if self.params['multi_az_priority_policy']:
-                attrs['multi_az_priority_policy'] = self.params['multi_az_priority_policy']
+                attrs['multi_az_priority_policy'] = self.params['multi_az_priority_policy'].upper()
 
             if not as_group:
 
-                if not self.params['scaling_configuration']:
-                    self.fail_json(msg="'scaling_configuration' is mandatory for creating an AS group.")
+                if not self.params['networks']:
+                    self.fail_json(msg="'networks' is mandatory for creating an AS group.")
 
                 if self.params['vpc']:
-                    attrs['vpc_id'] = self.conn.network.find_router(self.params['vpc'], ignore_missing=True)
+                    attrs['vpc_id'] = self.conn.network.find_router(self.params['vpc'], ignore_missing=True).id
                     if not attrs['vpc_id']:
                         self.fail_json("vpc no found")
                 else:
                     self.fail_json(msg="'vpc' is mandatory for creating an AS group.")
+
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
 
                 as_group = self.conn.auto_scaling.create_group(**attrs)
                 changed = True
@@ -425,18 +432,23 @@ class ASGroupModule(OTCModule):
                 )
 
             else:
-                as_group = self.conn.auto_scaling.update_group(**attrs)
-                changed = self.changed_when_update(as_group, **attrs)
+                if self.ansible.check_mode:
+                    self.exit(changed=self.changed_when_update(as_group, **attrs))
+                as_group = self.conn.auto_scaling.update_group(as_group, **attrs)
 
                 self.exit_json(
-                    changed=changed,
+                    changed=self.changed_when_update(as_group, **attrs),
                     as_group=as_group
                 )
 
         elif self.params['state'] == 'absent':
             if as_group:
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 self.conn.auto_scaling.delete_group(as_group)
             else:
+                if self.ansible.check_mode:
+                    self.exit(changed=False)
                 self.fail_json("The group doesn't exist")
 
 
