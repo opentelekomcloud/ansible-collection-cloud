@@ -90,9 +90,10 @@ class LoadBalancerCertificateInfoModule(OTCModule):
 
         if self.params['name']:
             raw = self.conn.elb.find_certificate(name_or_id=self.params['name'], ignore_missing=True)
-            dt = raw.to_dict()
-            dt.pop('location')
-            data.append(dt)
+            if raw:
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
         else:
             for raw in self.conn.elb.certificates():
                 dt = raw.to_dict()
