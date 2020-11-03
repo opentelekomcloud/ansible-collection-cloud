@@ -87,27 +87,26 @@
   always:
     - block:
       # Cleanup
+      - name: Delete as config
+        as_config:
+          scaling_configuration_name: "{{ config_name }}"
+          state: absent
+        register: dropped_as_config
 
-    - name: Delete as config
-      as_config:
-        scaling_configuration_name: "{{ config_name }}"
-        state: absent
-      register: dropped_as_config
+      - name: Delete keypair
+        openstack.cloud.os_keypair:
+            name: "{{ key_name }}"
+            state: absent
 
-    - name: Delete keypair
-      openstack.cloud.os_keypair:
-          name: "{{ key_name }}"
+      - name: Drop existing router
+        os_router:
+          name: "{{ router.router.name }}"
           state: absent
 
-    - name: Drop existing router
-      os_router:
-        name: "{{ router.router.name }}"
-        state: absent
-
-    - name: Drop existing subnet
-      os_subnet:
-        name: "{{ subnet.subnet.name }}"
-        state: absent
+      - name: Drop existing subnet
+        os_subnet:
+          name: "{{ subnet.subnet.name }}"
+          state: absent
 
     - name: Drop existing network
       os_network:
