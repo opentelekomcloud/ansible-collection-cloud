@@ -34,3 +34,4 @@ plugins/modules/lb_member.py validate-modules:missing-gplv3-license
 plugins/modules/lb_member_info.py validate-modules:missing-gplv3-license
 plugins/modules/lb_healthmonitor.py validate-modules:missing-gplv3-license
 plugins/modules/lb_healthmonitor_info.py validate-modules:missing-gplv3-license
+plugins/modules/lb_certificate_info.py validate-modules:missing-gplv3-license
