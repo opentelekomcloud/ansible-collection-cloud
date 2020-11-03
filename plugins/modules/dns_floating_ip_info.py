@@ -105,47 +105,26 @@ class DNSFloatingIpInfoModule(OTCModule):
 
     def run(self):
 
+        query = {}
         data = []
 
-        for raw in self.conn.dns.floating_ips():
+        if self.params['address']:
+            query['address'] = self.params['address']
+        if self.params['id']:
+            query['id'] = self.params['id']
+        if self.params['ptrdname']:
+            query['ptrdname'] = self.params['ptrdname']
+        if self.params['ttl']:
+            query['ttl'] = self.params['ttl']
+        if self.params['description']:
+            query['description'] = self.params['description']
+        if self.params['status']:
+            query['status'] = self.params['status']
+        
+        for raw in self.conn.dns.floating_ips(**query):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
-
-        # Filter data by deleting all entries without the right criteria
-        i = 0
-        while i < len(data):
-            if self.params['address']:
-                if data[i]['address'] != self.params['address']:
-                    del data[i]
-                    i = 0
-                    continue
-            if self.params['id']:
-                if data[i]['id'] != self.params['id']:
-                    del data[i]
-                    i = 0
-                    continue
-            if self.params['ptrdname']:
-                if data[i]['ptrdname'] != self.params['ptrdname']:
-                    del data[i]
-                    i = 0
-                    continue
-            if self.params['ttl']:
-                if data[i]['ttl'] != self.params['ttl']:
-                    del data[i]
-                    i = 0
-                    continue
-            if self.params['description']:
-                if data[i]['description'] != self.params['description']:
-                    del data[i]
-                    i = 0
-                    continue
-            if self.params['status']:
-                if data[i]['status'] != self.params['status']:
-                    del data[i]
-                    i = 0
-                    continue
-            i = i + 1
 
         self.exit(
             changed=False,

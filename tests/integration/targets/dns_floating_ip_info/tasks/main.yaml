@@ -1,0 +1,17 @@
+---
+- block:
+    - name: Get DNAT rule info
+      dns_floating_ip_info:
+        cloud: "{{ test_cloud }}"
+      register: ptr
+
+    - name: debug configs
+      debug:
+        var: ptr.ptr_records
+
+    - name: assert result
+      assert:
+        that:
+          - ptr is success
+          - ptr is not changed
+          - ptr.ptr_records is defined
