@@ -47,6 +47,19 @@
       assert:
         that:
           - deh is success
+    
+    - name: Query not existing ECS on dedicated host
+      deh_server_info:
+        dedicated_host: "{{ deh.deh_host.id }}"
+      when: 
+        - deh is defined
+      register: server
+    
+    - name: assert result
+      assert:
+        that:
+          - server is success
+          - server.deh_servers is defined
 
   always:
     - block:

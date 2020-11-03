@@ -22,7 +22,7 @@ description:
 options:
   dedicated_host:
     description:
-      - Name or ID of a Dedicated Host
+      - ID of a Dedicated Host
     type: str
     required: true
 requirements: ["openstacksdk", "otcextensions"]
@@ -138,7 +138,7 @@ class DehServerInfoModule(OTCModule):
                 self.exit(
                     changed=False,
                     deh_hosts=[],
-                    message=('No DEH host found with name or id: %s' %
+                    message=('No DEH host found with ID: %s' %
                              self.params['dedicated_host'])
                 )
 

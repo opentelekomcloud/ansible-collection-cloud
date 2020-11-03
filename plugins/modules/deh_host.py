@@ -69,36 +69,38 @@ RETURN = '''
 deh_host:
     description: Dictionary of DeH host
     returned: changed
-    type: complex
+    type: dict
     sample: {
-        "allocated_at": null,
-        "auto_placement": "on",
-        "availability_zone": "eu-de-01",
-        "available_memory": null,
-        "available_vcpus": null,
-        "dedicated_host_ids": [
-            "6d113075-038c-403c-b9cd-fc567f1fd123"
-        ],
-        "host_properties": null,
-        "host_type": "s2-medium",
-        "id": null,
-        "instance_total": null,
-        "instance_uuids": null,
-        "name": "deh-host",
-        "project_id": null,
-        "quantity": 1,
-        "released_at": null,
-        "status": null,
-        "tags": [
-            {
-                "key": "key1",
-                "value": "value1"
-            },
-            {
-                "key": "key2",
-                "value": "value2"
-            }
-        ]
+        deh_host: {
+          "allocated_at": null,
+          "auto_placement": "on",
+          "availability_zone": "eu-de-01",
+          "available_memory": null,
+          "available_vcpus": null,
+          "dedicated_host_ids": [
+              "6d113075-038c-403c-b9cd-fc567f1fd123"
+          ],
+          "host_properties": null,
+          "host_type": "s2-medium",
+          "id": null,
+          "instance_total": null,
+          "instance_uuids": null,
+          "name": "deh-host",
+          "project_id": null,
+          "quantity": 1,
+          "released_at": null,
+          "status": null,
+          "tags": [
+              {
+                  "key": "key1",
+                  "value": "value1"
+              },
+              {
+                  "key": "key2",
+                  "value": "value2"
+              }
+          ]
+        }
     }
 '''
 
@@ -111,10 +113,10 @@ EXAMPLES = '''
     name: "{{ deh_host_name }}"
     state: present
     quantity: 1
-    tags: 
-        - key: key1
+    tags:
+      - key: key1
         value: value1
-        - key: key2
+      - key: key2
         value: value2
   register: deh
 
@@ -123,7 +125,7 @@ EXAMPLES = '''
     cloud: otc
     id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
     auto_placement: off
-    when: 
+  when:
     - deh is defined
   register: deh
 '''
