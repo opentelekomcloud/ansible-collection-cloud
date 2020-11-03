@@ -67,94 +67,65 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 deh_host:
-    description: Dictionary of DeH hosts
+    description: Dictionary of DeH host
     returned: changed
-    type: list
-    sample: [
-      {
-          "allocated_at": "2020-09-30T09:38:15Z",
-          "auto_placement": "on",
-          "availability_zone": "az01",
-          "available_memory": 334848,
-          "available_vcpus": 71,
-          "dedicated_host_ids": null,
-          "host_properties": {
-              "available_instance_capacities": [
-                  {
-                      "flavor": "s2.8xlarge.2",
-                      "id": null,
-                      "location": null,
-                      "name": null
-                  },
-                  {
-                      "flavor": "s2.8xlarge.1",
-                      "id": null,
-                      "location": null,
-                      "name": null
-                  }
-              ],
-              "cores": 12,
-              "host_type": "s2-medium",
-              "host_type_name": "s2-medium",
-              "id": null,
-              "location": null,
-              "memory": 335872,
-              "name": null,
-              "sockets": 2,
-              "vcpus": 72
-          },
-          "host_type": null,
-          "id": "9b20bd80-c1aa-438c-a499-f5b5308ac123",
-          "instance_total": 1,
-          "instance_uuids": [
-              "a0c4d7d6-a2ae-4519-92d9-f0780e6f1123"
-          ],
-          "name": "deh-name",
-          "project_id": "16d53a84a13b49529d2e2c3646691123",
-          "quantity": null,
-          "released_at": "",
-          "state": "available",
-          "tags": [
-                {
-                    "mytag": "myvalue",
-                    "yourtag": "yourvalue"
-                }
-          ]
-      }
-    ]
+    type: complex
+    sample: {
+        "allocated_at": null,
+        "auto_placement": "on",
+        "availability_zone": "eu-de-01",
+        "available_memory": null,
+        "available_vcpus": null,
+        "dedicated_host_ids": [
+            "6d113075-038c-403c-b9cd-fc567f1fd123"
+        ],
+        "host_properties": null,
+        "host_type": "s2-medium",
+        "id": null,
+        "instance_total": null,
+        "instance_uuids": null,
+        "name": "deh-host",
+        "project_id": null,
+        "quantity": 1,
+        "released_at": null,
+        "status": null,
+        "tags": [
+            {
+                "key": "key1",
+                "value": "value1"
+            },
+            {
+                "key": "key2",
+                "value": "value2"
+            }
+        ]
+    }
 '''
 
 EXAMPLES = '''
-# Query all DeH hosts
-- opentelekomcloud.cloud.deh_host_info:
-    cloud: "{{ test_cloud }}"
+# Allocate Dedicated host
+- opentelekomcloud.cloud.deh_host:
+    cloud: otc
+    availability_zone: eu-de-01
+    host_type: s2-medium
+    name: "{{ deh_host_name }}"
+    state: present
+    quantity: 1
+    tags: 
+        - key: key1
+        value: value1
+        - key: key2
+        value: value2
   register: deh
 
-# Query specific Dedicated host by ID
-- opentelekomcloud.cloud.deh_host_info:
-    cloud: "{{ test_cloud }}"
-    host: "9b20bd80-c1aa-438c-a499-f5b5308ac123"
+# Modify Dedicated Host
+- opentelekomcloud.cloud.deh_host:
+    cloud: otc
+    id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
+    auto_placement: off
+    when: 
+    - deh is defined
   register: deh
-
-# Query DeH hosts with flavor s2-medium
-- opentelekomcloud.cloud.deh_host_info:
-    cloud: "{{ test_cloud }}"
-    host_type: "s2-medium"
-  register: deh
-
-# Query all parameters
-- opentelekomcloud.cloud.deh_host_info:
-    cloud: "{{ test_cloud }}"
-    availability_zone: az01
-    flavor: s2.medium.8
-    instance_uuid: a0c4d7d6-a2ae-4519-92d9-f0780e6f1123
-    host: "9b20bd80-c1aa-438c-a499-f5b5308ac123"
-    released_at: ""
-    tags: [mytag, yourtag]
-    host_type: "s2-medium"
-    host_type_name: "s2-medium"
-  register: deh
-
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
