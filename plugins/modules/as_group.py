@@ -226,7 +226,6 @@ EXAMPLES = '''
   register: data
 '''
 
-
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
@@ -307,10 +306,10 @@ class ASGroupModule(OTCModule):
         if self.params['health_periodic_audit_method']:
             if as_group.health_periodic_audit_method != attrs['health_periodic_audit_method']:
                 changed = True
-    #   if self.params['health_periodic_audit_grace_period']:
-    #   if self.params['health_periodic_audit_grace_period']:
-    #        if as_group.health_periodic_audit_grace_period != attrs['health_periodic_audit_grace_period']:
-    #            changed = True
+        #   if self.params['health_periodic_audit_grace_period']:
+        #   if self.params['health_periodic_audit_grace_period']:
+        #        if as_group.health_periodic_audit_grace_period != attrs['health_periodic_audit_grace_period']:
+        #            changed = True
         if self.params['instance_terminate_policy']:
             if as_group.instance_terminate_policy != attrs['instance_terminate_policy']:
                 changed = True
@@ -329,9 +328,9 @@ class ASGroupModule(OTCModule):
         if self.params['enterprise_project_id']:
             if as_group.enterprise_project_id != attrs['enterprise_project_id']:
                 changed = True
- #       if self.params['multi_az_priority_policy']:
- #           if as_group.multi_az_priority_policy != attrs['multi_az_priority_policy']:
-  #              changed = True
+        #       if self.params['multi_az_priority_policy']:
+        #           if as_group.multi_az_priority_policy != attrs['multi_az_priority_policy']:
+        #              changed = True
         return changed
 
     def run(self):
