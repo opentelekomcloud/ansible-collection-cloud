@@ -20,10 +20,6 @@ author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get NAT gateway info from the OTC.
 options:
-  created_at:
-    description:
-      - Time when the zone was created
-    type: str
   description:
     description:
       - DNS Zone Description
@@ -60,10 +56,6 @@ options:
     description:
       - TTL value of the SOA record set in the zone
     type: int
-  updated_at:
-    description:
-      - Time when the zone was updated
-    type: str
   zone_type:
     description:
       - DNS Zone type
@@ -83,10 +75,6 @@ dns_zones:
     type: complex
     returned: On Success.
     contains:
-        created_at:
-            description: Time when the zone was created
-            type: str
-            sample: "2020-09-10T19:40:29.362"
         description:
             description: Description of the zone
             type: str
@@ -123,10 +111,6 @@ dns_zones:
             description: TTL value of the SOA record set in the zone
             type: int
             sample: 300
-        updated_at:
-            description: Time when the zone was updated
-            type: str
-            sample: "2020-09-10T19:40:29.362"
         zone_type:
             description: DNS Zone type
             type: str
@@ -160,7 +144,6 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DNSZoneInfoModule(OTCModule):
     argument_spec = dict(
-        created_at=dict(required=False),
         description=dict(required=False),
         email=dict(required=False),
         name=dict(required=False),
@@ -170,7 +153,6 @@ class DNSZoneInfoModule(OTCModule):
         serial=dict(required=False, type='int'),
         status=dict(required=False),
         ttl=dict(required=False, type='int'),
-        updated_at=dict(required=False),
         zone_type=dict(required=True),
         zone_id=dict(required=False)
     )
@@ -238,16 +220,6 @@ class DNSZoneInfoModule(OTCModule):
                     continue
             if self.params['project_id']:
                 if data[i]['project_id'] != self.params['project_id']:
-                    del data[i]
-                    i = 0
-                    continue
-            if self.params['created_at']:
-                if data[i]['created_at'] != self.params['created_at']:
-                    del data[i]
-                    i = 0
-                    continue
-            if self.params['updated_at']:
-                if data[i]['updated_at'] != self.params['updated_at']:
                     del data[i]
                     i = 0
                     continue
