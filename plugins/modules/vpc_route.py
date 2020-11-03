@@ -161,7 +161,7 @@ class VPCRouteModule(OTCModule):
                 self.fail_json(msg="Router requesting for creating a route not found")
 
             if self.params['type'] == 'peering':
-                nexthop = self.conn.vpc.find_peering(self.params['nexthop'], ignore_missimg=True).id
+                nexthop = self.conn.vpc.find_peering(self.params['nexthop'], ignore_missing=True)
                 if nexthop:
                     attrs['nexthop'] = nexthop.id
                 else:
