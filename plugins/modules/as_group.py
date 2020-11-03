@@ -131,9 +131,10 @@ options:
     type: str
   health_periodic_audit_method:
     description:
-      - Specifies the health check method for instances in the AS group. The default value is ELB_AUDIT.
-      - ELB_AUDIT: indicates the ELB health check, which takes effect in an AS group with a listener.
-      - NOVA_AUDIT: indicates the ECS health check, which is the health check method delivered with AS.
+      - Specifies the health check method for instances in the AS group. When load balancing is configured for \
+      an AS group, the default value is ELB_AUDIT. Otherwise, the default value is NOVA_AUDIT.
+      - ELB_AUDIT indicates the ELB health check, which takes effect in an AS group with a listener.
+      - NOVA_AUDIT indicates the ECS health check, which is the health check method delivered with AS.
     choices: ['elb_audit', 'nova_audit']
     type: str
     default: 'nova_audit'
@@ -156,12 +157,12 @@ options:
   instance_terminate_policy:
     description:
       -  Specifies the instance removal policy.
-      -  OLD_CONFIG_OLD_INSTANCE (default): The earlier-created instances based on the earlier-created \
+      -  OLD_CONFIG_OLD_INSTANCE (default). The earlier-created instances based on the earlier-created \
       AS configurations are removed first.
-      -  OLD_CONFIG_NEW_INSTANCE: The later-created instances based on the earlier-created\
+      -  OLD_CONFIG_NEW_INSTANCE. The later-created instances based on the earlier-created\
        AS configurations are removed first.
-      -  OLD_INSTANCE: The earlier-created instances are removed first.
-      -  NEW_INSTANCE: The later-created instances are removed first.
+      -  OLD_INSTANCE. The earlier-created instances are removed first.
+      -  NEW_INSTANCE. The later-created instances are removed first.
     choices: ['old_config_old_instance', 'old_config_new_instance', 'old_instance', 'new_instance']
     type: str
     default: 'old_config_old_instance'
@@ -190,10 +191,10 @@ options:
   multi_az_priority_policy:
     description:
       - Specifies the priority policy used to select target AZs when adjusting the number of instances in an AS group.
-      - EQUILIBRIUM_DISTRIBUTE (default): When adjusting the number of instances, ensure that instances in each AZ in\
+      - EQUILIBRIUM_DISTRIBUTE (default). When adjusting the number of instances, ensure that instances in each AZ in\
        the available_zones list is evenly distributed. If instances cannot be added in the target AZ, select another AZ\
        based on the PICK_FIRST policy.
-      - PICK_FIRST: When adjusting the number of instances, target AZs are determined in the order\
+      - PICK_FIRST. When adjusting the number of instances, target AZs are determined in the order\
        in the available_zones list.
     choices: ['equilibrium_distribute', 'pick_first']
     type: str
@@ -305,6 +306,7 @@ class ASGroupModule(OTCModule):
                 changed = True
         if self.params['health_periodic_audit_method']:
             if as_group.health_periodic_audit_method != attrs['health_periodic_audit_method']:
+                self.fail_json(msg="skdl;")
                 changed = True
         #   if self.params['health_periodic_audit_grace_period']:
         #   if self.params['health_periodic_audit_grace_period']:
@@ -363,8 +365,20 @@ class ASGroupModule(OTCModule):
                 if not attrs['scaling_configuration_id']:
                     self.fail_json("Scaling configuration not found")
 
-            if self.params['lb_listener'] and self.params['lbaas_listener']:
+            if self.params['lb_listener'] and self.params['lbaas_listeners']:
                 self.fail_json(msg="Either 'lb_listener' or 'lbaas_listener' can be specified")
+
+            if not self.params['health_periodic_audit_method']:
+                # default values  for 'health_periodic_audit_method'
+                if self.params['lb_listener'] or self.params['lbaas_listeners']:
+                    attrs['health_periodic_audit_method'] = 'elb_audit'.upper()
+                else:
+                    attrs['health_periodic_audit_method'] = 'nova_audit'.upper()
+            else:
+                if not (self.params['lb_listener'] or self.params['lbaas_listeners']):
+                    if not (as_group or as_group.lb_listener_id):
+                        if self.params['health_periodic_audit_method'] != 'nova_audit':
+                            self.fail_jason("Without LB only 'nova_audit' is available")
 
             if self.params['lb_listener']:
                 attrs['lb_listener_id'] = self.conn.network.find_listener(self.params['lb_listener'],
@@ -374,8 +388,7 @@ class ASGroupModule(OTCModule):
 
             if self.params['lbaas_listeners']:
                 attrs['lbaas_listeners'] = self.params['lbaas_listeners']
-            if self.params['health_periodic_audit_method']:
-                attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method'].upper()
+
             if self.params['min_instance_number']:
                 attrs['min_instance_number'] = self.params['min_instance_number']
             if self.params['max_instance_number']:
