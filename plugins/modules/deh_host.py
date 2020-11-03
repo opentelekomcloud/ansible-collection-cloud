@@ -230,7 +230,9 @@ class DehHostModule(OTCModule):
                     attrs['name'] = self.params['name']
                 if attrs:
                     host = self.conn.deh.update_host(host=host, **attrs)
-                    self.exit(changed=True, deh_host=host.to_dict())
+                    host = host.to_dict()
+                    host.pop('location')
+                    self.exit(changed=True, deh_host=host)
             else:
                 # DeH host creation
                 if not self.params['name'] or not self.params['availability_zone'] or not self.params['host_type']:
@@ -251,7 +253,16 @@ class DehHostModule(OTCModule):
                 if self.params['tags']:
                     attrs['tags'] = self.params['tags']
                 host = self.conn.deh.create_host(**attrs)
-                self.exit(changed=True, deh_host=host.to_dict())
+                if host:
+                    host = host.to_dict()
+                    host.pop('location')
+                else:
+                    self.exit(
+                        changed=changed,
+                        failed=True,
+                        message=('Host creation failed.')
+                    )
+                self.exit(changed=True, deh_host=host)
         self.exit(changed=changed)
 
 
