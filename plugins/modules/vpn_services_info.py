@@ -100,6 +100,18 @@ vpnservices:
 '''
 
 EXAMPLES = '''
+# Get VPN Services (all parameters are specified)
+- opentelekomcloud.cloud.vpn_services_info:
+    admin_state_up: true
+    description: "This is description"
+    external_v4_ip: "172.32.1.11"
+    external_v6_ip: "2001:db8::1"
+    router_id: "66e3b16c-8ce5-40fb-bb49-ab6d8dc3f2aa"
+    status: "PENDING_CREATE"
+    subnet_id: "14067794-975d-461e-b502-dd40c0383d26"
+    tenant_id: "959db9b6000d4a1fa1c6fd17b6820f00"
+    vpn_service: "test_vpn"
+  register: vpn_services
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -154,7 +166,7 @@ class VpnServicesInfoModule(OTCModule):
         if tenant_id:
             query['tenant_id'] = tenant_id
         if status:
-            query['status'] = status
+            query['status'] = status.upper()
 
         for raw in self.conn.network.vpn_services(**query):
             dt = raw.to_dict()
