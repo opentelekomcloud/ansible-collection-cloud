@@ -94,7 +94,7 @@ class LoadBalancerCertificateInfoModule(OTCModule):
             dt.pop('location')
             data.append(dt)
         else:
-            for raw in self.elb.certificates():
+            for raw in self.conn.elb.certificates():
                 dt = raw.to_dict()
                 dt.pop('location')
                 data.append(dt)
