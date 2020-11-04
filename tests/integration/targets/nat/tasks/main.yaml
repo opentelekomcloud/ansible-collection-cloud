@@ -99,21 +99,14 @@
         that:
           - snat is success
           - snat.snat_rule.id is defined
-    
-    - name: Retrieve server images by name
-      openstack.cloud.image_info:
-        image: "{{ image_name }}"
-      register: image
 
     - name: Launch a server instance
       openstack.cloud.server:
         name: "{{ server_name }}"
-        image: "{{ image.openstack_image.id }}"
+        image: "{{ image_name }}"
         network: "{{ network_name }}"
         flavor: "{{ server_flavor }}"
         auto_ip: false
-      when:
-        - image.openstack_image.id is defined
       register: server
 
     - name: assert result
