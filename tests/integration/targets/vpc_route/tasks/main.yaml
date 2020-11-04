@@ -124,6 +124,11 @@
   always:
     - block:
       # Cleanup
+      - name: Drop vpc peering
+        vpc_peering:
+          name: "{{ vpc_peering_name }}"
+          state: absent
+
       - name: Drop existing first router
         openstack.cloud.router:
           name: "{{ router_name_1 }}"
