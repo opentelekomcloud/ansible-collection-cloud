@@ -7,8 +7,6 @@
       cloud: "{{ test_cloud }}"
     openstack.cloud.server:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.image:
-      cloud: "{{ test_cloud }}"
 
   block:
     - name: Set random prefix
