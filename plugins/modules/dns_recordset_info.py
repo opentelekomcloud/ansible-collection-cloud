@@ -117,7 +117,7 @@ recordsets:
 EXAMPLES = '''
 # Get Record Set Info:
 - name: Record Set Info
-  dns_recordset_info:
+  opentelekomcloud.cloud.dns_recordset_info:
     zone_id: "fe12345672701c340174d8e94bb9562c"
     name: "my"
     ttl: 86400

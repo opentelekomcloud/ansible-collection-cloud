@@ -69,8 +69,9 @@ EXAMPLES = '''
 # Get Nameserver Info about a zone:
 
 - name: Get nameserver Info
-  dns_nameserver_info:
+  opentelekomcloud.cloud.dns_nameserver_info:
     zone: fe40808272701cbe0172cbca17f91882
+    hostname: "MyHostname"
 
 '''
 

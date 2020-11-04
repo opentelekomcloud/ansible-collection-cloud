@@ -133,7 +133,7 @@ dns_zones:
 EXAMPLES = '''
 # Get list of private zones with 3 records
 - name: Listing
-  dns_zone_info:
+  opentelekomcloud.cloud.dns_zone_info:
     record_num: "3"
     zone_type: "private"
 
@@ -183,11 +183,6 @@ class DNSZoneInfoModule(OTCModule):
                     del data[i]
                     i = 0
                     continue
-            if self.params['name']:
-                if data[i]['name'] != self.params['name']:
-                    del data[i]
-                    i = 0
-                    continue
             if self.params['zone_id']:
                 if data[i]['zone_id'] != self.params['zone_id']:
                     del data[i]
@@ -200,6 +195,11 @@ class DNSZoneInfoModule(OTCModule):
                     continue
             if self.params['email']:
                 if data[i]['email'] != self.params['email']:
+                    del data[i]
+                    i = 0
+                    continue
+            if self.params['name']:
+                if data[i]['name'] != self.params['name']:
                     del data[i]
                     i = 0
                     continue

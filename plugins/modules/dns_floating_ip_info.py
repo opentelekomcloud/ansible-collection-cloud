@@ -84,7 +84,7 @@ ptr_records:
 EXAMPLES = '''
 # Get PRT Info:
 - name: Getting Info
-  dns_floating_ip_info:
+  opentelekomcloud.cloud.dns_floating_ip_info:
     description: "Test"
     ptrdname: "example.com"
 
