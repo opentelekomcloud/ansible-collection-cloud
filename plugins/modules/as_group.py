@@ -137,7 +137,6 @@ options:
       - NOVA_AUDIT indicates the ECS health check, which is the health check method delivered with AS.
     choices: ['elb_audit', 'nova_audit']
     type: str
-    default: 'nova_audit'
   health_periodic_audit_time:
     description:
       -  Specifies the instance health check period.  The value can be 1, 5, 15, 60, or 180 in the unit of minutes.
@@ -245,8 +244,7 @@ class ASGroupModule(OTCModule):
         networks=dict(required=False, type='list', elements='dict'),
         security_groups=dict(required=False, type='list', elements='dict'),
         vpc=dict(required=False),
-        health_periodic_audit_method=dict(required=False, type='str', choices=['elb_audit', 'nova_audit'],
-                                          default='nova_audit'),
+        health_periodic_audit_method=dict(required=False, type='str', choices=['elb_audit', 'nova_audit']),
         health_periodic_audit_time=dict(required=False, type='int', default=5),
         health_periodic_audit_grace_period=dict(required=False, type='int', default=600),
         instance_terminate_policy=dict(required=False,
@@ -302,11 +300,9 @@ class ASGroupModule(OTCModule):
                 changed = True
         if self.params['security_groups']:
             if as_group.security_groups != attrs['security_groups']:
-                self.fail_json(msg=11)
                 changed = True
         if self.params['health_periodic_audit_method']:
             if as_group.health_periodic_audit_method != attrs['health_periodic_audit_method']:
-                self.fail_json(msg="skdl;")
                 changed = True
         #   if self.params['health_periodic_audit_grace_period']:
         #   if self.params['health_periodic_audit_grace_period']:
@@ -337,27 +333,20 @@ class ASGroupModule(OTCModule):
 
     def run(self):
 
-        scaling_group_name = self.params['scaling_group_name']
-        scaling_group_id = self.params['scaling_group_id']
-
         as_group = None
 
-        if scaling_group_id:
-            as_group = self.conn.auto_scaling.find_group(scaling_group_id, ignore_missing=True)
-        elif scaling_group_name:
-            as_group = self.conn.auto_scaling.find_group(scaling_group_name, ignore_missing=True)
+        attrs = {}
+
+        if self.params['scaling_group_id']:
+            as_group = self.conn.auto_scaling.find_group(self.params['scaling_group_id'], ignore_missing=True)
+            attrs['scaling_group_id'] = self.params['scaling_group_id']
+        elif self.params['scaling_group_name']:
+            as_group = self.conn.auto_scaling.find_group(self.params['scaling_group_name'], ignore_missing=True)
+            attrs['scaling_group_name'] = self.params['scaling_group_name']
         else:
             self.fail_json(msg="Either 'scaling_group_name' or 'scaling_group_id' must be specified")
 
         if self.params['state'] == 'present':
-
-            attrs = {}
-
-            if self.params['scaling_group_name']:
-                attrs['scaling_group_name'] = self.params['scaling_group_name']
-
-            if self.params['scaling_group_id']:
-                attrs['scaling_group_id'] = self.params['scaling_group_id']
 
             if self.params['scaling_configuration']:
                 attrs['scaling_configuration_id'] = self.conn.auto_scaling.find_config(
@@ -369,16 +358,29 @@ class ASGroupModule(OTCModule):
                 self.fail_json(msg="Either 'lb_listener' or 'lbaas_listener' can be specified")
 
             if not self.params['health_periodic_audit_method']:
-                # default values  for 'health_periodic_audit_method'
-                if self.params['lb_listener'] or self.params['lbaas_listeners']:
-                    attrs['health_periodic_audit_method'] = 'elb_audit'.upper()
-                else:
-                    attrs['health_periodic_audit_method'] = 'nova_audit'.upper()
+                # set default values  for 'health_periodic_audit_method'
+                if not as_group:
+                    if self.params['lb_listener'] or self.params['lbaas_listeners']:
+                        attrs['health_periodic_audit_method'] = "elb_audit".upper()
+                    else:
+                        attrs['health_periodic_audit_method'] = "nova_audit".upper()
             else:
-                if not (self.params['lb_listener'] or self.params['lbaas_listeners']):
-                    if not (as_group or as_group.lb_listener_id):
-                        if self.params['health_periodic_audit_method'] != 'nova_audit':
-                            self.fail_jason("Without LB only 'nova_audit' is available")
+                if as_group:
+                    if not as_group.lb_listener_id and not self.params['lb_listener'] and not self.params['lbaas_listeners']:
+                        if self.params['health_periodic_audit_method'] == 'elb_audit':
+                            self.fail_json("Without LB only 'nova_audit' is available")
+                        else:
+                            attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method'].upper()
+                    else:
+                        attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method'].upper()
+                else:
+                    if not self.params['lb_listener'] and not self.params['lbaas_listeners']:
+                        if self.params['health_periodic_audit_method'] == 'elb_audit':
+                            self.fail_json("Without LB only 'nova_audit' is available")
+                        else:
+                            attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method'].upper()
+                    else:
+                        attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method'].upper()
 
             if self.params['lb_listener']:
                 attrs['lb_listener_id'] = self.conn.network.find_listener(self.params['lb_listener'],

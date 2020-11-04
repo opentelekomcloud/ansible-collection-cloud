@@ -43,7 +43,7 @@
         enable_snat: True
         interfaces:
           - net: "{{ network.network.name }}"
-            subnet: "{{ network.subnet.name }}"
+            subnet: "{{ subnet.subnet.name }}"
       register: router
 
     - name: Create as config
@@ -61,9 +61,22 @@
     - name: Create as group
       as_group:
         scaling_group_name: "{{ as_group_name }}"
-        scaling_configuration_id: "{{ as_config.as_config.id }}"
+        scaling_configuration: "{{ as_config.as_config.id }}"
         networks: [{'id': "{{ network.network.id }}"}]
-        vpc_id: "{{ router.router.id }}"
+        vpc: "{{ router.router.id }}"
+      register: as_group
+
+    - name: assert result
+      assert:
+        that:
+          - as_group is success
+          - as_group is changed
+
+    - name: Update as group
+      as_group:
+        scaling_group_name: "{{ as_group_name }}"
+        min_instance_number: 3
+        max_instance_number: 10
       register: as_group
 
     - name: assert result
