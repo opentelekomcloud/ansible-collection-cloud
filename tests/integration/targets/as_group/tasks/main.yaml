@@ -10,7 +10,7 @@
     - name: Set initial facts
       set_fact:
         as_group_name: "{{ ( prefix + '_as_group') }}"
-        config_name: "{{ ( prefix + '_config') }}"
+        new_name: "{{ ( prefix + 'new_name') }}"
         key_name: "{{ ( prefix + '_key') }}"
         network_name: "{{ ( prefix + '_network') }}"
         subnet_name: "{{ ( prefix + '_subnet') }}"
@@ -46,22 +46,9 @@
             subnet: "{{ subnet.subnet.name }}"
       register: router
 
-    - name: Create as config
-      as_config:
-        scaling_configuration_name: "{{ config_name }}"
-        key_name: "{{ key_name }}"
-        image: "Standard_Debian_9_latest"
-        flavor: "c4.2xlarge.2"
-        disk:
-          - size: 10
-            volume_type: 'SAS'
-            disk_type: 'SYS'
-      register: as_config
-
     - name: Create as group
       as_group:
         scaling_group_name: "{{ as_group_name }}"
-        scaling_configuration: "{{ as_config.as_config.id }}"
         networks: [{'id': "{{ network.network.id }}"}]
         vpc: "{{ router.router.id }}"
       register: as_group
@@ -74,8 +61,8 @@
 
     - name: Update as group
       as_group:
-        scaling_group_name: "{{ as_group_name }}"
-        min_instance_number: 3
+        scaling_group_id: "{{ as_group.as_group.id }}"
+        scaling_group_name: "{{ new_name }}"
         max_instance_number: 10
       register: as_group
 
@@ -100,12 +87,6 @@
   always:
     - block:
       # Cleanup
-      - name: Delete as config
-        as_config:
-          scaling_configuration_name: "{{ config_name }}"
-          state: absent
-        register: dropped_as_config
-
       - name: Delete keypair
         openstack.cloud.os_keypair:
             name: "{{ key_name }}"

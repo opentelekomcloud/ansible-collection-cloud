@@ -289,25 +289,28 @@ class ASGroupModule(OTCModule):
         if self.params['lb_listener']:
             if as_group.lb_listener_id != attrs['lb_listener_id']:
                 changed = True
-        if self.params['lbaas_listeners']:
-            if as_group.lbaas_listeners != attrs['lbaas_listeners']:
-                changed = True
         if self.params['available_zones']:
             if as_group.available_zones != attrs['available_zones']:
                 changed = True
         if self.params['networks']:
-            if as_group.networks != attrs['networks']:
-                changed = True
+            list_ids = []
+            list_new_ids = []
+            for n in as_group.networks:
+                list_ids.append(n['id'])
+            for m in self.params['networks']:
+                list_new_ids.append(m['id'])
+            for new_id in list_new_ids:
+                if new_id not in list_ids:
+                    changed = True
+            for id in list_ids:
+                if id not in list_new_ids:
+                    changed = True
         if self.params['security_groups']:
             if as_group.security_groups != attrs['security_groups']:
                 changed = True
         if self.params['health_periodic_audit_method']:
             if as_group.health_periodic_audit_method != attrs['health_periodic_audit_method']:
                 changed = True
-        #   if self.params['health_periodic_audit_grace_period']:
-        #   if self.params['health_periodic_audit_grace_period']:
-        #        if as_group.health_periodic_audit_grace_period != attrs['health_periodic_audit_grace_period']:
-        #            changed = True
         if self.params['instance_terminate_policy']:
             if as_group.instance_terminate_policy != attrs['instance_terminate_policy']:
                 changed = True
@@ -326,9 +329,6 @@ class ASGroupModule(OTCModule):
         if self.params['enterprise_project_id']:
             if as_group.enterprise_project_id != attrs['enterprise_project_id']:
                 changed = True
-        #       if self.params['multi_az_priority_policy']:
-        #           if as_group.multi_az_priority_policy != attrs['multi_az_priority_policy']:
-        #              changed = True
         return changed
 
     def run(self):
@@ -351,6 +351,7 @@ class ASGroupModule(OTCModule):
             if self.params['scaling_configuration']:
                 attrs['scaling_configuration_id'] = self.conn.auto_scaling.find_config(
                     self.params['scaling_configuration'], ignore_missing=True)
+                self.fail_json(msg=attrs['scaling_configuration_id'])
                 if not attrs['scaling_configuration_id']:
                     self.fail_json("Scaling configuration not found")
 
