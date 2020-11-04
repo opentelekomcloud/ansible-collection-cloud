@@ -99,7 +99,7 @@ class DNSRecordsetModule(OTCModule):
         description=dict(required=False),
         type=dict(required=False),
         ttl=dict(required=False, type='int'),
-        records=dict(required=False, type=[]),
+        records=dict(required=False, type='list'),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
 
@@ -158,6 +158,7 @@ class DNSRecordsetModule(OTCModule):
             while i < len(self.params['records']):
               attrs['records'].append(self.params['records'][i])
               i = i+1
+            # raise Exception(self.params['records'], len(self.params['records']), '    ', attrs['records'][1])
           else:
             self.exit(
                   changed=False,
