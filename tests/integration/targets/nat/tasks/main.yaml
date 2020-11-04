@@ -7,6 +7,7 @@
       cloud: "{{ test_cloud }}"
     openstack.cloud.server:
       cloud: "{{ test_cloud }}"
+
   block:
     - name: Set random prefix
       set_fact:
@@ -19,8 +20,8 @@
         router_name: "{{ ( prefix + '_nat-router') }}"
         nat_gateway_name: "{{ ( prefix + '_nat-gateway') }}"
         server_name: "{{ ( prefix + '_nat-server') }}"
-        server_image: c8983e9e-1dda-479a-9a95-b41fe325a703
         server_flavor: "s2.medium.2"
+        image_name: Standard_CentOS_8_latest 
 
     - name: Create network for NAT
       openstack.cloud.network:
@@ -96,11 +97,11 @@
         that:
           - snat is success
           - snat.snat_rule.id is defined
-    
+
     - name: Launch a server instance
       openstack.cloud.server:
         name: "{{ server_name }}"
-        image: "{{ server_image }}"
+        image: "{{ image_name }}"
         network: "{{ network_name }}"
         flavor: "{{ server_flavor }}"
         auto_ip: false
