@@ -104,17 +104,30 @@ class DNSNameserverInfoModule(OTCModule):
                              self.params['zone'])
                 )
 
-        if self.params['priority']:
-            query['priority'] = self.params['priority']
-        if self.params['priority']:
-            query['address'] = self.params['priority']
-        if self.params['priority']:
-            query['priority'] = self.params['priority']
-
         for raw in self.conn.dns.nameservers(**query):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
+
+        # Filter data by deleting all entries without the right criteria as our Query doesn't support other queries
+        i = 0
+        while i < len(data):
+            if self.params['address']:
+                if data[i]['address'] != self.params['address']:
+                    del data[i]
+                    i = 0
+                    continue
+            if self.params['hostname']:
+                if data[i]['hostname'] != self.params['hostname']:
+                    del data[i]
+                    i = 0
+                    continue
+            if self.params['priority']:
+                if data[i]['priority'] != self.params['priority']:
+                    del data[i]
+                    i = 0
+                    continue
+            i = i + 1
 
         self.exit(
             changed=False,
