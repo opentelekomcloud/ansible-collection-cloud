@@ -1,0 +1,15 @@
+---
+- module_defaults:
+    vpn_services_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get list of vpn services
+      vpn_services_info:
+      register: vpn_services
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - vpn_services is success
+          - vpn_services is not changed
