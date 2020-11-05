@@ -25,23 +25,22 @@ options:
     description: Certificate name or ID.
     type: str
     required: true
-  admin_state_up
+  admin_state_up:
     description: Specifies the administrative status of the certificate.
     type: bool
-  description
+  description:
     description: Provides supplementary information about the certificate.
     type: str
-  type
+  type:
     description: Specifies the certificate type.
     choices: [server, client]
     type: str
-  domain
+  domain:
     description: Specifies the domain name associated with the server certificate.
     type: str
   certificate:
     description: Certificate content or path to file with content. Required for creation.
     type: str
-    required: true
   private_key:
     description: Private key for the certificate or path to file with key. Required for creation.
     type: str
@@ -117,7 +116,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class LoadBalancerCertificateModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True, type='str'),
-        certificate=dict(required=True, type='str', no_log=True),
+        certificate=dict(type='str', no_log=True),
         private_key=dict(type='str', no_log=True),
         admin_state_up=dict(type='str'),
         description=dict(type='str'),
@@ -208,6 +207,8 @@ class LoadBalancerCertificateModule(OTCModule):
             if type_filter == 'server':
                 if not private_key_filter:
                     self.fail_json(msg='private_key mandatory when type is set to server.')
+            if not content and not certificate:
+                self.fail_json(msg='certificate is mandatory field.')
 
             if certificate:
                 changed = True

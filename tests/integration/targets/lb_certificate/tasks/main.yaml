@@ -5,10 +5,14 @@
     lb_certificate_info:
       cloud: "{{ test_cloud }}"
   block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
     - name: Set initial facts
       set_fact:
-        cert_name: test_elb_cert_ansible_collection
-        cert_name_update: test_elb_cert_ansible_collection_updated
+        cert_name: "{{ ( prefix + '_acc-lb-cert') }}"
+        cert_name_update: "{{ ( prefix + '_acc-lb-cert_updated') }}"
         certificate: |
           -----BEGIN CERTIFICATE-----
           MIIDADCCAegCCQCUu4mu6VfH/zANBgkqhkiG9w0BAQsFADBCMQswCQYDVQQGEwJE
@@ -87,7 +91,7 @@
         that:
           - result is success
           - result is changed
-          - result.elb_certificates is defined
+          - result.elb_certificate is defined
           - result_info.elb_certificates[0].name == cert_name
 
     - name: Update cert
@@ -105,14 +109,14 @@
         that:
           - result is success
           - result is changed
-          - result.elb_certificates is defined
+          - result.elb_certificate is defined
           - result_info.elb_certificates[0].name == cert_name
           - result_info.elb_certificates[0].certificate == certificate
           - result_info.elb_certificates[0].private_key == key
 
     - name: Drop cert
       lb_certificate:
-        name: "{{ cert_name_update }}"
+        name: "{{ result.elb_certificate.id }}"
         state: absent
       register: result
 
