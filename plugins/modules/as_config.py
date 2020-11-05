@@ -229,17 +229,17 @@ as_group:
 EXAMPLES = '''
 # Create as configuration.
 as_config:
-        scaling_configuration_name: "as-config-test2"
-        key_name: "as-config-test"
-        image: "9e4322d2-fc79-4d20-966b-41ff78fb7c48"
-        flavor: "c4.2xlarge.2"
-        disk:
-          - size: 10
-            volume_type: 'sas'
-            disk_type: 'sys'
-          - size: 10
-            volume_type: 'sas'
-            disk_type: 'data'
+    scaling_configuration_name: "as-config-test2"
+    key_name: "as-config-test"
+    image: "9e4322d2-fc79-4d20-966b-41ff78fb7c48"
+    flavor: "c4.2xlarge.2"
+    disk:
+        - size: 10
+          volume_type: 'sas'
+          disk_type: 'sys'
+        - size: 10
+          volume_type: 'sas'
+          disk_type: 'data'
 
 '''
 
@@ -307,8 +307,57 @@ class ASConfigModule(OTCModule):
             parsed_disks.append(parsed_disk)
         return parsed_disks
 
-    def run(self):
+    def _parse_personality(self):
+        personality = self.params['personality']
+        parsed_prsns = []
+        for p in personality:
+            parsed_el = {}
+            parsed_el['path'] = p.get('path')\
+                if p.get('path') else self.fail_json(msg="'path' is required for 'personality'")
+            parsed_el['content'] = p.get('content')\
+                if p.get('content') else self.fail_json(msg="'content' is required for 'personality'")
+            parsed_prsns.append(parsed_el)
+        return parsed_prsns
 
+    def _parse_public_ip(self):
+        public_ip = self.params['public_ip']
+        parsed_pub_ip = {}
+        parsed_pub_ip['eip'] = self._parse_eip(public_ip.get('eip'))\
+            if public_ip.get('eip') else self.fail_json(msg="'eip' is required for 'public_ip'")
+        return parsed_pub_ip
+
+    def _parse_eip(self, eip):
+        parsed_eip = {}
+        parsed_eip['ip_type'] = eip.get('ip_type')\
+            if eip.get('ip_type') else self.fail_json(msg="'ip_type' is required for 'eip' in 'public_ip'")
+        parsed_eip['bandwidth'] = self._parse_bandwidth(eip.get('bandwidth'))\
+            if eip.get('bandwidth') else self.fail_json(msg="'bandwidth' is required for 'eip' in 'public_ip'")
+        return parsed_eip
+
+    def _parse_bandwidth(self, bandwidth):
+        parsed_bandwidth = {}
+        parsed_bandwidth['size'] = bandwidth.get('size')\
+            if bandwidth.get('size') else self.fail_json(msg="'size' is required for "
+                                                             "'bandwidth' in 'eip' in 'public_ip'")
+        parsed_bandwidth['share_type'] = bandwidth.get('share_type')\
+            if bandwidth.get('share_type') else self.fail_json(msg="'share_type' is required for 'bandwidth' in "
+                                                                   "'eip' in 'public_ip'")
+        parsed_bandwidth['charging_mode'] = bandwidth.get('charging_mode')\
+            if bandwidth.get('charging_mode') else self.fail_json(msg="'charging_mode' is required for 'bandwidth' "
+                                                                      "in 'eip' in 'public_ip'")
+        return parsed_bandwidth
+
+    def _parse_security_groups(self):
+        security_groups = self.params['security_groups']
+        parsed_groups = []
+        for p in security_groups:
+            parsed_el = {}
+            parsed_el['id'] = p.get('id')\
+                if p.get('id') else self.fail_json(msg="'id' is required for 'security_groups'")
+            parsed_groups.append(parsed_el)
+        return parsed_groups
+
+    def run(self):
         scaling_configuration_name = self.params['scaling_configuration_name']
         scaling_configuration_id = self.params['scaling_configuration_id']
         key_name = self.params['key_name']
@@ -335,8 +384,8 @@ class ASConfigModule(OTCModule):
                 else:
                     self.fail_json(msg="Flavor not found")
             else:
-                self.fail_json(msg="Flavor is mandatory for creating AS configuration \
-through creating new specifications template.")
+                self.fail_json(msg="Flavor is mandatory for creating AS configuration "
+                                   "through creating new specifications template.")
             if self.params['image']:
                 image = self.conn.compute.find_image(self.params['image'], ignore_missing=True)
                 if image:
@@ -344,23 +393,23 @@ through creating new specifications template.")
                 else:
                     self.fail_json(msg="Image not found")
             else:
-                self.fail_json(msg="Image is mandatory for creating AS configuration \
-through creating new specifications template.")
+                self.fail_json(msg="Image is mandatory for creating AS configuration "
+                                   "through creating new specifications template.")
             if self.params['disk']:
                 attrs['disk'] = self._parse_disks()
             else:
-                self.fail_json(msg="Disk is mandatory for creating AS configuration \
-through creating new specifications template.")
+                self.fail_json(msg="Disk is mandatory for creating AS configuration "
+                                   "through creating new specifications template.")
             if self.params['personality']:
-                attrs['personality'] = self.params['personality']
+                attrs['personality'] = self._parse_personality()
             if self.params['public_ip']:
-                attrs['public_ip'] = self.params['public_ip']
+                attrs['public_ip'] = self._parse_public_ip()
             if self.params['user_data']:
                 attrs['user_data'] = self.params['user_data']
             if self.params['metadata']:
                 attrs['metadata'] = self.params['metadata']
             if self.params['security_groups']:
-                attrs['security_groups'] = self.params['security_groups']
+                attrs['security_groups'] = self._parse_security_groups()
 
             if not as_config:
 
