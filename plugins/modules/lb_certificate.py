@@ -103,7 +103,7 @@ EXAMPLES = '''
 - lb_certificate:
     state: present
     name: certificate-test
-    certificate: {{ dummy-cert }}
+    certificate: "{{ dummy-cert }}"
     type: client
   register: lb_cert
 '''
@@ -160,7 +160,7 @@ class LoadBalancerCertificateModule(OTCModule):
         changed = False
         attrs = {}
         certificate = self.conn.elb.find_certificate(
-            name_or_id=name)
+            name_or_id=name, ignore_missing=True)
 
         if self.ansible.check_mode:
             self.exit(changed=self._system_state_change(certificate))
