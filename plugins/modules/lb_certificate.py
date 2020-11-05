@@ -50,8 +50,6 @@ options:
     default: present
     description: Certificate state
     type: str
-
-
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -112,6 +110,7 @@ EXAMPLES = '''
 '''
 
 import os
+
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
@@ -235,7 +234,6 @@ class LoadBalancerCertificateModule(OTCModule):
                 if content:
                     if certificate.certificate != content:
                         mattrs['certificate'] = content
-
 
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
