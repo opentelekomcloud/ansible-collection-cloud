@@ -34,6 +34,7 @@ options:
   type:
     description: Specifies the certificate type.
     choices: [server, client]
+    default: server
     type: str
   domain:
     description: Specifies the domain name associated with the server certificate.
@@ -118,17 +119,12 @@ class LoadBalancerCertificateModule(OTCModule):
         name=dict(required=True, type='str'),
         certificate=dict(type='str', no_log=True),
         private_key=dict(type='str', no_log=True),
-        admin_state_up=dict(type='str'),
+        admin_state_up=dict(type='bool'),
         description=dict(type='str'),
         type=dict(type='str', choices=['server', 'client'], default='server'),
         domain=dict(type='str', default=None),
         state=dict(type='str', choices=['present', 'absent'],
                    default='present')
-    )
-    module_kwargs = dict(
-        required_if=[
-            ('state', 'present', ['content', 'private_key']),
-        ]
     )
 
     otce_min_version = '0.10.0'
