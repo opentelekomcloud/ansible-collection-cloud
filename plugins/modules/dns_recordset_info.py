@@ -28,7 +28,7 @@ options:
     description:
       - Description of the Record Set
     type: str
-  create_at:
+  created_at:
     description:
       - Time of creation
     type: str
@@ -52,7 +52,7 @@ options:
     description:
       - Record set type
     type: str
-  update_at:
+  updated_at:
     description:
       - Last Update time
     type: str
@@ -79,7 +79,7 @@ recordsets:
             description: Description of the Record
             type: str
             sample: "MyRecord123"
-        create_at:
+        created_at:
             description: Time of creation
             type: str
             sample: "2020-09-29T12:28:59.721"
@@ -103,7 +103,7 @@ recordsets:
             description: Record set type
             type: str
             sample: "AAAA"
-        update_at:
+        updated_at:
             description: Last Update time
             type: str
             sample: "2020-09-29T12:28:59.721"
@@ -134,8 +134,8 @@ class DNSRecordsetsInfoModule(OTCModule):
         name=dict(required=False),
         description=dict(required=False),
         ttl=dict(required=False, type='int'),
-        create_at=dict(required=False),
-        update_at=dict(required=False),
+        created_at=dict(required=False),
+        updated_at=dict(required=False),
         default=dict(required=False, type='bool'),
         project_id=dict(required=False)
     )
@@ -182,13 +182,13 @@ class DNSRecordsetsInfoModule(OTCModule):
                     del data[i]
                     i = 0
                     continue
-            if self.params['create_at']:
-                if data[i]['create_at'] != self.params['create_at']:
+            if self.params['created_at']:
+                if data[i]['created_at'] != self.params['created_at']:
                     del data[i]
                     i = 0
                     continue
-            if self.params['update_at']:
-                if data[i]['update_at'] != self.params['update_at']:
+            if self.params['updated_at']:
+                if data[i]['updated_at'] != self.params['updated_at']:
                     del data[i]
                     i = 0
                     continue
