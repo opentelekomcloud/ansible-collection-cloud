@@ -108,8 +108,8 @@ class DNSRecordsetModule(OTCModule):
         data = []
 
         zo = self.conn.dns.find_zone(
-            name_or_id = self.params['zone_id'],
-            ignore_missing = True
+            name_or_id=self.params['zone_id'],
+            ignore_missing=True
         )
         if not zo:
             self.exit(
@@ -121,103 +121,100 @@ class DNSRecordsetModule(OTCModule):
         if self.params['state'] == 'absent':
             changed = False
             rs = self.conn.dns.find_recordset(
-                name_or_id = self.params['recordset_name'],
-                zone = zo.id,
-                ignore_missing = True
+                name_or_id=self.params['recordset_name'],
+                zone=zo.id,
+                ignore_missing=True
             )
             if rs:
                 self.conn.dns.delete_recordset(
-                    recordset = rs.id,
-                    zone = zo.id
+                    recordset=rs.id,
+                    zone=zo.id
                 )
                 changed = True
             if not rs:
                 self.exit(
                     changed=False,
                     message=('No recordset found with name or id: %s' %
-                            self.params['zone_id'])
+                             self.params['zone_id'])
                 )
 
         if self.params['state'] == 'present':
-          attrs = {}
-          rs = self.conn.dns.find_recordset(
-                name_or_id = self.params['recordset_name'],
-                zone = zo.id,
-                ignore_missing = True
+            attrs = {}
+            rs = self.conn.dns.find_recordset(
+                name_or_id=self.params['recordset_name'],
+                zone=zo.id,
+                ignore_missing=True
             )
-          
-          if not rs:
-              attrs['name'] = self.params['recordset_name']
-              if self.params['description']:
-                attrs['description'] = self.params['description']
-              if self.params['type']:
-                attrs['type'] = self.params['type']
-              else:
-                self.exit(
-                      changed=False,
-                      message=('No type specified!')
-                  )
-              if self.params['ttl']:
-                attrs['ttl'] = self.params['ttl']
-              if self.params['records']:
-                attrs['records'] = []
-                i = 0
-                while i < len(self.params['records']):
-                  attrs['records'].append(self.params['records'][i])
-                  i = i+1
-                # raise Exception(self.params['records'], len(self.params['records']), '    ', attrs['records'][1])
-              else:
-                self.exit(
-                      changed=False,
-                      message=('No records specified!')
-                  )
 
-              rset = self.conn.dns.create_recordset(zone = zo.id , **attrs)
-              self.exit(changed=True, rset=rset.to_dict())
-          
-          if rs:  
-              if self.params['records']:
-                attrs['records'] = []
-                i = 0
-                while i < len(self.params['records']):
-                  attrs['records'].append(self.params['records'][i])
-                  i = i+1
-
-              # That's not a good way of doing it
-              if self.params['description'] and not self.params['ttl']:
-                  rset = self.conn.dns.update_recordset(
-                      zone_id = zo.id,
-                      recordset = rs.id,
-                      description = self.params['description'],
-                      records = attrs['records']
-                  )
-                  self.exit(changed=True, rset=rset.to_dict())
-              elif self.params['ttl'] and not self.params['description']:
-                  rset = self.conn.dns.update_recordset(
-                        zone_id = zo.id,
-                        recordset = rs.id,
-                        ttl = self.params['ttl'],
-                        records = attrs['records']
-                  )
-                  self.exit(changed=True, rset=rset.to_dict())
-              elif self.params['ttl'] and self.params['description']:
-                  rset = self.conn.dns.update_recordset(
-                        zone_id = zo.id,
-                        recordset = rs.id,
-                        ttl = self.params['ttl'],
-                        description = self.params['description'],
-                        records = attrs['records']
-                  )
-                  self.exit(changed=True, rset=rset.to_dict())
-              else:
-                  rset = self.conn.dns.update_recordset(
-                        zone_id = zo.id,
-                        recordset = rs.id,
-                        records = attrs['records']
+            if not rs:
+                attrs['name'] = self.params['recordset_name']
+                if self.params['description']:
+                    attrs['description'] = self.params['description']
+                if self.params['type']:
+                    attrs['type'] = self.params['type']
+                else:
+                    self.exit(
+                        changed=False,
+                        message=('No type specified!')
                     )
-                  self.exit(changed=True, rset=rset.to_dict())
+                if self.params['ttl']:
+                    attrs['ttl'] = self.params['ttl']
+                if self.params['records']:
+                    attrs['records'] = []
+                    i = 0
+                    while i < len(self.params['records']):
+                        attrs['records'].append(self.params['records'][i])
+                        i = i + 1
+                else:
+                    self.exit(
+                        changed=False,
+                        message=('No records specified!')
+                    )
 
+                rset = self.conn.dns.create_recordset(zone=zo.id, **attrs)
+                self.exit(changed=True, rset=rset.to_dict())
 
+            if rs:
+                if self.params['records']:
+                    attrs['records'] = []
+                    i = 0
+                    while i < len(self.params['records']):
+                        attrs['records'].append(self.params['records'][i])
+                        i = i + 1
+
+                # That's not a good way of doing it
+                if self.params['description'] and not self.params['ttl']:
+                    rset = self.conn.dns.update_recordset(
+                        zone_id=zo.id,
+                        recordset=rs.id,
+                        description=self.params['description'],
+                        records=attrs['records']
+                    )
+                    self.exit(changed=True, rset=rset.to_dict())
+                elif self.params['ttl'] and not self.params['description']:
+                    rset = self.conn.dns.update_recordset(
+                        zone_id=zo.id,
+                        recordset=rs.id,
+                        ttl=self.params['ttl'],
+                        records=attrs['records']
+                    )
+                    self.exit(changed=True, rset=rset.to_dict())
+                elif self.params['ttl'] and self.params['description']:
+                    rset = self.conn.dns.update_recordset(
+                        zone_id=zo.id,
+                        recordset=rs.id,
+                        ttl=self.params['ttl'],
+                        description=self.params['description'],
+                        records=attrs['records']
+                    )
+                    self.exit(changed=True, rset=rset.to_dict())
+                else:
+                    rset = self.conn.dns.update_recordset(
+                        zone_id=zo.id,
+                        recordset=rs.id,
+                        records=attrs['records']
+                    )
+                    self.exit(changed=True, rset=rset.to_dict())
 
         self.exit(
             changed=changed
