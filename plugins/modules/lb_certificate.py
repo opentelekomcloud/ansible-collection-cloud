@@ -176,8 +176,8 @@ class LoadBalancerCertificateModule(OTCModule):
             description_filter = self.params['description']
             type_filter = self.params['type']
             domain_filter = self.params['domain']
-            private_key_filter = self.params['private_key'].strip()
-            certificate_filter = self.params['certificate'].strip()
+            private_key_filter = self.params['private_key']
+            certificate_filter = self.params['certificate']
 
             if name_filter:
                 attrs['name'] = name_filter
@@ -189,30 +189,27 @@ class LoadBalancerCertificateModule(OTCModule):
                 attrs['description'] = description_filter
             if domain_filter:
                 attrs['domain'] = domain_filter
+            if private_key_filter:
+                if self._is_path(private_key_filter):
+                    private_key_filter = self._read_content(private_key_filter)
+                else:
+                    private_key_filter = private_key_filter.strip()
+            if certificate_filter:
+                if self._is_path(certificate_filter):
+                    certificate_filter = self._read_content(certificate_filter)
+                else:
+                    certificate_filter = certificate_filter.strip()
 
-            if self._is_path(private_key_filter):
-                key = self._read_content(private_key_filter)
-            else:
-                key = private_key_filter
-
-            if self._is_path(certificate_filter):
-                content = self._read_content(certificate_filter)
-            else:
-                content = certificate_filter
-
-            if type_filter == 'server':
+            if type_filter == 'server' and not certificate:
                 if not private_key_filter:
                     self.fail_json(msg='private_key mandatory when type is set to server.')
-            if not content and not certificate:
+            if not certificate_filter and not certificate:
                 self.fail_json(msg='certificate is mandatory field.')
 
             if certificate:
                 changed = True
 
                 mattrs = {}
-                if name_filter:
-                    if certificate.name != name_filter:
-                        mattrs['name'] = name_filter
                 if admin_state_filter:
                     if certificate.admin_state_up != admin_state_filter:
                         mattrs['admin_state_up'] = admin_state_filter
@@ -225,24 +222,24 @@ class LoadBalancerCertificateModule(OTCModule):
                 if domain_filter:
                     if certificate.domain != domain_filter:
                         mattrs['domain'] = domain_filter
-                if key:
-                    if certificate.private_key != key:
-                        mattrs['private_key'] = key
-                if content:
-                    if certificate.certificate != content:
-                        mattrs['certificate'] = content
+                if private_key_filter:
+                    if certificate.private_key != private_key_filter:
+                        mattrs['private_key'] = private_key_filter
+                if certificate_filter:
+                    if certificate.certificate != certificate_filter:
+                        mattrs['certificate'] = certificate_filter
 
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                certificate = self.conn.elb.update_certificate(certificate, mattrs)
+                certificate = self.conn.elb.update_certificate(certificate, **mattrs)
                 self.exit_json(
                     changed=changed,
-                    member=certificate.to_dict(),
+                    elb_certificate=certificate.to_dict(),
                     id=certificate.id)
 
             cert = self.conn.elb.create_certificate(
-                certificate=content,
-                private_key=key,
+                certificate=certificate_filter,
+                private_key=private_key_filter,
                 **attrs)
             data = cert.to_dict()
             data.pop('location')

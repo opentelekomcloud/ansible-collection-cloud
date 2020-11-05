@@ -12,7 +12,7 @@
     - name: Set initial facts
       set_fact:
         cert_name: "{{ ( prefix + '_acc-lb-cert') }}"
-        cert_name_update: "{{ ( prefix + '_acc-lb-cert_updated') }}"
+        cert_description: "{{ ( prefix + '_acc-lb-cert-description') }}"
         certificate: |
           -----BEGIN CERTIFICATE-----
           MIIDADCCAegCCQCUu4mu6VfH/zANBgkqhkiG9w0BAQsFADBCMQswCQYDVQQGEwJE
@@ -96,12 +96,13 @@
 
     - name: Update cert
       lb_certificate:
-        name: "{{ cert_name_update }}"
+        name: "{{ cert_name }}"
+        description: "{{ cert_description }}"
       register: result
 
     - name: Get cert info
       lb_certificate_info:
-        name: "{{ cert_name_update }}"
+        name: "{{ cert_name }}"
       register: result_info
 
     - name: assert result
@@ -110,7 +111,7 @@
           - result is success
           - result is changed
           - result.elb_certificate is defined
-          - result_info.elb_certificates[0].name == cert_name_update
+          - result_info.elb_certificates[0].description == cert_description
 
     - name: Drop cert
       lb_certificate:
@@ -126,7 +127,7 @@
 
     - name: Get cert info
       lb_certificate_info:
-        name: "{{ cert_name_update }}"
+        name: "{{ cert_name }}"
       register: result
 
     - name: assert result
