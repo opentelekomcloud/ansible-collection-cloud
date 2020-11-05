@@ -1,0 +1,18 @@
+---
+- block:
+    - name: Get DeH host types in AZ
+      deh_host_type_info:
+        cloud: "{{ test_cloud }}"
+        az: eu-de-01
+      register: deh
+
+    - name: debug deh
+      debug:
+        var: deh.deh_host_types
+
+    - name: assert result
+      assert:
+        that:
+          - deh is success
+          - deh is not changed
+          - deh.deh_host_types is defined
