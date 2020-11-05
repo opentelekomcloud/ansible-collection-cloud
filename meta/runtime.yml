@@ -7,6 +7,10 @@ action_groups:
     - cce_cluster
     - cce_cluster_cert_info
     - cce_cluster_info
+    - deh_host
+    - deh_host_info
+    - deh_host_type_info
+    - deh_server_info
     - floating_ip
     - loadbalancer
     - loadbalancer_info
@@ -20,6 +24,7 @@ action_groups:
     - rds_flavor_info
     - rds_instance
     - rds_backup_info
+    - security_group_info
     - tag
     - volume_backup
     - waf_certificate

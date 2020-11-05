@@ -3,6 +3,10 @@ plugins/modules/as_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_cert_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_info.py validate-modules:missing-gplv3-license
+plugins/modules/deh_host.py validate-modules:missing-gplv3-license
+plugins/modules/deh_host_info.py validate-modules:missing-gplv3-license
+plugins/modules/deh_host_type_info.py validate-modules:missing-gplv3-license
+plugins/modules/deh_server_info.py validate-modules:missing-gplv3-license
 plugins/modules/floating_ip.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer_info.py validate-modules:missing-gplv3-license
@@ -16,6 +20,7 @@ plugins/modules/rds_datastore_info.py validate-modules:missing-gplv3-license
 plugins/modules/rds_flavor_info.py validate-modules:missing-gplv3-license
 plugins/modules/rds_instance.py validate-modules:missing-gplv3-license
 plugins/modules/rds_instance_info.py validate-modules:missing-gplv3-license
+plugins/modules/security_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/tag.py validate-modules:missing-gplv3-license
 plugins/modules/volume_backup.py validate-modules:missing-gplv3-license
 plugins/modules/waf_certificate.py validate-modules:missing-gplv3-license
