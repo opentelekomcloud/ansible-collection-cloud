@@ -112,7 +112,7 @@
 
     - name: Drop cert
       lb_certificate:
-        name: "{{ cert_name }}"
+        name: "{{ cert_name_update }}"
         state: absent
       register: result
 
@@ -124,7 +124,7 @@
 
     - name: Get cert info
       lb_certificate_info:
-        name: "{{ cert_name }}"
+        name: "{{ cert_name_update }}"
       register: result
 
     - name: assert result
