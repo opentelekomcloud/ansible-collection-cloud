@@ -150,19 +150,7 @@ class DNSRecordsetsInfoModule(OTCModule):
         if self.params['type']:
             query['type'] = self.params['type']
         if self.params['name']:
-            rs = self.conn.dns.find_recordset(
-                zone=self.params['zone_id'],
-                name_or_id=self.params['name'],
-                ignore_missing=True)
-            if rs:
-                query['name'] = rs.name
-            else:
-                self.exit(
-                    changed=False,
-                    nat_gateways=[],
-                    message=('No entry found with name or id: %s' %
-                             self.params['name'])
-                )
+            query['name'] = self.params['name']
 
         for raw in self.conn.dns.recordsets(zone=self.params['zone_id'], **query):
             dt = raw.to_dict()
