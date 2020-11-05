@@ -103,10 +103,18 @@ rset:
 '''
 
 EXAMPLES = '''
-# Get Nameserver Info about a zone:
-- name: Getting Info
-  dns_floating_ip_info:
-    description: "Test"
+# Creating / Updating a recordset:
+- name: Testing
+  opentelekomcloud.cloud.dns_recordset:
+    zone_id: fe80829272374c340174d8e94bb9562c
+    recordset_name: "test.test2."
+    state: present
+    ttl: 400
+    type: A
+    records:
+      - "1.3.1.2"
+      - "121.111.111.111"
+      - "145.145.145.145"
 
 '''
 

@@ -79,7 +79,7 @@ ptr_records:
 EXAMPLES = '''
 # Creating a record:
 - name: Creating a record
-  dns_floating_ip:
+  opentelekomcloud.cloud.dns_floating_ip:
     floating_ip: 123.123.123.123
     ptrdname: "test2.com."
     description: "test2nownow"
