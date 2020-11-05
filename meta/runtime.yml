@@ -43,3 +43,4 @@ action_groups:
     - lb_healthmonitor
     - lb_healthmonitor_info
     - lb_certificate_info
+    - lb_certificate

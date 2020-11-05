@@ -110,9 +110,7 @@
           - result is success
           - result is changed
           - result.elb_certificate is defined
-          - result_info.elb_certificates[0].name == cert_name
-          - result_info.elb_certificates[0].certificate == certificate
-          - result_info.elb_certificates[0].private_key == key
+          - result_info.elb_certificates[0].name == cert_name_update
 
     - name: Drop cert
       lb_certificate:

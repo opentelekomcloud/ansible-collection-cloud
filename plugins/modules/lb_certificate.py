@@ -246,8 +246,6 @@ class LoadBalancerCertificateModule(OTCModule):
                 **attrs)
             data = cert.to_dict()
             data.pop('location')
-            data.pop('content')
-            data.pop('key')
             self.exit(changed=True, elb_certificate=data)
 
 
