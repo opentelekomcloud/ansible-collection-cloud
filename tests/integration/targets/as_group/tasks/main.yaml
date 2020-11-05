@@ -74,7 +74,7 @@
 
     - name: Delete as group
       as_group:
-        scaling_group_name: "{{ as_group_name }}"
+        scaling_group_name: "{{ new_name }}"
         state: absent
       register: dropped_as_group
 
@@ -102,7 +102,7 @@
           name: "{{ subnet.subnet.name }}"
           state: absent
 
-    - name: Drop existing network
-      os_network:
-        name: "{{ network.network.name }}"
-        state: absent
+      - name: Drop existing network
+        os_network:
+          name: "{{ network.network.name }}"
+          state: absent

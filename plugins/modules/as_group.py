@@ -448,12 +448,13 @@ class ASGroupModule(OTCModule):
                 )
 
             else:
+                changed = self.changed_when_update(as_group, **attrs)
                 if self.ansible.check_mode:
-                    self.exit(changed=self.changed_when_update(as_group, **attrs))
+                    self.exit(changed=changed)
                 as_group = self.conn.auto_scaling.update_group(as_group, **attrs)
 
                 self.exit_json(
-                    changed=self.changed_when_update(as_group, **attrs),
+                    changed=changed,
                     as_group=as_group
                 )
 
@@ -462,6 +463,7 @@ class ASGroupModule(OTCModule):
                 if self.ansible.check_mode:
                     self.exit(changed=True)
                 self.conn.auto_scaling.delete_group(as_group)
+                self.exit(changed=True, msg="Resource was deleted")
             else:
                 if self.ansible.check_mode:
                     self.exit(changed=False)
