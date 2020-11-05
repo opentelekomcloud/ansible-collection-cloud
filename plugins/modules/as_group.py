@@ -339,12 +339,13 @@ class ASGroupModule(OTCModule):
 
         if self.params['scaling_group_id']:
             as_group = self.conn.auto_scaling.find_group(self.params['scaling_group_id'], ignore_missing=True)
-            attrs['scaling_group_id'] = self.params['scaling_group_id']
         elif self.params['scaling_group_name']:
             as_group = self.conn.auto_scaling.find_group(self.params['scaling_group_name'], ignore_missing=True)
-            attrs['scaling_group_name'] = self.params['scaling_group_name']
         else:
             self.fail_json(msg="Either 'scaling_group_name' or 'scaling_group_id' must be specified")
+
+        if self.params['scaling_group_name']:
+            attrs['scaling_group_name'] = self.params['scaling_group_name']
 
         if self.params['state'] == 'present':
 
