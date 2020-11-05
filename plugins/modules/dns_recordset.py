@@ -20,64 +20,85 @@ author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get DNS PTR Records from the OTC.
 options:
-  address:
-    description:
-      - EIP address
-    type: str
   description:
     description:
       - Description of the Record
     type: str
-  id:
+  records:
     description:
-      - PTR record ID
-    type: str
-  ptrdname:
+      - IP Records of the entry. Type is a list
+    type: list
+    required: true
+  recordset_name:
     description:
-      - Domain name of the PTR record
+      - Can be name or ID of the recordset. When creating a new one please enter a name
     type: str
-  status:
+    required: true
+  state:
     description:
-      - Resource status
+      - State, either absent or present
     type: str
+    choices: [present, absent]
+    default: present
   ttl:
     description:
-      - PTR record cache duration (in second) on a local DNS server
+      - Cache duration (in second) on a local DNS server
     type: int
+  type:
+    description:
+      - Record set type
+    type: str
+  zone_id:
+    description:
+      - Zone ID of the recordset
+    type: str
+    required: true
 
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-ptr_records:
+rset:
     description: Get DNS PTR Records
     type: complex
     returned: On Success.
     contains:
-        address:
-            description: EIP address
-            type: str
-            sample: "100.138.123.199"
         description:
             description: Description of the Record
             type: str
             sample: "MyRecord123"
         id:
-            description: PTR record id
+            description: ID
             type: str
-            sample: "eu-de:fe864230-d3bc-4391-8a32-394c3e9ca22d"
-        ptrdname:
-            description: Domain name of the PTR record
+            sample: "fe80804323f2065d0175980e81617c10"
+        records:
+            description: IP Records of the entry. Type is a list
             type: str
-            sample: "example.com"
+            sample: "[
+                1.3.1.2,
+                121.111.111.111,
+                145.145.145.145
+            ]"
+        name:
+            description: Name
+            type: str
+            sample: "test.test2."
         status:
             description: Resource status
             type: str
             sample: "ACTIVE"
         ttl:
-            description: PTR record cache duration (in second) on a local DNS server
+            description: Cache duration (in second) on a local DNS server
             type: int
             sample: 300
+        type:
+            description: Recordset Type
+            type: str
+            sample: "A"
+        zone_name:
+            description: Zone Name
+            type: str
+            sample: "test."
 
 '''
 
@@ -94,13 +115,13 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DNSRecordsetModule(OTCModule):
     argument_spec = dict(
-        zone_id=dict(required=True),
-        recordset_name=dict(required=True),
         description=dict(required=False),
-        type=dict(required=False),
-        ttl=dict(required=False, type='int'),
         records=dict(required=True, type='list'),
-        state=dict(type='str', choices=['present', 'absent'], default='present')
+        recordset_name=dict(required=True),
+        state=dict(type='str', choices=['present', 'absent'], default='present'),
+        ttl=dict(required=False, type='int'),
+        type=dict(required=False),
+        zone_id=dict(required=True)
     )
 
     def run(self):
