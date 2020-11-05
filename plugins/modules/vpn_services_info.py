@@ -87,7 +87,6 @@ vpnservices:
       sample: "66e3b16c-8ce5-40fb-bb49-ab6d8dc3f2aa"
     status:
       description: Specifies whether the VPN service is currently operational.
-      choices: [active, down, build, error, pending_create, pending_update, pending_delete]
       type: str
       sample: "PENDING_CREATE"
     subnet_id:
@@ -124,7 +123,9 @@ class VpnServicesInfoModule(OTCModule):
         external_v4_ip=dict(type='str', required=False),
         external_v6_ip=dict(type='str', required=False),
         router_id=dict(type='str', requiered=False),
-        status=dict(type='str', required=False),
+        status=dict(required=False,
+                    choices=["active", "down", "build", "error",
+                             "pending_create", "pending_update", "pending_delete"]),
         subnet_id=dict(type='str', required=False),
         tenant_id=dict(type='str', required=False),
         vpn_service=dict(type='str', required=False)
