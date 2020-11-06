@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: dns_floating_ip
 short_description: Get DNS PTR Records
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.1.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get DNS PTR Records from the OTC.

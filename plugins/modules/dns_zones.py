@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: dns_recordset
 short_description: Get DNS PTR Records
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.1.2"
+version_added: "0.0.1"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get DNS PTR Records from the OTC.
@@ -124,12 +124,11 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class DNSRecordsetModule(OTCModule):
     argument_spec = dict(
         description=dict(required=False),
-        records=dict(required=True, type='list'),
-        recordset_name=dict(required=True),
+        email=dict(required=True, type='list'),
+        name=dict(required=True),
         state=dict(type='str', choices=['present', 'absent'], default='present'),
         ttl=dict(required=False, type='int'),
-        type=dict(required=False),
-        zone_id=dict(required=True)
+        zone_type=dict(required=True)
     )
 
     def run(self):
@@ -137,34 +136,22 @@ class DNSRecordsetModule(OTCModule):
         data = []
 
         zo = self.conn.dns.find_zone(
-            name_or_id=self.params['zone_id'],
+            name_or_id=self.params['name'],
             ignore_missing=True
         )
-        if not zo:
-            self.exit(
-                changed=False,
-                message=('No Zone found with name or id: %s' %
-                         self.params['zone_id'])
-            )
 
         if self.params['state'] == 'absent':
             changed = False
-            rs = self.conn.dns.find_recordset(
-                name_or_id=self.params['recordset_name'],
-                zone=zo.id,
-                ignore_missing=True
-            )
-            if rs:
-                self.conn.dns.delete_recordset(
-                    recordset=rs.id,
+            if zo:
+                self.conn.dns.delete_zone(
                     zone=zo.id
                 )
                 changed = True
             if not rs:
                 self.exit(
                     changed=False,
-                    message=('No recordset found with name or id: %s' %
-                             self.params['zone_id'])
+                    message=('No Zone found with name: %s' %
+                             self.params['name'])
                 )
 
         if self.params['state'] == 'present':
