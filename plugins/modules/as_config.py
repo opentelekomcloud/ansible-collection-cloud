@@ -20,15 +20,11 @@ author: "Polina Gubina (@Polina-Gubina)"
 description:
   - Create/Remove AutoScaling configuration from the OTC.
 options:
-  scaling_configuration_name:
+  scaling_configuration:
     description:
       - Specifies the AS configuration name.
-      - Mandatory for creating AS configuration.
-    type: str
-  scaling_configuration_id:
-    description:
-      - Specifies the AS configuration id.
-      - Mandatory for deleting AS configuration.
+      - It can be only 'name' in order to create AS configuration. It can be 'name' or 'id' in order to delete.
+      - Mandatory.
     type: str
   instance_id:
     description:
@@ -248,8 +244,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class ASConfigModule(OTCModule):
     argument_spec = dict(
-        scaling_configuration_name=dict(required=False),
-        scaling_configuration_id=dict(required=False),
+        scaling_configuration=dict(required=True),
         instance_id=dict(required=False),
         flavor=dict(required=False),
         image=dict(required=False),
@@ -264,9 +259,8 @@ class ASConfigModule(OTCModule):
     )
     module_kwargs = dict(
         required_if=[
-            ('state', 'present', ['scaling_configuration_name', 'key_name']),
-            ('instance_id', None, ['flavor', 'image', 'disk']),
-            ('scaling_configuration_name', None, ['scaling_configuration_id'])
+            ('state', 'present', ['key_name']),
+            ('instance_id', None, ['flavor', 'image', 'disk'])
         ],
         supports_check_mode=True
     )
@@ -358,16 +352,13 @@ class ASConfigModule(OTCModule):
         return parsed_groups
 
     def run(self):
-        scaling_configuration_name = self.params['scaling_configuration_name']
-        scaling_configuration_id = self.params['scaling_configuration_id']
+        scaling_configuration = self.params['scaling_configuration']
         key_name = self.params['key_name']
 
         as_config = None
 
-        if scaling_configuration_name:
-            as_config = self.conn.auto_scaling.find_config(scaling_configuration_name, ignore_missing=True)
-        else:
-            as_config = self.conn.auto_scaling.find_config(scaling_configuration_id, ignore_missing=True)
+        if scaling_configuration:
+            as_config = self.conn.auto_scaling.find_config(scaling_configuration, ignore_missing=True)
 
         if self.params['state'] == 'present':
 
@@ -415,7 +406,7 @@ class ASConfigModule(OTCModule):
 
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                as_config = self.conn.auto_scaling.create_config(name=scaling_configuration_name, instance_config=attrs)
+                as_config = self.conn.auto_scaling.create_config(name=scaling_configuration, instance_config=attrs)
 
                 changed = True
 

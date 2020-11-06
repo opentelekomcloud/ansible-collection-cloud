@@ -18,7 +18,7 @@
 
     - name: Create as config - check_mode
       as_config:
-        scaling_configuration_name: "{{ config_name }}"
+        scaling_configuration: "{{ config_name }}"
         key_name: "{{ key_name }}"
         image: "Standard_Debian_9_latest"
         flavor: "c4.2xlarge.2"
@@ -36,7 +36,7 @@
 
     - name: Create as config
       as_config:
-        scaling_configuration_name: "{{ config_name }}"
+        scaling_configuration: "{{ config_name }}"
         key_name: "{{ key_name }}"
         image: "Standard_Debian_9_latest"
         flavor: "c4.2xlarge.2"
@@ -54,7 +54,7 @@
 
     - name: Delete as config
       as_config:
-        scaling_configuration_name: "{{ config_name }}"
+        scaling_configuration: "{{ config_name }}"
         state: absent
       register: dropped_as_config
 
