@@ -25,6 +25,7 @@ options:
       - Specifies the AS configuration name.
       - It can be only 'name' in order to create AS configuration. It can be 'name' or 'id' in order to delete.
       - Mandatory.
+    required: true
     type: str
   instance_id:
     description:
