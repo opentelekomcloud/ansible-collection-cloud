@@ -227,7 +227,7 @@ EXAMPLES = '''
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
-
+from otcextensions.sdk.auto_scaling.v1.group import Group as Group
 
 class ASGroupModule(OTCModule):
     argument_spec = dict(
@@ -265,72 +265,6 @@ class ASGroupModule(OTCModule):
         supports_check_mode=True
     )
 
-    def changed_when_update(self, as_group, **attrs):
-        changed = False
-
-        if self.params['scaling_group_name']:
-            if as_group.name != attrs['scaling_group_name']:
-                changed = True
-        if self.params['scaling_configuration']:
-            if as_group.scaling_configuration_id != attrs['scaling_configuration_id']:
-                changed = True
-        if self.params['desire_instance_number']:
-            if as_group.desire_instance_number != attrs['desire_instance_number']:
-                changed = True
-        if self.params['min_instance_number']:
-            if as_group.min_instance_number != attrs['min_instance_number']:
-                changed = True
-        if self.params['max_instance_number']:
-            if as_group.max_instance_number != attrs['max_instance_number']:
-                changed = True
-        if self.params['cool_down_time']:
-            if as_group.cool_down_time != attrs['cool_down_time']:
-                changed = True
-        if self.params['lb_listener']:
-            if as_group.lb_listener_id != attrs['lb_listener_id']:
-                changed = True
-        if self.params['available_zones']:
-            if as_group.available_zones != attrs['available_zones']:
-                changed = True
-        if self.params['networks']:
-            list_ids = []
-            list_new_ids = []
-            for n in as_group.networks:
-                list_ids.append(n['id'])
-            for m in self.params['networks']:
-                list_new_ids.append(m['id'])
-            for new_id in list_new_ids:
-                if new_id not in list_ids:
-                    changed = True
-            for id in list_ids:
-                if id not in list_new_ids:
-                    changed = True
-        if self.params['security_groups']:
-            if as_group.security_groups != attrs['security_groups']:
-                changed = True
-        if self.params['health_periodic_audit_method']:
-            if as_group.health_periodic_audit_method != attrs['health_periodic_audit_method']:
-                changed = True
-        if self.params['instance_terminate_policy']:
-            if as_group.instance_terminate_policy != attrs['instance_terminate_policy']:
-                changed = True
-        if self.params['notifications']:
-            if as_group.notifications != attrs['notifications']:
-                changed = True
-        if self.params['delete_publicip']:
-            if as_group.delete_publicip != attrs['delete_publicip']:
-                changed = True
-        if self.params['notifications']:
-            if as_group.notifications != attrs['notifications']:
-                changed = True
-        if self.params['delete_volume']:
-            if as_group.delete_volume != attrs['delete_volume']:
-                changed = True
-        if self.params['enterprise_project_id']:
-            if as_group.enterprise_project_id != attrs['enterprise_project_id']:
-                changed = True
-        return changed
-
     def run(self):
 
         as_group = None
@@ -352,7 +286,6 @@ class ASGroupModule(OTCModule):
             if self.params['scaling_configuration']:
                 attrs['scaling_configuration_id'] = self.conn.auto_scaling.find_config(
                     self.params['scaling_configuration'], ignore_missing=True)
-                self.fail_json(msg=attrs['scaling_configuration_id'])
                 if not attrs['scaling_configuration_id']:
                     self.fail_json("Scaling configuration not found")
 
@@ -368,7 +301,8 @@ class ASGroupModule(OTCModule):
                         attrs['health_periodic_audit_method'] = "nova_audit".upper()
             else:
                 if as_group:
-                    if not as_group.lb_listener_id and not self.params['lb_listener'] and not self.params['lbaas_listeners']:
+                    if not as_group.lb_listener_id and \
+                            not self.params['lb_listener'] and not self.params['lbaas_listeners']:
                         if self.params['health_periodic_audit_method'] == 'elb_audit':
                             self.fail_json("Without LB only 'nova_audit' is available")
                         else:
@@ -448,7 +382,10 @@ class ASGroupModule(OTCModule):
                 )
 
             else:
-                changed = self.changed_when_update(as_group, **attrs)
+                changed = False
+                resource = Group(**attrs)
+                if not as_group.__eq__(resource):
+                    self.fail_json(msg=as_group, msg2=resource)
                 if self.ansible.check_mode:
                     self.exit(changed=changed)
                 as_group = self.conn.auto_scaling.update_group(as_group, **attrs)
