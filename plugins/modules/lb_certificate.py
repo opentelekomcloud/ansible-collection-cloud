@@ -39,7 +39,7 @@ options:
   domain:
     description: Specifies the domain name associated with the server certificate.
     type: str
-  certificate:
+  content:
     description: Certificate content or path to file with content. Required for creation.
     type: str
   private_key:
@@ -104,7 +104,7 @@ EXAMPLES = '''
 - lb_certificate:
     state: present
     name: certificate-test
-    certificate: "{{ dummy-cert }}"
+    content: "{{ dummy-cert }}"
     type: client
   register: lb_cert
 '''
@@ -117,7 +117,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class LoadBalancerCertificateModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True, type='str'),
-        certificate=dict(type='str', no_log=True),
+        content=dict(type='str', no_log=True),
         private_key=dict(type='str', no_log=True),
         admin_state_up=dict(type='bool'),
         description=dict(type='str'),
@@ -127,7 +127,7 @@ class LoadBalancerCertificateModule(OTCModule):
                    default='present')
     )
 
-    otce_min_version = '0.10.0'
+    otce_min_version = '0.10.1'
 
     @staticmethod
     def _is_path(path):
@@ -155,17 +155,17 @@ class LoadBalancerCertificateModule(OTCModule):
 
         changed = False
         attrs = {}
-        certificate = self.conn.elb.find_certificate(
+        cert = self.conn.elb.find_certificate(
             name_or_id=name, ignore_missing=True)
 
         if self.ansible.check_mode:
-            self.exit(changed=self._system_state_change(certificate))
+            self.exit(changed=self._system_state_change(cert))
 
         if self.params['state'] == 'absent':
             changed = False
 
-            if certificate:
-                self.conn.elb.delete_certificate(certificate)
+            if cert:
+                self.conn.elb.delete_certificate(cert)
                 changed = True
 
             self.exit(changed=changed)
@@ -177,7 +177,7 @@ class LoadBalancerCertificateModule(OTCModule):
             type_filter = self.params['type']
             domain_filter = self.params['domain']
             private_key_filter = self.params['private_key']
-            certificate_filter = self.params['certificate']
+            content_filter = self.params['content']
 
             if name_filter:
                 attrs['name'] = name_filter
@@ -191,56 +191,60 @@ class LoadBalancerCertificateModule(OTCModule):
                 attrs['domain'] = domain_filter
             if private_key_filter:
                 if self._is_path(private_key_filter):
-                    private_key_filter = self._read_content(private_key_filter)
+                    attrs['private_key'] = self._read_content(private_key_filter)
                 else:
-                    private_key_filter = private_key_filter.strip()
-            if certificate_filter:
-                if self._is_path(certificate_filter):
-                    certificate_filter = self._read_content(certificate_filter)
+                    attrs['private_key'] = private_key_filter.strip()
+            if content_filter:
+                if self._is_path(content_filter):
+                    attrs['content'] = self._read_content(content_filter)
                 else:
-                    certificate_filter = certificate_filter.strip()
+                    attrs['content'] = content_filter.strip()
 
-            if type_filter == 'server' and not certificate:
+            if type_filter == 'server' and not cert:
                 if not private_key_filter:
                     self.fail_json(msg='private_key mandatory when type is set to server.')
-            if not certificate_filter and not certificate:
+            if not content_filter and not cert:
                 self.fail_json(msg='certificate is mandatory field.')
 
-            if certificate:
-                changed = True
+            if cert:
+                changed = False
 
                 mattrs = {}
+
                 if admin_state_filter:
-                    if certificate.admin_state_up != admin_state_filter:
+                    if cert.admin_state_up != admin_state_filter:
                         mattrs['admin_state_up'] = admin_state_filter
+                        changed = True
+
                 if description_filter:
-                    if certificate.description != description_filter:
+                    if cert.description != description_filter:
                         mattrs['description'] = description_filter
-                if type_filter:
-                    if certificate.type != type_filter:
-                        mattrs['type'] = type_filter
+                        changed = True
+
                 if domain_filter:
-                    if certificate.domain != domain_filter:
+                    if cert.domain != domain_filter:
                         mattrs['domain'] = domain_filter
+                        changed = True
+
                 if private_key_filter:
-                    if certificate.private_key != private_key_filter:
-                        mattrs['private_key'] = private_key_filter
-                if certificate_filter:
-                    if certificate.certificate != certificate_filter:
-                        mattrs['certificate'] = certificate_filter
+                    if cert.private_key != private_key_filter:
+                        mattrs['private_key'] = private_key_filter.strip()
+                        changed = True
+
+                if content_filter:
+                    if cert.content != content_filter:
+                        mattrs['content'] = content_filter.strip()
+                        changed = True
 
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                certificate = self.conn.elb.update_certificate(certificate, **mattrs)
+                certificate = self.conn.elb.update_certificate(cert, **mattrs)
                 self.exit_json(
                     changed=changed,
                     elb_certificate=certificate.to_dict(),
                     id=certificate.id)
 
-            cert = self.conn.elb.create_certificate(
-                certificate=certificate_filter,
-                private_key=private_key_filter,
-                **attrs)
+            cert = self.conn.elb.create_certificate(**attrs)
             data = cert.to_dict()
             data.pop('location')
             self.exit(changed=True, elb_certificate=data)
