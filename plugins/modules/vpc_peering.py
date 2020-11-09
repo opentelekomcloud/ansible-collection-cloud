@@ -204,7 +204,7 @@ class VPCPeeringModule(OTCModule):
             attrs = {'name': new_name}
             if vpc_peering:
                 if self.ansible.check_mode:
-                    self.exit_json(changed=False)
+                    self.exit_json(changed=True)
                 else:
                     updated_vpc_peering = self.conn.vpc.update_peering(vpc_peering, **attrs)
                     changed = True
