@@ -126,6 +126,7 @@
       lb_certificate:
         name: "{{ cert_name_ca }}"
         content: "{{ certificate }}"
+        type: client
       register: result
 
     - name: Get CA cert info
@@ -241,4 +242,3 @@
           state: absent
         register: drop
       ignore_errors: true
-
