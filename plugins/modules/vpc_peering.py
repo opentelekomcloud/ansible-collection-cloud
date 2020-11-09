@@ -156,15 +156,6 @@ class VPCPeeringModule(OTCModule):
         supports_check_mode=True
     )
 
-    def _system_state_change(self, obj):
-        state = self.params['state']
-        if state == 'present':
-            if not obj:
-                return True
-        elif state == 'absent' and obj:
-            return True
-        return False
-
     def _check_peering(self, local_vpc_id, peer_vpc_id):
 
         result = True
@@ -196,9 +187,6 @@ class VPCPeeringModule(OTCModule):
         vpc_peering = None
 
         vpc_peering = self.conn.vpc.find_peering(name, ignore_missing=True)
-
-        if self.ansible.check_mode:
-            self.exit_json(changed=self._system_state_change(vpc_peering))
 
         if new_name:
             attrs = {'name': new_name}
@@ -240,11 +228,12 @@ class VPCPeeringModule(OTCModule):
                     attrs['description'] = self.params['description']
 
                 if self._check_peering(local_vpc_id, peer_vpc_id):
+                    if self.ansible.check_mode:
+                        self.exit_json(changed=True)
                     vpc_peering = self.conn.vpc.create_peering(**attrs)
-                    changed = True
 
                     self.exit_json(
-                        changed=changed,
+                        changed=True,
                         vpc_peering=vpc_peering
                     )
                 else:
@@ -258,6 +247,8 @@ class VPCPeeringModule(OTCModule):
 
         elif self.params['state'] == 'absent':
             if vpc_peering:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
                 self.conn.vpc.delete_peering(vpc_peering)
                 changed = True
                 self.exit_json(
