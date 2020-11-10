@@ -8,5 +8,5 @@ yamllint
 rstcheck
 ruamel.yaml
 tox
-otcextensions>=0.9.0
+otcextensions>=0.10.0
 importlib-metadata<2.0.0 ; python_version < '3.8'
