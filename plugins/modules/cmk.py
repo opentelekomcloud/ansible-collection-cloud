@@ -163,7 +163,6 @@ class VPCPeeringInfoModule(OTCModule):
                 self.fail_json(msg="The key doesn't exist")
 
 
-
 def main():
     module = VPCPeeringInfoModule()
     module()
