@@ -12,10 +12,10 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: dns_recordset
+module: dns_zones
 short_description: Get DNS PTR Records
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.1.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get DNS PTR Records from the OTC.
@@ -58,7 +58,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-rset:
+zone:
     description: Get DNS PTR Records
     type: complex
     returned: On Success.
@@ -121,7 +121,7 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class DNSRecordsetModule(OTCModule):
+class DNSZonesModule(OTCModule):
     argument_spec = dict(
         description=dict(required=False),
         email=dict(required=False),
@@ -139,7 +139,6 @@ class DNSRecordsetModule(OTCModule):
 
         # find_zone doesn't support searching for private zones with name
         # As a result we use it only to search in public zones
-
         if self.params['zone_type'] == 'public':
             zo = self.conn.dns.find_zone(
                 name_or_id=self.params['name'],
@@ -147,7 +146,9 @@ class DNSRecordsetModule(OTCModule):
             )
             if zo:
                 zone_id = zo.id
+                zone_ceck = True
             else:
+                zone_check = False
                 if self.params['state'] == 'absent':
                     self.exit(
                         changed=False,
@@ -174,7 +175,9 @@ class DNSRecordsetModule(OTCModule):
             # As we remove datasets we need to check wether there's the correct one left to obtain the ID
             if len(data) != 0:    
                 zone_id = data[0]['id']
+                zone_check = True
             else:
+                zone_check = False
                 if self.params['state'] == 'absent':
                     self.exit(
                         changed=False,
@@ -194,45 +197,53 @@ class DNSRecordsetModule(OTCModule):
         if self.params['state'] == 'present':
             attrs = {}
             changed = False
-            # Check if VPC exists
-            if self.params['zone_type'] == 'private':
-                ro = self.conn.network.find_router(
-                    name_or_id=self.params['router_id'],
-                    ignore_missing=True
-                )
-                if ro: 
-                    # Somehow the API wants a dict wiuth router_id in it
-                    routerdict = {
-                        'router_id': ro.id
-                    }
-                    attrs['router'] = routerdict
-                else:
-                    self.exit(
-                    changed=False,
-                    message=('No Router found with name or id: %s' %
-                             self.params['router'])
-                )
-            attrs['zone_type'] = self.params['zone_type']
-            if self.params['description']:
-                attrs['description'] = self.params['description']
-            if self.params['email']:
-                attrs['email'] = self.params['email']
-            if self.params['ttl']:
-                attrs['ttl'] = self.params['ttl']
-            attrs['name'] = self.params['name']
 
-            zone = self.conn.dns.create_zone(**attrs)
-            self.exit(changed=True, zone=zone.to_dict())
+            if zone_check == False:
+                # Check if VPC exists
+                if self.params['zone_type'] == 'private':
+                    ro = self.conn.network.find_router(
+                        name_or_id=self.params['router_id'],
+                        ignore_missing=True
+                    )
+                    if ro: 
+                        # Somehow the API wants a dict wiuth router_id in it
+                        routerdict = {
+                            'router_id': ro.id
+                        }
+                        attrs['router'] = routerdict
+                    else:
+                        self.exit(
+                        changed=False,
+                        message=('No Router found with name or id: %s' %
+                                self.params['router'])
+                    )
+                attrs['zone_type'] = self.params['zone_type']
+                if self.params['description']:
+                    attrs['description'] = self.params['description']
+                if self.params['email']:
+                    attrs['email'] = self.params['email']
+                if self.params['ttl']:
+                    attrs['ttl'] = self.params['ttl']
+                attrs['name'] = self.params['name']
 
-        self.exit(
-            changed=changed
-        )
+                zone = self.conn.dns.create_zone(**attrs)
+                self.exit(changed=True, zone=zone.to_dict())
 
+            if zone_check == True:
+                if self.params['description']:
+                    attrs['description'] = self.params['description']
+                if self.params['email']:
+                    attrs['email'] = self.params['email']
+                if self.params['ttl']:
+                    attrs['ttl'] = self.params['ttl']
+                attrs['zone'] = zone_id
+
+                zone = self.conn.dns.update_zone(**attrs)
+                self.exit(changed=True, zone=zone.to_dict())
 
 def main():
-    module = DNSRecordsetModule()
+    module = DNSZonesModule()
     module()
-
 
 if __name__ == '__main__':
     main()
