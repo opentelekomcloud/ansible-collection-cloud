@@ -144,28 +144,28 @@ class VPCPeeringInfoModule(OTCModule):
                 self.exit(changed=True, key=key)
             else:
                 if self.params['enable'] == 'yes':
-                    if key.state == 3:
+                    if key.key_state == "3":
                         enabled_key = self.conn.kms.enable_key(key)
                         self.exit(changed=True, key=enabled_key, msg='The key was enabled')
                     else:
-                        self.fail_json(msg='Only an disabled key can be used.')
+                        self.fail_json(msg='Only a disabled key can be used.')
                 if self.params['disable'] == 'yes':
-                    if key.state == 2:
+                    if key.key_state == "2":
                         disabled_key = self.conn.kms.disable_key(key)
                         self.exit(changed=True, key=disabled_key, msg='The key was disabled')
                     else:
                         self.fail_json(msg='Only an enabled key can be used.')
                 if self.params['cancel_deletion'] == 'yes':
-                    if key.state == 4:
-                        key_cancel_dltn = self.conn.cancel_deletion(key)
+                    if key.key_state == "4":
+                        key_cancel_dltn = self.conn.kms.cancel_key_deletion(key)
                         self.exit(changed=True, key=key_cancel_dltn, msg='The deletion was canceled')
                     else:
-                        self.fail_json(msg='Only an scheduled to be deleted key can be used.')
+                        self.fail_json(key=key, msg='Only an scheduled to be deleted key can be used.')
                 else:
                     self.fail_json(msg="Key already exists")
         else:
             if key:
-                if key.state != 4:
+                if key.key_state != 4:
                     if self.params['pending_days']:
                         self.conn.kms.schedule_key_deletion(key, self.params['pending_days'])
                         self.exit(msg="The key is scheduled to be deleted.")
