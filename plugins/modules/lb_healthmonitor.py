@@ -236,6 +236,8 @@ class LoadBalancerHealthmonitorModule(OTCModule):
                 changed = True
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
+                if 'pool_id' in attrs:
+                    attrs.pop('pool_id')
                 lb_monitor = self.conn.network.update_health_monitor(health_monitor=lb_monitor, **attrs)
                 self.exit_json(
                     changed=changed,

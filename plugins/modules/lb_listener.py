@@ -266,7 +266,8 @@ class LoadBalancerListenerModule(OTCModule):
                 changed = True
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-
+                if 'loadbalancer_id' in attrs:
+                    attrs.pop('loadbalancer_id')
                 lb_listener = self.conn.network.update_listener(lb_listener, **attrs)
                 self.exit_json(
                     changed=changed,

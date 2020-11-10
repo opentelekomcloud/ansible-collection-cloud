@@ -32,11 +32,11 @@ options:
     description:
       - Specifies the ID or Name of the backend server group.
     type: str
-    required: true
   name:
     description:
       - Specifies the backend server name.
     type: str
+    required: true
   address:
     description:
       - Specifies the private IP address of the backend server.
@@ -118,9 +118,9 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class LoadBalancerMemberModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=False),
+        name=dict(required=True),
         state=dict(default='present', choices=['absent', 'present']),
-        pool=dict(required=True),
+        pool=dict(required=False),
         address=dict(required=False, type='str'),
         protocol_port=dict(required=False, type='int'),
         subnet=dict(required=False, type='str'),
@@ -138,15 +138,16 @@ class LoadBalancerMemberModule(OTCModule):
         subnet_filter = self.params['subnet']
         admin_state_filter = self.params['admin_state_up']
         weight_filter = self.params['weight']
+        pool_filter = self.params['pool']
 
+        lb_pool = None
         lb_member = None
         attrs = {}
         changed = False
-        lb_pool = self.conn.network.find_pool(name_or_id=self.params['pool'])
+        if pool_filter:
+            lb_pool = self.conn.network.find_pool(name_or_id=pool_filter)
         if lb_pool:
             lb_member = self.conn.network.find_pool_member(pool=lb_pool, name_or_id=self.params['name'])
-        else:
-            self.fail_json(msg='Pool not exist.')
 
         if self.params['state'] == 'present':
             if name_filter:

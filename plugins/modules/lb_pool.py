@@ -202,6 +202,10 @@ class LoadBalancerPoolModule(OTCModule):
                 changed = True
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
+                if 'listener_id' in attrs:
+                    attrs.pop('listener_id')
+                if 'loadbalancer_id' in attrs:
+                    attrs.pop('loadbalancer_id')
                 lb_pool = self.conn.network.update_pool(lb_pool, **attrs)
                 self.exit_json(
                     changed=changed,
