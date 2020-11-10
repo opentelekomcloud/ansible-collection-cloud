@@ -263,12 +263,48 @@ class LoadBalancerListenerModule(OTCModule):
                     attrs['default_pool_id'] = pool.id
 
             if lb_listener:
-                changed = True
+                mattrs = {}
+                changed = False
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                if 'loadbalancer_id' in attrs:
-                    attrs.pop('loadbalancer_id')
-                lb_listener = self.conn.network.update_listener(lb_listener, **attrs)
+                if description_filter:
+                    if lb_listener.description != description_filter:
+                        mattrs['description'] = description_filter
+                        changed = True
+                if protocol_port_filter:
+                    if lb_listener.protocol_port != protocol_port_filter:
+                        mattrs['protocol_port'] = protocol_port_filter
+                        changed = True
+                if connection_limit_filter:
+                    if lb_listener.connection_limit != connection_limit_filter:
+                        mattrs['connection_limit'] = connection_limit_filter
+                        changed = True
+                if admin_state_up_filter:
+                    if lb_listener.is_admin_state_up != admin_state_up_filter:
+                        mattrs['admin_state_up'] = admin_state_up_filter
+                        changed = True
+                if 'default_pool_id' in attrs:
+                    if lb_listener.default_pool_id != attrs['default_pool_id']:
+                        mattrs['default_pool_id'] = attrs['default_pool_id']
+                        changed=True
+                if default_tls_container_ref_filter:
+                    if lb_listener.default_tls_container_ref != default_tls_container_ref_filter:
+                        mattrs['default_tls_container_ref'] = default_tls_container_ref_filter
+                        changed=True
+                if sni_container_refs_filter:
+                    if lb_listener.sni_container_refs != sni_container_refs_filter:
+                        mattrs['sni_container_refs'] = sni_container_refs_filter
+                        changed=True
+                # Need improvements in OTCE
+                # if client_ca_tls_container_ref_filter:
+                #     if lb_listener.client_ca_tls_container_ref != client_ca_tls_container_ref_filter:
+                #         mattrs['client_ca_tls_container_ref'] = client_ca_tls_container_ref_filter
+                #         changed=True
+                # if tls_ciphers_policy_filter:
+                #     if lb_listener.tls_ciphers_policy != tls_ciphers_policy_filter:
+                #         mattrs['tls_ciphers_policy'] = tls_ciphers_policy_filter
+                #         changed=True
+                lb_listener = self.conn.network.update_listener(lb_listener, **mattrs)
                 self.exit_json(
                     changed=changed,
                     listener=lb_listener.to_dict(),
