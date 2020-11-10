@@ -220,10 +220,6 @@ as_group:
 '''
 
 EXAMPLES = '''
-# Create as group.
-- as_group:
-    name: my_prod_as_group
-  register: data
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
