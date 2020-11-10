@@ -143,7 +143,10 @@ class LoadBalancerMemberModule(OTCModule):
         attrs = {}
         changed = False
         lb_pool = self.conn.network.find_pool(name_or_id=self.params['pool'])
-        lb_member = self.conn.network.find_pool_member(pool=lb_pool, name_or_id=self.params['name'])
+        if lb_pool:
+            lb_member = self.conn.network.find_pool_member(pool=lb_pool, name_or_id=self.params['name'])
+        else:
+            self.fail_json(msg='Pool not exist.')
 
         if self.params['state'] == 'present':
             if name_filter:
