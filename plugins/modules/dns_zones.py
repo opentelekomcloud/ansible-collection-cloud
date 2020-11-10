@@ -33,9 +33,9 @@ options:
       - Zone Name
     type: str
     required: true
-  router_id:
+  router:
     description:
-      - VPC ID, required when creating an private Zone
+      - VPC ID or name, required when creating an private Zone
     type: str
   state:
     description:
@@ -109,7 +109,7 @@ EXAMPLES = '''
     name: "test.com."
     state: present
     zone_type: private
-    router_id: 79c32783-e560-4e3a-95b1-5a0756441e12
+    router: 79c32783-e560-4e3a-95b1-5a0756441e12
     description: test2
     ttl: 5000
     email: mail2@mail2.test
@@ -125,7 +125,7 @@ class DNSZonesModule(OTCModule):
         description=dict(required=False),
         email=dict(required=False),
         name=dict(required=True),
-        router_id=dict(required=False),
+        router=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present'),
         ttl=dict(required=False, type='int'),
         zone_type=dict(type='str', choices=['public', 'private'], default='public')
@@ -200,11 +200,11 @@ class DNSZonesModule(OTCModule):
                 # Check if VPC exists
                 if self.params['zone_type'] == 'private':
                     ro = self.conn.network.find_router(
-                        name_or_id=self.params['router_id'],
+                        name_or_id=self.params['router'],
                         ignore_missing=True
                     )
                     if ro:
-                        # Somehow the API wants a dict wiuth router_id in it
+                        # Somehow the API wants a dict with router_id in it
                         routerdict = {
                             'router_id': ro.id
                         }
