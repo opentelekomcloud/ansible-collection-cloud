@@ -13,12 +13,12 @@
 
 DOCUMENTATION = '''
 module: dns_floating_ip
-short_description: Get DNS PTR Records
+short_description: Modify DNS Floating IPs
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.1.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Get DNS PTR Records from the OTC.
+  - Modify DNS Floating IPs
 options:
   description:
     description:
@@ -49,7 +49,7 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 ptr_records:
-    description: Get DNS PTR Records
+    description: Modify DNS floating IPs
     type: complex
     returned: On Success.
     contains:

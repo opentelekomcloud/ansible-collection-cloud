@@ -13,12 +13,12 @@
 
 DOCUMENTATION = '''
 module: dns_recordset
-short_description: Get DNS PTR Records
+short_description: Modify DNS Recordsets
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.1.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Get DNS PTR Records from the OTC.
+  - Modify DNS Recordsets
 options:
   description:
     description:
@@ -60,7 +60,7 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 recordset:
-    description: Get DNS PTR Records
+    description: Modify DNS PTR Records
     type: complex
     returned: On Success.
     contains:

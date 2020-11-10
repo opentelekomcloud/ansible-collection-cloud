@@ -22,18 +22,21 @@ description:
 options:
   description:
     description:
-      - Description of the Record
+      - Description of the Zone
     type: str
-  records:
+  email:
     description:
-      - IP Records of the entry. Type is a list
-    type: list
-    required: true
-  recordset_name:
+      - E-Mail Address
+    type: str
+  name:
     description:
-      - Can be name or ID of the recordset. When creating a new one please enter a name
+      - Zone Name
     type: str
     required: true
+  router_id:
+    description:
+      - VPC ID, required when creating an private Zone
+    type: str
   state:
     description:
       - State, either absent or present
@@ -44,77 +47,73 @@ options:
     description:
       - Cache duration (in second) on a local DNS server
     type: int
-  type:
+  zone_type:
     description:
-      - Record set type
+      - Zone Type, either public or private
     type: str
-  zone_id:
-    description:
-      - Zone ID of the recordset
-    type: str
-    required: true
+    choices: [public, private]
+    default: public
 
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
 zone:
-    description: Get DNS PTR Records
+    description: Modfiy DNS Zones
     type: complex
     returned: On Success.
     contains:
         description:
-            description: Description of the Record
+            description: Description of the Zone
             type: str
-            sample: "MyRecord123"
+            sample: "MyZone123"
+        email:
+            description: assigned E-Mail of the Zone
+            type: str
+            sample: "mail@mail.com"
         id:
-            description: ID
+            description: Zone ID
             type: str
             sample: "fe80804323f2065d0175980e81617c10"
-        records:
-            description: IP Records of the entry. Type is a list
-            type: str
-            sample: "[
-                1.3.1.2,
-                121.111.111.111,
-                145.145.145.145
-            ]"
         name:
-            description: Name
+            description: Name of the zone
             type: str
             sample: "test.test2."
+        router:
+            description: Assigned VPC
+            type: list
+            sample: "[
+                router_id: 79c32783-e560-4e3a-95b1-5a0756441e12,
+                router_region: eu-de,
+                status: PENDING_CREATE
+            ]"
         status:
             description: Resource status
             type: str
-            sample: "ACTIVE"
+            sample: "PENDING_CREATE"
         ttl:
             description: Cache duration (in second) on a local DNS server
             type: int
             sample: 300
-        type:
-            description: Recordset Type
+        zone_type:
+            description: Zone Type, either public or private
             type: str
-            sample: "A"
-        zone_name:
-            description: Zone Name
-            type: str
-            sample: "test."
+            sample: "private"
 
 '''
 
 EXAMPLES = '''
-# Creating / Updating a recordset:
+# Creating / Updating a Zone:
 - name: Testing
-  opentelekomcloud.cloud.dns_recordset:
-    zone_id: fe80829272374c340174d8e94bb9562c
-    recordset_name: "test.test2."
+  opentelekomcloud.cloud.dns_zones:
+    name: "test.com."
     state: present
-    ttl: 400
-    type: A
-    records:
-      - "1.3.1.2"
-      - "121.111.111.111"
-      - "145.145.145.145"
+    zone_type: private
+    router_id: 79c32783-e560-4e3a-95b1-5a0756441e12
+    description: test2
+    ttl: 5000
+    email: mail2@mail2.test
+
 
 '''
 
@@ -129,7 +128,7 @@ class DNSZonesModule(OTCModule):
         router_id=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present'),
         ttl=dict(required=False, type='int'),
-        zone_type=dict(required=True)
+        zone_type=dict(type='str', choices=['public', 'private'], default='public')
     )
 
     def run(self):
@@ -146,16 +145,15 @@ class DNSZonesModule(OTCModule):
             )
             if zo:
                 zone_id = zo.id
-                zone_ceck = True
+                zone_check = True
             else:
                 zone_check = False
                 if self.params['state'] == 'absent':
                     self.exit(
                         changed=False,
                         message=('No Zone found with name: %s' %
-                                self.params['name'])
+                                 self.params['name'])
                     )
-
 
         # For private Zones we list all zones and then filter by name
         if self.params['zone_type'] == 'private':
@@ -171,9 +169,9 @@ class DNSZonesModule(OTCModule):
                     del data[i]
                     i = 0
                     continue
-                i = i+1
+                i = i + 1
             # As we remove datasets we need to check wether there's the correct one left to obtain the ID
-            if len(data) != 0:    
+            if len(data) != 0:
                 zone_id = data[0]['id']
                 zone_check = True
             else:
@@ -182,7 +180,7 @@ class DNSZonesModule(OTCModule):
                     self.exit(
                         changed=False,
                         message=('No Zone found with name: %s' %
-                                self.params['name'])
+                                 self.params['name'])
                     )
 
         # We now have the zone_id to work with
@@ -198,14 +196,14 @@ class DNSZonesModule(OTCModule):
             attrs = {}
             changed = False
 
-            if zone_check == False:
+            if zone_check is False:
                 # Check if VPC exists
                 if self.params['zone_type'] == 'private':
                     ro = self.conn.network.find_router(
                         name_or_id=self.params['router_id'],
                         ignore_missing=True
                     )
-                    if ro: 
+                    if ro:
                         # Somehow the API wants a dict wiuth router_id in it
                         routerdict = {
                             'router_id': ro.id
@@ -213,10 +211,10 @@ class DNSZonesModule(OTCModule):
                         attrs['router'] = routerdict
                     else:
                         self.exit(
-                        changed=False,
-                        message=('No Router found with name or id: %s' %
-                                self.params['router'])
-                    )
+                            changed=False,
+                            message=('No Router found with name or id: %s' %
+                                     self.params['router'])
+                        )
                 attrs['zone_type'] = self.params['zone_type']
                 if self.params['description']:
                     attrs['description'] = self.params['description']
@@ -229,7 +227,7 @@ class DNSZonesModule(OTCModule):
                 zone = self.conn.dns.create_zone(**attrs)
                 self.exit(changed=True, zone=zone.to_dict())
 
-            if zone_check == True:
+            if zone_check is True:
                 if self.params['description']:
                     attrs['description'] = self.params['description']
                 if self.params['email']:
@@ -241,9 +239,11 @@ class DNSZonesModule(OTCModule):
                 zone = self.conn.dns.update_zone(**attrs)
                 self.exit(changed=True, zone=zone.to_dict())
 
+
 def main():
     module = DNSZonesModule()
     module()
+
 
 if __name__ == '__main__':
     main()
