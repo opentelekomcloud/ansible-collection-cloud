@@ -107,7 +107,7 @@ class VPCPeeringInfoModule(OTCModule):
         key_description=dict(required=False),
         origin=dict(required=False),
         sequence=dict(required=False),
-        pending_days=dict(required=False),
+        pending_days=dict(required=False, type=int),
         enable=dict(required=False, choices=['yes', 'no'], default='no'),
         disable=dict(required=False, choices=['yes', 'no'], default='no'),
         cancel_deletion=dict(required=False, choices=['yes', 'no'], default='no'),
