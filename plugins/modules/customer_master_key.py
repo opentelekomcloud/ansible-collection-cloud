@@ -13,7 +13,7 @@
 
 DOCUMENTATION = '''
 ---
-module: cmk
+module: customer_master_key
 short_description: Add/Delete customer master key from the OTC
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.1"
@@ -54,14 +54,14 @@ options:
     type: int
   enable:
     description:
-      - This option allows you to enable a CMK. This will only have an effect if the key exists.
+      - This option allows you to enable a CMK. This will only have an effect if the key exists and is disabled.
     choices: ['yes', 'no']
     default: 'no'
     required: false
     type: str
   disable:
     description:
-      - This option allows you to disable a CMK. This will only have an effect if the key exists.
+      - This option allows you to disable a CMK. This will only have an effect if the key exists and is enabled.
     choices: ['yes', 'no']
     default: 'no'
     required: false
@@ -144,22 +144,35 @@ class VPCPeeringInfoModule(OTCModule):
                 self.exit(changed=True, key=key)
             else:
                 if self.params['enable'] == 'yes':
-                    enabled_key = self.conn.kms.enable_key(key)
-                    self.exit(changed=True, key=enabled_key, msg='The key was enabled')
+                    if key.state == 3:
+                        enabled_key = self.conn.kms.enable_key(key)
+                        self.exit(changed=True, key=enabled_key, msg='The key was enabled')
+                    else:
+                        self.fail_json(msg='Only an disabled key can be used.')
                 if self.params['disable'] == 'yes':
-                    disabled_key = self.conn.kms.disable_key(key)
-                    self.exit(changed=True, key=disabled_key, msg='The key was disabled')
+                    if key.state == 2:
+                        disabled_key = self.conn.kms.disable_key(key)
+                        self.exit(changed=True, key=disabled_key, msg='The key was disabled')
+                    else:
+                        self.fail_json(msg='Only an enabled key can be used.')
                 if self.params['cancel_deletion'] == 'yes':
-                    key_cancel_dltn = self.conn.cancel_deletion(key)
-                    self.exit(changed=True, key=key_cancel_dltn, msg='The deletion was canceled')
+                    if key.state == 4:
+                        key_cancel_dltn = self.conn.cancel_deletion(key)
+                        self.exit(changed=True, key=key_cancel_dltn, msg='The deletion was canceled')
+                    else:
+                        self.fail_json(msg='Only an scheduled to be deleted key can be used.')
                 else:
                     self.fail_json(msg="Key already exists")
         else:
             if key:
-                if self.params['pending_days']:
-                    self.conn.kms.scheduled_key_deletion(key, self.params['pending_days'])
+                if key.state != 4:
+                    if self.params['pending_days']:
+                        self.conn.kms.schedule_key_deletion(key, self.params['pending_days'])
+                        self.exit(msg="The key is scheduled to be deleted.")
+                    else:
+                        self.conn.kms.schedule_key_deletion(key)
                 else:
-                    self.conn.kms.scheduled_key_deletion(key)
+                    self.fail_json(msg="The key deletion is already scheduled.")
             else:
                 self.fail_json(msg="The key doesn't exist")
 
