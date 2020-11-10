@@ -1,0 +1,19 @@
+---
+- module_defaults:
+    lb_healthmonitor_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get health checks info
+      lb_healthmonitor_info:
+      register: hm
+
+    - name: debug configs
+      debug:
+        var: hm.healthmonitors
+
+    - name: assert result
+      assert:
+        that:
+          - hm is success
+          - hm is not changed
+          - hm.healthmonitors is defined

@@ -79,6 +79,19 @@
         wait: yes
         timeout: 600
 
+    - name: Get loadbalancer by Name
+      loadbalancer_info:
+        name: "{{ lb.loadbalancer.name }}"
+      register: res
+
+    - name: assert result
+      assert:
+        that:
+          - res is success
+          - res.loadbalancers is defined
+          - res.loadbalancers.id is defined
+          - res.loadbalancers.vip_address is defined
+
     - name: Create listener for existing loadbalancer
       lb_listener:
         state: present
@@ -106,6 +119,18 @@
         that:
           - lstnr is success
           - lstnr is changed
+
+    - name: Get listener by name
+      lb_listener_info:
+        name: "{{ lstnr.listener.name }}"
+      register: res
+
+    - name: assert result
+      assert:
+        that:
+          - res is success
+          - res.listeners is defined
+          - res.listeners[0].id is defined
 
     - name: Create Backend Server Group
       lb_pool:
@@ -138,7 +163,7 @@
           - pool is success
           - pool is changed
 
-    - name: Get pool by name
+    - name: Get Backend Server Group by name
       lb_pool_info:
         name: "{{ pool.server_group.name }}"
       register: res
@@ -149,31 +174,6 @@
           - res is success
           - res.server_groups is defined
           - res.server_groups[0].id is defined
-
-    - name: Get listener by name
-      lb_listener_info:
-        name: "{{ lstnr.listener.name }}"
-      register: res
-
-    - name: assert result
-      assert:
-        that:
-          - res is success
-          - res.listeners is defined
-          - res.listeners[0].id is defined
-
-    - name: Get loadbalancer by Name
-      loadbalancer_info:
-        name: "{{ lb.loadbalancer.name }}"
-      register: res
-
-    - name: assert result
-      assert:
-        that:
-          - res is success
-          - res.loadbalancers is defined
-          - res.loadbalancers.id is defined
-          - res.loadbalancers.vip_address is defined
 
     - name: Drop existing pool by name
       lb_pool:
@@ -235,7 +235,6 @@
           state: absent
           delete_public_ip: yes
         register: lb
-        ignore_errors: true
 
       - name: Drop existing Router
         os_router:
@@ -254,3 +253,4 @@
           name: "{{ network_name }}"
           state: absent
         register: lb_net
+      ignore_errors: true
