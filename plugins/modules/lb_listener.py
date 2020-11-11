@@ -286,24 +286,24 @@ class LoadBalancerListenerModule(OTCModule):
                 if 'default_pool_id' in attrs:
                     if lb_listener.default_pool_id != attrs['default_pool_id']:
                         mattrs['default_pool_id'] = attrs['default_pool_id']
-                        changed=True
+                        changed = True
                 if default_tls_container_ref_filter:
                     if lb_listener.default_tls_container_ref != default_tls_container_ref_filter:
                         mattrs['default_tls_container_ref'] = default_tls_container_ref_filter
-                        changed=True
+                        changed = True
                 if sni_container_refs_filter:
-                    if lb_listener.sni_container_refs != sni_container_refs_filter:
+                    if hash(lb_listener.sni_container_refs) != hash(sni_container_refs_filter):
                         mattrs['sni_container_refs'] = sni_container_refs_filter
-                        changed=True
+                        changed = True
                 # Need improvements in OTCE
                 # if client_ca_tls_container_ref_filter:
                 #     if lb_listener.client_ca_tls_container_ref != client_ca_tls_container_ref_filter:
                 #         mattrs['client_ca_tls_container_ref'] = client_ca_tls_container_ref_filter
-                #         changed=True
+                #         changed = True
                 # if tls_ciphers_policy_filter:
                 #     if lb_listener.tls_ciphers_policy != tls_ciphers_policy_filter:
                 #         mattrs['tls_ciphers_policy'] = tls_ciphers_policy_filter
-                #         changed=True
+                #         changed = True
                 lb_listener = self.conn.network.update_listener(lb_listener, **mattrs)
                 self.exit_json(
                     changed=changed,
