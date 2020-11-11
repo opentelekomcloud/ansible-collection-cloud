@@ -164,7 +164,7 @@ class LoadBalancerPoolModule(OTCModule):
         supports_check_mode=True
     )
 
-    def dict_hash(self, dictionary: Dict[str, Any]) -> str:
+    def _dict_hash(self, dictionary: Dict[str, Any]) -> str:
         """MD5 hash of a dictionary."""
 
         dhash = hashlib.md5()
@@ -228,7 +228,7 @@ class LoadBalancerPoolModule(OTCModule):
                         mattrs['admin_state_up'] = admin_state_up_filter
                         changed = True
                 if session_persistence_filter:
-                    if self.dict_hash(lb_pool.session_persistence) != self.dict_hash(session_persistence_filter):
+                    if self._dict_hash(lb_pool.session_persistence) != self._dict_hash(session_persistence_filter):
                         session_persistence_filter['type'] = session_persistence_filter['type'].upper()
                         mattrs['session_persistence'] = session_persistence_filter
                         changed = True
