@@ -18,7 +18,7 @@ extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.1.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Get DNS PTR Records from the OTC.
+    - Get DNS PTR Records from the OTC.
 options:
   description:
     description:
@@ -59,46 +59,46 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 zone:
-    description: Modfiy DNS Zones
-    type: complex
-    returned: On Success.
-    contains:
-        description:
-            description: Description of the Zone
-            type: str
-            sample: "MyZone123"
-        email:
-            description: assigned E-Mail of the Zone
-            type: str
-            sample: "mail@mail.com"
-        id:
-            description: Zone ID
-            type: str
-            sample: "fe80804323f2065d0175980e81617c10"
-        name:
-            description: Name of the zone
-            type: str
-            sample: "test.test2."
-        router:
-            description: Assigned VPC
-            type: list
-            sample: "[
-                router_id: 79c32783-e560-4e3a-95b1-5a0756441e12,
-                router_region: eu-de,
-                status: PENDING_CREATE
-            ]"
-        status:
-            description: Resource status
-            type: str
-            sample: "PENDING_CREATE"
-        ttl:
-            description: Cache duration (in second) on a local DNS server
-            type: int
-            sample: 300
-        zone_type:
-            description: Zone Type, either public or private
-            type: str
-            sample: "private"
+  description: Modfiy DNS Zones
+  type: complex
+  returned: On Success.
+  contains:
+    description:
+      description: Description of the Zone
+      type: str
+      sample: "MyZone123"
+    email:
+      description: assigned E-Mail of the Zone
+      type: str
+      sample: "mail@mail.com"
+    id:
+      description: Zone ID
+      type: str
+      sample: "fe80804323f2065d0175980e81617c10"
+    name:
+      description: Name of the zone
+      type: str
+      sample: "test.test2."
+    router:
+      description: Assigned VPC
+      type: list
+      sample: "[
+        router_id: 79c32783-e560-4e3a-95b1-5a0756441e12,
+        router_region: eu-de,
+        status: PENDING_CREATE
+        ]"
+    status:
+      description: Resource status
+      type: str
+      sample: "PENDING_CREATE"
+    ttl:
+      description: Cache duration (in second) on a local DNS server
+      type: int
+      sample: 300
+    zone_type:
+      description: Zone Type, either public or private
+      type: str
+      sample: "private"
 
 '''
 
@@ -145,6 +145,9 @@ class DNSZonesModule(OTCModule):
             )
             if zo:
                 zone_id = zo.id
+                zone_desc = zo.description
+                zone_ttl = zo.ttl
+                zone_email = zo.email
                 zone_check = True
             else:
                 zone_check = False
@@ -173,6 +176,9 @@ class DNSZonesModule(OTCModule):
             # As we remove datasets we need to check wether there's the correct one left to obtain the ID
             if len(data) != 0:
                 zone_id = data[0]['id']
+                zone_desc = data[0]['description']
+                zone_ttl = data[0]['ttl']
+                zone_email = data[0]['email']
                 zone_check = True
             else:
                 zone_check = False
@@ -194,7 +200,6 @@ class DNSZonesModule(OTCModule):
 
         if self.params['state'] == 'present':
             attrs = {}
-            changed = False
 
             if zone_check is False:
                 # Check if VPC exists
@@ -228,16 +233,25 @@ class DNSZonesModule(OTCModule):
                 self.exit(changed=True, zone=zone.to_dict())
 
             if zone_check is True:
-                if self.params['description']:
+                changed=False
+                # raise Exception("desc: ", zone_desc, "email: ", zone_email, "ttl: ", zone_ttl)
+                if self.params['description'] and self.params['description'] != zone_desc:
                     attrs['description'] = self.params['description']
-                if self.params['email']:
+                    changed=True
+                if self.params['email'] and self.params['email'] != zone_email:
                     attrs['email'] = self.params['email']
-                if self.params['ttl']:
+                    changed=True
+                if self.params['ttl'] and self.params['ttl'] != zone_ttl:
                     attrs['ttl'] = self.params['ttl']
+                    changed=True
                 attrs['zone'] = zone_id
 
                 zone = self.conn.dns.update_zone(**attrs)
-                self.exit(changed=True, zone=zone.to_dict())
+                self.exit(changed=changed, zone=zone.to_dict())
+
+        self.exit(
+            changed=changed
+        )
 
 
 def main():

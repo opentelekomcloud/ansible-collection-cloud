@@ -49,30 +49,30 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 ptr_records:
-    description: Modify DNS floating IPs
-    type: complex
-    returned: On Success.
-    contains:
-        description:
-            description: Description of the Record
-            type: str
-            sample: "MyRecord123"
-        floating_ip:
-            description: Name or ID of the floating ip
-            type: str
-            sample: "123.123.123.123"
-        ptrdname:
-            description: Domain name of the PTR record required if updating/creating rule
-            type: str
-            sample: "example.com"
-        status:
-            description: Resource status
-            type: str
-            sample: "ACTIVE"
-        ttl:
-            description: PTR record cache duration (in second) on a local DNS server
-            type: int
-            sample: 300
+  description: Modify DNS floating IPs
+  type: complex
+  returned: On Success.
+  contains:
+    description:
+      description: Description of the Record
+      type: str
+      sample: "MyRecord123"
+    floating_ip:
+      description: Name or ID of the floating ip
+      type: str
+      sample: "123.123.123.123"
+    ptrdname:
+      description: Domain name of the PTR record required if updating/creating rule
+      type: str
+      sample: "example.com"
+    status:
+      description: Resource status
+      type: str
+      sample: "ACTIVE"
+    ttl:
+      description: PTR record cache duration (in second) on a local DNS server
+      type: int
+      sample: 300
 
 '''
 
@@ -137,7 +137,7 @@ class DNSFloatingIpModule(OTCModule):
 
             # get_floating_ip doesn't support ignore_missing and throws an error when there's nothing found. So we need to catch the error
             try:
-                self.conn.dns.get_floating_ip(floating_ip=('eu-de:' + fl.id))
+                flip = self.conn.dns.get_floating_ip(floating_ip=('eu-de:' + fl.id))
             except Exception:
                 output = self.conn.dns.set_floating_ip(floating_ip=('eu-de:' + fl.id), **attrs)
                 self.exit(
@@ -145,9 +145,14 @@ class DNSFloatingIpModule(OTCModule):
                     ptr=output.to_dict()
                 )
             else:
+                changed = False
+                if self.params['description'] != flip.description:
+                    changed = True
+                if self.params['ttl'] != flip.ttl:
+                    changed = True
                 output = self.conn.dns.update_floating_ip(floating_ip=('eu-de:' + fl.id), **attrs)
                 self.exit(
-                    changed=True,
+                    changed=changed,
                     ptr=output.to_dict()
                 )
 

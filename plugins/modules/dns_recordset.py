@@ -60,46 +60,46 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 recordset:
-    description: Modify DNS PTR Records
-    type: complex
-    returned: On Success.
-    contains:
-        description:
-            description: Description of the Record
-            type: str
-            sample: "MyRecord123"
-        id:
-            description: ID
-            type: str
-            sample: "fe80804323f2065d0175980e81617c10"
-        records:
-            description: IP Records of the entry. Type is a list
-            type: str
-            sample: "[
-                1.3.1.2,
-                121.111.111.111,
-                145.145.145.145
-            ]"
-        name:
-            description: Name
-            type: str
-            sample: "test.test2."
-        status:
-            description: Resource status
-            type: str
-            sample: "ACTIVE"
-        ttl:
-            description: Cache duration (in second) on a local DNS server
-            type: int
-            sample: 300
-        type:
-            description: Recordset Type
-            type: str
-            sample: "A"
-        zone_name:
-            description: Zone Name
-            type: str
-            sample: "test."
+  description: Modify DNS PTR Records
+  type: complex
+  returned: On Success.
+  contains:
+    description:
+      description: Description of the Record
+      type: str
+      sample: "MyRecord123"
+    id:
+      description: ID
+      type: str
+      sample: "fe80804323f2065d0175980e81617c10"
+    records:
+      description: IP Records of the entry. Type is a list
+      type: str
+      sample: "[
+        1.3.1.2,
+        121.111.111.111,
+        145.145.145.145
+        ]"
+    name:
+      description: Name
+      type: str
+      sample: "test.test2."
+    status:
+      description: Resource status
+      type: str
+      sample: "ACTIVE"
+    ttl:
+      description: Cache duration (in second) on a local DNS server
+      type: int
+      sample: 300
+    type:
+      description: Recordset Type
+      type: str
+      sample: "A"
+    zone_name:
+      description: Zone Name
+      type: str
+      sample: "test."
 
 '''
 
