@@ -46,11 +46,23 @@
             subnet: "{{ subnet.subnet.name }}"
       register: router
 
+    - name: Create as group - check_mode
+      as_group:
+        scaling_group_name: "{{ as_group_name }}"
+        networks: [{'id': "{{ network.network.id }}"}]
+        router: "{{ router.router.id }}"
+      register: as_group_check
+
+    - name: assert result
+      assert:
+        that:
+          - as_group_check is changed
+          -
     - name: Create as group
       as_group:
         scaling_group_name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
-        vpc: "{{ router.router.id }}"
+        router: "{{ router.router.id }}"
       register: as_group
 
     - name: assert result
@@ -75,7 +87,6 @@
   always:
     - block:
       # Cleanup
-
     - name: Delete as group
       as_group:
         scaling_group_name: "{{ new_name }}"

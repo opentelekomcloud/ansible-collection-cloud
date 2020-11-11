@@ -124,9 +124,9 @@ options:
           - Mandatory.
         type: str
         required: true
-  vpc:
+  router:
     description:
-      - The VPC ID or name.
+      - The router ID or name.
       - Mandatory for creating resource.
     type: str
   health_periodic_audit_method:
@@ -224,7 +224,7 @@ as_group:
   scaling_group_name: "scaling-group-test"
   networks:
     - id: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-  vpc: "65707a7e-ee4f-4d13-8283-b4da2e037c69"
+  router: "65707a7e-ee4f-4d13-8283-b4da2e037c69"
 register: as_group
 '''
 
@@ -245,7 +245,7 @@ class ASGroupModule(OTCModule):
         available_zones=dict(required=False, type='list', elements='str'),
         networks=dict(required=False, type='list', elements='dict'),
         security_groups=dict(required=False, type='list', elements='dict'),
-        vpc=dict(required=False),
+        router=dict(required=False),
         health_periodic_audit_method=dict(required=False, type='str', choices=['elb_audit', 'nova_audit']),
         health_periodic_audit_time=dict(required=False, type='int', default=5),
         health_periodic_audit_grace_period=dict(required=False, type='int', default=600),
@@ -267,71 +267,32 @@ class ASGroupModule(OTCModule):
         supports_check_mode=True
     )
 
-    def changed_when_update(self, as_group, **attrs):
-        changed = False
+    def _find_id_config(self):
+        config = self.conn.auto_scaling.find_config(self.params['scaling_configuration'], ignore_missing=True)
+        config_id = None
+        if config:
+            config_id = config.id
+        else:
+            self.fail_json(msg="Scaling configuration not found")
+        return config_id
 
-        if self.params['scaling_group_name']:
-            if as_group.name != attrs['scaling_group_name']:
-                changed = True
-        if self.params['scaling_configuration']:
-            if as_group.scaling_configuration_id != attrs['scaling_configuration_id']:
-                changed = True
-        if self.params['desire_instance_number']:
-            if as_group.desire_instance_number != attrs['desire_instance_number']:
-                changed = True
-        if self.params['min_instance_number']:
-            if as_group.min_instance_number != attrs['min_instance_number']:
-                changed = True
-        if self.params['max_instance_number']:
-            if as_group.max_instance_number != attrs['max_instance_number']:
-                changed = True
-        if self.params['cool_down_time']:
-            if as_group.cool_down_time != attrs['cool_down_time']:
-                changed = True
-        if self.params['lb_listener']:
-            if as_group.lb_listener_id != attrs['lb_listener_id']:
-                changed = True
-        if self.params['available_zones']:
-            if as_group.available_zones != attrs['available_zones']:
-                changed = True
-        if self.params['networks']:
-            list_ids = []
-            list_new_ids = []
-            for n in as_group.networks:
-                list_ids.append(n['id'])
-            for m in self.params['networks']:
-                list_new_ids.append(m['id'])
-            for new_id in list_new_ids:
-                if new_id not in list_ids:
-                    changed = True
-            for id in list_ids:
-                if id not in list_new_ids:
-                    changed = True
-        if self.params['security_groups']:
-            if as_group.security_groups != attrs['security_groups']:
-                changed = True
-        if self.params['health_periodic_audit_method']:
-            if as_group.health_periodic_audit_method != attrs['health_periodic_audit_method']:
-                changed = True
-        if self.params['instance_terminate_policy']:
-            if as_group.instance_terminate_policy != attrs['instance_terminate_policy']:
-                changed = True
-        if self.params['notifications']:
-            if as_group.notifications != attrs['notifications']:
-                changed = True
-        if self.params['delete_publicip']:
-            if as_group.delete_publicip != attrs['delete_publicip']:
-                changed = True
-        if self.params['notifications']:
-            if as_group.notifications != attrs['notifications']:
-                changed = True
-        if self.params['delete_volume']:
-            if as_group.delete_volume != attrs['delete_volume']:
-                changed = True
-        if self.params['enterprise_project_id']:
-            if as_group.enterprise_project_id != attrs['enterprise_project_id']:
-                changed = True
-        return changed
+    def _find_id_listener(self):
+        listener = self.conn.network.find_listener(self.params['scaling_configuration'], ignore_missing=True)
+        listener_id = None
+        if listener:
+            listener_id = listener.id
+        else:
+            self.fail_json(msg="Listener not found")
+        return listener_id
+
+    def _find_id_router(self):
+        router = self.conn.network.find_router(self.params['router'], ignore_missing=True)
+        router_id = None
+        if router:
+            router_id = router.id
+        else:
+            self.fail_json(msg="Router not found")
+        return router_id
 
     def run(self):
 
@@ -341,42 +302,124 @@ class ASGroupModule(OTCModule):
 
         if self.params['scaling_group_id']:
             as_group = self.conn.auto_scaling.find_group(self.params['scaling_group_id'], ignore_missing=True)
-        elif self.params['scaling_group_name']:
-            as_group = self.conn.auto_scaling.find_group(self.params['scaling_group_name'], ignore_missing=True)
         else:
-            self.fail_json(msg="Either 'scaling_group_name' or 'scaling_group_id' must be specified")
-
-        if self.params['scaling_group_name']:
-            attrs['scaling_group_name'] = self.params['scaling_group_name']
+            as_group = self.conn.auto_scaling.find_group(self.params['scaling_group_name'], ignore_missing=True)
 
         if self.params['state'] == 'present':
 
-            if self.params['scaling_configuration']:
-                attrs['scaling_configuration_id'] = self.conn.auto_scaling.find_config(
-                    self.params['scaling_configuration'], ignore_missing=True)
-                self.fail_json(msg=attrs['scaling_configuration_id'])
-                if not attrs['scaling_configuration_id']:
-                    self.fail_json("Scaling configuration not found")
+            if as_group:
 
-            if self.params['lb_listener'] and self.params['lbaas_listeners']:
-                self.fail_json(msg="Either 'lb_listener' or 'lbaas_listener' can be specified")
+                attrs = {}
 
-            if not self.params['health_periodic_audit_method']:
-                # set default values  for 'health_periodic_audit_method'
-                if not as_group:
+                if self.params['scaling_group_name'] and (as_group.name != self.params['scaling_group_name']):
+                    attrs['scaling_group_name'] = self.params['scaling_group_name']
+
+                if self.params['scaling_configuration']:
+                    id_config = self._find_id_config()
+                    if as_group.scaling_configuration_id != id_config:
+                        attrs['scaling_configuration_id'] = id_config
+
+                if self.params['desire_instance_number'] and \
+                        (as_group.desire_instance_number != self.params['desire_instance_number']):
+                    attrs['desire_instance_number'] = self.params['desire_instance_number']
+
+                if self.params['min_instance_number'] \
+                        and (as_group.min_instance_number != self.params['min_instance_number']):
+                    attrs['min_instance_number'] = self.params['min_instance_number']
+
+                if self.params['max_instance_number'] \
+                        and (as_group.max_instance_number != self.params['max_instance_number']):
+                    attrs['max_instance_number'] = self.params['max_instance_number']
+
+                if self.params['cool_down_time'] and (as_group.cool_down_time != self.params['cool_down_time']):
+                    attrs['cool_down_time'] = self.params['cool_down_time']
+
+                if self.params['lb_listener']:
+                    lb_listener_id = self._find_listener_id()
+                    if as_group.lb_listener_id != lb_listener_id:
+                        attrs['lb_listener_id'] = lb_listener_id
+
+                if self.params['available_zones'] and (as_group.available_zones != self.params['available_zones']):
+                    attrs['available_zones'] = self.params['available_zones']
+
+                if self.params['networks']:
+                    list_ids = []
+                    list_new_ids = []
+                    for n in as_group.networks:
+                        list_ids.append(n['id'])
+                    for m in self.params['networks']:
+                        list_new_ids.append(m['id'])
+                    dif = set(list_ids) ^ set(list_new_ids)
+                    if dif:
+                        attrs['networks'] = self.params['networks']
+
+                if self.params['security_groups'] and (as_group.security_groups != self.params['security_groups']):
+                    attrs['available_zones'] = self.params['available_zones']
+
+                if self.params['health_periodic_audit_method'] \
+                        and (as_group.health_periodic_audit_method != self.params['health_periodic_audit_method']):
+                    attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method']
+
+                if self.params['instance_terminate_policy']\
+                        and (as_group.instance_terminate_policy != self.params['instance_terminate_policy']):
+                    attrs['instance_terminate_policy'] = self.params['instance_terminate_policy']
+
+                if self.params['notifications'] and (as_group.notifications != self.params['notifications']):
+                    attrs['notifications'] = self.params['notifications']
+
+                if self.params['delete_publicip'] and (as_group.delete_publicip != self.params['delete_publicip']):
+                    attrs['delete_publicip'] = self.params['delete_publicip']
+
+                if self.params['delete_volume'] and (as_group.delete_volume != self.params['delete_volume']):
+                    attrs['delete_volume'] = self.params['delete_volume']
+
+                if self.params['enterprise_project_id'] \
+                        and (as_group.enterprise_project_id != self.params['enterprise_project_id']):
+                    attrs['enterprise_project_id'] = self.params['enterprise_project_id']
+
+                changed = False
+
+                if attrs:
+                    changed = True
+
+                if self.ansible.check_mode:
+                    self.exit(changed=changed)
+                as_group = self.conn.auto_scaling.update_group(as_group, **attrs)
+
+                self.exit_json(
+                    changed=changed,
+                    as_group=as_group
+                )
+
+            else:
+
+                if self.params['scaling_group_name']:
+                    attrs['scaling_group_name'] = self.params['scaling_group_name']
+                else:
+                    self.json(msg="Name is mandatory for creating.")
+
+                if self.params['networks']:
+                    attrs['networks'] = self.params['networks']
+                else:
+                    self.fail_json(msg="'networks' is mandatory for creating an AS group.")
+
+                if self.params['router']:
+                    attrs['vpc_id'] = self._find_id_router()
+                else:
+                    self.fail_json(msg="'router' is mandatory for creating an AS group.")
+
+                if self.params['scaling_configuration']:
+                    attrs['scaling_configuration_id'] = self._find_id_config()
+
+                if self.params['lb_listener'] and self.params['lbaas_listeners']:
+                    self.fail_json(msg="Either 'lb_listener' or 'lbaas_listener' can be specified")
+
+                if not self.params['health_periodic_audit_method']:
+                    # set default values  for 'health_periodic_audit_method'
                     if self.params['lb_listener'] or self.params['lbaas_listeners']:
                         attrs['health_periodic_audit_method'] = "elb_audit".upper()
                     else:
                         attrs['health_periodic_audit_method'] = "nova_audit".upper()
-            else:
-                if as_group:
-                    if not as_group.lb_listener_id and not self.params['lb_listener'] and not self.params['lbaas_listeners']:
-                        if self.params['health_periodic_audit_method'] == 'elb_audit':
-                            self.fail_json("Without LB only 'nova_audit' is available")
-                        else:
-                            attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method'].upper()
-                    else:
-                        attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method'].upper()
                 else:
                     if not self.params['lb_listener'] and not self.params['lbaas_listeners']:
                         if self.params['health_periodic_audit_method'] == 'elb_audit':
@@ -386,74 +429,46 @@ class ASGroupModule(OTCModule):
                     else:
                         attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method'].upper()
 
-            if self.params['lb_listener']:
-                attrs['lb_listener_id'] = self.conn.network.find_listener(self.params['lb_listener'],
-                                                                          ignore_missing=True)
-                if not attrs['lb_listener_id']:
-                    self.fail_json("lb_listener no found")
+                if self.params['lb_listener']:
+                    attrs['lb_listener_id'] = self._find_id_listener()
 
-            if self.params['lbaas_listeners']:
-                attrs['lbaas_listeners'] = self.params['lbaas_listeners']
+                if self.params['lbaas_listeners']:
+                    attrs['lbaas_listeners'] = self.params['lbaas_listeners']
 
-            if self.params['min_instance_number']:
-                attrs['min_instance_number'] = self.params['min_instance_number']
-            if self.params['max_instance_number']:
-                attrs['max_instance_number'] = self.params['max_instance_number']
-            if self.params['health_periodic_audit_time']:
-                attrs['health_periodic_audit_time'] = self.params['health_periodic_audit_time']
-            if self.params['delete_publicip']:
-                attrs['delete_publicip'] = self.params['delete_publicip']
-            if self.params['delete_volume']:
-                attrs['delete_volume'] = self.params['delete_volume']
-            if self.params['cool_down_time']:
-                attrs['cool_down_time'] = self.params['cool_down_time']
-            if self.params['health_periodic_audit_grace_period']:
-                attrs['health_periodic_audit_grace_period'] = self.params['health_periodic_audit_grace_period']
-            if self.params['desire_instance_number']:
-                attrs['desire_instance_number'] = self.params['desire_instance_number']
-            if self.params['available_zones']:
-                attrs['available_zones'] = self.params['available_zones']
-            if self.params['networks']:
-                attrs['networks'] = self.params['networks']
-            if self.params['security_groups']:
-                attrs['security_groups'] = self.params['security_groups']
-            if self.params['instance_terminate_policy']:
-                attrs['instance_terminate_policy'] = self.params['instance_terminate_policy'].upper()
-            if self.params['notifications']:
-                attrs['notifications'] = self.params['notifications']
-            if self.params['enterprise_project_id']:
-                attrs['enterprise_project_id'] = self.params['enterprise_project_id']
-            if self.params['multi_az_priority_policy']:
-                attrs['multi_az_priority_policy'] = self.params['multi_az_priority_policy'].upper()
-
-            if not as_group:
-
-                if not self.params['networks']:
-                    self.fail_json(msg="'networks' is mandatory for creating an AS group.")
-
-                if self.params['vpc']:
-                    attrs['vpc_id'] = self.conn.network.find_router(self.params['vpc'], ignore_missing=True).id
-                    if not attrs['vpc_id']:
-                        self.fail_json("vpc no found")
-                else:
-                    self.fail_json(msg="'vpc' is mandatory for creating an AS group.")
+                if self.params['min_instance_number']:
+                    attrs['min_instance_number'] = self.params['min_instance_number']
+                if self.params['max_instance_number']:
+                    attrs['max_instance_number'] = self.params['max_instance_number']
+                if self.params['health_periodic_audit_time']:
+                    attrs['health_periodic_audit_time'] = self.params['health_periodic_audit_time']
+                if self.params['delete_publicip']:
+                    attrs['delete_publicip'] = self.params['delete_publicip']
+                if self.params['delete_volume']:
+                    attrs['delete_volume'] = self.params['delete_volume']
+                if self.params['cool_down_time']:
+                    attrs['cool_down_time'] = self.params['cool_down_time']
+                if self.params['health_periodic_audit_grace_period']:
+                    attrs['health_periodic_audit_grace_period'] = self.params['health_periodic_audit_grace_period']
+                if self.params['desire_instance_number']:
+                    attrs['desire_instance_number'] = self.params['desire_instance_number']
+                if self.params['available_zones']:
+                    attrs['available_zones'] = self.params['available_zones']
+                if self.params['security_groups']:
+                    attrs['security_groups'] = self.params['security_groups']
+                if self.params['instance_terminate_policy']:
+                    attrs['instance_terminate_policy'] = self.params['instance_terminate_policy'].upper()
+                if self.params['notifications']:
+                    attrs['notifications'] = self.params['notifications']
+                if self.params['enterprise_project_id']:
+                    attrs['enterprise_project_id'] = self.params['enterprise_project_id']
+                if self.params['multi_az_priority_policy']:
+                    attrs['multi_az_priority_policy'] = self.params['multi_az_priority_policy'].upper()
 
                 if self.ansible.check_mode:
                     self.exit(changed=True)
 
                 as_group = self.conn.auto_scaling.create_group(**attrs)
                 changed = True
-
-                self.exit_json(
-                    changed=changed,
-                    as_group=as_group
-                )
-
-            else:
-                changed = self.changed_when_update(as_group, **attrs)
-                if self.ansible.check_mode:
-                    self.exit(changed=changed)
-                as_group = self.conn.auto_scaling.update_group(as_group, **attrs)
 
                 self.exit_json(
                     changed=changed,
