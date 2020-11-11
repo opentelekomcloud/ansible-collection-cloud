@@ -41,21 +41,21 @@ options:
   min_instance_number:
     description:
       - Specifies the minimum number of instances. The default value is 0.
+      - Default is 0.
     type: int
-    default: 0
   max_instance_number:
     description:
       - Specifies the maximum number of instances. The default value is 0.
+      - Default is 0.
     type: int
-    default: 0
   cool_down_time:
     description:
       - Specifies the cooldown period (in seconds). The value ranges from 0 to 86400 and is 300 by default.
       - After a scaling action is triggered, the system starts the cooldown period. During the cooldown period,\
        scaling actions triggered by alarms will be denied. Scheduled, periodic,\
         and manual scaling actions are not affected.
+      - Default is 300.
     type: int
-    default: 300
   lb_listener:
     description:
       - Specifies ID or name of a classic load balancer listener. The system supports the binding of up\
@@ -142,8 +142,8 @@ options:
       -  Specifies the instance health check period.  The value can be 1, 5, 15, 60, or 180 in the unit of minutes.
       - If this parameter is not specified, the default value is 5.
       - If the value is set to 0, health check is performed every 10 seconds.
+      - Default is 5.
     type: int
-    default: 5
   health_periodic_audit_grace_period:
     description:
       -  Specifies the grace period for instance health check. The unit is second and value range is 0-86400.\
@@ -151,8 +151,8 @@ options:
         to an AS group and is enabled.\
         The AS group will start checking the instance status only after the grace period ends.
       -  This parameter is valid only when the instance health check method of the AS group is ELB_AUDIT.
+      - Default is 600.
     type: int
-    default: 600
   instance_terminate_policy:
     description:
       -  Specifies the instance removal policy.
@@ -164,7 +164,6 @@ options:
       -  NEW_INSTANCE. The later-created instances are removed first.
     choices: ['old_config_old_instance', 'old_config_new_instance', 'old_instance', 'new_instance']
     type: str
-    default: 'old_config_old_instance'
   notifications:
     description:
       -  Specifies the notification mode.
@@ -174,12 +173,10 @@ options:
     description:
       -  Specifies whether to delete the EIP bound to the ECS when deleting the ECS.
     type: bool
-    default: False
   delete_volume:
     description:
       - Specifies whether to delete the data disks attached to the ECS when deleting the ECS.
     type: bool
-    default: False
   enterprise_project_id:
     description:
       - Specifies the enterprise project ID, which is used to specify the enterprise project\
@@ -197,7 +194,6 @@ options:
        in the available_zones list.
     choices: ['equilibrium_distribute', 'pick_first']
     type: str
-    default: "equilibrium_distribute"
   state:
     description:
       - Whether resource should be present or absent.
@@ -237,9 +233,9 @@ class ASGroupModule(OTCModule):
         scaling_group_id=dict(required=False),
         scaling_configuration=dict(required=False),
         desire_instance_number=dict(required=False, type='int'),
-        min_instance_number=dict(required=False, type='int', default=0),
-        max_instance_number=dict(required=False, type='int', default=0),
-        cool_down_time=dict(required=False, type='int', default=300),
+        min_instance_number=dict(required=False, type='int'),
+        max_instance_number=dict(required=False, type='int'),
+        cool_down_time=dict(required=False, type='int'),
         lb_listener=dict(required=False),
         lbaas_listeners=dict(required=False, type='list', elements='dict'),
         available_zones=dict(required=False, type='list', elements='str'),
@@ -247,17 +243,16 @@ class ASGroupModule(OTCModule):
         security_groups=dict(required=False, type='list', elements='dict'),
         router=dict(required=False),
         health_periodic_audit_method=dict(required=False, type='str', choices=['elb_audit', 'nova_audit']),
-        health_periodic_audit_time=dict(required=False, type='int', default=5),
-        health_periodic_audit_grace_period=dict(required=False, type='int', default=600),
+        health_periodic_audit_time=dict(required=False, type='int'),
+        health_periodic_audit_grace_period=dict(required=False, type='int'),
         instance_terminate_policy=dict(required=False,
                                        choices=['old_config_old_instance', 'old_config_new_instance',
-                                                'old_instance', 'new_instance'], default='old_config_old_instance'),
+                                                'old_instance', 'new_instance']),
         notifications=dict(required=False, type='list', elements='str'),
-        delete_publicip=dict(required=False, type='bool', default=False),
-        delete_volume=dict(required=False, type='bool', default=False),
+        delete_publicip=dict(required=False, type='bool'),
+        delete_volume=dict(required=False, type='bool'),
         enterprise_project_id=dict(required=False),
-        multi_az_priority_policy=dict(required=False, choices=['equilibrium_distribute', 'pick_first'],
-                                      default='equilibrium_distribute'),
+        multi_az_priority_policy=dict(required=False, choices=['equilibrium_distribute', 'pick_first']),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
@@ -437,32 +432,59 @@ class ASGroupModule(OTCModule):
 
                 if self.params['min_instance_number']:
                     attrs['min_instance_number'] = self.params['min_instance_number']
+                else:
+                    attrs['min_instance_number'] = 0
+
                 if self.params['max_instance_number']:
                     attrs['max_instance_number'] = self.params['max_instance_number']
+                else:
+                    attrs['max_instance_number'] = 0
+
                 if self.params['health_periodic_audit_time']:
                     attrs['health_periodic_audit_time'] = self.params['health_periodic_audit_time']
+                else:
+                    attrs['health_periodic_audit_time'] = 5
+
                 if self.params['delete_publicip']:
                     attrs['delete_publicip'] = self.params['delete_publicip']
+                else:
+                    attrs['delete_publicip'] = False
+
                 if self.params['delete_volume']:
                     attrs['delete_volume'] = self.params['delete_volume']
+                else:
+                    attrs['delete_volume'] = False
+
                 if self.params['cool_down_time']:
                     attrs['cool_down_time'] = self.params['cool_down_time']
+                else:
+                    attrs['cool_down_time'] = 300
+
                 if self.params['health_periodic_audit_grace_period']:
                     attrs['health_periodic_audit_grace_period'] = self.params['health_periodic_audit_grace_period']
+                else:
+                    attrs['health_periodic_audit_grace_period'] = 600
+
                 if self.params['desire_instance_number']:
                     attrs['desire_instance_number'] = self.params['desire_instance_number']
                 if self.params['available_zones']:
                     attrs['available_zones'] = self.params['available_zones']
                 if self.params['security_groups']:
                     attrs['security_groups'] = self.params['security_groups']
+
                 if self.params['instance_terminate_policy']:
                     attrs['instance_terminate_policy'] = self.params['instance_terminate_policy'].upper()
+                else:
+                    attrs['instance_terminate_policy'] = 'old_config_old_instance'.upper()
+
                 if self.params['notifications']:
                     attrs['notifications'] = self.params['notifications']
                 if self.params['enterprise_project_id']:
                     attrs['enterprise_project_id'] = self.params['enterprise_project_id']
                 if self.params['multi_az_priority_policy']:
                     attrs['multi_az_priority_policy'] = self.params['multi_az_priority_policy'].upper()
+                else:
+                    attrs['multi_az_priority_policy'] = 'equilibrium_distribute'.upper()
 
                 if self.ansible.check_mode:
                     self.exit(changed=True)
