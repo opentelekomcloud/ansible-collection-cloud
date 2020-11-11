@@ -233,17 +233,16 @@ class DNSZonesModule(OTCModule):
                 self.exit(changed=True, zone=zone.to_dict())
 
             if zone_check is True:
-                changed=False
-                # raise Exception("desc: ", zone_desc, "email: ", zone_email, "ttl: ", zone_ttl)
+                changed = False
                 if self.params['description'] and self.params['description'] != zone_desc:
                     attrs['description'] = self.params['description']
-                    changed=True
+                    changed = True
                 if self.params['email'] and self.params['email'] != zone_email:
                     attrs['email'] = self.params['email']
-                    changed=True
+                    changed = True
                 if self.params['ttl'] and self.params['ttl'] != zone_ttl:
                     attrs['ttl'] = self.params['ttl']
-                    changed=True
+                    changed = True
                 attrs['zone'] = zone_id
 
                 zone = self.conn.dns.update_zone(**attrs)

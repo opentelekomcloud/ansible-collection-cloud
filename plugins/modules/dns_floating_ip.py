@@ -103,7 +103,6 @@ class DNSFloatingIpModule(OTCModule):
 
     def run(self):
         changed = False
-        data = []
 
         fl = self.conn.network.find_ip(
             name_or_id=self.params['floating_ip'],

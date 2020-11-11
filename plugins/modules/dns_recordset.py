@@ -135,7 +135,6 @@ class DNSRecordsetModule(OTCModule):
 
     def run(self):
         changed = False
-        data = []
 
         zo = self.conn.dns.find_zone(
             name_or_id=self.params['zone_id'],
