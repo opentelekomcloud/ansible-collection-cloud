@@ -67,50 +67,50 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 recordsets:
-    description: Get DNS Recordsets
-    type: complex
-    returned: On Success.
-    contains:
-        default:
-            description: Whether the record set is created by default
-            type: str
-            sample: "false"
-        description:
-            description: Description of the Record
-            type: str
-            sample: "MyRecord123"
-        created_at:
-            description: Time of creation
-            type: str
-            sample: "2020-09-29T12:28:59.721"
-        name:
-            description: Recordset name or ID
-            type: str
-            sample: "fe80823273f2065d0174defcbdce5951"
-        project_id:
-            description: Project ID
-            type: str
-            sample: "16e23f43a13b49529d2e2c3646691288"
-        status:
-            description: Resource status
-            type: str
-            sample: "ACTIVE"
-        ttl:
-            description: Record set cache duration (in second) on a local DNS server
-            type: int
-            sample: 300
-        type:
-            description: Record set type
-            type: str
-            sample: "AAAA"
-        updated_at:
-            description: Last Update time
-            type: str
-            sample: "2020-09-29T12:28:59.721"
-        zone_id:
-            description: Zone ID of the record set
-            type: str
-            sample: "fe4080825c5f1234015c5f26688d0008"
+  description: Get DNS Recordsets
+  type: complex
+  returned: On Success.
+  contains:
+    default:
+      description: Whether the record set is created by default
+      type: str
+      sample: "false"
+    description:
+      description: Description of the Record
+      type: str
+      sample: "MyRecord123"
+    created_at:
+      description: Time of creation
+      type: str
+      sample: "2020-09-29T12:28:59.721"
+    name:
+      description: Recordset name or ID
+      type: str
+      sample: "fe80823273f2065d0174defcbdce5951"
+    project_id:
+      description: Project ID
+      type: str
+      sample: "16e23f43a13b49529d2e2c3646691288"
+    status:
+      description: Resource status
+      type: str
+      sample: "ACTIVE"
+    ttl:
+      description: Record set cache duration (in second) on a local DNS server
+      type: int
+      sample: 300
+    type:
+      description: Record set type
+      type: str
+      sample: "AAAA"
+    updated_at:
+      description: Last Update time
+      type: str
+      sample: "2020-09-29T12:28:59.721"
+    zone_id:
+      description: Zone ID of the record set
+      type: str
+      sample: "fe4080825c5f1234015c5f26688d0008"
 
 '''
 

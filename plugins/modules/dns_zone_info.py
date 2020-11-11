@@ -71,62 +71,62 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 dns_zones:
-    description: List of dictionaries describing NAT gateways.
-    type: complex
-    returned: On Success.
-    contains:
-        description:
-            description: Description of the zone
-            type: str
-            sample: "What a great zone"
-        email:
-            description: DNS Zone EMail Adress of the administrator managing the zone
-            type: str
-            sample: "email@mail.ru"
-        name:
-            description: Name of the zone
-            type: str
-            sample: "MyZone123"
-        pool_id:
-            description: Pool ID of the zone
-            type: str
-            sample: "fe4080825c5f1977015c5f26688d0008"
-        project_id:
-            description: Project ID of the zone
-            type: str
-            sample: "19f43a84a13b49529d2e2c3646693458"
-        record_num:
-            description: Number of record sets in the zone
-            type: int
-            sample: 3
-        serial:
-            description: Serial number in the SOA record set in a zone
-            type: int
-            sample: 1
-        status:
-            description: Ressource Status
-            type: str
-            sample: "ACTIVE"
-        ttl:
-            description: TTL value of the SOA record set in the zone
-            type: int
-            sample: 300
-        zone_type:
-            description: DNS Zone type
-            type: str
-            sample: "private"
-        zone_id:
-            description: DNS Zone ID
-            type: str
-            sample: "fe4080825c5f1977015c5f26688d0008"
-        routers:
-            description: Routers (VPCs associated with the zone)
-            type: dict
-            sample: {
-                      "status": "ACTIVE",
-                      "router_id": "19664294-0bf6-4271-ad3a-94b8c79c6558",
-                      "router_region": "xx"
-                    }
+  description: List of dictionaries describing NAT gateways.
+  type: complex
+  returned: On Success.
+  contains:
+    description:
+      description: Description of the zone
+      type: str
+      sample: "What a great zone"
+    email:
+      description: DNS Zone EMail Adress of the administrator managing the zone
+      type: str
+      sample: "email@mail.ru"
+    name:
+      description: Name of the zone
+      type: str
+      sample: "MyZone123"
+    pool_id:
+      description: Pool ID of the zone
+      type: str
+      sample: "fe4080825c5f1977015c5f26688d0008"
+    project_id:
+      description: Project ID of the zone
+      type: str
+      sample: "19f43a84a13b49529d2e2c3646693458"
+    record_num:
+      description: Number of record sets in the zone
+      type: int
+      sample: 3
+    serial:
+      description: Serial number in the SOA record set in a zone
+      type: int
+      sample: 1
+    status:
+      description: Ressource Status
+      type: str
+      sample: "ACTIVE"
+    ttl:
+      description: TTL value of the SOA record set in the zone
+      type: int
+      sample: 300
+    zone_type:
+      description: DNS Zone type
+      type: str
+      sample: "private"
+    zone_id:
+      description: DNS Zone ID
+      type: str
+      sample: "fe4080825c5f1977015c5f26688d0008"
+    routers:
+      description: Routers (VPCs associated with the zone)
+      type: dict
+      sample: {
+        "status": "ACTIVE",
+        "router_id": "19664294-0bf6-4271-ad3a-94b8c79c6558",
+        "router_region": "xx"
+        }
 
 '''
 

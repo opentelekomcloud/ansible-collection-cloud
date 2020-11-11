@@ -43,26 +43,26 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 dns_nameservers:
-    description: List of DNS Nameservers
-    type: complex
-    returned: On Success.
-    contains:
-        address:
-            description: IP address of a DNS server
-            type: str
-            sample: "100.138.123.199"
-        hostname:
-            description: Hostname of a DNS server
-            type: str
-            sample: "Myhostname"
-        priority:
-            description: Priority of a name server
-            type: str
-            sample: "1"
-        zone:
-            description: Specifies the DNS zone
-            type: str
-            sample: "fe40808272701cbe0172cbca17f91882"
+  description: List of DNS Nameservers
+  type: complex
+  returned: On Success.
+  contains:
+    address:
+      description: IP address of a DNS server
+      type: str
+      sample: "100.138.123.199"
+    hostname:
+      description: Hostname of a DNS server
+      type: str
+      sample: "Myhostname"
+    priority:
+      description: Priority of a name server
+      type: str
+      sample: "1"
+    zone:
+      description: Specifies the DNS zone
+      type: str
+      sample: "fe40808272701cbe0172cbca17f91882"
 '''
 
 EXAMPLES = '''

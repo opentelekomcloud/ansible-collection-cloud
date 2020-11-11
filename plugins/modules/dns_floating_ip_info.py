@@ -50,34 +50,34 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 ptr_records:
-    description: Get DNS PTR Records
-    type: complex
-    returned: On Success.
-    contains:
-        address:
-            description: EIP address
-            type: str
-            sample: "100.138.123.199"
-        description:
-            description: Description of the Record
-            type: str
-            sample: "MyRecord123"
-        id:
-            description: PTR record id
-            type: str
-            sample: "eu-de:fe864230-d3bc-4391-8a32-394c3e9ca22d"
-        ptrdname:
-            description: Domain name of the PTR record
-            type: str
-            sample: "example.com"
-        status:
-            description: Resource status
-            type: str
-            sample: "ACTIVE"
-        ttl:
-            description: PTR record cache duration (in second) on a local DNS server
-            type: int
-            sample: 300
+  description: Get DNS PTR Records
+  type: complex
+  returned: On Success.
+  contains:
+    address:
+      description: EIP address
+      type: str
+      sample: "100.138.123.199"
+    description:
+      description: Description of the Record
+      type: str
+      sample: "MyRecord123"
+    id:
+      description: PTR record id
+      type: str
+      sample: "eu-de:fe864230-d3bc-4391-8a32-394c3e9ca22d"
+    ptrdname:
+      description: Domain name of the PTR record
+      type: str
+      sample: "example.com"
+    status:
+      description: Resource status
+      type: str
+      sample: "ACTIVE"
+    ttl:
+      description: PTR record cache duration (in second) on a local DNS server
+      type: int
+      sample: 300
 
 '''
 
@@ -120,7 +120,7 @@ class DNSFloatingIpInfoModule(OTCModule):
             query['description'] = self.params['description']
         if self.params['status']:
             query['status'] = self.params['status']
-        
+
         for raw in self.conn.dns.floating_ips(**query):
             dt = raw.to_dict()
             dt.pop('location')
