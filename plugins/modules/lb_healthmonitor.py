@@ -233,12 +233,43 @@ class LoadBalancerHealthmonitorModule(OTCModule):
                 attrs['http_method'] = http_method_filter.upper()
 
             if lb_monitor:
-                changed = True
+                mattrs = {}
+                changed = False
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                if 'pool_id' in attrs:
-                    attrs.pop('pool_id')
-                lb_monitor = self.conn.network.update_health_monitor(health_monitor=lb_monitor, **attrs)
+                if delay_filter:
+                    if lb_monitor.delay != delay_filter:
+                        mattrs['delay'] = delay_filter
+                        changed = True
+                if max_retries_filter:
+                    if lb_monitor.max_retries != max_retries_filter:
+                        mattrs['max_retries'] = max_retries_filter
+                        changed = True
+                if admin_state_filter:
+                    if lb_monitor.is_admin_state_up != admin_state_filter:
+                        mattrs['admin_state_up'] = admin_state_filter
+                        changed = True
+                if timeout_filter:
+                    if lb_monitor.timeout != timeout_filter:
+                        mattrs['timeout'] = timeout_filter
+                        changed = True
+                if type_filter:
+                    if lb_monitor.type != type_filter.upper():
+                        mattrs['type'] = type_filter.upper()
+                        changed = True
+                if expected_codes_filter:
+                    if lb_monitor.expected_codes != expected_codes_filter:
+                        mattrs['expected_codes'] = expected_codes_filter
+                        changed = True
+                if url_path_filter:
+                    if lb_monitor.url_path != url_path_filter:
+                        mattrs['url_path'] = url_path_filter
+                        changed = True
+                if http_method_filter:
+                    if lb_monitor.http_method != http_method_filter.upper():
+                        mattrs['http_method'] = http_method_filter.upper()
+                        changed = True
+                lb_monitor = self.conn.network.update_health_monitor(health_monitor=lb_monitor, **mattrs)
                 self.exit_json(
                     changed=changed,
                     healthmonitor=lb_monitor.to_dict(),
