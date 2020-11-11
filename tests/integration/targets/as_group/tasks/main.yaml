@@ -72,11 +72,16 @@
           - as_group is success
           - as_group is changed
 
+  always:
+    - block:
+      # Cleanup
+
     - name: Delete as group
       as_group:
         scaling_group_name: "{{ new_name }}"
         state: absent
       register: dropped_as_group
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -84,9 +89,6 @@
           - dropped_as_group is success
           - dropped_as_group is changed
 
-  always:
-    - block:
-      # Cleanup
       - name: Delete keypair
         openstack.cloud.os_keypair:
             name: "{{ key_name }}"

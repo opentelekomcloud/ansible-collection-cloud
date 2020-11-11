@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: as_group
 short_description: Create/Remove AutoScaling group from the OTC
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.2.0"
 author: "Polina Gubina (@Polina-Gubina)"
 description:
   - Create/Remove AutoScaling group from the OTC.
@@ -220,6 +220,12 @@ as_group:
 '''
 
 EXAMPLES = '''
+as_group:
+  scaling_group_name: "scaling-group-test"
+  networks:
+    - id: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+  vpc: "65707a7e-ee4f-4d13-8283-b4da2e037c69"
+register: as_group
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
