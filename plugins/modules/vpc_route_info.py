@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: vpc_route_info
 short_description: Get information about vpc routes info
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.2"
+version_added: "0.2.0"
 author: "Polina Gubina (@polina-gubina)"
 description:
   - Get a generator of vpc routes info from the OTC.
