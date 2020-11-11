@@ -165,10 +165,19 @@ class LoadBalancerMemberModule(OTCModule):
                 attrs['subnet_id'] = subnet.id
 
             if lb_member and lb_pool:
-                changed = True
+                mattrs = {}
+                changed = False
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                lb_member = self.conn.network.update_pool_member(pool_member=lb_member, pool=lb_pool, **attrs)
+                if admin_state_filter:
+                    if lb_member.is_admin_state_up != admin_state_filter:
+                        mattrs['admin_state_up'] = admin_state_filter
+                        changed = True
+                if weight_filter:
+                    if lb_member.weight != weight_filter:
+                        mattrs['weight'] = weight_filter
+                        changed = True
+                lb_member = self.conn.network.update_pool_member(pool_member=lb_member, pool=lb_pool, **mattrs)
                 self.exit_json(
                     changed=changed,
                     member=lb_member.to_dict(),
@@ -177,7 +186,8 @@ class LoadBalancerMemberModule(OTCModule):
 
             if not address_filter and not protocol_port_filter and not subnet_filter:
                 self.fail_json(msg='Address, protocol port and subnet must be specified.')
-
+            if not lb_pool:
+                self.fail_json(msg='Pool must be specified.')
             if self.ansible.check_mode:
                 self.exit_json(changed=True)
 
