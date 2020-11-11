@@ -215,24 +215,20 @@ class LoadBalancerCertificateModule(OTCModule):
                     if cert.admin_state_up != admin_state_filter:
                         mattrs['admin_state_up'] = admin_state_filter
                         changed = True
-
                 if description_filter:
                     if cert.description != description_filter:
                         mattrs['description'] = description_filter
                         changed = True
-
                 if domain_filter:
                     if cert.domain != domain_filter:
                         mattrs['domain'] = domain_filter
                         changed = True
-
                 if private_key_filter:
-                    if cert.private_key != private_key_filter:
+                    if cert.private_key != private_key_filter.strip():
                         mattrs['private_key'] = private_key_filter.strip()
                         changed = True
-
                 if content_filter:
-                    if cert.content != content_filter:
+                    if cert.content != content_filter.strip():
                         mattrs['content'] = content_filter.strip()
                         changed = True
 
