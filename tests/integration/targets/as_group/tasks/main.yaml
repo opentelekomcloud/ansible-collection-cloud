@@ -51,6 +51,7 @@
         scaling_group_name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
+      check_mode: yes
       register: as_group_check
 
     - name: assert result

@@ -293,8 +293,6 @@ class ASGroupModule(OTCModule):
 
         as_group = None
 
-        attrs = {}
-
         if self.params['scaling_group_id']:
             as_group = self.conn.auto_scaling.find_group(self.params['scaling_group_id'], ignore_missing=True)
         else:
@@ -353,6 +351,10 @@ class ASGroupModule(OTCModule):
 
                 if self.params['health_periodic_audit_method'] \
                         and (as_group.health_periodic_audit_method != self.params['health_periodic_audit_method']):
+
+                    if not as_group.lb_listener_id and (self.params['health_periodic_audit_method'] == 'elb_audit'):
+                        self.fail_json(msg="Without LB only 'nova_audit' is available")
+
                     attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method']
 
                 if self.params['instance_terminate_policy']\
@@ -378,7 +380,7 @@ class ASGroupModule(OTCModule):
                     changed = True
 
                 if self.ansible.check_mode:
-                    self.exit(changed=changed)
+                    self.exit(changed=changed, as_group=as_group)
                 as_group = self.conn.auto_scaling.update_group(as_group, **attrs)
 
                 self.exit_json(
@@ -387,6 +389,8 @@ class ASGroupModule(OTCModule):
                 )
 
             else:
+
+                attrs = {}
 
                 if self.params['scaling_group_name']:
                     attrs['scaling_group_name'] = self.params['scaling_group_name']
