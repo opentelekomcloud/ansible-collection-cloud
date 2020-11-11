@@ -74,63 +74,63 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 id:
-    description: The load balancer UUID.
-    returned: On success when C(state=present)
-    type: str
-    sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+  description: The load balancer UUID.
+  returned: On success when C(state=present)
+  type: str
+  sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
 loadbalancer:
-    description: Dictionary describing the load balancer.
-    returned: On success when C(state=present)
-    type: complex
-    contains:
-        id:
-            description: Unique UUID.
-            type: str
-            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-        name:
-            description: Name given to the load balancer.
-            type: str
-            sample: "elb_test"
-        vip_network_id:
-            description: Network ID the load balancer virutal IP port belongs in.
-            type: str
-            sample: "f171db43-56fd-41cf-82d7-4e91d741762e"
-        vip_subnet_id:
-            description: Subnet ID the load balancer virutal IP port belongs in.
-            type: str
-            sample: "c53e3c70-9d62-409a-9f71-db148e7aa853"
-        vip_port_id:
-            description: The load balancer virutal IP port ID.
-            type: str
-            sample: "2061395c-1c01-47ab-b925-c91b93df9c1d"
-        vip_address:
-            description: The load balancer virutal IP address.
-            type: str
-            sample: "192.168.2.88"
-        public_vip_address:
-            description: The load balancer public VIP address.
-            type: str
-            sample: "10.17.8.254"
-        provisioning_status:
-            description: The provisioning status of the load balancer.
-            type: str
-            sample: "ACTIVE"
-        operating_status:
-            description: The operating status of the load balancer.
-            type: str
-            sample: "ONLINE"
-        is_admin_state_up:
-            description: The administrative state of the load balancer.
-            type: bool
-            sample: true
-        listeners:
-            description: The associated listener IDs, if any.
-            type: list
-            sample: [{"id": "7aa1b380-beec-459c-a8a7-3a4fb6d30645"}, {"id": "692d06b8-c4f8-4bdb-b2a3-5a263cc23ba6"}]
-        pools:
-            description: The associated pool IDs, if any.
-            type: list
-            sample: [{"id": "27b78d92-cee1-4646-b831-e3b90a7fa714"}, {"id": "befc1fb5-1992-4697-bdb9-eee330989344"}]
+  description: Dictionary describing the load balancer.
+  returned: On success when C(state=present)
+  type: complex
+  contains:
+    id:
+      description: Unique UUID.
+      type: str
+      sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+    name:
+      description: Name given to the load balancer.
+      type: str
+      sample: "elb_test"
+    vip_network_id:
+      description: Network ID the load balancer virutal IP port belongs in.
+      type: str
+      sample: "f171db43-56fd-41cf-82d7-4e91d741762e"
+    vip_subnet_id:
+      description: Subnet ID the load balancer virutal IP port belongs in.
+      type: str
+      sample: "c53e3c70-9d62-409a-9f71-db148e7aa853"
+    vip_port_id:
+      description: The load balancer virutal IP port ID.
+      type: str
+      sample: "2061395c-1c01-47ab-b925-c91b93df9c1d"
+    vip_address:
+      description: The load balancer virutal IP address.
+      type: str
+      sample: "192.168.2.88"
+    public_vip_address:
+      description: The load balancer public VIP address.
+      type: str
+      sample: "10.17.8.254"
+    provisioning_status:
+      description: The provisioning status of the load balancer.
+      type: str
+      sample: "ACTIVE"
+    operating_status:
+      description: The operating status of the load balancer.
+      type: str
+      sample: "ONLINE"
+    is_admin_state_up:
+      description: The administrative state of the load balancer.
+      type: bool
+      sample: true
+    listeners:
+      description: The associated listener IDs, if any.
+      type: list
+      sample: [{"id": "7aa1b380-beec-459c-a8a7-3a4fb6d30645"}, {"id": "692d06b8-c4f8-4bdb-b2a3-5a263cc23ba6"}]
+    pools:
+      description: The associated pool IDs, if any.
+      type: list
+      sample: [{"id": "27b78d92-cee1-4646-b831-e3b90a7fa714"}, {"id": "befc1fb5-1992-4697-bdb9-eee330989344"}]
 '''
 
 EXAMPLES = '''

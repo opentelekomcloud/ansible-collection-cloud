@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: lb_certificate
 short_description: Manage ELB certificates
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.3"
+version_added: "0.2.0"
 author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Manage ELB certificates.
@@ -55,48 +55,48 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 elb_certificate:
-    description: Certificate data.
-    type: complex
-    returned: On Success.
-    contains:
-        id:
-            description: Unique UUID.
-            type: str
-            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-        name:
-            description: Name of the certificate.
-            type: str
-            sample: "test"
-        admin_state_up:
-            description: Administrative status of the certificate.
-            type: bool
-        description:
-            description: Supplementary information about the certificate.
-            type: str
-        type:
-            description: Certificate type.
-            type: str
-        domain:
-            description: Domain name associated with the server certificate.
-            type: str
-        private_key:
-            description: Private key of the server certificate in PEM format.
-            type: str
-        certificate:
-            description: Public key of the server certificate or CA certificate used to authenticate the client.
-            type: str
-        expire_time:
-            description: Expiration timestamp
-            type: int
-            sample: 1630488473000
-        create_time:
-            description: Certificate creation time
-            type: int
-            sample: 1630488473000
-        update_time:
-            description: Certificate update time
-            type: int
-            sample: 1630488473000
+  description: Certificate data.
+  type: complex
+  returned: On Success.
+  contains:
+    id:
+      description: Unique UUID.
+      type: str
+      sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+    name:
+      description: Name of the certificate.
+      type: str
+      sample: "test"
+    admin_state_up:
+      description: Administrative status of the certificate.
+      type: bool
+    description:
+      description: Supplementary information about the certificate.
+      type: str
+    type:
+      description: Certificate type.
+      type: str
+    domain:
+      description: Domain name associated with the server certificate.
+      type: str
+    private_key:
+      description: Private key of the server certificate in PEM format.
+      type: str
+    certificate:
+      description: Public key of the server certificate or CA certificate used to authenticate the client.
+      type: str
+    expire_time:
+      description: Expiration timestamp
+      type: int
+      sample: 1630488473000
+    create_time:
+      description: Certificate creation time
+      type: int
+      sample: 1630488473000
+    update_time:
+      description: Certificate update time
+      type: int
+      sample: 1630488473000
 '''
 
 EXAMPLES = '''
