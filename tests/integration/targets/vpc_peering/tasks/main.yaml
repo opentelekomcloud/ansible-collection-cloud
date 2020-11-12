@@ -1,6 +1,6 @@
 ---
 - module_defaults:
-    vpc_peering:
+    opentelekomcloud.cloud.vpc_peering:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
@@ -74,7 +74,7 @@
       register: test_router_2
 
     - name: Create vpc peering - check mode
-      vpc_peering:
+      opentelekomcloud.cloud.vpc_peering:
         name: "{{ vpc_peering_name }}"
         local_router: "{{ test_router_1.router.id }}"
         project_id_local: "{{ project_id }}"
@@ -89,7 +89,7 @@
           - vpc_peering_check is changed
 
     - name: Create vpc peering
-      vpc_peering:
+      opentelekomcloud.cloud.vpc_peering:
         name: "{{ vpc_peering_name }}"
         local_router: "{{ test_router_1.router.name }}"
         project_id_local: "{{ project_id }}"
@@ -104,7 +104,7 @@
           - vpc_peering is changed
 
     - name: Modify existing vpc peering
-      vpc_peering:
+      opentelekomcloud.cloud.vpc_peering:
         name: "{{ vpc_peering_name }}"
         new_name: "{{ new_peering_name }}"
         local_router: "{{ test_router_1.router.name }}"
@@ -119,11 +119,16 @@
           - updated_vpc_peering is success
           - updated_vpc_peering is changed
 
+  always:
+    - block:
+      # Cleanup
+
     - name: Drop existing vpc peering
-      vpc_peering:
+      opentelekomcloud.cloud.vpc_peering:
         # pass ID as name
         name: "{{ updated_vpc_peering.vpc_peering.name }}"
         state: absent
+      ignore_error: yes
       register: dropped
 
     - name: assert result
@@ -132,9 +137,6 @@
           - dropped is success
           - dropped is changed
 
-  always:
-    - block:
-      # Cleanup
       - name: Drop existing first router
         openstack.cloud.router:
           name: "{{ router_name_1 }}"

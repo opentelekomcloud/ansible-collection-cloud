@@ -17,7 +17,7 @@ DOCUMENTATION = '''
 module: vpc_peering
 short_description: Add/Update/Delete vpc peering connection from OpenTelekomCloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.3"
+version_added: "0.2.0"
 author: "Polina Gubina (@polina-gubina)"
 description:
   - Add or Remove vpc peering from the OTC.
@@ -53,67 +53,72 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-id:
-    description: Specifies the VPC peering connection ID.
-    returned: On success when C(state=present)
-    type: str
-    sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-name:
-    description: Specifies the VPC peering connection name.
-    returned: On success when C(state=present)
-    type: str
-    sample: "vpc_peering1"
-status:
-    description: Specifies the VPC peering connection status.
-    returned: On success when C(state=present)
-    type: str
-    sample: "accepted"
-request_vpc_info:
-    description: Dictionary describing the local vpc.
-    returned: On success when C(state=present)
+vpc_peering:
+    description: Dictionary describing VPC peering instance.
     type: complex
+    returned: On Success.
     contains:
-        vpc_id:
-            description: Specifies the ID of a VPC involved in a VPC peering connection.
+        id:
+            description: Specifies the VPC peering connection ID.
+            returned: On success when C(state=present)
             type: str
             sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-        project_id:
-            description: Specifies the ID of the project to which a VPC involved in the VPC peering connection belongs.
+        name:
+            description: Specifies the VPC peering connection name.
+            returned: On success when C(state=present)
             type: str
-            sample: "45007a7e-ee4f-4d13-8283-b4da2e037c69"
-accept_vpc_info:
-    description: Dictionary describing the local vpc.
-    returned: On success when C(state=present)
-    type: complex
-    contains:
-        vpc_id:
-            description: Specifies the ID of a VPC involved in a VPC peering connection.
+            sample: "vpc_peering1"
+        status:
+            description: Specifies the VPC peering connection status.
+            returned: On success when C(state=present)
             type: str
-            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-        project_id:
-            description: Specifies the ID of the project to which a VPC involved in the VPC peering connection belongs.
+            sample: "accepted"
+        request_vpc_info:
+            description: Dictionary describing the local vpc.
+            returned: On success when C(state=present)
+            type: complex
+            contains:
+                vpc_id:
+                    description: Specifies the ID of a VPC involved in a VPC peering connection.
+                    type: str
+                    sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+                project_id:
+                    description: Specifies the ID of the project to which a VPC involved in the VPC peering connection belongs.
+                    type: str
+                    sample: "45007a7e-ee4f-4d13-8283-b4da2e037c69"
+        accept_vpc_info:
+            description: Dictionary describing the local vpc.
+            returned: On success when C(state=present)
+            type: complex
+            contains:
+                vpc_id:
+                    description: Specifies the ID of a VPC involved in a VPC peering connection.
+                    type: str
+                    sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+                project_id:
+                    description: Specifies the ID of the project to which a VPC involved in the VPC peering connection belongs.
+                    type: str
+                    sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+        description:
+            description: Provides supplementary information about the VPC peering connection.
+            returned: On success when C(state=present)
             type: str
-            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-description:
-    description: Provides supplementary information about the VPC peering connection.
-    returned: On success when C(state=present)
-    type: str
-    sample: ""
-created_at:
-    description: Specifies the time (UTC) when the VPC peering connection is created.
-    returned: On success when C(state=present)
-    type: str
-    sample: "2020-09-13T20:38:02"
-updated_at:
-    description: Specifies the time (UTC) when the VPC peering connection is updated.
-    returned: On success when C(state=present)
-    type: str
-    sample: "2020-09-13T20:38:02"
+            sample: ""
+        created_at:
+            description: Specifies the time (UTC) when the VPC peering connection is created.
+            returned: On success when C(state=present)
+            type: str
+            sample: "2020-09-13T20:38:02"
+        updated_at:
+            description: Specifies the time (UTC) when the VPC peering connection is updated.
+            returned: On success when C(state=present)
+            type: str
+            sample: "2020-09-13T20:38:02"
 '''
 
 EXAMPLES = '''
 # Create a vpc peering.
-- vpc_peering:
+- opentelekomcloud.cloud.vpc_peering:
     name: "peering1"
     local_router: "local-router"
     project_id_local: "959db9b6017d4a1fa1c6fd17b6820f55"
@@ -121,7 +126,7 @@ EXAMPLES = '''
     project_id_peer: "959db9b6017d4a1fa1c6fd17b6820f55"
 
 # Change name of the vpc peering
-- vpc_peering:
+- opentelekomcloud.cloud.vpc_peering:
     name: "peering1"
     new_name: "peering2"
     local_router: "local-router"
@@ -130,7 +135,7 @@ EXAMPLES = '''
     project_id_peer: "959db9b6017d4a1fa1c6fd17b6820f55"
 
 # Delete a load balancer(and all its related resources)
-- vpc_peering:
+- opentelekomcloud.cloud.vpc_peering:
     name: "peering2"
     state: absent
 '''
