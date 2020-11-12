@@ -63,61 +63,61 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 backup:
-    description: Dictionary describing RDS backup.
-    type: complex
-    returned: On Success when C(state=present)
-    contains:
-      begin_time:
-        description: Indicates the backup start time in the "yyyy-mm-ddThh:mm:ssZ" format.
-        type: str
-        sample: "2020-09-12T01:17:05"
-      databases:
-        description: Indicates a list of self-built MS SQL Server databases (partial backup).
-        type: list
-        elements: str
-      datastore:
-        description: Indicates the database version.
-        type: complex
-        returned: On Success
-        contains:
-          type:
-            description: Indicates the DB engine.
-            type: str
-          version:
-            description: Indicates the database version
-            type: str
-      description:
-        description: Indicates the backup description.
-        type: str
-        sample: "This is a description"
-      end_time:
-        description: Indicates the backup end time in the "yyyy-mm-ddThh:mm:ssZ" format.
-        type: str
-        sample: "2020-09-12T01:20:33"
-      id:
-        description: Indicates the backup ID.
-        type: str
-        sample: "2f4ddb93-b901-4b08-93d8-1d2e472f30fe"
-      instance_id:
-        description: Indicates the DB instance ID.
-        type: str
-        sample: "d8e6ca5a624745bcb546a227aa3ae1cfin01"
-      name:
-        description: Indicates the backup name.
-        type: str
-        sample: "backup_test"
-      size:
-        description: Indicates the backup size in kB.
-        type: int
-        sample: 220276
-      status:
-        description: Indicates the backup status.
-        type: str
-        sample: "COMPLETED"
-      type:
-        description: Indicates the backup type.
-        type: str
-        sample: "manual"
+  description: Dictionary describing RDS backup.
+  type: complex
+  returned: On Success when C(state=present)
+  contains:
+    begin_time:
+      description: Indicates the backup start time in the "yyyy-mm-ddThh:mm:ssZ" format.
+      type: str
+      sample: "2020-09-12T01:17:05"
+    databases:
+      description: Indicates a list of self-built MS SQL Server databases (partial backup).
+      type: list
+      elements: str
+    datastore:
+      description: Indicates the database version.
+      type: complex
+      returned: On Success
+      contains:
+        type:
+          description: Indicates the DB engine.
+          type: str
+        version:
+          description: Indicates the database version
+          type: str
+    description:
+      description: Indicates the backup description.
+      type: str
+      sample: "This is a description"
+    end_time:
+      description: Indicates the backup end time in the "yyyy-mm-ddThh:mm:ssZ" format.
+      type: str
+      sample: "2020-09-12T01:20:33"
+    id:
+      description: Indicates the backup ID.
+      type: str
+      sample: "2f4ddb93-b901-4b08-93d8-1d2e472f30fe"
+    instance_id:
+      description: Indicates the DB instance ID.
+      type: str
+      sample: "d8e6ca5a624745bcb546a227aa3ae1cfin01"
+    name:
+      description: Indicates the backup name.
+      type: str
+      sample: "backup_test"
+    size:
+      description: Indicates the backup size in kB.
+      type: int
+      sample: 220276
+    status:
+      description: Indicates the backup status.
+      type: str
+      sample: "COMPLETED"
+    type:
+      description: Indicates the backup type.
+      type: str
+      sample: "manual"
 '''
 
 EXAMPLES = '''
@@ -248,13 +248,13 @@ class RdsBackupModule(OTCModule):
 
                 else:
                     changed = False
-                    self.exit(changed=changed,
+                    self.fail(changed=changed,
                               msg='RDS backup with name %s '
                                   'already exists' % name)
 
             elif self.params['state'] == 'absent':
 
-                if backup:
+                if backup and (backup.status.lower() != 'deleting'):
                     self.conn.rds.delete_backup(backup)
                     changed = True
 
@@ -274,10 +274,10 @@ class RdsBackupModule(OTCModule):
 
                 else:
                     changed = False
-                    self.exit(changed=changed,
+                    self.fail(changed=changed,
                               msg='RDS backup with name %s does not exist' % name)
         else:
-            self.exit(msg='RDS instance %s does not exist' % self.params['instance'])
+            self.fail(msg='RDS instance %s does not exist' % self.params['instance'])
 
 
 def main():
