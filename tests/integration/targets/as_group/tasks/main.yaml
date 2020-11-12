@@ -47,7 +47,7 @@
       register: router
 
     - name: Create as group - check_mode
-      as_group:
+      opentelekomcloud.cloud.as_group:
         scaling_group_name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
@@ -60,7 +60,7 @@
           - as_group_check is changed
           -
     - name: Create as group
-      as_group:
+      opentelekomcloud.cloud.as_group:
         scaling_group_name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
@@ -73,7 +73,7 @@
           - as_group is changed
 
     - name: Update as group
-      as_group:
+      opentelekomcloud.cloud.as_group:
         scaling_group_id: "{{ as_group.as_group.id }}"
         scaling_group_name: "{{ new_name }}"
         max_instance_number: 10
@@ -89,7 +89,7 @@
     - block:
       # Cleanup
       - name: Delete as group
-        as_group:
+        opentelekomcloud.cloud.as_group:
           scaling_group_name: "{{ new_name }}"
           state: absent
         register: dropped_as_group
@@ -107,16 +107,16 @@
             state: absent
 
       - name: Drop existing router
-        os_router:
+        openstack.cloud.os_router:
           name: "{{ router.router.name }}"
           state: absent
 
       - name: Drop existing subnet
-        os_subnet:
+        openstack.cloud.os_subnet:
           name: "{{ subnet.subnet.name }}"
           state: absent
 
       - name: Drop existing network
-        os_network:
+        openstack.cloud.os_network:
           name: "{{ network.network.name }}"
           state: absent
