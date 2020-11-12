@@ -115,7 +115,7 @@ lb_pool:
 
 EXAMPLES = '''
 # Create a lb server group.
-- lb_pool:
+- opentelekomcloud.cloud.lb_pool:
     state: present
     name: pool-test
     protocol: tcp
@@ -124,7 +124,7 @@ EXAMPLES = '''
     loadbalancer: "0416b6f1-877f-4a51-987e-978b3f084253"
 
 # Create a lb server group with session_persistence.
-- lb_pool:
+- opentelekomcloud.cloud.lb_pool:
     state: present
     name: pool-test
     protocol: tcp
@@ -136,7 +136,7 @@ EXAMPLES = '''
       - persistence_timeout: 60
 
 # Delete a load balancer(and all its related resources)
-- lb_pool:
+- opentelekomcloud.cloud.lb_pool:
     state: absent
     name: pool-test
 '''

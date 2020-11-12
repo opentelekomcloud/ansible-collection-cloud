@@ -101,7 +101,7 @@
           -----END RSA PRIVATE KEY-----
 
     - name: Ensure Server cert does not exists
-      lb_certificate:
+      opentelekomcloud.cloud.lb_certificate:
         name: "{{ cert_name_srv }}"
         state: absent
       register: result
@@ -112,7 +112,7 @@
           - result is success
 
     - name: Ensure CA cert does not exists
-      lb_certificate:
+      opentelekomcloud.cloud.lb_certificate:
         name: "{{ cert_name_ca }}"
         state: absent
       register: result
@@ -123,14 +123,14 @@
           - result is success
 
     - name: Create CA cert
-      lb_certificate:
+      opentelekomcloud.cloud.lb_certificate:
         name: "{{ cert_name_ca }}"
         content: "{{ certificate }}"
         type: client
       register: result
 
     - name: Get CA cert info
-      lb_certificate_info:
+      opentelekomcloud.cloud.lb_certificate_info:
         name: "{{ cert_name_ca }}"
       register: result_info
 
@@ -143,14 +143,14 @@
           - result_info.elb_certificates[0].name == cert_name_ca
 
     - name: Create Server cert
-      lb_certificate:
+      opentelekomcloud.cloud.lb_certificate:
         name: "{{ cert_name_srv }}"
         content: "{{ certificate }}"
         private_key: "{{ key }}"
       register: result
 
     - name: Get Server cert info
-      lb_certificate_info:
+      opentelekomcloud.cloud.lb_certificate_info:
         name: "{{ cert_name_srv }}"
       register: result_info
 
@@ -163,14 +163,14 @@
           - result_info.elb_certificates[0].name == cert_name_srv
 
     - name: Update CA cert
-      lb_certificate:
+      opentelekomcloud.cloud.lb_certificate:
         name: "{{ cert_name_ca }}"
         description: "{{ cert_description }}"
         content: "{{ certificate_updated }}"
       register: result
 
     - name: Get updated CA cert info
-      lb_certificate_info:
+      opentelekomcloud.cloud.lb_certificate_info:
         name: "{{ cert_name_ca }}"
       register: result_info
 
@@ -183,7 +183,7 @@
           - result_info.elb_certificates[0].description == cert_description
 
     - name: Drop CA cert
-      lb_certificate:
+      opentelekomcloud.cloud.lb_certificate:
         name: "{{ result.elb_certificate.id }}"
         state: absent
       register: result
@@ -195,7 +195,7 @@
           - result is changed
 
     - name: Update Server cert
-      lb_certificate:
+      opentelekomcloud.cloud.lb_certificate:
         name: "{{ cert_name_srv }}"
         description: "{{ cert_description }}"
         content: "{{ certificate_updated }}"
@@ -203,7 +203,7 @@
       register: result
 
     - name: Get updated Server cert info
-      lb_certificate_info:
+      opentelekomcloud.cloud.lb_certificate_info:
         name: "{{ cert_name_srv }}"
       register: result_info
 
@@ -216,7 +216,7 @@
           - result_info.elb_certificates[0].description == cert_description
 
     - name: Drop cert
-      lb_certificate:
+      opentelekomcloud.cloud.lb_certificate:
         name: "{{ result.elb_certificate.id }}"
         state: absent
       register: result
@@ -231,13 +231,13 @@
     - block:
       # Cleanup
       - name: Drop perhaps existing CA cert
-        lb_certificate:
+        opentelekomcloud.cloud.lb_certificate:
           name: "{{ cert_name_ca }}"
           state: absent
         register: drop
 
       - name: Drop perhaps existing Server cert
-        lb_certificate:
+        opentelekomcloud.cloud.lb_certificate:
           name: "{{ cert_name_srv }}"
           state: absent
         register: drop

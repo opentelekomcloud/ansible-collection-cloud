@@ -147,7 +147,7 @@ lb_listener:
 
 EXAMPLES = '''
 # Create a lb listener.
-- lb_listener:
+- opentelekomcloud.cloud.lb_listener:
     state: present
     protocol_port: 80
     protocol: TCP
@@ -156,7 +156,7 @@ EXAMPLES = '''
     admin_state_up: true
 
 # Create a HTTPS lb listener.
-- lb_listener:
+- opentelekomcloud.cloud.lb_listener:
     state: present
     protocol_port: 443
     protocol: terminated_https
@@ -166,7 +166,7 @@ EXAMPLES = '''
     admin_state_up: true
 
 # Create a HTTPS lb listener with the SNI feature.
-- lb_listener:
+- opentelekomcloud.cloud.lb_listener:
     state: present
     protocol_port: 443
     protocol: terminated_https
@@ -177,7 +177,7 @@ EXAMPLES = '''
     sni_container_refs: ["e15d1b5000474adca383c3cd9ddc06d4", "5882325fd6dd4b95a88d33238d293a0f"]
 
 # Delete a load balancer(and all its related resources)
-- lb_listener:
+- opentelekomcloud.cloud.lb_listener:
     state: absent
     name: listener-test
 '''
@@ -283,15 +283,6 @@ class LoadBalancerListenerModule(OTCModule):
                 if sni_container_refs_filter and\
                         hash(lb_listener.sni_container_refs) != hash(sni_container_refs_filter):
                     mattrs['sni_container_refs'] = sni_container_refs_filter
-                # Need improvements in OTCE
-                # if client_ca_tls_container_ref_filter:
-                #     if lb_listener.client_ca_tls_container_ref != client_ca_tls_container_ref_filter:
-                #         mattrs['client_ca_tls_container_ref'] = client_ca_tls_container_ref_filter
-                #         changed = True
-                # if tls_ciphers_policy_filter:
-                #     if lb_listener.tls_ciphers_policy != tls_ciphers_policy_filter:
-                #         mattrs['tls_ciphers_policy'] = tls_ciphers_policy_filter
-                #         changed = True
                 if mattrs:
                     changed = True
                 lb_listener = self.conn.network.update_listener(lb_listener, **mattrs)

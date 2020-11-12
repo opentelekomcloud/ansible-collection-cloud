@@ -98,7 +98,7 @@ member:
 
 EXAMPLES = '''
 # Add a server group member to load balancer.
-- lb_member:
+- opentelekomcloud.cloud.lb_member:
     state: present
     name: member
     pool: "{{ pool }}"
@@ -107,7 +107,7 @@ EXAMPLES = '''
     protocol_port: 8080
 
 # Delete a server group member from load balancer.
-- lb_member:
+- opentelekomcloud.cloud.lb_member:
     state: absent
     name: member
     pool: pool

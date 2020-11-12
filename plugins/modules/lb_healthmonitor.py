@@ -136,7 +136,7 @@ healthmonitor:
 
 EXAMPLES = '''
 # Add a health check to backend server group in ELB.
-- lb_healthmonitor:
+- opentelekomcloud.cloud.lb_healthmonitor:
     state: present
     name: member
     pool: "{{ pool_name_or_id }}"
@@ -146,7 +146,7 @@ EXAMPLES = '''
     type: tcp
 
 # Update a health check to backend server group in ELB.
-- lb_healthmonitor:
+- opentelekomcloud.cloud.lb_healthmonitor:
     state: present
     name: member
     pool: "{{ pool_name_or_id }}"
@@ -156,7 +156,7 @@ EXAMPLES = '''
     type: tcp
 
 # Delete a server group member from load balancer.
-- lb_healthmonitor:
+- opentelekomcloud.cloud.lb_healthmonitor:
     state: absent
     name: healthcheck
 '''

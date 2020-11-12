@@ -101,7 +101,7 @@ elb_certificate:
 
 EXAMPLES = '''
 # Create lb certificate.
-- lb_certificate:
+- opentelekomcloud.cloud.lb_certificate:
     state: present
     name: certificate-test
     content: "{{ dummy-cert }}"

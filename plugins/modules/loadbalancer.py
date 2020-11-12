@@ -135,7 +135,7 @@ loadbalancer:
 
 EXAMPLES = '''
 # Create a load balancer by specifying the VIP subnet.
-- loadbalancer:
+- opentelekomcloud.cloud.loadbalancer:
     state: present
     name: my_lb
     vip_subnet: my_subnet
@@ -143,7 +143,7 @@ EXAMPLES = '''
 
 # Create a load balancer together with its sub-resources in the 'all in one'
 # way. A public IP address is also allocated to the load balancer VIP.
-- loadbalancer:
+- opentelekomcloud.cloud.loadbalancer:
     name: ELB
     state: present
     vip_subnet: default_subnet
@@ -152,13 +152,13 @@ EXAMPLES = '''
     timeout: 600
 
 # Delete a load balancer(and all its related resources)
-- loadbalancer:
+- opentelekomcloud.cloud.loadbalancer:
     state: absent
     name: my_lb
 
 # Delete a load balancer(and all its related resources) together with the
 # public IP address(if any) attached to it.
-- loadbalancer:
+- opentelekomcloud.cloud.loadbalancer:
     state: absent
     name: my_lb
     delete_public_ip: yes
