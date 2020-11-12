@@ -59,7 +59,7 @@
         - name: Delete as config
           opentelekomcloud.cloud.as_config:
             scaling_configuration: "{{ config_name }}"
-           state: absent
+            state: absent
           register: dropped_as_config
           ignore_errors: true
 
