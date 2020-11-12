@@ -120,19 +120,19 @@
     - block:
       # Cleanup
 
-    - name: Drop existing vpc peering
-      opentelekomcloud.cloud.vpc_peering:
-        # pass ID as name
-        name: "{{ updated_vpc_peering.vpc_peering.name }}"
-        state: absent
-      ignore_error: yes
-      register: dropped
+      - name: Drop existing vpc peering
+        opentelekomcloud.cloud.vpc_peering:
+          # pass ID as name
+          name: "{{ updated_vpc_peering.vpc_peering.name }}"
+          state: absent
+        ignore_errors: yes
+        register: dropped
 
-    - name: assert result
-      assert:
-        that:
-          - dropped is success
-          - dropped is changed
+      - name: assert result
+        assert:
+          that:
+            - dropped is success
+            - dropped is changed
 
       - name: Drop existing first router
         openstack.cloud.router:

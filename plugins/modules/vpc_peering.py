@@ -204,7 +204,7 @@ class VPCPeeringModule(OTCModule):
                 if self.params['name'] and (self.params['name'] != vpc_peering.name):
                     attrs['name'] = self.params['name']
 
-                if self.params['description'] and (self.params['description'] != vpc_peering.descirption):
+                if self.params['description'] and (self.params['description'] != vpc_peering.description):
                     attrs['description'] = self.params['description']
 
                 changed = False
