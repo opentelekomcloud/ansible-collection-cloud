@@ -13,7 +13,7 @@
 
 DOCUMENTATION = '''
 ---
-module: anti_ddos_statuses_info
+module: anti_ddos_fip_statuses_info
 short_description: Get Anti-DDoS statuses info
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.2.0"
@@ -39,7 +39,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-anti_ddos_statuses_info:
+anti_ddos_fip_statuses_info:
   description: List of defense statuses of all EIPs from the OTC
   type: complex
   returned: On Success
@@ -53,10 +53,7 @@ anti_ddos_statuses_info:
       type: str
       sample: "1867f954-fc11-4202-8247-6af2144867ea"
     network_type:
-      description: 
-        - EIP type. The value can be EIP or ELB.
-        - EIP: EIP that is bound or not bound with ECS.
-        - ELB: EIP that is bound with ELB.
+      description: EIP type. The value can be EIP or ELB.
       type: str
       sample: "EIP"
     status:
@@ -66,13 +63,23 @@ anti_ddos_statuses_info:
 '''
 
 EXAMPLES = '''
+# Get list of floating IPs statuses (all parameters are specified)
+- opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+    ip: "80.158.53.138"
+    limit: 3
+    offset: 3
+    status: "normal"
+  register: anti_ddos_fip_statuses
 
+# Get list of floating IPs statuses (parameters are not specified)
+- opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+  register: anti_ddos_fip_statuses
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class AntiDDoSStatusesInfoModule(OTCModule):
+class AntiDDoSFIPStatusesInfoModule(OTCModule):
     argument_spec = dict(
         ip=dict(type='str', required=False),
         limit=dict(type='int', required=False),
@@ -111,7 +118,7 @@ class AntiDDoSStatusesInfoModule(OTCModule):
 
 
 def main():
-    module = AntiDDoSStatusesInfoModule()
+    module = AntiDDoSFIPStatusesInfoModule()
     module()
 
 
