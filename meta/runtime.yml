@@ -45,3 +45,4 @@ action_groups:
     - lb_healthmonitor_info
     - lb_certificate_info
     - lb_certificate
+    - anti_ddos_fip_statuses_info.py
