@@ -215,23 +215,18 @@ class LoadBalancerPoolModule(OTCModule):
                 changed = False
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                if description_filter:
-                    if lb_pool.description != description_filter:
-                        mattrs['description'] = description_filter
-                        changed = True
-                if lb_algorithm_filter:
-                    if lb_pool.lb_algorithm != lb_algorithm_filter.upper():
-                        mattrs['lb_algorithm'] = lb_algorithm_filter.upper()
-                        changed = True
-                if admin_state_up_filter:
-                    if lb_pool.is_admin_state_up != admin_state_up_filter:
-                        mattrs['admin_state_up'] = admin_state_up_filter
-                        changed = True
-                if session_persistence_filter:
-                    if self._dict_hash(lb_pool.session_persistence) != self._dict_hash(session_persistence_filter):
-                        session_persistence_filter['type'] = session_persistence_filter['type'].upper()
-                        mattrs['session_persistence'] = session_persistence_filter
-                        changed = True
+                if description_filter and lb_pool.description != description_filter:
+                    mattrs['description'] = description_filter
+                if lb_algorithm_filter and lb_pool.lb_algorithm != lb_algorithm_filter.upper():
+                    mattrs['lb_algorithm'] = lb_algorithm_filter.upper()
+                if admin_state_up_filter and lb_pool.is_admin_state_up != admin_state_up_filter:
+                    mattrs['admin_state_up'] = admin_state_up_filter
+                if session_persistence_filter and\
+                        self._dict_hash(lb_pool.session_persistence) != self._dict_hash(session_persistence_filter):
+                    session_persistence_filter['type'] = session_persistence_filter['type'].upper()
+                    mattrs['session_persistence'] = session_persistence_filter
+                if mattrs:
+                    changed = True
                 lb_pool = self.conn.network.update_pool(lb_pool, **mattrs)
                 self.exit_json(
                     changed=changed,

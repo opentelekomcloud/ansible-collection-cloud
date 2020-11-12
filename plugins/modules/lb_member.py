@@ -169,14 +169,12 @@ class LoadBalancerMemberModule(OTCModule):
                 changed = False
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                if admin_state_filter:
-                    if lb_member.is_admin_state_up != admin_state_filter:
-                        mattrs['admin_state_up'] = admin_state_filter
-                        changed = True
-                if weight_filter:
-                    if lb_member.weight != weight_filter:
-                        mattrs['weight'] = weight_filter
-                        changed = True
+                if admin_state_filter and lb_member.is_admin_state_up != admin_state_filter:
+                    mattrs['admin_state_up'] = admin_state_filter
+                if weight_filter and lb_member.weight != weight_filter:
+                    mattrs['weight'] = weight_filter
+                if mattrs:
+                    changed = True
                 lb_member = self.conn.network.update_pool_member(pool_member=lb_member, pool=lb_pool, **mattrs)
                 self.exit_json(
                     changed=changed,

@@ -211,27 +211,18 @@ class LoadBalancerCertificateModule(OTCModule):
 
                 mattrs = {}
 
-                if admin_state_filter:
-                    if cert.admin_state_up != admin_state_filter:
-                        mattrs['admin_state_up'] = admin_state_filter
-                        changed = True
-                if description_filter:
-                    if cert.description != description_filter:
-                        mattrs['description'] = description_filter
-                        changed = True
-                if domain_filter:
-                    if cert.domain != domain_filter:
-                        mattrs['domain'] = domain_filter
-                        changed = True
-                if private_key_filter:
-                    if cert.private_key != private_key_filter.strip():
-                        mattrs['private_key'] = private_key_filter.strip()
-                        changed = True
-                if content_filter:
-                    if cert.content != content_filter.strip():
-                        mattrs['content'] = content_filter.strip()
-                        changed = True
-
+                if admin_state_filter and cert.admin_state_up != admin_state_filter:
+                    mattrs['admin_state_up'] = admin_state_filter
+                if description_filter and cert.description != description_filter:
+                    mattrs['description'] = description_filter
+                if domain_filter and cert.domain != domain_filter:
+                    mattrs['domain'] = domain_filter
+                if private_key_filter and cert.private_key != private_key_filter.strip():
+                    mattrs['private_key'] = private_key_filter.strip()
+                if content_filter and cert.content != content_filter.strip():
+                    mattrs['content'] = content_filter.strip()
+                if mattrs:
+                    changed = True
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
                 certificate = self.conn.elb.update_certificate(cert, **mattrs)
