@@ -1,0 +1,14 @@
+---
+- module_defaults:
+    anti_ddos_fip_status_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get Anti DDoS Floating IP statuses
+      anti_ddos_fip_status_info:
+      register: anti_ddos
+
+    - name: assert result
+      assert:
+        that:
+          - anti_ddos is success
+          - anti_ddos is not changed
