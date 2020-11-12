@@ -105,12 +105,9 @@
 
     - name: Modify existing vpc peering
       opentelekomcloud.cloud.vpc_peering:
-        name: "{{ vpc_peering_name }}"
-        new_name: "{{ new_peering_name }}"
-        local_router: "{{ test_router_1.router.name }}"
-        project_id_local: "{{ project_id }}"
-        peer_router: "{{ test_router_2.router.name }}"
-        project_id_peer: "{{ project_id }}"
+        id: "{{ vpc_peering.vpc_peering.id }}"
+        name: "{{ new_peering_name }}"
+        description: "New description"
       register: updated_vpc_peering
 
     - name: assert result
