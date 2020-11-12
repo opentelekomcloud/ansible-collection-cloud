@@ -136,7 +136,7 @@ healthmonitor:
 
 EXAMPLES = '''
 # Add a health check to backend server group in ELB.
-- lb_healthmonitor:
+- opentelekomcloud.cloud.lb_healthmonitor:
     state: present
     name: member
     pool: "{{ pool_name_or_id }}"
@@ -146,7 +146,7 @@ EXAMPLES = '''
     type: tcp
 
 # Update a health check to backend server group in ELB.
-- lb_healthmonitor:
+- opentelekomcloud.cloud.lb_healthmonitor:
     state: present
     name: member
     pool: "{{ pool_name_or_id }}"
@@ -156,7 +156,7 @@ EXAMPLES = '''
     type: tcp
 
 # Delete a server group member from load balancer.
-- lb_healthmonitor:
+- opentelekomcloud.cloud.lb_healthmonitor:
     state: absent
     name: healthcheck
 '''
@@ -233,10 +233,29 @@ class LoadBalancerHealthmonitorModule(OTCModule):
                 attrs['http_method'] = http_method_filter.upper()
 
             if lb_monitor:
-                changed = True
+                mattrs = {}
+                changed = False
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                lb_monitor = self.conn.network.update_health_monitor(health_monitor=lb_monitor, **attrs)
+                if delay_filter and lb_monitor.delay != delay_filter:
+                    mattrs['delay'] = delay_filter
+                if max_retries_filter and lb_monitor.max_retries != max_retries_filter:
+                    mattrs['max_retries'] = max_retries_filter
+                if admin_state_filter and lb_monitor.is_admin_state_up != admin_state_filter:
+                    mattrs['admin_state_up'] = admin_state_filter
+                if timeout_filter and lb_monitor.timeout != timeout_filter:
+                    mattrs['timeout'] = timeout_filter
+                if type_filter and lb_monitor.type != type_filter.upper():
+                    mattrs['type'] = type_filter.upper()
+                if expected_codes_filter and lb_monitor.expected_codes != expected_codes_filter:
+                    mattrs['expected_codes'] = expected_codes_filter
+                if url_path_filter and lb_monitor.url_path != url_path_filter:
+                    mattrs['url_path'] = url_path_filter
+                if http_method_filter and lb_monitor.http_method != http_method_filter.upper():
+                    mattrs['http_method'] = http_method_filter.upper()
+                if mattrs:
+                    changed = True
+                lb_monitor = self.conn.network.update_health_monitor(health_monitor=lb_monitor, **mattrs)
                 self.exit_json(
                     changed=changed,
                     healthmonitor=lb_monitor.to_dict(),
