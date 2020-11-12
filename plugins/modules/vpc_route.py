@@ -136,17 +136,6 @@ class VPCRouteModule(OTCModule):
 
         return result
 
-    def _check_route_by_id(self, route_id):
-
-        result = True
-
-        vpc_route = self.conn.vpc.find_route(route_id, ignore_missing=True)
-
-        if not vpc_route:
-            result = False
-
-        return result
-
     def run(self):
 
         if self.params['state'] == 'present':
@@ -186,23 +175,27 @@ class VPCRouteModule(OTCModule):
                 )
 
         elif self.params['state'] == 'absent':
-            route_id = self.params['route_id']
 
-            check = self._check_route_by_id(route_id)
-            if self.ansible.check_mode:
-                self.exit_json(changed=check)
+            route = self.conn.vpc.find_route(self.params['route_id'], ignore_missing=True)
 
-            if check:
-                self.conn.vpc.delete_route(route_id)
-            else:
-                self.fail_json(
-                    msg="Resource with this id doesn't exist"
+            if route:
+
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
+
+                self.conn.vpc.delete_route(route.id)
+                changed = True
+                self.exit_json(
+                    changed=changed,
+                    result="Resource was deleted"
                 )
-            changed = True
-            self.exit_json(
-                changed=changed,
-                result="Resource was deleted"
-            )
+
+            else:
+
+                if self.ansible.check_mode:
+                    self.exit_json(changed=False)
+
+                self.fail_json(msg="Resource with this id doesn't exist")
 
 
 def main():
