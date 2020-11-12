@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: as_config
 short_description: Create/Remove AutoScaling configuration from the OTC
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.4"
+version_added: "0.2.0"
 author: "Polina Gubina (@Polina-Gubina)"
 description:
   - Create/Remove AutoScaling configuration from the OTC.
@@ -225,7 +225,7 @@ as_group:
 
 EXAMPLES = '''
 # Create as configuration.
-as_config:
+opentelekomcloud.cloud.as_config:
     scaling_configuration_name: "as-config-test2"
     key_name: "as-config-test"
     image: "9e4322d2-fc79-4d20-966b-41ff78fb7c48"

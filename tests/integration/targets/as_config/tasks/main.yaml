@@ -1,6 +1,6 @@
 ---
 - module_defaults:
-    loadbalancer:
+    opentelekomcloud.cloud.loadbalancer:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
@@ -17,7 +17,7 @@
           name: "{{ key_name }}"
 
     - name: Create as config - check_mode
-      as_config:
+      opentelekomcloud.cloud.as_config:
         scaling_configuration: "{{ config_name }}"
         key_name: "{{ key_name }}"
         image: "Standard_Debian_9_latest"
@@ -35,7 +35,7 @@
           - as_config_check is changed
 
     - name: Create as config
-      as_config:
+      opentelekomcloud.cloud.as_config:
         scaling_configuration: "{{ config_name }}"
         key_name: "{{ key_name }}"
         image: "Standard_Debian_9_latest"
@@ -52,20 +52,25 @@
           - as_config is changed
           - as_config is success
 
-    - name: Delete as config
-      as_config:
-        scaling_configuration: "{{ config_name }}"
-        state: absent
-      register: dropped_as_config
+  always:
+    - block:
+      # Cleanup
 
-    - name: assert result
-      assert:
-        that:
-          - dropped_as_config is success
-          - dropped_as_config is changed
+        - name: Delete as config
+          opentelekomcloud.cloud.as_config:
+            scaling_configuration: "{{ config_name }}"
+           state: absent
+          register: dropped_as_config
+          ignore_errors: true
 
+        - name: assert result
+          assert:
+            that:
+              - dropped_as_config is success
+              - dropped_as_config is changed
 
-    - name: Delete keypair
-      openstack.cloud.os_keypair:
-          name: "{{ key_name }}"
-          state: absent
+        - name: Delete keypair
+          openstack.cloud.os_keypair:
+              name: "{{ key_name }}"
+              state: absent
+          ignore_errors: true
