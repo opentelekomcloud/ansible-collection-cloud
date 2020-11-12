@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: vpc_route
 short_description: Add/Delete vpc route from OpenTelekomCloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.3"
+version_added: "0.2.0"
 author: "Polina Gubina (@polina-gubina)"
 description:
   - Add or Remove VPC route from the OTC VPC Route service.
@@ -52,47 +52,47 @@ vpc_route:
   returned: On Success.
   contains:
     id:
-        description:  Route ID.
-        returned: On success when C(state=present)
-        type: str
-        sample: "4dae5bac-0925-4d5b-add8-cb6667b8"
+      description:  Route ID.
+      returned: On success when C(state=present)
+      type: str
+      sample: "4dae5bac-0925-4d5b-add8-cb6667b8"
     destination:
-        description:  Destination address in the CIDR notation format.
-        returned: On success when C(state=present)
-        type: str
-        sample: "192.168.200.0/24"
+      description:  Destination address in the CIDR notation format.
+      returned: On success when C(state=present)
+      type: str
+      sample: "192.168.200.0/24"
     nexthop:
-        description: The next hop. If type is peering, it is the VPC peering connection ID
-        returned: On success when C(state=present)
-        type: str
-        sample: "7375f1cd-6fe1-4d47-8888-c5c5a64298d8"
+      description: The next hop. If type is peering, it is the VPC peering connection ID
+      returned: On success when C(state=present)
+      type: str
+      sample: "7375f1cd-6fe1-4d47-8888-c5c5a64298d8"
     type:
-        description: The route type.
-        returned: On success when C(state=present)
-        type: str
-        sample: "peering"
+      description: The route type.
+      returned: On success when C(state=present)
+      type: str
+      sample: "peering"
     router_id:
-        description: The router of the route.
-        returned: On success when C(state=present)
-        type: str
-        sample: "4dae5bac-0725-2d5b-add8-cb6667b8"
+      description: The router of the route.
+      returned: On success when C(state=present)
+      type: str
+      sample: "4dae5bac-0725-2d5b-add8-cb6667b8"
     project_id:
-        description: Project id.
-        returned: On success when C(state=present)
-        type: str
-        sample: "6ysa5bac-0925-4d5b-add8-cb6667b8"
+      description: Project id.
+      returned: On success when C(state=present)
+      type: str
+      sample: "6ysa5bac-0925-4d5b-add8-cb6667b8"
 '''
 
 EXAMPLES = '''
 # Create a vpc route.
-- vpc_route:
+- opentelekomcloud.cloud.vpc_route:
     destination: "6ysa5bac-0925-6d5b-add8-cb6667b8"
     nexthop: "67sa5bac-0925-4p5b-add8-cb6667b8"
     router_id: "89sa5bac-0925-9h7b-add8-cb6667b8"
   register: vpc_route
 
 # Delete vpc route
-- vpc_route:
+- opentelekomcloud.cloud.vpc_route:
     name: "peering2"
     state: absent
 '''

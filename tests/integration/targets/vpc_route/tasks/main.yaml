@@ -1,6 +1,6 @@
 ---
 - module_defaults:
-    vpc_peering:
+    opentelekomcloud.cloud.vpc_route:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
@@ -74,7 +74,7 @@
       register: test_router_2
 
     - name: Create vpc peering
-      vpc_peering:
+      opentelekomcloud.cloud.vpc_peering:
         name: "{{ vpc_peering_name }}"
         local_router: "{{ test_router_1.router.name }}"
         project_id_local: "{{ project_id }}"
@@ -83,7 +83,7 @@
       register: vpc_peering
 
     - name: Create vpc route -check mode
-      vpc_route:
+      opentelekomcloud.cloud.vpc_route:
         destination: "{{ test_subnet_2.subnet.cidr }}"
         nexthop: "{{ vpc_peering.vpc_peering.id }}"
         router: "{{ test_router_1.router.id }}"
@@ -96,7 +96,7 @@
           - vpc_route_check is changed
 
     - name: Create vpc route
-      vpc_route:
+      opentelekomcloud.cloud.vpc_route:
         destination: "{{ test_subnet_2.subnet.cidr }}"
         nexthop: "{{ vpc_peering.vpc_peering.id }}"
         router: "{{ test_router_1.router.id }}"
@@ -108,26 +108,29 @@
           - vpc_route is success
           - vpc_route is changed
 
-    - name: Drop existing vpc route
-      vpc_route:
-        # pass ID as name
-        route_id: "{{ vpc_route.vpc_route.id }}"
-        state: absent
-      register: dropped
-
-    - name: assert result
-      assert:
-        that:
-          - dropped is success
-          - dropped is changed
-
   always:
     - block:
       # Cleanup
+
+      - name: Drop existing vpc route
+        opentelekomcloud.cloud.vpc_route:
+          # pass ID as name
+          route_id: "{{ vpc_route.vpc_route.id }}"
+          state: absent
+        ignore_errors: yes
+        register: dropped
+
+      - name: assert result
+        assert:
+          that:
+            - dropped is success
+            - dropped is changed
+
       - name: Drop vpc peering
-        vpc_peering:
+        opentelekomcloud.cloud.vpc_peering:
           name: "{{ vpc_peering_name }}"
           state: absent
+        ignore_errors: yes
 
       - name: Drop existing first router
         openstack.cloud.router:
