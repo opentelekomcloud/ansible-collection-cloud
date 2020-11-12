@@ -23,7 +23,7 @@ description:
   - Add or Remove vpc peering from the OTC.
 options:
   name:
-    description: 
+    description:
         - Name of the vpc peering connection.
         - Mandatory for creating.
         - Can be updated.
@@ -49,7 +49,7 @@ options:
     description: Specifies the ID of the project to which a peer VPC belongs.
     type: str
   description:
-    description: 
+    description:
         - Provides supplementary information about the VPC peering connection.
         - Can be updated.
     type: str
@@ -208,16 +208,23 @@ class VPCPeeringModule(OTCModule):
                     attrs['description'] = self.params['description']
 
                 changed = False
-                if attrs:
-                    vpc_peering = self.conn.vpc.update_peering(vpc_peering, **attrs)
-                    changed = True
 
-                if self.ansible.check_mode:
-                    self.exit_json(changed=changed)
-                else:
+                if attrs:
+                    changed = True
+                    if self.ansible.check_mode:
+                        self.exit_json(changed=changed)
                     vpc_peering = self.conn.vpc.update_peering(vpc_peering, **attrs)
                     self.exit_json(
                         changed=changed,
+                        vpc_peering=vpc_peering
+                    )
+
+                else:
+                    changed = False
+                    if self.ansible.check_mode:
+                        self.exit_json(changed=changed)
+                    self.exit_json(
+                        changed=False,
                         vpc_peering=vpc_peering
                     )
 
