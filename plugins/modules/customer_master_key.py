@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: customer_master_key
 short_description: Add/Delete customer master key from the OTC
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.1"
+version_added: "0.2.0"
 author: "Polina Gubina (@Polina-Gubina)"
 description:
   - Add or Remove customer master key in OTC.
@@ -24,8 +24,8 @@ options:
   key:
     description:
       - Alias of a non default key or id.
-      - It can be only name in order to create the resource.
-      - It can be name or id in order to delete the resource.
+      - It can be only name to create the resource.
+      - It can be name or id to delete the resource.
     required: true
     type: str
   key_description:
