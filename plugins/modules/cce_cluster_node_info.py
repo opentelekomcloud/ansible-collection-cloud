@@ -159,7 +159,7 @@ class CCEClusterNodeInfoModule(OTCModule):
                 data.append(node)
             else:
                 self.exit(
-                    changed=false,
+                    changed=False,
                     cce_cluster_nodes=[]
                 )
         else:
