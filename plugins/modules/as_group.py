@@ -70,26 +70,26 @@ options:
     elements: dict
     suboptions:
       pool_id:
-          description:
-            - Specifies the backend ECS group ID.
-            - Mandatory.
-          type: str
-          required: true
+        description:
+          - Specifies the backend ECS group ID.
+          - Mandatory.
+        type: str
+        required: true
       protocol_port:
-          description:
-           - Specifies the backend protocol ID, which is the port on which \
+        description:
+          - Specifies the backend protocol ID, which is the port on which \
            a backend ECS listens for traffic. The port ID ranges from 1 to 65535.
-           - Mandatory.
-          type: int
-          required: true
+          - Mandatory.
+        type: int
+        required: true
       weight:
-          description:
-            - Specifies the weight, which determines the portion\
-          of requests a backend ECS processes when being compared to other \
-          backend ECSs added to the same listener.
-            - Mandatory.
-          type: int
-          required: true
+        description:
+          - Specifies the weight, which determines the portion\
+        of requests a backend ECS processes when being compared to other \
+        backend ECSs added to the same listener.
+          - Mandatory.
+        type: int
+        required: true
   available_zones:
     description:
       - Specifies the AZ information. The ECS associated with a scaling action will be created in a specified AZ.\
@@ -205,14 +205,14 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 as_group:
-    description: AS groups object.
-    type: complex
-    returned: On Success.
-    contains:
-        scaling_group_id:
-            description: Specifies the AS group ID.
-            type: str
-            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+  description: AS groups object.
+  type: complex
+  returned: On Success.
+  contains:
+    scaling_group_id:
+      description: Specifies the AS group ID.
+      type: str
+      sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
 '''
 
 EXAMPLES = '''
