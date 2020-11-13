@@ -16,4 +16,3 @@
           - zone is success
           - zone is not changed
           - zone.dns_zones is defined
-
