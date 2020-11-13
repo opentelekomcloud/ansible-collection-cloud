@@ -23,6 +23,7 @@ action_groups:
     - rds_datastore_info
     - rds_flavor_info
     - rds_instance
+    - rds_backup
     - rds_backup_info
     - security_group_info
     - tag
