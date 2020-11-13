@@ -1,6 +1,6 @@
 ---
 - module_defaults:
-    loadbalancer:
+    opentelekomcloud.cloud.as_group:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
@@ -93,7 +93,6 @@
           scaling_group_name: "{{ new_name }}"
           state: absent
         register: dropped_as_group
-        ignore_errors: true
 
       - name: assert result
         assert:
@@ -120,3 +119,4 @@
         openstack.cloud.os_network:
           name: "{{ network.network.name }}"
           state: absent
+      ignore_errors: true

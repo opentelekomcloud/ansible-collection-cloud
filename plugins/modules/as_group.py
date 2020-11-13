@@ -216,7 +216,7 @@ as_group:
 '''
 
 EXAMPLES = '''
-as_group:
+opentelekomcloud.cloud.as_group:
   scaling_group_name: "scaling-group-test"
   networks:
     - id: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
