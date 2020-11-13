@@ -5,14 +5,19 @@
       set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
+    - name: Assigning Floating IP
+      floating_ip:
+        network: admin_external_net
+      register: fl
+
     - name: Set facts
       set_fact:
-        fl_ip: 80.158.1.1
+        fl_ip: "{{ fl.floating_ip.floating_ip_address }}"
         ptrdname: "{{ ( prefix + '.com.' ) }}"
         description: "{{ ( prefix + 'description' ) }}"
         zone_name: "{{ ( prefix + '-zone.com.' ) }}"
         rs_name: "{{ ( prefix + '-rs.' + prefix + '-zone.com.' ) }}"
-
+    
     - name: Creating a dns_floating_ip entry
       dns_floating_ip:
         floating_ip: "{{ fl_ip }}"
@@ -152,3 +157,9 @@
           state: absent
         register: dns_zo_dr
 
+      - name: Drop Floating IP
+        floating_ip:
+          floating_ip_address: "{{ fl_ip }}"
+          state: absent
+          purge: True
+        register: fl_dr
