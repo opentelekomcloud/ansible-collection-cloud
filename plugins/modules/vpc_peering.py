@@ -63,61 +63,61 @@ vpc_peering:
     returned: On Success.
     contains:
       id:
-          description: Specifies the VPC peering connection ID.
-          returned: On success when C(state=present)
-          type: str
-          sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+        description: Specifies the VPC peering connection ID.
+        returned: On success when C(state=present)
+        type: str
+        sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
       name:
-          description: Specifies the VPC peering connection name.
-          returned: On success when C(state=present)
-          type: str
-          sample: "vpc_peering1"
+        description: Specifies the VPC peering connection name.
+        returned: On success when C(state=present)
+        type: str
+        sample: "vpc_peering1"
       status:
-          description: Specifies the VPC peering connection status.
-          returned: On success when C(state=present)
-          type: str
-          sample: "accepted"
+        description: Specifies the VPC peering connection status.
+        returned: On success when C(state=present)
+        type: str
+        sample: "accepted"
       request_vpc_info:
-          description: Dictionary describing the local vpc.
-          returned: On success when C(state=present)
-          type: complex
-          contains:
-              vpc_id:
-                  description: Specifies the ID of a VPC involved in a VPC peering connection.
-                  type: str
-                  sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-              project_id:
-                  description: Specifies the ID of the project to which a VPC involved in the VPC peering connection belongs.
-                  type: str
-                  sample: "45007a7e-ee4f-4d13-8283-b4da2e037c69"
+        description: Dictionary describing the local vpc.
+        returned: On success when C(state=present)
+        type: complex
+        contains:
+          vpc_id:
+            description: Specifies the ID of a VPC involved in a VPC peering connection.
+            type: str
+            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+          project_id:
+            description: Specifies the ID of the project to which a VPC involved in the VPC peering connection belongs.
+            type: str
+            sample: "45007a7e-ee4f-4d13-8283-b4da2e037c69"
       accept_vpc_info:
-          description: Dictionary describing the local vpc.
-          returned: On success when C(state=present)
-          type: complex
-          contains:
-              vpc_id:
-                  description: Specifies the ID of a VPC involved in a VPC peering connection.
-                  type: str
-                  sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-              project_id:
-                  description: Specifies the ID of the project to which a VPC involved in the VPC peering connection belongs.
-                  type: str
-                  sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+        description: Dictionary describing the local vpc.
+        returned: On success when C(state=present)
+        type: complex
+        contains:
+          vpc_id:
+            description: Specifies the ID of a VPC involved in a VPC peering connection.
+            type: str
+            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+          project_id:
+            description: Specifies the ID of the project to which a VPC involved in the VPC peering connection belongs.
+            type: str
+            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
       description:
-          description: Provides supplementary information about the VPC peering connection.
-          returned: On success when C(state=present)
-          type: str
-          sample: ""
+        description: Provides supplementary information about the VPC peering connection.
+        returned: On success when C(state=present)
+        type: str
+        sample: ""
       created_at:
-          description: Specifies the time (UTC) when the VPC peering connection is created.
-          returned: On success when C(state=present)
-          type: str
-          sample: "2020-09-13T20:38:02"
+        description: Specifies the time (UTC) when the VPC peering connection is created.
+        returned: On success when C(state=present)
+        type: str
+        sample: "2020-09-13T20:38:02"
       updated_at:
-          description: Specifies the time (UTC) when the VPC peering connection is updated.
-          returned: On success when C(state=present)
-          type: str
-          sample: "2020-09-13T20:38:02"
+        description: Specifies the time (UTC) when the VPC peering connection is updated.
+        returned: On success when C(state=present)
+        type: str
+        sample: "2020-09-13T20:38:02"
 '''
 
 EXAMPLES = '''
