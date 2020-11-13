@@ -48,7 +48,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-ptr_records:
+ptr:
   description: Modify DNS floating IPs
   type: complex
   returned: On Success.

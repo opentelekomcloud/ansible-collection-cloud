@@ -125,7 +125,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class DNSRecordsetModule(OTCModule):
     argument_spec = dict(
         description=dict(required=False),
-        records=dict(required=True, type='list', elements='str'),
+        records=dict(required=False, type='list', elements='str'),
         recordset_name=dict(required=True),
         state=dict(type='str', choices=['present', 'absent'], default='present'),
         ttl=dict(required=False, type='int'),
