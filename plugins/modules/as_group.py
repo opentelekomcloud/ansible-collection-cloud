@@ -416,9 +416,9 @@ class ASGroupModule(OTCModule):
                 if not self.params['health_periodic_audit_method']:
                     # set default values  for 'health_periodic_audit_method'
                     if self.params['lb_listener'] or self.params['lbaas_listeners']:
-                        attrs['health_periodic_audit_method'] = "elb_audit".upper()
+                        attrs['health_periodic_audit_method'] = "ELB_AUDIT"
                     else:
-                        attrs['health_periodic_audit_method'] = "nova_audit".upper()
+                        attrs['health_periodic_audit_method'] = "NOVA_AUDIT"
                 else:
                     if not self.params['lb_listener'] and not self.params['lbaas_listeners']:
                         if self.params['health_periodic_audit_method'] == 'elb_audit':
@@ -479,7 +479,7 @@ class ASGroupModule(OTCModule):
                 if self.params['instance_terminate_policy']:
                     attrs['instance_terminate_policy'] = self.params['instance_terminate_policy'].upper()
                 else:
-                    attrs['instance_terminate_policy'] = 'old_config_old_instance'.upper()
+                    attrs['instance_terminate_policy'] = 'OLD_CONFIG_OLD_INSTANCE'
 
                 if self.params['notifications']:
                     attrs['notifications'] = self.params['notifications']
@@ -488,7 +488,7 @@ class ASGroupModule(OTCModule):
                 if self.params['multi_az_priority_policy']:
                     attrs['multi_az_priority_policy'] = self.params['multi_az_priority_policy'].upper()
                 else:
-                    attrs['multi_az_priority_policy'] = 'equilibrium_distribute'.upper()
+                    attrs['multi_az_priority_policy'] = 'EQUILIBRIUM_DISTRIBUTE'
 
                 if self.ansible.check_mode:
                     self.exit(changed=True)
