@@ -17,7 +17,7 @@
         description: "{{ ( prefix + 'description' ) }}"
         zone_name: "{{ ( prefix + '-zone.com.' ) }}"
         rs_name: "{{ ( prefix + '-rs.' + prefix + '-zone.com.' ) }}"
-    
+
     - name: Creating a dns_floating_ip entry
       dns_floating_ip:
         floating_ip: "{{ fl_ip }}"
@@ -53,15 +53,12 @@
           - dns_fl is success
           - dns_fl.ptr.description is defined
 
-
-
-    
     - name: Creating a DNS Zone
       dns_zones:
         name: "{{ zone_name }}"
         state: present
       register: dns_zo
-    
+
     - name: debug
       debug:
         var: dns_zo.zone
@@ -88,9 +85,6 @@
         that:
           - dns_zo is success
           - dns_zo.zone.description is defined
-
-
-
 
     - name: Creating a DNS Recordset
       dns_recordset:
@@ -135,31 +129,30 @@
           - dns_rs is success
           - dns_rs.recordset.description is defined
 
-
   always:
     - block:
-      - name: Drop dns_floating_ip entry
-        dns_floating_ip:
-          floating_ip: "{{ fl_ip }}"
-          state: absent
-        register: dns_fl_dr
+        - name: Drop dns_floating_ip entry
+          dns_floating_ip:
+            floating_ip: "{{ fl_ip }}"
+            state: absent
+          register: dns_fl_dr
 
-      - name: Dropping DNS Recordset
-        dns_recordset:
-          zone_id: "{{ dns_zo.zone.id }}"
-          recordset_name: "{{ rs_name }}"
-          state: absent
-        register: dns_rs_dr
+        - name: Dropping DNS Recordset
+          dns_recordset:
+            zone_id: "{{ dns_zo.zone.id }}"
+            recordset_name: "{{ rs_name }}"
+            state: absent
+          register: dns_rs_dr
 
-      - name: Drop DNS Zone
-        dns_zones:
-          name: "{{ zone_name }}"
-          state: absent
-        register: dns_zo_dr
+        - name: Drop DNS Zone
+          dns_zones:
+            name: "{{ zone_name }}"
+            state: absent
+          register: dns_zo_dr
 
-      - name: Drop Floating IP
-        floating_ip:
-          floating_ip_address: "{{ fl_ip }}"
-          state: absent
-          purge: True
-        register: fl_dr
+        - name: Drop Floating IP
+          floating_ip:
+            floating_ip_address: "{{ fl_ip }}"
+            state: absent
+            purge: true
+          register: fl_dr
