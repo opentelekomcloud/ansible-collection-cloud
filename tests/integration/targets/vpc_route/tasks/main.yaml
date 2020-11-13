@@ -129,7 +129,6 @@
         opentelekomcloud.cloud.vpc_peering:
           name: "{{ vpc_peering_name }}"
           state: absent
-        ignore_errors: yes
 
       - name: Drop existing first router
         openstack.cloud.router:
