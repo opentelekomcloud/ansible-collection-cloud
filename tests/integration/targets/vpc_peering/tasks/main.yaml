@@ -125,7 +125,6 @@
           # pass ID as name
           name: "{{ updated_vpc_peering.vpc_peering.name }}"
           state: absent
-        ignore_errors: yes
         register: dropped
 
       - name: assert result
@@ -163,3 +162,4 @@
         openstack.cloud.network:
           name: "{{ network_name_2 }}"
           state: absent
+      ignore_errors: yes
