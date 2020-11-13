@@ -1,8 +1,7 @@
 ---
 - block:
-    - name: Get DNAT rule info
+    - name: Get DNS Floating IP Info
       dns_floating_ip_info:
-        cloud: "{{ test_cloud }}"
       register: ptr
 
     - name: debug configs

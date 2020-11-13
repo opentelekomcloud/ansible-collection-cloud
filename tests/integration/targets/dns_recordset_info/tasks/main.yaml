@@ -1,0 +1,17 @@
+---
+- block:
+    - name: Get DNS Recordset Info
+      dns_recordset_info:
+        zone_id: "{{ test_zone }}"
+      register: rs
+
+    - name: debug configs
+      debug:
+        var: rs.recordsets
+
+    - name: assert result
+      assert:
+        that:
+          - rs is success
+          - rs is not changed
+          - rs.recordsets is defined

@@ -1,0 +1,17 @@
+---
+- block:
+    - name: Get DNS Nameserver Info
+      dns_nameserver_info:
+        zone: "{{ test_zone }}"
+      register: nms
+
+    - name: debug configs
+      debug:
+        var: nms.dns_nameservers
+
+    - name: assert result
+      assert:
+        that:
+          - nms is success
+          - nms is not changed
+          - nms.dns_nameservers is defined

@@ -1,0 +1,19 @@
+---
+- block:
+    - name: Get DNS Zone Info
+      dns_zone_info:
+        zone_type: private
+        name: "sgode."
+      register: zone
+
+    - name: debug configs
+      debug:
+        var: zone.dns_zones
+
+    - name: assert result
+      assert:
+        that:
+          - zone is success
+          - zone is not changed
+          - zone.dns_zones is defined
+
