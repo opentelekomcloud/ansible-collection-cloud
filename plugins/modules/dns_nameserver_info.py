@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: dns_nameserver_info
 short_description: Get DNS Nameserver Infos
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.1.2"
+version_added: "0.2.1"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get DNS Namerserver infos from the OTC.
