@@ -29,7 +29,6 @@ options:
       - IP Records of the entry. Type is a list
     type: list
     elements: str
-    required: true
   recordset_name:
     description:
       - Can be name or ID of the recordset. When creating a new one please enter a name
