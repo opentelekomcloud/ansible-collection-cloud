@@ -139,6 +139,7 @@ class VPCRouteModule(OTCModule):
     def run(self):
 
         if self.params['state'] == 'present':
+
             attrs = {}
             attrs['destination'] = self.params['destination']
             attrs['type'] = self.params['type']
@@ -176,7 +177,10 @@ class VPCRouteModule(OTCModule):
 
         elif self.params['state'] == 'absent':
 
-            route = self.conn.vpc.find_route(self.params['route_id'], ignore_missing=True)
+            try:
+                route = self.conn.vpc.get_route(self.params['route_id'])
+            except self.sdk.exceptions.ResourceNotFound:
+                route = None
 
             if route:
 
