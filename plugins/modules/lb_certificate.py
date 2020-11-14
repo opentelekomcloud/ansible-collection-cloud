@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: lb_certificate
 short_description: Manage ELB certificates
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.3"
+version_added: "0.2.0"
 author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Manage ELB certificates.
@@ -55,53 +55,53 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 elb_certificate:
-    description: Certificate data.
-    type: complex
-    returned: On Success.
-    contains:
-        id:
-            description: Unique UUID.
-            type: str
-            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-        name:
-            description: Name of the certificate.
-            type: str
-            sample: "test"
-        admin_state_up:
-            description: Administrative status of the certificate.
-            type: bool
-        description:
-            description: Supplementary information about the certificate.
-            type: str
-        type:
-            description: Certificate type.
-            type: str
-        domain:
-            description: Domain name associated with the server certificate.
-            type: str
-        private_key:
-            description: Private key of the server certificate in PEM format.
-            type: str
-        certificate:
-            description: Public key of the server certificate or CA certificate used to authenticate the client.
-            type: str
-        expire_time:
-            description: Expiration timestamp
-            type: int
-            sample: 1630488473000
-        create_time:
-            description: Certificate creation time
-            type: int
-            sample: 1630488473000
-        update_time:
-            description: Certificate update time
-            type: int
-            sample: 1630488473000
+  description: Certificate data.
+  type: complex
+  returned: On Success.
+  contains:
+    id:
+      description: Unique UUID.
+      type: str
+      sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+    name:
+      description: Name of the certificate.
+      type: str
+      sample: "test"
+    admin_state_up:
+      description: Administrative status of the certificate.
+      type: bool
+    description:
+      description: Supplementary information about the certificate.
+      type: str
+    type:
+      description: Certificate type.
+      type: str
+    domain:
+      description: Domain name associated with the server certificate.
+      type: str
+    private_key:
+      description: Private key of the server certificate in PEM format.
+      type: str
+    certificate:
+      description: Public key of the server certificate or CA certificate used to authenticate the client.
+      type: str
+    expire_time:
+      description: Expiration timestamp
+      type: int
+      sample: 1630488473000
+    create_time:
+      description: Certificate creation time
+      type: int
+      sample: 1630488473000
+    update_time:
+      description: Certificate update time
+      type: int
+      sample: 1630488473000
 '''
 
 EXAMPLES = '''
 # Create lb certificate.
-- lb_certificate:
+- opentelekomcloud.cloud.lb_certificate:
     state: present
     name: certificate-test
     content: "{{ dummy-cert }}"
@@ -211,31 +211,18 @@ class LoadBalancerCertificateModule(OTCModule):
 
                 mattrs = {}
 
-                if admin_state_filter:
-                    if cert.admin_state_up != admin_state_filter:
-                        mattrs['admin_state_up'] = admin_state_filter
-                        changed = True
-
-                if description_filter:
-                    if cert.description != description_filter:
-                        mattrs['description'] = description_filter
-                        changed = True
-
-                if domain_filter:
-                    if cert.domain != domain_filter:
-                        mattrs['domain'] = domain_filter
-                        changed = True
-
-                if private_key_filter:
-                    if cert.private_key != private_key_filter:
-                        mattrs['private_key'] = private_key_filter.strip()
-                        changed = True
-
-                if content_filter:
-                    if cert.content != content_filter:
-                        mattrs['content'] = content_filter.strip()
-                        changed = True
-
+                if admin_state_filter and cert.admin_state_up != admin_state_filter:
+                    mattrs['admin_state_up'] = admin_state_filter
+                if description_filter and cert.description != description_filter:
+                    mattrs['description'] = description_filter
+                if domain_filter and cert.domain != domain_filter:
+                    mattrs['domain'] = domain_filter
+                if private_key_filter and cert.private_key != private_key_filter.strip():
+                    mattrs['private_key'] = private_key_filter.strip()
+                if content_filter and cert.content != content_filter.strip():
+                    mattrs['content'] = content_filter.strip()
+                if mattrs:
+                    changed = True
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
                 certificate = self.conn.elb.update_certificate(cert, **mattrs)
