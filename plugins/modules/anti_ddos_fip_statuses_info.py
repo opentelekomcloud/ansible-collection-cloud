@@ -103,9 +103,17 @@ class AntiDDoSFIPStatusesInfoModule(OTCModule):
         if ip_filter:
             query['ip'] = ip_filter
         if limit_filter:
-            query['limit'] = limit_filter
+            if (limit_filter > 0) and (limit_filter < 101):
+                query['limit'] = limit_filter
+            else:
+                self.fail(changed=False,
+                          msg='Value of limit is out of range')
         if offset_filter:
-            query['offset'] = offset_filter
+            if (offset_filter >= 0) and (offset_filter <= 2147483647):
+                query['offset'] = offset_filter
+            else:
+                self.fail(changed=False,
+                          msg='Value of offset is out of range')
         if status_filter:
             query['status'] = status_filter
 

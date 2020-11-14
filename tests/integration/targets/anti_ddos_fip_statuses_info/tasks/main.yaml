@@ -1,14 +1,83 @@
 ---
 - module_defaults:
-    anti_ddos_fip_status_info:
+    opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
       cloud: "{{ test_cloud }}"
   block:
-    - name: Get Anti DDoS Floating IP statuses
-      anti_ddos_fip_status_info:
+    - name: Get Anti-DDoS Floating IPs statuses
+      opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
       register: anti_ddos
 
     - name: assert result
       assert:
         that:
           - anti_ddos is success
+          - anti_ddos is not changed
+
+    - name: Get Anti-DDoS Floating IPs statuses with limit
+      opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+        limit: 5
+      register: anti_ddos
+
+    - name: assert result
+      assert:
+        that:
+          - anti_ddos is success
+          - anti_ddos is not changed
+
+    - name: Get error when limit out of range
+      opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+        limit: 500
+      register: anti_ddos
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - anti_ddos is not success
+          - anti_ddos is not changed
+
+    - name: Get Anti-DDoS Floating IPs statuses with offset
+      opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+        offset: 5
+      register: anti_ddos
+
+    - name: assert result
+      assert:
+        that:
+          - anti_ddos is success
+          - anti_ddos is not changed
+
+    - name: Get error when offset out of range
+      opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+        offset: 2147483648
+      register: anti_ddos
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - anti_ddos is not success
+          - anti_ddos is not changed
+
+    - name: Get Anti-DDoS Floating IPs statuses using status filter
+      opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+        status: "notConfig"
+      register: anti_ddos
+
+    - name: assert result
+      assert:
+        that:
+          - anti_ddos is success
+          - anti_ddos is not changed
+
+    - name: Get error when name of status is wrong
+      opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+        status: "wrongStatus"
+      register: anti_ddos
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - anti_ddos is not success
           - anti_ddos is not changed
