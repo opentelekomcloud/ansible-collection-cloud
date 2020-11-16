@@ -99,7 +99,6 @@ recordset:
       description: Zone Name
       type: str
       sample: "test."
-
 '''
 
 EXAMPLES = '''
@@ -115,7 +114,6 @@ EXAMPLES = '''
       - "1.3.1.2"
       - "121.111.111.111"
       - "145.145.145.145"
-
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

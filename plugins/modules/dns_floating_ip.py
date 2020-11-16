@@ -73,7 +73,6 @@ ptr:
       description: PTR record cache duration (in second) on a local DNS server
       type: int
       sample: 300
-
 '''
 
 EXAMPLES = '''
@@ -85,8 +84,6 @@ EXAMPLES = '''
     description: "test2nownow"
     ttl: 300
     state: present
-
-
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

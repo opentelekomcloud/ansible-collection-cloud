@@ -99,7 +99,6 @@ zone:
       description: Zone Type, either public or private
       type: str
       sample: "private"
-
 '''
 
 EXAMPLES = '''
@@ -113,8 +112,6 @@ EXAMPLES = '''
     description: test2
     ttl: 5000
     email: mail2@mail2.test
-
-
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

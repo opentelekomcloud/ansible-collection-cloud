@@ -6,7 +6,7 @@
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Assigning Floating IP
-      floating_ip:
+      opentelekomcloud.cloud.floating_ip:
         network: admin_external_net
       register: fl
 
@@ -19,7 +19,7 @@
         rs_name: "{{ ( prefix + '-rs.' + prefix + '-zone.com.' ) }}"
 
     - name: Creating a dns_floating_ip entry
-      dns_floating_ip:
+      opentelekomcloud.cloud.dns_floating_ip:
         floating_ip: "{{ fl_ip }}"
         ptrdname: "{{ ptrdname }}"
         state: present
@@ -36,7 +36,7 @@
           - dns_fl.ptr is defined
 
     - name: Updating a dns_floating_ip entry
-      dns_floating_ip:
+      opentelekomcloud.cloud.dns_floating_ip:
         floating_ip: "{{ fl_ip }}"
         ptrdname: "{{ ptrdname }}"
         description: "{{ description }}"
@@ -54,7 +54,7 @@
           - dns_fl.ptr.description is defined
 
     - name: Creating a DNS Zone
-      dns_zones:
+      opentelekomcloud.cloud.dns_zones:
         name: "{{ zone_name }}"
         state: present
       register: dns_zo
@@ -70,7 +70,7 @@
           - dns_zo.zone is defined
 
     - name: Updating a DNS Zone
-      dns_zones:
+      opentelekomcloud.cloud.dns_zones:
         name: "{{ zone_name }}"
         state: present
         description: "{{ description }}"
@@ -87,7 +87,7 @@
           - dns_zo.zone.description is defined
 
     - name: Creating a DNS Recordset
-      dns_recordset:
+      opentelekomcloud.cloud.dns_recordset:
         zone_id: "{{ dns_zo.zone.id }}"
         recordset_name: "{{ rs_name }}"
         type: A
@@ -108,7 +108,7 @@
           - dns_rs.recordset is defined
 
     - name: Updating a DNS Recordset
-      dns_recordset:
+      opentelekomcloud.cloud.dns_recordset:
         zone_id: "{{ dns_zo.zone.id }}"
         recordset_name: "{{ rs_name }}"
         type: A
@@ -132,26 +132,26 @@
   always:
     - block:
         - name: Drop dns_floating_ip entry
-          dns_floating_ip:
+          opentelekomcloud.cloud.dns_floating_ip:
             floating_ip: "{{ fl_ip }}"
             state: absent
           register: dns_fl_dr
 
         - name: Dropping DNS Recordset
-          dns_recordset:
+          opentelekomcloud.cloud.dns_recordset:
             zone_id: "{{ dns_zo.zone.id }}"
             recordset_name: "{{ rs_name }}"
             state: absent
           register: dns_rs_dr
 
         - name: Drop DNS Zone
-          dns_zones:
+          opentelekomcloud.cloud.dns_zones:
             name: "{{ zone_name }}"
             state: absent
           register: dns_zo_dr
 
         - name: Drop Floating IP
-          floating_ip:
+          opentelekomcloud.cloud.floating_ip:
             floating_ip_address: "{{ fl_ip }}"
             state: absent
             purge: true
