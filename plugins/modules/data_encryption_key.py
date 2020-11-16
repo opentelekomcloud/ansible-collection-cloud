@@ -185,10 +185,6 @@ class VPCPeeringInfoModule(OTCModule):
             self.exit_json(changed=True, key=datakey)
 
 
-
-
-
-
 def main():
     module = VPCPeeringInfoModule()
     module()
