@@ -133,59 +133,25 @@ class DNSZonesModule(OTCModule):
         data = []
         query = {}
 
-        # find_zone doesn't support searching for private zones with name
-        # As a result we use it only to search in public zones
-        if self.params['zone_type'] == 'public':
-            zo = self.conn.dns.find_zone(
-                name_or_id=self.params['name'],
-                ignore_missing=True
-            )
-            if zo:
-                zone_id = zo.id
-                zone_desc = zo.description
-                zone_ttl = zo.ttl
-                zone_email = zo.email
-                zone_check = True
-            else:
-                zone_check = False
-                if self.params['state'] == 'absent':
-                    self.exit(
-                        changed=False,
-                        message=('No Zone found with name: %s' %
-                                 self.params['name'])
-                    )
-
-        # For private Zones we list all zones and then filter by name
         if self.params['zone_type'] == 'private':
-            query['zone_type'] = self.params['zone_type']
-            for raw in self.conn.dns.zones(**query):
-                dt = raw.to_dict()
-                dt.pop('location')
-                data.append(dt)
-            # Query parameter name is not supported, so we need to filter it by hand
-            i = 0
-            while i < len(data):
-                if data[i]['name'] != self.params['name']:
-                    del data[i]
-                    i = 0
-                    continue
-                i = i + 1
-            # As we remove datasets we need to check wether there's the correct one left to obtain the ID
-            if len(data) != 0:
-                zone_id = data[0]['id']
-                zone_desc = data[0]['description']
-                zone_ttl = data[0]['ttl']
-                zone_email = data[0]['email']
-                zone_check = True
-            else:
-                zone_check = False
-                if self.params['state'] == 'absent':
-                    self.exit(
-                        changed=False,
-                        message=('No Zone found with name: %s' %
-                                 self.params['name'])
-                    )
-
+            query['type'] = self.params['zone_type']
+        query['name_or_id'] = self.params['name']
+        query['ignore_missing'] = True
+        zo = self.conn.dns.find_zone(**query)
+        if zo:
+            zone_id = zo.id
+            zone_desc = zo.description
+            zone_ttl = zo.ttl
+            zone_email = zo.email
+            zone_check = True
+        else:
+            zone_check = False
+            if self.params['state'] == 'absent':
+                self.exit(
+                    changed=False,
+                    message=('No Zone found with name: %s' %
+                             self.params['name'])
+                )
         # We now have the zone_id to work with
         if self.params['state'] == 'absent':
             changed = False
@@ -201,6 +167,11 @@ class DNSZonesModule(OTCModule):
             if zone_check is False:
                 # Check if VPC exists
                 if self.params['zone_type'] == 'private':
+                    if not self.params['router']:
+                        self.exit(
+                            changed=False,
+                            message=('No Router specified, but needed for creation')
+                        )
                     ro = self.conn.network.find_router(
                         name_or_id=self.params['router'],
                         ignore_missing=True
