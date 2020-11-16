@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: vpc_route
 short_description: Add/Delete vpc route from OpenTelekomCloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.2.0"
+version_added: "0.2.1"
 author: "Polina Gubina (@polina-gubina)"
 description:
   - Add or Remove VPC route from the OTC VPC Route service.
