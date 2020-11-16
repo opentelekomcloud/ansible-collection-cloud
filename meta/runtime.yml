@@ -4,6 +4,7 @@ action_groups:
   otc:
     - as_config
     - as_config_info
+    - as_group
     - cce_cluster
     - cce_cluster_cert_info
     - cce_cluster_info
