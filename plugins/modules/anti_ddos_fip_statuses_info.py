@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: anti_ddos_fip_statuses_info
 short_description: Get Anti-DDoS statuses info
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.2.0"
+version_added: "0.2.1"
 author: "Irina Pereiaslavskaia (@irina-pereiaslavskaia)"
 description:
   - Get Anti-DDoS defense statuses of all EIPs from the OTC.
@@ -25,12 +25,6 @@ options:
   ip:
     description: IP address, both IPv4 and IPv6 addresses are supported.
     type: str
-  limit:
-    description: Maximum number of returned results, value ranges from 1 to 100.
-    type: int
-  offset:
-    description: Offset, value ranges from 0 to 2147483647.
-    type: int
   status:
     description: Defense status of ECS.
     choices: [normal, configging, notConfig, packetcleaning, packetdropping]
@@ -66,8 +60,6 @@ EXAMPLES = '''
 # Get list of floating IPs statuses (all parameters are specified)
 - opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
     ip: "80.158.53.138"
-    limit: 3
-    offset: 3
     status: "normal"
   register: anti_ddos_fip_statuses
 
@@ -82,8 +74,6 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class AntiDDoSFIPStatusesInfoModule(OTCModule):
     argument_spec = dict(
         ip=dict(type='str', required=False),
-        limit=dict(type='int', required=False),
-        offset=dict(type='int', required=False),
         status=dict(type='str',
                     choices=['normal', 'configging', 'notConfig',
                              'packetcleaning', 'packetdropping'],
@@ -93,8 +83,6 @@ class AntiDDoSFIPStatusesInfoModule(OTCModule):
     def run(self):
 
         ip_filter = self.params['ip']
-        limit_filter = self.params['limit']
-        offset_filter = self.params['offset']
         status_filter = self.params['status']
 
         data = []
@@ -102,18 +90,7 @@ class AntiDDoSFIPStatusesInfoModule(OTCModule):
 
         if ip_filter:
             query['ip'] = ip_filter
-        if limit_filter:
-            if (limit_filter > 0) and (limit_filter < 101):
-                query['limit'] = limit_filter
-            else:
-                self.fail(changed=False,
-                          msg='Value of limit is out of range')
-        if offset_filter:
-            if (offset_filter >= 0) and (offset_filter <= 2147483647):
-                query['offset'] = offset_filter
-            else:
-                self.fail(changed=False,
-                          msg='Value of offset is out of range')
+
         if status_filter:
             query['status'] = status_filter
 
