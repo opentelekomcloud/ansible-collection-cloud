@@ -37,7 +37,8 @@ options:
   datakey_length:
     description:
       - Number of bits of a key. The value is 512.
-      - Mandatory for creating.
+      - Mandatory for creating (with and without plaintext)
+    required: false
     type: str
   sequence:
     description:
@@ -51,13 +52,12 @@ options:
     choices: ['yes', 'no']
     default: 'no'
     type: str
-  plain_free:
+  plain_text:
     description:
-      - Create a plaintext-free DEK, that is, the returned result of this API includes only the plaintext of the DEK.
+      - Both the plaintext (64 bytes) of a DEK and the SHA-256 hash value (32 bytes) of the plaintext\
+       are expressed as a hexadecimal character string.
       - Mandatory for encrypting.
     required: false
-    choices: ['yes', 'no']
-    default: 'no'
     type: str
   datakey_plain_length:
     description:
@@ -117,36 +117,76 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class VPCPeeringInfoModule(OTCModule):
     argument_spec = dict(
         key_id=dict(required=True),
-        encryption_context=dict(required=False),
-        datakey_length=dict(required=True),
+        encryption_context=dict(required=False, type=dict),
+        datakey_length=dict(required=False),
         sequence=dict(required=False),
+        plaintext_free=dict(required=False, choices=['yes', 'no'], default='no'),
+        plain_free=dict(required=False),
+        datakey_plain_length=dict(required=False),
+        cipher_text=dict(required=False),
+        datakey_cipher_length=dict(required=False),
+        encrypt=dict(required=False, choices=['yes', 'no'], default='no'),
+        decrypt=dict(required=False, choices=['yes', 'no'], default='no')
     )
 
     module_kwargs = dict(
+        required_if=[
+            ('encrypt', 'yes', ['plain_text', 'datakey_plain_length']),
+            ('decrypt', 'yes', ['cipher_text', 'datakey_cipher_length']),
+            ('plaintext_free', 'yes', ['datakey_length'])
+        ],
         supports_check_mode=True
     )
 
     def run(self):
 
-        key = self.params['key']
-        encryption_context = self.params['key_description']
-        datakey_length = self.params['origin']
-        sequence = self.params['sequence']
+        key_alias = self.params['key_alias']
+        key_id = None
 
+        cmk = self.conn.kms.find_key(key_alias, ignore_missing=True)
 
-        attrs = {'key': key, }
+        if cmk:
+            key_id = cmk.id
+        else:
+            self.fail_json(msg="customer master key not found")
 
-        if self.params['key_description']:
-            attrs['key_description'] = key_description
+        attrs = {'key_id': key_id}
 
-        if self.params['origin']:
-            attrs['origin'] = origin
+        if self.params['encryption_context']:
+            attrs['encryption_context'] = self.params['encryption_context']
 
         if self.params['sequence']:
-            attrs['sequence'] = sequence
+            attrs['sequence'] = self.params['sequence']
 
-        key = self.conn.kms.create_key(**attrs)
-        self.exit(changed=True, key=key)
+        if self.params['encrypt'] == 'yes':
+
+            attrs['plain_text'] = self.params['plain_text']
+            attrs['datakey_plain_length'] = self.params['datakey_plain_length']
+
+        elif self.params['decrypt'] == 'yes':
+
+            cipher_text = self.params['cipher_text']
+            datakey_cipher_length = self.params['datakey_cipher_length']
+
+            datakey = self.conn.kms.decrypt_datakey(cmk=attrs['key_id'], cipher_text=cipher_text,
+                                                    datakey_cipher_length=datakey_cipher_length)
+
+            self.exit_json(changed=True, key=datakey)
+
+        else:
+
+            attrs['datakey_length'] = self.params['datakey_length']
+
+            if self.params['plaintext_free'] == 'yes':
+                datakey = self.conn.kms.create_datakey_wo_plain(cmk=cmk, **attrs)
+            else:
+                datakey = self.conn.kms.create_datakey(cmk=cmk, **attrs)
+
+            self.exit_json(changed=True, key=datakey)
+
+
+
+
 
 
 def main():
