@@ -1,0 +1,37 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get Anti-DDoS Floating IPs statuses
+      opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+      register: anti_ddos
+
+    - name: assert result
+      assert:
+        that:
+          - anti_ddos is success
+          - anti_ddos is not changed
+
+    - name: Get Anti-DDoS Floating IPs statuses using status filter
+      opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+        status: "notConfig"
+      register: anti_ddos
+
+    - name: assert result
+      assert:
+        that:
+          - anti_ddos is success
+          - anti_ddos is not changed
+
+    - name: Get error when name of status is wrong
+      opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
+        status: "wrongStatus"
+      register: anti_ddos
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - anti_ddos is not success
+          - anti_ddos is not changed
