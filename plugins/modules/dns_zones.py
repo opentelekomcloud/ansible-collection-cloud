@@ -130,7 +130,6 @@ class DNSZonesModule(OTCModule):
 
     def run(self):
         changed = False
-        data = []
         query = {}
 
         if self.params['zone_type'] == 'private':
