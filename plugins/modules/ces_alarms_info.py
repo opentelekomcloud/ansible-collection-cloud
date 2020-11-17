@@ -79,7 +79,7 @@ deh_servers:
 
 EXAMPLES = '''
 # Query Alarms with the name "test-alarm"
-- opentelekomcloud.cloud.ces_server_info:
+- opentelekomcloud.cloud.ces_alarms_info:
     name: test-alarm
 '''
 
