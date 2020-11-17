@@ -29,7 +29,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-deh_servers:
+alarms:
     description: Dictionary of Alarms
     returned: changed
     type: list
@@ -72,7 +72,6 @@ deh_servers:
             "name": "alarm-t2tn",
             "ok_actions": null,
             "update_time": 1625101172297
-
       }
     ]
 '''

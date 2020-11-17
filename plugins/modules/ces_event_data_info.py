@@ -59,8 +59,8 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-deh_servers:
-    description: Dictionary of Alarms
+events:
+    description: Dictionary of Event Data
     returned: changed
     type: list
     sample: [
@@ -71,7 +71,7 @@ deh_servers:
 '''
 
 EXAMPLES = '''
-# Query Even_data with some params
+# Query Event_data with some params
 - opentelekomcloud.cloud.ces_event_data_info:
     namespace: "SYS.ECS"
     type: "instance_host_info"
@@ -116,7 +116,7 @@ class CesEventDataInfoModule(OTCModule):
 
         self.exit(
             changed=False,
-            alarms=data
+            events=data
         )
 
 
