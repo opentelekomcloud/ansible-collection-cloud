@@ -27,7 +27,7 @@
         name: "{{ network_name }}"
         state: present
       register: zone_net
-    
+
     - name: Create subnet for DNS private Zone
       openstack.cloud.subnet:
         name: "{{ subnet_name }}"
@@ -115,7 +115,7 @@
         that:
           - dns_zo is success
           - dns_zo.zone.description is defined
-    
+
     - name: Creating a DNS private Zone
       opentelekomcloud.cloud.dns_zones:
         name: "{{ zone_private_name }}"
@@ -217,7 +217,7 @@
             state: absent
           register: dns_zo_pu_dr
           ignore_errors: yes
-        
+
         - name: Drop DNS private Zone
           opentelekomcloud.cloud.dns_zones:
             name: "{{ zone_private_name }}"
