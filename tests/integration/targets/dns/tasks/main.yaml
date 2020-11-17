@@ -1,0 +1,249 @@
+---
+- name: Doing Integration test
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Assigning Floating IP
+      opentelekomcloud.cloud.floating_ip:
+        network: admin_external_net
+      register: fl
+
+    - name: Set facts
+      set_fact:
+        fl_ip: "{{ fl.floating_ip.floating_ip_address }}"
+        ptrdname: "{{ ( prefix + '.com.' ) }}"
+        description: "{{ ( prefix + 'description' ) }}"
+        zone_public_name: "{{ ( prefix + '-zone.com.' ) }}"
+        zone_private_name: "{{ ( prefix + '-zone.com.' ) }}"
+        rs_name: "{{ ( prefix + '-rs.' + prefix + '-zone.com.' ) }}"
+        network_name: "{{ ( prefix + '-network' )}}"
+        subnet_name: "{{ ( prefix + '-subnet' )}}"
+        router_name: "{{ ( prefix + '-router' )}}"
+
+    - name: Create network for DNS private Zone
+      openstack.cloud.network:
+        name: "{{ network_name }}"
+        state: present
+      register: zone_net
+
+    - name: Create subnet for DNS private Zone
+      openstack.cloud.subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ zone_net.network.name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: zone_subnet
+
+    - name: Create Router for DNS private Zone
+      openstack.cloud.router:
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: false
+        interfaces:
+          - net: "{{ zone_net.network.name }}"
+            subnet: "{{ zone_subnet.subnet.name }}"
+      register: zone_router
+
+    - name: Creating a dns_floating_ip entry
+      opentelekomcloud.cloud.dns_floating_ip:
+        floating_ip: "{{ fl_ip }}"
+        ptrdname: "{{ ptrdname }}"
+        state: present
+      register: dns_fl
+
+    - name: debug
+      debug:
+        var: dns_fl.ptr
+
+    - name: assert result
+      assert:
+        that:
+          - dns_fl is success
+          - dns_fl.ptr is defined
+
+    - name: Updating a dns_floating_ip entry
+      opentelekomcloud.cloud.dns_floating_ip:
+        floating_ip: "{{ fl_ip }}"
+        ptrdname: "{{ ptrdname }}"
+        description: "{{ description }}"
+        state: present
+      register: dns_fl
+
+    - name: debug
+      debug:
+        var: dns_fl.ptr
+
+    - name: assert result
+      assert:
+        that:
+          - dns_fl is success
+          - dns_fl.ptr.description is defined
+
+    - name: Creating a public DNS Zone
+      opentelekomcloud.cloud.dns_zones:
+        name: "{{ zone_public_name }}"
+        state: present
+      register: dns_zo
+
+    - name: debug
+      debug:
+        var: dns_zo.zone
+
+    - name: assert result
+      assert:
+        that:
+          - dns_zo is success
+          - dns_zo.zone is defined
+
+    - name: Updating a public DNS Zone
+      opentelekomcloud.cloud.dns_zones:
+        name: "{{ zone_public_name }}"
+        state: present
+        description: "{{ description }}"
+      register: dns_zo
+
+    - name: debug
+      debug:
+        var: dns_zo.zone
+
+    - name: assert result
+      assert:
+        that:
+          - dns_zo is success
+          - dns_zo.zone.description is defined
+
+    - name: Creating a DNS private Zone
+      opentelekomcloud.cloud.dns_zones:
+        name: "{{ zone_private_name }}"
+        router: "{{ router_name }}"
+        zone_type: "private"
+        state: present
+      register: dns_zo_pr
+
+    - name: debug
+      debug:
+        var: dns_zo_pr.zone
+
+    - name: assert result
+      assert:
+        that:
+          - dns_zo_pr is success
+          - dns_zo_pr.zone is defined
+
+    - name: Updating a private DNS Zone
+      opentelekomcloud.cloud.dns_zones:
+        name: "{{ zone_private_name }}"
+        state: present
+        description: "{{ description }}"
+      register: dns_zo_pr
+
+    - name: debug
+      debug:
+        var: dns_zo_pr.zone
+
+    - name: assert result
+      assert:
+        that:
+          - dns_zo_pr is success
+          - dns_zo_pr.zone.description is defined
+
+    - name: Creating a DNS Recordset
+      opentelekomcloud.cloud.dns_recordset:
+        zone_id: "{{ dns_zo.zone.id }}"
+        recordset_name: "{{ rs_name }}"
+        type: A
+        records:
+          - "1.1.1.1"
+          - "2.2.2.2"
+        state: present
+      register: dns_rs
+
+    - name: debug
+      debug:
+        var: dns_rs.recordset
+
+    - name: assert result
+      assert:
+        that:
+          - dns_rs is success
+          - dns_rs.recordset is defined
+
+    - name: Updating a DNS Recordset
+      opentelekomcloud.cloud.dns_recordset:
+        zone_id: "{{ dns_zo.zone.id }}"
+        recordset_name: "{{ rs_name }}"
+        type: A
+        description: "{{ description }}"
+        records:
+          - "1.1.1.1"
+          - "2.2.2.2"
+        state: present
+      register: dns_rs
+
+    - name: debug
+      debug:
+        var: dns_rs.recordset
+
+    - name: assert result
+      assert:
+        that:
+          - dns_rs is success
+          - dns_rs.recordset.description is defined
+
+  always:
+    - block:
+      - name: Drop dns_floating_ip entry
+        opentelekomcloud.cloud.dns_floating_ip:
+          floating_ip: "{{ fl_ip }}"
+          state: absent
+        register: dns_fl_dr
+
+      - name: Dropping DNS Recordset
+        opentelekomcloud.cloud.dns_recordset:
+          zone_id: "{{ dns_zo.zone.id }}"
+          recordset_name: "{{ rs_name }}"
+          state: absent
+        register: dns_rs_dr
+
+      - name: Drop DNS public Zone
+        opentelekomcloud.cloud.dns_zones:
+          name: "{{ zone_public_name }}"
+          state: absent
+        register: dns_zo_pu_dr
+
+      - name: Drop DNS private Zone
+        opentelekomcloud.cloud.dns_zones:
+          name: "{{ zone_private_name }}"
+          zone_type: "private"
+          state: absent
+        register: dns_zo_pr_dr
+
+      - name: Drop Floating IP
+        opentelekomcloud.cloud.floating_ip:
+          floating_ip_address: "{{ fl_ip }}"
+          state: absent
+          purge: true
+        register: fl_dr
+
+      - name: Drop existing Router
+        openstack.cloud.router:
+          name: "{{ router_name }}"
+          state: absent
+        register: dns_rout_dr
+
+      - name: Drop existing subnet
+        openstack.cloud.subnet:
+          name: "{{ subnet_name }}"
+          state: absent
+        register: dns_subnet_dr
+
+      - name: Drop existing network
+        openstack.cloud.network:
+          name: "{{ network_name }}"
+          state: absent
+        register: dns_net_dr
+      ignore_errors: yes
