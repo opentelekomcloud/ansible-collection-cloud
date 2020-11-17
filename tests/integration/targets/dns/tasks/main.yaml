@@ -13,14 +13,14 @@
     - name: Set facts
       set_fact:
         fl_ip: "{{ fl.floating_ip.floating_ip_address }}"
-        ptrdname: "{{ ( prefix + '.com.' ) }}"
-        description: "{{ ( prefix + 'description' ) }}"
-        zone_public_name: "{{ ( prefix + '-zone.com.' ) }}"
-        zone_private_name: "{{ ( prefix + '-zone.com.' ) }}"
-        rs_name: "{{ ( prefix + '-rs.' + prefix + '-zone.com.' ) }}"
-        network_name: "{{ ( prefix + '-network' )}}"
-        subnet_name: "{{ ( prefix + '-subnet' )}}"
-        router_name: "{{ ( prefix + '-router' )}}"
+        ptrdname: "{{ ( prefix + 'dns.com.' ) }}"
+        description: "{{ ( prefix + 'description-dns' ) }}"
+        zone_public_name: "{{ ( prefix + '-dnszone.com.' ) }}"
+        zone_private_name: "{{ ( prefix + '-dnszone.com.' ) }}"
+        rs_name: "{{ ( prefix + '-rs.' + prefix + '-dnszone.com.' ) }}"
+        network_name: "{{ ( prefix + '-dnsnetwork' )}}"
+        subnet_name: "{{ ( prefix + '-dnssubnet' )}}"
+        router_name: "{{ ( prefix + '-dnsrouter' )}}"
 
     - name: Create network for DNS private Zone
       openstack.cloud.network:
