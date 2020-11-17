@@ -42,7 +42,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: False
+        enable_snat: false
         interfaces:
           - net: "{{ zone_net.network.name }}"
             subnet: "{{ zone_subnet.subnet.name }}"
@@ -201,7 +201,7 @@
             floating_ip: "{{ fl_ip }}"
             state: absent
           register: dns_fl_dr
-          ignore_errors: yes
+          ignore_errors: true
 
         - name: Dropping DNS Recordset
           opentelekomcloud.cloud.dns_recordset:
@@ -209,14 +209,14 @@
             recordset_name: "{{ rs_name }}"
             state: absent
           register: dns_rs_dr
-          ignore_errors: yes
+          ignore_errors: true
 
         - name: Drop DNS public Zone
           opentelekomcloud.cloud.dns_zones:
             name: "{{ zone_public_name }}"
             state: absent
           register: dns_zo_pu_dr
-          ignore_errors: yes
+          ignore_errors: true
 
         - name: Drop DNS private Zone
           opentelekomcloud.cloud.dns_zones:
@@ -224,7 +224,7 @@
             zone_type: "private"
             state: absent
           register: dns_zo_pr_dr
-          ignore_errors: yes
+          ignore_errors: true
 
         - name: Drop Floating IP
           opentelekomcloud.cloud.floating_ip:
@@ -232,25 +232,25 @@
             state: absent
             purge: true
           register: fl_dr
-          ignore_errors: yes
+          ignore_errors: true
 
         - name: Drop existing Router
           openstack.cloud.router:
             name: "{{ router_name }}"
             state: absent
           register: dns_rout_dr
-          ignore_errors: yes
+          ignore_errors: true
 
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
           register: dns_subnet_dr
-          ignore_errors: yes
+          ignore_errors: true
 
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network_name }}"
             state: absent
           register: dns_net_dr
-          ignore_errors: yes
+          ignore_errors: true
