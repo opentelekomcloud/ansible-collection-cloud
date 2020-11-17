@@ -196,7 +196,7 @@
 
   always:
     - block:
-        git add- name: Drop dns_floating_ip entry
+        - name: Drop dns_floating_ip entry
           opentelekomcloud.cloud.dns_floating_ip:
             floating_ip: "{{ fl_ip }}"
             state: absent
