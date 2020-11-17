@@ -59,12 +59,18 @@ lb_listener_info:
     connection_limit:
       description: Specifies the maximum number of connections.
       type: int
-    admin_state_up:
+    is_admin_state_up:
       description: Specifies the administrative status of the listener.
       type: bool
     default_pool_id:
       description: Specifies the ID of the associated backend server group.
       type: str
+    default_tls_container_ref:
+      description: Specifies the ID of the server certificate used by the listener.
+      type: str
+    sni_container_refs:
+      description: Lists the IDs of SNI certificates (server certificates with a domain name) used by the listener.
+      type: list
 '''
 
 EXAMPLES = '''

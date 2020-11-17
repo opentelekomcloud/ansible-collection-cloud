@@ -2,12 +2,13 @@
 requires_ansible: '>=2.9.10'
 action_groups:
   otc:
-    - as_config_group
+    - as_config
     - as_config_info
     - dns_floating_ip_info
     - dns_nameserver_info
     - dns_recordset_info
     - dns_zone_info
+    - as_group
     - cce_cluster
     - cce_cluster_cert_info
     - cce_cluster_info
@@ -27,6 +28,7 @@ action_groups:
     - rds_datastore_info
     - rds_flavor_info
     - rds_instance
+    - rds_backup
     - rds_backup_info
     - security_group_info
     - tag
@@ -36,6 +38,7 @@ action_groups:
     - volume_backup_info
     - volume_snapshot_info
     - vpc_peering_info
+    - vpc_route_info
     - waf_domain
     - waf_domain_info
     - lb_listener
@@ -48,3 +51,4 @@ action_groups:
     - lb_healthmonitor_info
     - lb_certificate_info
     - lb_certificate
+    - anti_ddos_fip_statuses_info.py
