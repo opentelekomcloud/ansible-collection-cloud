@@ -33,11 +33,11 @@ options:
   period:
     description:
       - Specifies the monitoring granularity
-    type: str
+    type: int
     required: true
   filter:
     description:
-      - Specifies the data rollup method. Example: average
+      - Specifies the data rollup method.
     type: str
     required: true
   time_from:
@@ -126,9 +126,8 @@ metricdata:
             }
         ],
         "id": null,
-        "metric_name": "cpu_util",
+        "metric_name": cpu_util,
         "name": null
-   
       }
     ]
 '''
@@ -141,7 +140,7 @@ EXAMPLES = '''
     time_from: "1605617014387"
     time_to: "1605618214387"
     period: 1
-    filter: "average"
+    filter: average
     dim0: "instance_id,123456789-6c9d-4594-9d6b-80da84491bec"
 '''
 
