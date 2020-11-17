@@ -60,9 +60,9 @@ options:
   disable:
     description:
       - This option allows you to disable a CMK. This will only have an effect if the key exists and is enabled.
+    required: false
     choices: ['yes', 'no']
     default: 'no'
-    required: false
     type: str
   cancel_deletion:
     description:
@@ -74,7 +74,7 @@ options:
     type: str
   state:
     description:
-      - Instance state
+      - Instance state.
     choices: ['present', 'absent']
     default: 'present'
     type: str
@@ -83,16 +83,22 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 key:
-  key_id:
-    description: CMK ID.
-    returned: On success when C(state=present)
-    type: str
-    sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-  domain_id:
-    description: User domain ID.
-    returned: On success when C(state=present)
-    type: str
-    sample: "56007a7e-ee4f-4d13-8283-b4da2e037c69"
+    description: AS groups object.
+    type: complex
+    returned: On Success.
+    contains:
+      key_id:
+        description: 
+          - CMK ID.
+        returned: On success when C(state=present)
+        type: str
+        sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+      domain_id:
+        description: 
+          - User domain ID.
+        returned: On success when C(state=present)
+        type: str
+        sample: "56007a7e-ee4f-4d13-8283-b4da2e037c69"
 '''
 
 EXAMPLES = '''
