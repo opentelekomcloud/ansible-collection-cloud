@@ -20,7 +20,7 @@ author: "Polina Gubina (@Polina-Gubina)"
 description:
   - Create/Remove customer master key in OTC.
 options:
-  key:
+  key_alias:
     description:
       - Alias of a non-default key or id. It can be only name to create the resource.\
       It can be name or id to delete the resource.
@@ -83,22 +83,22 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 key:
-    description: AS groups object.
-    type: complex
-    returned: On Success.
-    contains:
-      key_id:
-        description: 
-          - CMK ID.
-        returned: On success when C(state=present)
-        type: str
-        sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-      domain_id:
-        description: 
-          - User domain ID.
-        returned: On success when C(state=present)
-        type: str
-        sample: "56007a7e-ee4f-4d13-8283-b4da2e037c69"
+  description: Customer master key object.
+  type: complex
+  returned: On Success.
+  contains:
+    key_id:
+      description:
+        - CMK ID.
+      returned: On success when C(state=present)
+      type: str
+      sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+    domain_id:
+      description:
+        - User domain ID.
+      returned: On success when C(state=present)
+      type: str
+      sample: "56007a7e-ee4f-4d13-8283-b4da2e037c69"
 '''
 
 EXAMPLES = '''
@@ -128,7 +128,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class VPCPeeringInfoModule(OTCModule):
     argument_spec = dict(
-        key=dict(required=True),
+        key_alias=dict(required=True),
         key_description=dict(required=False),
         origin=dict(required=False),
         sequence=dict(required=False),
@@ -138,20 +138,20 @@ class VPCPeeringInfoModule(OTCModule):
         cancel_deletion=dict(required=False, choices=['yes', 'no'], default='no'),
         state=dict(required=False, choices=['present', 'absent'], default='present')
     )
-
     module_kwargs = dict(
         supports_check_mode=True
     )
 
     def run(self):
 
-        key = self.conn.kms.find_key(self.params['key'], ignore_missing=True)
+        key_alias = self.params['key_alias']
+        key = self.conn.kms.find_key(key_alias, ignore_missing=True)
 
         if self.params['state'] == 'present':
 
             if not key:
 
-                attrs = {'key': key}
+                attrs = {'key': key_alias}
 
                 if self.params['key_description']:
                     attrs['key_description'] = self.params['key_description']
@@ -166,8 +166,10 @@ class VPCPeeringInfoModule(OTCModule):
                 key = self.conn.kms.create_key(**attrs)
                 self.exit(changed=True, key=key)
             else:
+
                 if self.params['enable'] == 'yes':
 
+                    # *3 indicates that the CMK is disabled.
                     if key.key_state == "3":
 
                         if self.ansible.check_mode:
@@ -177,7 +179,6 @@ class VPCPeeringInfoModule(OTCModule):
                         self.exit(changed=True, key=enabled_key, msg='The key was enabled')
 
                     else:
-
                         if self.ansible.check_mode:
                             self.exit_json(changed=False)
 
@@ -185,6 +186,7 @@ class VPCPeeringInfoModule(OTCModule):
 
                 if self.params['disable'] == 'yes':
 
+                    # *2 indicates that the CMK is enabled.
                     if key.key_state == "2":
 
                         if self.ansible.check_mode:
@@ -194,7 +196,6 @@ class VPCPeeringInfoModule(OTCModule):
                         self.exit(changed=True, key=disabled_key, msg='The key was disabled')
 
                     else:
-
                         if self.ansible.check_mode:
                             self.exit_json(changed=False)
 
@@ -202,6 +203,7 @@ class VPCPeeringInfoModule(OTCModule):
 
                 if self.params['cancel_deletion'] == 'yes':
 
+                    # *4 indicates that the CMK is scheduled for deletion.
                     if key.key_state == "4":
 
                         if self.ansible.check_mode:
@@ -211,7 +213,6 @@ class VPCPeeringInfoModule(OTCModule):
                         self.exit(changed=True, key=key_cancel_dltn, msg='The deletion was canceled')
 
                     else:
-
                         if self.ansible.check_mode:
                             self.exit_json(changed=False)
 
@@ -224,6 +225,7 @@ class VPCPeeringInfoModule(OTCModule):
                     self.fail_json(msg="Key already exists")
         else:
             if key:
+                # *4 indicates that the CMK is scheduled for deletion.
                 if key.key_state != 4:
 
                     if self.ansible.check_mode:
@@ -231,11 +233,12 @@ class VPCPeeringInfoModule(OTCModule):
 
                     if self.params['pending_days']:
                         self.conn.kms.schedule_key_deletion(key, self.params['pending_days'])
-                        self.exit(msg="The key is scheduled to be deleted.")
                     else:
                         self.conn.kms.schedule_key_deletion(key)
-                else:
 
+                    self.exit(changed=True, msg="The key is scheduled to be deleted.")
+
+                else:
                     if self.ansible.check_mode:
                         self.exit_json(changed=False)
 
