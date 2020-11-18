@@ -21,9 +21,9 @@ author: "Polina Gubina (@Polina-Gubina)"
 description:
   - Add or Remove data encryption key in OTC.
 options:
-  key_id:
+  key_alias:
     description:
-      - ID of a CMK.
+      - Alias of a CMK.
     required: true
     type: str
   encryption_context:
@@ -116,7 +116,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class VPCPeeringInfoModule(OTCModule):
     argument_spec = dict(
-        key_id=dict(required=True),
+        key_alias=dict(required=True),
         encryption_context=dict(required=False, type=dict),
         datakey_length=dict(required=False),
         sequence=dict(required=False),
@@ -178,9 +178,10 @@ class VPCPeeringInfoModule(OTCModule):
             attrs['datakey_length'] = self.params['datakey_length']
 
             if self.params['plaintext_free'] == 'yes':
-                datakey = self.conn.kms.create_datakey_wo_plain(cmk=cmk, **attrs)
+                datakey = self.conn.kms.create_datakey_wo_plain(cmk=cmk)
             else:
-                datakey = self.conn.kms.create_datakey(cmk=cmk, **attrs)
+                self.fail_json(msg=f'{self.argument_spec}')
+                datakey = self.conn.kms.create_datakey(cmk=cmk, datakey_length=200, encryption_context={"a": "b", "c": "d"})
 
             self.exit_json(changed=True, key=datakey)
 
