@@ -20,11 +20,10 @@ version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Add or Remove CCE Cluster in OTC
-    service(ELB).
 options:
   name:
     description:
-      - Name that has to be given to the load balancer
+      - Name that has to be given to the CCE cluster
     required: true
     type: str
   state:
@@ -109,6 +108,7 @@ class CceClusterModule(OTCModule):
         name=dict(required=True),
         state=dict(default='present', choices=['absent', 'present']),
         cluster_type=dict(required=True, choices=['virtualmachine', 'baremetal']),
+        cluster_version=dict(required=False),
         flavor=dict(required=True, choices=[
             'cce.s1.small',
             'cce.s1.medium'
@@ -142,6 +142,7 @@ class CceClusterModule(OTCModule):
     def run(self):
         name = self.params['name']
         cluster_type = self.params['cluster_type']
+        cluster_version = self.params['cluster_version']
         flavor = self.params['flavor']
         description = self.params['description']
         router = self.params['router']
@@ -180,7 +181,6 @@ class CceClusterModule(OTCModule):
                     'metadata': {'name': name},
                     'spec': {
                         'type': cluster_type,
-                        'version': 'v1.9.10-r2',
                         'hostNetwork': {
                             'vpc': cloud_router.id,
                             'subnet': cloud_network.id
@@ -194,6 +194,8 @@ class CceClusterModule(OTCModule):
                 }
                 if description:
                     data['spec']['description'] = description
+                if cluster_version:
+                    data['spec']['version'] = cluster_version
 
                 cluster = self.conn.cce.create_cluster(
                     **data

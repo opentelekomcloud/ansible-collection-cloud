@@ -8,6 +8,7 @@ action_groups:
     - cce_cluster_cert_info
     - cce_cluster_info
     - cce_cluster_node_info
+    - cce_cluster_node
     - deh_host
     - deh_host_info
     - deh_host_type_info
