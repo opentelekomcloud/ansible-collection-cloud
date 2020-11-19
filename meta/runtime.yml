@@ -36,6 +36,7 @@ action_groups:
     - vpc_peering
     - vpc_peering_info
     - vpc_route_info
+    - vpc_route
     - waf_domain
     - waf_domain_info
     - lb_listener
