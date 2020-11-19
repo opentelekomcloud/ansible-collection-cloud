@@ -43,6 +43,12 @@ options:
     choices: [baremetal, virtualmachine]
     required: true
     type: str
+  cluster_version:
+    description:
+      - Version of the CCE cluster.
+      - If not provided, the newest version will be used
+    required: false
+    type: str
   description:
     description:
       - Cluster description

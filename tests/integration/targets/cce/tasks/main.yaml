@@ -8,11 +8,11 @@
     - name: Set random prefix
       set_fact:
         # prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
-        prefix: 'tino-test'
+        prefix: 'tinotest'
   
     - name: Set initial facts
       set_fact:
-        cce_node_name: "{{ ( prefix + '_cce-node-name') }}"
+        cce_node_name: "{{ ( prefix + 'ccenode') }}"
 
     - name: Create CCE cluster node
       cce_cluster_node:

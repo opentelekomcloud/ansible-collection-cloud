@@ -34,6 +34,7 @@ options:
     description:
       - Cluster node count which will be created.
     type: int
+    default: 1
   description:
     description:
       - Cluster description
@@ -62,6 +63,7 @@ options:
       - Type of the cluster node
     type: str
     choices: [SATA, SAS, SSD]
+    default: SATA
   state:
     description:
       - Should the resource be present or absent.
@@ -125,8 +127,9 @@ class CceClusterNodeModule(OTCModule):
             choices=['SATA', 'SAS', 'SSD'],
             default='SATA'
         ),
-        wait=dict(required=False, type='bool', default=True),
-        timeout=dict(required=False, type='int', default=180)
+        state=dict(default='present', choices=['absent', 'present']),
+        timeout=dict(required=False, type='int', default=180),
+        wait=dict(required=False, type='bool', default=True)
     )
     module_kwargs = dict(
         required_if=[
@@ -154,7 +157,7 @@ class CceClusterNodeModule(OTCModule):
         changed = False
 
         cluster = self.conn.cce.find_cluster(
-            name_or_id=name,
+            name_or_id=cce_cluster,
             ignore_missing=True)
         if not cluster:
             self.fail_json(
@@ -226,7 +229,7 @@ class CceClusterNodeModule(OTCModule):
             # Refetch the cluster node
             cluster_node = self.conn.cce.get_cluster_node(
                 cluster=cluster,
-                cluster_node.id
+                node_id=cluster_node.id
             )
 
         self.exit_json(
