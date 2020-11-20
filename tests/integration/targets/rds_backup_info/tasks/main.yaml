@@ -1,16 +1,29 @@
 ---
 - module_defaults:
-    rds_backup_info:
+    opentelekomcloud.cloud.rds_backup_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: Get error message that rds instance is missing
-      rds_backup_info:
-      register: rds_backup
+      opentelekomcloud.cloud.rds_backup_info:
+        instance:
+      register: rds_backup_info
       ignore_errors: yes
 
     - name: assert result
       assert:
         that:
-          - rds_backup is not success
-          - rds_backup is not changed
-          - 'rds_backup.msg == "missing required arguments: instance"'
+          - rds_backup_info is not success
+          - rds_backup_info is not changed
+          - 'rds_backup_info.msg == "RDS instance is missing"'
+
+    - name: Get error message that required parameter is missing
+      opentelekomcloud.cloud.rds_backup_info:
+      register: rds_backup_info
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - rds_backup_info is not success
+          - rds_backup_info is not changed
+          - 'rds_backup_info.msg == "missing required arguments: instance"'

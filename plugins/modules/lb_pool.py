@@ -115,7 +115,7 @@ lb_pool:
 
 EXAMPLES = '''
 # Create a lb server group.
-- lb_pool:
+- opentelekomcloud.cloud.lb_pool:
     state: present
     name: pool-test
     protocol: tcp
@@ -124,7 +124,7 @@ EXAMPLES = '''
     loadbalancer: "0416b6f1-877f-4a51-987e-978b3f084253"
 
 # Create a lb server group with session_persistence.
-- lb_pool:
+- opentelekomcloud.cloud.lb_pool:
     state: present
     name: pool-test
     protocol: tcp
@@ -136,10 +136,14 @@ EXAMPLES = '''
       - persistence_timeout: 60
 
 # Delete a load balancer(and all its related resources)
-- lb_pool:
+- opentelekomcloud.cloud.lb_pool:
     state: absent
     name: pool-test
 '''
+
+import hashlib
+import json
+from typing import Dict, Any
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
@@ -159,6 +163,14 @@ class LoadBalancerPoolModule(OTCModule):
     module_kwargs = dict(
         supports_check_mode=True
     )
+
+    def _dict_hash(self, dictionary: Dict[str, Any]) -> str:
+        """MD5 hash of a dictionary."""
+
+        dhash = hashlib.md5()
+        encoded = json.dumps(dictionary, sort_keys=True).encode()
+        dhash.update(encoded)
+        return dhash.hexdigest()
 
     def run(self):
         name_filter = self.params['name']
@@ -199,10 +211,23 @@ class LoadBalancerPoolModule(OTCModule):
                 attrs['session_persistence'] = session_persistence_filter
 
             if lb_pool:
-                changed = True
+                mattrs = {}
+                changed = False
                 if self.ansible.check_mode:
                     self.exit_json(changed=True)
-                lb_pool = self.conn.network.update_pool(lb_pool, **attrs)
+                if description_filter and lb_pool.description != description_filter:
+                    mattrs['description'] = description_filter
+                if lb_algorithm_filter and lb_pool.lb_algorithm != lb_algorithm_filter.upper():
+                    mattrs['lb_algorithm'] = lb_algorithm_filter.upper()
+                if admin_state_up_filter and lb_pool.is_admin_state_up != admin_state_up_filter:
+                    mattrs['admin_state_up'] = admin_state_up_filter
+                if session_persistence_filter and\
+                        self._dict_hash(lb_pool.session_persistence) != self._dict_hash(session_persistence_filter):
+                    session_persistence_filter['type'] = session_persistence_filter['type'].upper()
+                    mattrs['session_persistence'] = session_persistence_filter
+                if mattrs:
+                    changed = True
+                lb_pool = self.conn.network.update_pool(lb_pool, **mattrs)
                 self.exit_json(
                     changed=changed,
                     server_group=lb_pool.to_dict(),
