@@ -30,11 +30,6 @@ options:
       - Name of the metrics object
     type: str
     required: false
-  project_id:
-    description:
-      - specifies the project_id
-    type: str
-    required: true
   start:
     description:
       - specifies the paging start value
@@ -117,7 +112,6 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class CesMetricsInfoModule(OTCModule):
     argument_spec = dict(
-        project_id=dict(required=True),
         metric_name=dict(required=False),
         namespace=dict(required=False),
         start=dict(required=False),

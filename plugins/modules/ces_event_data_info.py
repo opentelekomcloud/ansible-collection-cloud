@@ -65,7 +65,18 @@ events:
     type: list
     sample: [
       {
-
+        "datapoints": [
+        {
+            "type": "instance_host_info",
+            "timestamp": 1450231200000,
+            "value": "xxx"
+        },
+        {
+            "type": "instance_host_info",
+            "timestamp": 1450231800000,
+            "value": "xxx"
+        }
+        ]
       }
     ]
 '''
