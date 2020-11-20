@@ -112,11 +112,23 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
+
+
 class CceClusterNodeModule(OTCModule):
     argument_spec = dict(
         az=dict(required=False),
         cluster=dict(required=False),
         count=dict(required=False, type='int', default=1),
+        data_volumes=dict(
+            required=False,
+            type='list',
+            elements='dict',
+            default=[
+                {
+                  'SATA': 100
+                }
+            ]
+        ),
         description=dict(required=False),
         flavor=dict(required=False),
         keypair=dict(required=False),
@@ -135,14 +147,40 @@ class CceClusterNodeModule(OTCModule):
         required_if=[
             ('state',
              'present',
-             ['az', 'cluster', 'flavor']),
+             ['az', 'cluster', 'flavor', 'keypair']),
         ]
     )
+
+    def create_data_volumes(self, volume_list):
+        volumes = []
+        volume_types = ['SATA', 'SAS', 'SSD']
+
+        if volume_list:
+            for item in volume_list:
+                for key in item:
+                    if not key in volume_types:
+                        self.fail_json(
+                            msg='The specified data volume type %s does not '
+                                'match the clouds specification: %s'
+                                % (key, volume_types)
+                        )
+                    if not (100 <= item[key] <= 32768):
+                        self.fail_json(
+                            msg='The data volume size must be specified between '
+                                '100 and 32768 GB.'
+                        )
+                    volumes.append({
+                        'volumetype': key,
+                        'size': item[key]
+                    })
+
+        return volumes
 
     def run(self):
         az = self.params['az']
         cce_cluster = self.params['cluster']
         count = self.params['count']
+        data_volumes = self.params['data_volumes']
         description = self.params['description']
         flavor = self.params['flavor']
         keypair = self.params['keypair']
@@ -172,6 +210,9 @@ class CceClusterNodeModule(OTCModule):
                 node=name
             )
             '''
+            if data_volumes:
+                data_volumes = self.create_data_volumes(data_volumes)
+
             data = {
                 'kind': 'Node',
                 'apiVersion': 'v3',
@@ -194,12 +235,7 @@ class CceClusterNodeModule(OTCModule):
                         'size': root_volume_size,
                         'volumetype': root_volume_type
                     },
-                    'dataVolumes': [
-                        {
-                            'size': 100,
-                            'volumetype': 'SAS'
-                        }
-                    ],
+                    'dataVolumes': data_volumes,
                     'count': count,
                 }
             }

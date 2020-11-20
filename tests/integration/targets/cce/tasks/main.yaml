@@ -16,11 +16,14 @@
 
     - name: Create CCE cluster node
       cce_cluster_node:
-        az: 'eu-de-01'
+        az: 'eu-de-02'
         cluster: '7ca53d10-2a70-11eb-9ade-0255ac1017a0'
-        count: 1
+        count: 2
+        data_volumes:
+          - SAS: 100
+          - SATA: 100
         description: 'my-node'
-        flavor: 's3.large.2'
+        flavor: 's2.large.2'
         keypair: 'tischrei-pub'
         name: "{{ cce_node_name }}"
         root_volume_size: 40
