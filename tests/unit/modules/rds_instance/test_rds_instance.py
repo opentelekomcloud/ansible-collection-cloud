@@ -130,7 +130,7 @@ class RdsInstanceTest(TestCase):
             router=None,
             security_group=None,
             state='present',
-            timeout=180,
+            timeout=600,
             validate_certs=None,
             volume_size=None,
             volume_type=None,
@@ -160,7 +160,8 @@ class RdsInstanceTest(TestCase):
             self.conn.rds.find_instance.return_value = self.conn.instance
             self.conn.rds.delete_instance.return_value = self.conn.instance
             self.module().run()
-        self.conn.rds.delete_instance.assert_called_with(self.conn.instance)
+        self.conn.rds.delete_instance.assert_called_with(
+            instance=self.conn.instance.id)
         self.assertTrue(result.exception.args[0]['changed'])
 
     def test_ensure_not_deleted(self):

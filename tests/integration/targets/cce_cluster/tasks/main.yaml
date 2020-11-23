@@ -1,31 +1,22 @@
 ---
 - module_defaults:
-    rds_instance:
+    cce_cluster:
       cloud: "{{ test_cloud }}"
+  vars:
+    prefix: scenario00a-
   block:
     - name: Set random prefix
       set_fact:
-        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+        prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
 
     - name: Set initial facts
       set_fact:
-        network_name: "{{ ( prefix + 'rds_test-network') }}"
-        subnet_name: "{{ ( prefix + 'rds_test-subnet') }}"
-        router_name: "{{ ( prefix + 'rds_test-router') }}"
-        instance_name: "{{ ( 'z-' + prefix + 'rds_test-instance') }}"
-        rds_flavor: "rds.mysql.s1.medium"
-
-    - name: Delete missing instance
-      rds_instance:
-        state: absent
-        name: "definitely_missing_instance"
-      register: rds
-
-    - name: assert result
-      assert:
-        that:
-          - rds is success
-          - rds is not changed
+        network_name: "{{ ( prefix + '-test-network') }}"
+        subnet_name: "{{ ( prefix + '-test-subnet') }}"
+        router_name: "{{ ( prefix + '-test-router') }}"
+        cce_cluster_name: "{{ ( 'z-' + prefix + '-acc-cce-cluster-test') }}"
+        cce_flavor: "cce.s1.small"
+        container_network_mode: "overlay_l2"
 
     - name: Create network for test
       openstack.cloud.network:
@@ -56,35 +47,28 @@
             subnet: "{{ test_subnet.subnet.name }}"
       register: test_router
 
-    - name: Create RDS Instance
-      rds_instance:
-        name: "{{ instance_name }}"
-        datastore_type: "mysql"
-        datastore_version: "8.0"
-        flavor: "{{ rds_flavor }}"
+    - name: Create CCE Cluster
+      cce_cluster:
+        name: "{{ cce_cluster_name }}"
+        flavor: "{{ cce_flavor }}"
+        description: "Ansible collection test"
         router: "{{ router_name }}"
         network: "{{ network_name }}"
-        security_group: "default"
-        volume_type: "common"
-        volume_size: 100
-        password: "Test@123"
-        region: "eu-de"
-        availability_zone: "eu-de-01"
-        timeout: 600
-      register: obj
+        container_network_mode: "{{ container_network_mode }}"
+      register: cluster
 
     - name: assert result
       assert:
         that:
-          - obj is success
-          - obj is changed
+          - cluster is success
+          - cluster is changed
 
   always:
     - block:
       # Cleanup
-      - name: Drop instance
-        rds_instance:
-          name: "{{ instance_name }}"
+      - name: Drop cluster
+        cce_cluster:
+          name: "{{ cce_cluster_name }}"
           state: "absent"
 
       - name: Drop router
