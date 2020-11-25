@@ -12,7 +12,7 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: dns_alarms
+module: ces_alarms
 short_description: Modify or Create Alarms
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.1.2"
@@ -20,70 +20,175 @@ author: "Sebastian Gode (@SebastianGode)"
 description:
   - Modify or Create Alarms
 options:
-  description:
+  alarm_description:
     description:
-      - Description of the Record
+      - Description of the Alarm
     type: str
-  floating_ip:
+    default: ""
+    required: false
+  alarm_name:
     description:
-      - Name or ID of the floating ip
+      - Name of the Alarm. Can be an ID too if state == absent
     type: str
     required: true
-  ptrdname:
+  metric:
     description:
-      - Domain name of the PTR record required if updating/creating rule
-    type: str
+      - Specifies the Alarm metrics. Required if state == present
+    type: dict
+    required: false
   state:
     description:
       - Resource state
     type: str
     choices: [present, absent]
     default: present
-  ttl:
+  condition:
     description:
-      - PTR record cache duration (in second) on a local DNS server
+      - Specifies the alarm triggering condition. Required if state == present
+    type: dict
+    required: false
+  alarm_enabled:
+    description:
+      - Specifies whether to enable the alarm
+    type: bool
+    required: false
+    default: true
+  alarm_action_enabled:
+    description:
+      - Specifies whether to enable the action to be triggered by an alarm
+    type: bool
+    required: false
+    default: true
+  alarm_level:
+    description:
+      - Specifies the alarm severity. The value can be 1, 2, 3 or 4, which indicates critical, major, minor, and informational, respectively
     type: int
+    required: false
+    default: 2
+  alarm_actions:
+    description:
+      - Specifies the action triggered by an alarm
+    type: list
+    required: false
+    elements: str
+  ok_actions:
+    description:
+      - Specifies the action triggered by clearing an alarm
+    type: list
+    required: false
+    elements: str
 
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-ptr:
-  description: Modify or Create Alarms
-  type: complex
-  returned: On Success.
-  contains:
-    description:
-      description: Description of the Record
-      type: str
-      sample: "MyRecord123"
-    floating_ip:
-      description: Name or ID of the floating ip
-      type: str
-      sample: "123.123.123.123"
-    ptrdname:
-      description: Domain name of the PTR record required if updating/creating rule
-      type: str
-      sample: "example.com"
-    status:
-      description: Resource status
-      type: str
-      sample: "ACTIVE"
-    ttl:
-      description: PTR record cache duration (in second) on a local DNS server
-      type: int
-      sample: 300
+alarms:
+  description: Dictionary of Event Data
+  returned: changed
+  type: list
+  sample: [
+      {
+        "alarm_action_enabled": true,
+        "alarm_actions": {
+            "id": null,
+            "location": null,
+            "name": null,
+            "notificationList": null,
+            "type": null
+        },
+        "alarm_description": "",
+        "alarm_enabled": true,
+        "alarm_id": "al1234506573003nnErvLjNy",
+        "alarm_level": 2,
+        "alarm_state": null,
+        "condition": {
+            "comparison_operator": ">=",
+            "count": 1,
+            "filter": "average",
+            "id": null,
+            "location": null,
+            "name": null,
+            "period": 300,
+            "unit": "B/s",
+            "value": 6
+        },
+        "id": "al1234506573003nnErvLjNy",
+        "location": {
+            "cloud": "otc",
+            "project": {
+                "domain_id": null,
+                "domain_name": null,
+                "id": "12345a84a13b49529d2e2c3646691288",
+                "name": "eu-de"
+            },
+            "region_name": "eu-de",
+            "zone": null
+        },
+        "metric": {
+            "dimensions": [
+                {
+                    "id": null,
+                    "location": null,
+                    "name": "instance_id",
+                    "value": "123456789-6c9d-4594-9d6b-80da84491bec"
+                },
+                {
+                    "id": null,
+                    "location": null,
+                    "name": "instance_id",
+                    "value": "123456789-0691-4896-8e19-1046b727d4e2"
+                }
+            ],
+            "id": null,
+            "location": null,
+            "metric_name": "network_outgoing_bytes_rate_inband",
+            "name": null,
+            "namespace": "SYS.ECS"
+        },
+        "name": "alarm-sgode",
+        "ok_actions": {
+            "id": null,
+            "location": null,
+            "name": null,
+            "notificationList": null,
+            "type": null
+        },
+        "update_time": null
+      }
+
+  ]
 '''
 
 EXAMPLES = '''
-# Creating a record:
+# Creating an Alarm with two instances in it:
 - name: Creating a record
-  opentelekomcloud.cloud.dns_floating_ip:
-    floating_ip: 123.123.123.123
-    ptrdname: "test2.com."
-    description: "test2nownow"
-    ttl: 300
+  opentelekomcloud.cloud.ces_alarms:
+    alarm_name: alarm-test
     state: present
+    metric:
+      namespace: "SYS.ECS"
+      dimensions:
+        - name: "instance_id"
+          value: "123456789-6c9d-4594-9d6b-80da84491bec"
+        - name: "instance_id"
+          value: "123456789-0691-4896-8e19-1046b727d4e2"
+      metric_name: "network_outgoing_bytes_rate_inband"
+    condition:
+      period: 300
+      filter: average
+      comparison_operator: ">="
+      value: 6
+      unit: "B/s"
+      count: 1
+    alarm_enabled: True
+    ok_actions:
+      - type: notification
+        notificationList:
+          - "urn:smn:region:12345a86d98e427e907e0097b7e35d48:sd"
+    alarm_actions:
+      - type: notification
+        notificationList:
+          - "urn:smn:region:12345a86d98e427e907e0097b7e35d48:sd"
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -98,8 +203,8 @@ class CesAlarmsModule(OTCModule):
         alarm_enabled=dict(required=False, type='bool', default='True'),
         alarm_action_enabled=dict(required=False, type='bool', default='True'),
         alarm_level=dict(required=False, type='int', default=2),
-        alarm_actions=dict(required=False, type='list'),
-        ok_actions=dict(required=False, type='list'),
+        alarm_actions=dict(required=False, type='list', elements='str'),
+        ok_actions=dict(required=False, type='list', elements='str'),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
@@ -139,7 +244,7 @@ class CesAlarmsModule(OTCModule):
                             changed=False,
                             failed=True,
                             message=('ok_actions and alarm_actions specified but notificationList '
-                                    'in them differs which is not allowed. ')
+                                     'in them differs which is not allowed. ')
                         )
 
             attrs = {
@@ -165,10 +270,9 @@ class CesAlarmsModule(OTCModule):
                 "alarm_actions": self.params['alarm_actions']
 
             }
-        # raise Exception(attrs)
-        alarms = self.conn.ces.create_alarm(**attrs)
-        self.exit(changed=True, recordset=alarms.to_dict())
-            
+
+            alarms = self.conn.ces.create_alarm(**attrs)
+            self.exit(changed=True, alarms=alarms.to_dict())
 
         self.exit(
             changed=changed

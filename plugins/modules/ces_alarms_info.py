@@ -93,7 +93,6 @@ class CesAlarmsInfoModule(OTCModule):
     def run(self):
 
         data = []
-        query = {}
 
         if self.params['name']:
             alarm = self.conn.ces.find_alarm(self.params['name'])
