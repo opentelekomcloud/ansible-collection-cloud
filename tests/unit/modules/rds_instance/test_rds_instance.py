@@ -20,6 +20,7 @@ class FakeCloud(object):
     instance.job_id = 'fake_job_id'
 
     create_rds_instance = mock.MagicMock(return_value=instance)
+    delete_rds_instance = mock.MagicMock(return_value=None)
     rds = mock.MagicMock()
     rds.find_instance = mock.MagicMock()
     rds.delete_instance = mock.MagicMock()
@@ -158,9 +159,9 @@ class RdsInstanceTest(TestCase):
         })
         with self.assertRaises(AnsibleExitJson) as result:
             self.conn.rds.find_instance.return_value = self.conn.instance
-            self.conn.rds.delete_instance.return_value = self.conn.instance
+            self.conn.delete_rds_instance.return_value = None
             self.module().run()
-        self.conn.rds.delete_instance.assert_called_with(
+        self.conn.delete_rds_instance.assert_called_with(
             instance=self.conn.instance.id)
         self.assertTrue(result.exception.args[0]['changed'])
 
@@ -173,5 +174,5 @@ class RdsInstanceTest(TestCase):
         with self.assertRaises(AnsibleExitJson) as result:
             self.conn.rds.find_instance.return_value = None
             self.module().run()
-        self.conn.rds.delete_instance.assert_not_called()
+        self.conn.delete_rds_instance.assert_not_called()
         self.assertFalse(result.exception.args[0]['changed'])

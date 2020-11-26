@@ -1,6 +1,6 @@
 ---
 - module_defaults:
-    rds_instance:
+    opentelekomcloud.cloud.rds_instance:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
@@ -57,7 +57,7 @@
       register: test_router
 
     - name: Create RDS Instance
-      rds_instance:
+      opentelekomcloud.cloud.rds_instance:
         name: "{{ instance_name }}"
         datastore_type: "mysql"
         datastore_version: "8.0"
@@ -83,7 +83,7 @@
     - block:
       # Cleanup
       - name: Drop instance
-        rds_instance:
+        opentelekomcloud.cloud.rds_instance:
           name: "{{ instance_name }}"
           state: "absent"
 

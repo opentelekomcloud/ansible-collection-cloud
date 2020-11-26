@@ -1,6 +1,6 @@
 ---
 - module_defaults:
-    cce_cluster:
+    opentelekomcloud.cloud.cce_cluster:
       cloud: "{{ test_cloud }}"
   vars:
     prefix: scenario00a-
@@ -48,7 +48,7 @@
       register: test_router
 
     - name: Create CCE Cluster
-      cce_cluster:
+      opentelekomcloud.cloud.cce_cluster:
         name: "{{ cce_cluster_name }}"
         flavor: "{{ cce_flavor }}"
         description: "Ansible collection test"
@@ -67,7 +67,7 @@
     - block:
       # Cleanup
       - name: Drop cluster
-        cce_cluster:
+        opentelekomcloud.cloud.cce_cluster:
           name: "{{ cce_cluster_name }}"
           state: "absent"
 
