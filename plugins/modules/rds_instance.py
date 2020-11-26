@@ -208,7 +208,7 @@ class RdsInstanceModule(OTCModule):
         return False
 
     def run(self):
-        self.params['wait_timeout'] = self.params['timeout']
+        self.params['wait_timeout'] = self.params.pop('timeout')
         name = self.params['name']
 
         changed = False
