@@ -130,11 +130,11 @@ class RdsInstanceTest(TestCase):
             router=None,
             security_group=None,
             state='present',
-            timeout=600,
             validate_certs=None,
             volume_size=None,
             volume_type=None,
-            wait=True)
+            wait=True,
+            wait_timeout=600)
         self.assertTrue(result.exception.args[0]['changed'])
 
     def test_ensure_not_created(self):

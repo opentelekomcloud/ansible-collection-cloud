@@ -14,7 +14,7 @@
         network_name: "{{ ( prefix + '-test-network') }}"
         subnet_name: "{{ ( prefix + '-test-subnet') }}"
         router_name: "{{ ( prefix + '-test-router') }}"
-        cce_cluster_name: "{{ ( 'z-' + prefix + '-acc-cce-cluster-test') }}"
+        cce_cluster_name: "{{ ( 'z-' + prefix + '-acc-test') }}"
         cce_flavor: "cce.s1.small"
         container_network_mode: "overlay_l2"
 
