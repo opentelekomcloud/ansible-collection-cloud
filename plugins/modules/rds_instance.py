@@ -112,7 +112,7 @@ options:
     description:
       - The amount of time the module should wait for the instance to get
         into active state.
-    default: 180
+    default: 600
     type: int
 
 
@@ -136,6 +136,22 @@ rds_instance:
 '''
 
 EXAMPLES = '''
+- name: provision rds instance
+  opentelekomcloud.cloud.rds_instance:
+    name: "{{ instance_name }}"
+    datastore_type: "mysql"
+    datastore_version: "8.0"
+    flavor: "{{ rds_flavor }}"
+    router: "{{ router_name }}"
+    network: "{{ network_name }}"
+    security_group: "default"
+    volume_type: "common"
+    volume_size: 100
+    password: "Test@123"
+    region: "eu-de"
+    availability_zone: "eu-de-01"
+    timeout: 600
+
 '''
 
 
@@ -166,7 +182,7 @@ class RdsInstanceModule(OTCModule):
         volume_type=dict(type='str'),
         volume_size=dict(type='int'),
         wait=dict(type='bool', default=True),
-        timeout=dict(type='int', default=180)
+        timeout=dict(type='int', default=600)
     )
     module_kwargs = dict(
         required_if=[
@@ -180,7 +196,7 @@ class RdsInstanceModule(OTCModule):
         ]
     )
 
-    otce_min_version = '0.7.1'
+    otce_min_version = '0.11.0'
 
     def _system_state_change(self, obj):
         state = self.params['state']
@@ -192,6 +208,7 @@ class RdsInstanceModule(OTCModule):
         return False
 
     def run(self):
+        self.params['wait_timeout'] = self.params.pop('timeout')
         name = self.params['name']
 
         changed = False
@@ -206,21 +223,14 @@ class RdsInstanceModule(OTCModule):
             changed = False
 
             if instance:
-                self.conn.rds.delete_instance(instance)
-                changed = True
-
+                attrs = {
+                    'instance': instance.id
+                }
                 if self.params['wait']:
-                    # RDS might give job_id, but it is a fake
-                    instance = self.conn.rds.find_instance(
-                        name_or_id=name)
+                    attrs['wait'] = True
 
-                    if instance:
-                        self.sdk.resource.wait_for_delete(
-                            self.conn.rds,
-                            instance,
-                            5,
-                            self.params['timeout']
-                        )
+                self.conn.delete_rds_instance(**attrs)
+                changed = True
 
         elif self.params['state'] == 'present':
             # Attention: not conform password result in BadRequest with no info
