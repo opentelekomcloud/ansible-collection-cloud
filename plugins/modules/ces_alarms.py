@@ -203,8 +203,8 @@ class CesAlarmsModule(OTCModule):
         alarm_enabled=dict(required=False, type='bool', default='True'),
         alarm_action_enabled=dict(required=False, type='bool', default='True'),
         alarm_level=dict(required=False, type='int', default=2),
-        alarm_actions=dict(required=False, type='list', elements='str'),
-        ok_actions=dict(required=False, type='list', elements='str'),
+        alarm_actions=dict(required=False, type='list', elements='str', default=[]),
+        ok_actions=dict(required=False, type='list', elements='str', default=[]),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
@@ -228,24 +228,13 @@ class CesAlarmsModule(OTCModule):
             condition_var = self.params['condition']
 
             if self.params['alarm_action_enabled']:
-                if not self.params['ok_actions'] and not self.params['alarm_actions']:
+                if self.params['ok_actions'] == [] and self.params['alarm_actions'] == []:
                     self.exit(
                         changed=False,
                         failed=True,
                         message=('alarm_action_enabled == True but neither ok_actions '
                                  'nor alarm_action specified but needed for creation. ')
                     )
-                if self.params['ok_actions'] and self.params['alarm_actions']:
-                    ok_actions_var = self.params['ok_actions']
-                    alarm_actions_var = self.params['alarm_actions']
-
-                    if ok_actions_var[0]["notificationList"] != alarm_actions_var[0]['notificationList']:
-                        self.exit(
-                            changed=False,
-                            failed=True,
-                            message=('ok_actions and alarm_actions specified but notificationList '
-                                     'in them differs which is not allowed. ')
-                        )
 
             attrs = {
                 "alarm_name": self.params['alarm_name'],

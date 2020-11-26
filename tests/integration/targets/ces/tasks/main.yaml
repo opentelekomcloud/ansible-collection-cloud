@@ -1,0 +1,152 @@
+---
+- name: Doing Integration test
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Assigning Floating IP
+      opentelekomcloud.cloud.floating_ip:
+        network: admin_external_net
+      register: fl
+    
+    - name: debug
+      debug:
+        var: fl.floating_ip
+
+    - name: Set facts
+      set_fact:
+        alarm_name: "{{ ( prefix + '-alarm-ces' ) }}"
+        fl_ip: "{{ fl.floating_ip.floating_ip_address }}"
+        fl_ip_id: "{{ fl.floating_ip.id }}"
+
+    - name: Creating an Alarm
+      opentelekomcloud.cloud.ces_alarms:
+        alarm_name: "{{ alarm_name }}"
+        state: present
+        metric:
+          namespace: "SYS.VPC"
+          dimensions:
+            - name: "publicip_id"
+              value: "{{ fl_ip_id }}"
+          metric_name: "down_stream"
+        condition:
+          period: 300
+          filter: average
+          comparison_operator: ">="
+          value: 6
+          unit: "B"
+          count: 1
+        alarm_enabled: True
+        alarm_action_enabled: False
+      register: ces_al
+
+    - name: debug
+      debug:
+        var: ces_al.alarms
+
+    - name: assert result
+      assert:
+        that:
+          - ces_al is success
+          - ces_al.alarms is defined
+
+    - name: Get Alarm Infos
+      opentelekomcloud.cloud.ces_alarms_info:
+        name: "{{ alarm_name }}"
+      register: ces_al_info
+    
+    - name: debug
+      debug:
+        var: ces_al_info.alarms
+
+    - name: assert result
+      assert:
+        that:
+          - ces_al_info is success
+          - ces_al_info.alarms is defined
+    
+    - name: Get Event Data Infos
+      opentelekomcloud.cloud.ces_event_data_info:
+        namespace: "SYS.VPC"
+        type: "vpc_info"
+        dim0: "{{ ( 'publicip_id,' + fl_ip_id ) }}"
+        time_from: "1605480241322"
+        time_to: "1605523441322"
+      register: ces_ed_info
+    
+    - name: debug
+      debug:
+        var: ces_ed_info.events
+
+    - name: assert result
+      assert:
+        that:
+          - ces_ed_info is success
+          - ces_ed_info.events is defined
+
+    - name: Get Metric Data Infos
+      opentelekomcloud.cloud.ces_metric_data_info:
+        namespace: "SYS.VPC"
+        metric_name: "down_stream"
+        time_from: "1605617014387"
+        time_to: "1605618214387"
+        period: 1
+        filter: "average"
+        dim0: "{{ ( 'publicip_id,' + fl_ip_id ) }}"
+      register: ces_md_info
+    
+    - name: debug
+      debug:
+        var: ces_md_info.metricdata
+
+    - name: assert result
+      assert:
+        that:
+          - ces_al_info is success
+
+    - name: Get Mectrics Infos
+      opentelekomcloud.cloud.ces_metrics_info:
+        namespace: "SYS.AS"
+        order: asc
+      register: ces_me_info
+    
+    - name: debug
+      debug:
+        var: ces_me_info.metrics
+
+    - name: assert result
+      assert:
+        that:
+          - ces_me_info is success
+          - ces_me_info.metrics is defined
+
+    - name: Get Mectrics Infos
+      opentelekomcloud.cloud.ces_quotas_info:
+      register: ces_qu_info
+    
+    - name: debug
+      debug:
+        var: ces_qu_info.quotas
+
+    - name: assert result
+      assert:
+        that:
+          - ces_qu_info is success
+          - ces_qu_info.quotas is defined
+
+  always:
+    - block:
+      - name: Drop dns_floating_ip entry
+        opentelekomcloud.cloud.floating_ip:
+          floating_ip_address: "{{ fl_ip }}"
+          state: absent
+          purge: true
+        register: dns_fl_dr
+
+      - name: Drop Alarm
+        opentelekomcloud.cloud.ces_alarms:
+          alarm_name: "{{ alarm_name }}"
+          state: absent
+        register: dns_rs_dr
+      ignore_errors: yes
