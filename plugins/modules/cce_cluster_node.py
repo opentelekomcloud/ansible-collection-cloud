@@ -150,25 +150,34 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class CceClusterNodeModule(OTCModule):
     argument_spec = dict(
-        annotations=dict(required=False, type='dict'),
-        az=dict(required=False),
+        annotations=dict(required=False, type=dict),
+        availability_zone=dict(required=False),
         cluster=dict(required=False),
-        count=dict(required=False, type='int', default=1),
+        count=dict(required=False, type=int, default=1),
         data_volumes=dict(
             required=False,
             type='list',
             elements='dict'
         ),
+        dedicated_host=dict(required=False),
+        ecs_group=dict(required=False),
+        fault_domain=dict(required=False),
         flavor=dict(required=False),
+        floating_ip=dict(required=False),
+        k8s_tags=dict(required=False),
         keypair=dict(required=False),
-        labels=dict(required=False, type='dict'),
+        labels=dict(required=False, type=dict),
+        max_pods=dict(required=False)
         name=dict(required=True),
-        root_volume_size=dict(required=False, type='int', default=40),
+        offload_node=dict(required=False, type=bool)
+        os=dict(required=False)
+        root_volume_size=dict(required=False, type=int, default=40),
         root_volume_type=dict(
             required=False,
             choices=['SATA', 'SAS', 'SSD'],
             default='SATA'),
         state=dict(default='present', choices=['absent', 'present']),
+        tags=dict(required=False, type=list, elements=dict)
         timeout=dict(required=False, type='int', default=180),
         wait=dict(required=False, type='bool', default=True)
     )
