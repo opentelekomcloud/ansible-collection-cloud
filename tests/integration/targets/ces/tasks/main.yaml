@@ -9,7 +9,7 @@
       opentelekomcloud.cloud.floating_ip:
         network: admin_external_net
       register: fl
-    
+
     - name: debug
       debug:
         var: fl.floating_ip
@@ -55,7 +55,7 @@
       opentelekomcloud.cloud.ces_alarms_info:
         name: "{{ alarm_name }}"
       register: ces_al_info
-    
+
     - name: debug
       debug:
         var: ces_al_info.alarms
@@ -65,7 +65,7 @@
         that:
           - ces_al_info is success
           - ces_al_info.alarms is defined
-    
+
     - name: Get Event Data Infos
       opentelekomcloud.cloud.ces_event_data_info:
         namespace: "SYS.VPC"
@@ -74,7 +74,7 @@
         time_from: "1605480241322"
         time_to: "1605523441322"
       register: ces_ed_info
-    
+
     - name: debug
       debug:
         var: ces_ed_info.events
@@ -95,7 +95,7 @@
         filter: "average"
         dim0: "{{ ( 'publicip_id,' + fl_ip_id ) }}"
       register: ces_md_info
-    
+
     - name: debug
       debug:
         var: ces_md_info.metricdata
@@ -110,7 +110,7 @@
         namespace: "SYS.AS"
         order: asc
       register: ces_me_info
-    
+
     - name: debug
       debug:
         var: ces_me_info.metrics
@@ -124,7 +124,7 @@
     - name: Get Mectrics Infos
       opentelekomcloud.cloud.ces_quotas_info:
       register: ces_qu_info
-    
+
     - name: debug
       debug:
         var: ces_qu_info.quotas

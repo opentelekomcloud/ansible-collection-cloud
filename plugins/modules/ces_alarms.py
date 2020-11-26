@@ -71,12 +71,14 @@ options:
     type: list
     required: false
     elements: str
+    default: []
   ok_actions:
     description:
       - Specifies the action triggered by clearing an alarm
     type: list
     required: false
     elements: str
+    default: []
 
 requirements: ["openstacksdk", "otcextensions"]
 '''
