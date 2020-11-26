@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: ces_alarms
 short_description: Modify or Create Alarms
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.1.2"
+version_added: "0.3.0"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Modify or Create Alarms

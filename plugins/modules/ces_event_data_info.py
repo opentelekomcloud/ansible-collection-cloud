@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: ces_event_data_info
 short_description: Get Event Data
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.2.1"
+version_added: "0.3.0"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get Event Data
