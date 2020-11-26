@@ -159,7 +159,6 @@ class CceClusterNodeModule(OTCModule):
             type='list',
             elements='dict'
         ),
-        description=dict(required=False),
         flavor=dict(required=False),
         keypair=dict(required=False),
         labels=dict(required=False, type='dict'),
@@ -212,7 +211,6 @@ class CceClusterNodeModule(OTCModule):
         cce_cluster = self.params['cluster']
         count = self.params['count']
         data_volumes = self.params['data_volumes']
-        description = self.params['description']
         flavor = self.params['flavor']
         keypair = self.params['keypair']
         labels = self.params['labels']
@@ -271,9 +269,6 @@ class CceClusterNodeModule(OTCModule):
                         'count': count,
                     }
                 }
-
-                if description:
-                    data['spec']['description'] = description
 
                 cluster_node = self.conn.cce.create_cluster_node(
                     cluster=cluster,
