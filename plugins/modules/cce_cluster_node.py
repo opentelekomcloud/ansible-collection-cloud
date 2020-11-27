@@ -24,13 +24,9 @@ options:
   annotations:
     description: Specifiy annotations for CCE node
     type: dict
-    sample: {
-        'annotation': 'abc123'
-    }
   availability_zone:
     description: Availability zone
     type: str
-    sample: eu-de-01
   cluster:
     description:
       - CCE cluster name or id which hosts the cce cluster node
@@ -46,19 +42,10 @@ options:
     description: List of data volumes attached to the cluster node.
     type: list
     elements: dict
-    sample: [
-        {
-            'SATA': 100
-        },
-        {
-            'SAS': 200
-        }
-    ]
   dedicated_host:
     description:
       - ID of a Dedicated Host where the cluster node will be located to.
     type: str
-    sample: 12223421354drfsadf123
   ecs_group:
     description: ID of the ECS group where the CCE node can belong to.
     type: str
@@ -66,37 +53,26 @@ options:
     description: The node is created in the specified fault domain.
     type: str
   flavor:
-    description:
-      - Flavor ID of the cluster node
+    description: Flavor ID of the cluster node
     type: str
-    sample s2.large.2
   floating_ip:
     description: Floating IP used to connect to public networks.
     type: str
   k8s_tags:
     description: Dictionary of Kubernetes tags.
     type: dict
-    sample: {
-        "myk8s": "tag"
-    }
   keypair:
-    description:
-      - Name of the public key to login
+    description: Name of the public key to login
     type: str
   labels:
     description: Labels for the CCE cluster node
     type: dict
-    sample: {
-      'label1': 'mylabel'
-    }
   lvm_config:
     description: ConfigMap of the Docker data disk.
     type: str
-    sample: 'dockerThinpool=vgpaas/90%VG;kubernetesLV=vgpaas/10%VG;diskType=evs;lvType=linear'
   max_pods:
     description: Maximum number of pods on the node.
     type: int
-    sample: 100
   name:
     description:
       - Name of the CCE cluster node.
@@ -111,7 +87,6 @@ options:
   os:
     description: Operating System of the cluster node.
     type: str
-    sample 'CentOS 7.7'
   postinstall_script:
     description: Base64 encoded post installation script.
     type: str
@@ -141,6 +116,10 @@ options:
       - created or deleted.
     type: bool
     default: true
+  tags:
+    description: CCE cluster node tags
+    type: list
+    elements: dict
   timeout:
     description:
       - The amount of time the module should wait.
@@ -171,45 +150,17 @@ cce_cluster_ node:
 '''
 
 EXAMPLES = '''
-# Create CCE node
-- cce_cluster_node:
-    annotations:
-        annotation1: 'myannotation'
-    az: 'eu-de-02'
-    cluster: '7ca53d10-2a70-11eb-9ade-0255ac101123'
-    count: 1
-    data_volumes:
-        - SATA: 100
-          SAS: 120
-    description: 'my-node'
-    flavor: 's2.large.2'
-    keypair: 'my-pub-key'
-    labels:
-        mein: label
-    name: "{{ cce_node_name }}"
-    root_volume_size: 40
-    root_volume_type:  SATA
-    wait: false
-  register: node
-
-# Delete CCE node
-- cce_cluster_node:
-    cluster: '7ca53d10-2a70-11eb-9ade-0255ac101123'
-    name: "{{ cce_node_name }}"
-    state:absent
-    wait: false
-  register: node
- '''
+'''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
 class CceClusterNodeModule(OTCModule):
     argument_spec = dict(
-        annotations=dict(required=False, type=dict),
+        annotations=dict(required=False, type='dict'),
         availability_zone=dict(required=False),
         cluster=dict(required=False),
-        count=dict(required=False, type=int, default=1),
+        count=dict(required=False, type='int', default=1),
         data_volumes=dict(
             required=False,
             type='list',
@@ -220,31 +171,31 @@ class CceClusterNodeModule(OTCModule):
         fault_domain=dict(required=False),
         flavor=dict(required=False),
         floating_ip=dict(required=False),
-        k8s_tags=dict(required=False, type=dict),
+        k8s_tags=dict(required=False, type='dict'),
         keypair=dict(required=False),
-        labels=dict(required=False, type=dict),
+        labels=dict(required=False, type='dict'),
         lvm_config=dict(required=False),
-        max_pods=dict(required=False, type=int),
+        max_pods=dict(required=False, type='int'),
         name=dict(required=True),
         node_image_id=dict(required=False),
-        offload_node=dict(required=False, type=bool),
+        offload_node=dict(required=False, type='bool'),
         os=dict(required=False),
         postinstall_script=dict(required=False),
         preinstall_script=dict(required=False),
-        root_volume_size=dict(required=False, type=int, default=40),
+        root_volume_size=dict(required=False, type='int', default=40),
         root_volume_type=dict(
             required=False,
             choices=['SATA', 'SAS', 'SSD'],
             default='SATA'),
         state=dict(default='present', choices=['absent', 'present']),
-        tags=dict(required=False, type=list, elements=dict),
+        tags=dict(required=False, type='list', elements='dict'),
         timeout=dict(required=False, type='int', default=180),
         wait=dict(required=False, type='bool', default=True)
     )
     module_kwargs = dict(
         required_if=[
             ('state', 'present',
-             ['az', 'cluster', 'flavor', 'keypair']),
+             ['availability_zone', 'cluster', 'flavor', 'keypair']),
             ('state', 'absent', ['cluster', 'name']),
         ]
     )
@@ -298,13 +249,13 @@ class CceClusterNodeModule(OTCModule):
 
             if cluster_node:
                 attrs = {
-                    'cluster': cluster.id
+                    'cluster': cluster.id,
                     'node': cluster_node.id
                 }
                 if self.params['wait']:
                     attrs['wait'] = True
                 if self.params['timeout']:
-                    attrs['wait_timeout'] = self.params.['timeout']
+                    attrs['wait_timeout'] = self.params['timeout']
                 changed = True
                 self.conn.cce.delete_cce_cluster_node(
                     cluster=cluster.id,

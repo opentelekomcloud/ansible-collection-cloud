@@ -38,12 +38,6 @@ options:
     choices: [virtualmachine]
     default: virtualmachine
     type: str
-  cluster_version:
-    description:
-      - Version of the CCE cluster.
-      - If not provided, the newest version will be used
-    required: false
-    type: str
   description:
     description: Cluster description.
     type: str

@@ -17,29 +17,35 @@
     - name: Create CCE cluster node
       cce_cluster_node:
         annotations:
-          annotation1: 'myannotation'
-        az: 'eu-de-02'
+          annotation1: 'abc'
+        availability_zone: 'eu-de-02'
         cluster: '7ca53d10-2a70-11eb-9ade-0255ac1017a0'
         count: 1
         data_volumes:
-          - SATA: 100
-        description: 'my-node'
+          - SATA: 150
+          - SAS: 100
         flavor: 's2.large.2'
+        k8s_tags:
+          testtag: 'value'                    
         keypair: 'tischrei-pub'
         labels:
-          mein: label
+          mein: 'label'
+        max_pods: 16
         name: "{{ cce_node_name }}"
+        os: 'CentOS 7.7'
         root_volume_size: 40
         root_volume_type:  SATA
-        wait: true
+        tags:
+          - key: 'hellokey1'
+            value: 'hellovalue1'
+          - key: 'hellokey2'
+            value: 'hellovalue2'
+        wait: false
       register: node
     
-    - name: Drop CCE cluster node
-      cce_cluster_node:
-        name: "{{ cce_node_name }}"
-        cluster: '7ca53d10-2a70-11eb-9ade-0255ac1017a0'
-        state: absent
-      register: node
-      
-
-    
+    #- name: Drop CCE cluster node
+    #  cce_cluster_node:
+    #    name: "{{ cce_node_name }}"
+    #    cluster: '7ca53d10-2a70-11eb-9ade-0255ac1017a0'
+    #    state: absent
+    #  register: node
