@@ -9,7 +9,7 @@
       set_fact:
         # prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
         prefix: 'tinotest'
-  
+
     - name: Set initial facts
       set_fact:
         cce_node_name: "{{ ( prefix + 'ccenode') }}"
@@ -26,7 +26,7 @@
           - SAS: 100
         flavor: 's2.large.2'
         k8s_tags:
-          testtag: 'value'                    
+          testtag: 'value'
         keypair: 'tischrei-pub'
         labels:
           mein: 'label'
@@ -34,7 +34,7 @@
         name: "{{ cce_node_name }}"
         os: 'CentOS 7.7'
         root_volume_size: 40
-        root_volume_type:  SATA
+        root_volume_type: SATA
         tags:
           - key: 'hellokey1'
             value: 'hellovalue1'
@@ -42,8 +42,8 @@
             value: 'hellovalue2'
         wait: false
       register: node
-    
-    #- name: Drop CCE cluster node
+
+    # - name: Drop CCE cluster node
     #  cce_cluster_node:
     #    name: "{{ cce_node_name }}"
     #    cluster: '7ca53d10-2a70-11eb-9ade-0255ac1017a0'

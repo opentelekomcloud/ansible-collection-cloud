@@ -130,26 +130,178 @@ requirements: ['openstacksdk', 'otcextensions']
 
 RETURN = '''
 id:
-    description: The CCE Cluster Node UUID.
-    returned: On success when C(state=present)
-    type: str
-    sample: '39007a7e-ee4f-4d13-8283-b4da2e037c69'
-cce_cluster_ node:
-    description: Dictionary describing the Cluster Node.
-    returned: On success when C(state=present)
-    type: complex
-    contains:
-        id:
-            description: Unique UUID.
-            type: str
-            sample: '39007a7e-ee4f-4d13-8283-b4da2e037c69'
-        name:
-            description: Name given to the load balancer.
-            type: str
-            sample: 'elb_test'
+  description: The CCE Cluster Node UUID.
+  returned: On success when C(state=present)
+  type: str
+  sample: '39007a7e-ee4f-4d13-8283-b4da2e037123'
+cce_cluster_node:
+  description: Dictionary describing the Cluster Node.
+  returned: On success when C(state=present)
+  type: dict
+  sample: {
+      cce_cluster_node: {
+          'api_version': 'v3',
+          'id': 'a815a926-30cd-11eb-b02d-0255ac101123',
+          'kind': 'Node',
+          'location': {
+              'cloud': 'otc',
+              'project': {
+                  'domain_id': null,
+                  'domain_name': null,
+                  'id': '16d53a84a13b49529d2e2c3646691123',
+                  'name': 'eu-de'
+              },
+              'region_name': 'eu-de',
+              'zone': null
+          },
+          'metadata': {
+              'annotations': {
+                  'annotation1': 'abc'
+              },
+              'created_at': null,
+              'id': 'a815a926-30cd-11eb-b02d-0255ac101123',
+              'labels': {
+                  'mein': 'label'
+              },
+              'location': null,
+              'name': 'testccenode',
+              'updated_at': null
+          },
+          'name': 'testccenode',
+          'spec': {
+              'availability_zone': 'eu-de-02',
+              'billing_mode': 0,
+              'count': 1,
+              'data_volumes': [
+                  {
+                      'id': null,
+                      'location': null,
+                      'name': null,
+                      'size': 150,
+                      'type': 'SATA'
+                  },
+                  {
+                      'id': null,
+                      'location': null,
+                      'name': null,
+                      'size': 100,
+                      'type': 'SAS'
+                  }
+              ],
+              'dedicated_host': null,
+              'ecs_group': null,
+              'extend_params': {
+                  'id': null,
+                  'location': null,
+                  'lvm_config': null,
+                  'max_pods': 16,
+                  'name': null,
+                  'node_image_id': null,
+                  'postinstall_script': null,
+                  'preinstall_script': null
+              },
+              'fault_domain': null,
+              'flavor': 's2.large.2',
+              'floating_ip': {
+                  'count': null,
+                  'floating_ip': {
+                      'bandwidth': {}
+                  },
+                  'id': null,
+                  'ids': null,
+                  'location': null,
+                  'name': null
+              },
+              'id': null,
+              'k8s_tags': {
+                  'kubernetes.io/eniquota': '12',
+                  'kubernetes.io/subeniquota': '0',
+                  'testtag': 'value'
+              },
+              'location': null,
+              'login': {
+                  'sshKey': 'sshkey-pub',
+                  'userPassword': {}
+              },
+              'name': null,
+              'offload_node': null,
+              'os': 'CentOS 7.7',
+              'root_volume': {
+                  'id': null,
+                  'location': null,
+                  'name': null,
+                  'size': 40,
+                  'type': 'SATA'
+              },
+              'tags': [
+                  {
+                      'id': null,
+                      'key': 'hellokey1',
+                      'location': null,
+                      'name': null,
+                      'value': 'hellovalue1'
+                  },
+                  {
+                      'id': null,
+                      'key': 'hellokey2',
+                      'location': null,
+                      'name': null,
+                      'value': 'hellovalue2'
+                  }
+              ],
+              'taints': null
+          },
+          'status': {
+              'floating_ip': null,
+              'id': null,
+              'instance_id': null,
+              'job_id': 'a8168c15-30cd-11eb-b02d-0255ac101123',
+              'location': null,
+              'name': null,
+              'private_ip': null,
+              'status': null
+          }
+      }
+  }
 '''
 
 EXAMPLES = '''
+# Create CCE cluster node
+opentelekomcloud.cloud.cce_cluster_node:
+  annotations:
+    annotation1: 'abc'
+  availability_zone: 'eu-de-02'
+  cluster: '7ca53d10-2a70-11eb-9ade-0255ac101123'
+  count: 1
+  data_volumes:
+    - SATA: 150
+    - SAS: 100
+  flavor: 's2.large.2'
+  k8s_tags:
+    testtag: 'value'
+  keypair: 'tischrei-pub'
+  labels:
+    mein: 'label'
+  max_pods: 16
+  name: '{{ cce_node_name }}'
+  os: 'CentOS 7.7'
+  root_volume_size: 40
+  root_volume_type: SATA
+  tags:
+    - key: 'hellokey1'
+      value: 'hellovalue1'
+    - key: 'hellokey2'
+      value: 'hellovalue2'
+  wait: true
+  state: present
+register: node
+
+# Delete CCE cluster node
+opentelekomcloud.cloud.cce_cluster_node:
+  cluster: '7ca53d10-2a70-11eb-9ade-0255ac101123'
+  name: 'my-node'
+  state: absent
+register: result
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
