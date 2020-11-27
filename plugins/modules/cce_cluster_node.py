@@ -359,7 +359,6 @@ class CceClusterNodeModule(OTCModule):
         cce_cluster = self.params['cluster']
 
         cluster = None
-        data = None
         changed = False
 
         cluster = self.conn.cce.find_cluster(
