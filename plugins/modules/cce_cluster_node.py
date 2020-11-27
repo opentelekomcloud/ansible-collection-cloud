@@ -24,9 +24,13 @@ options:
   annotations:
     description: Specifiy annotations for CCE node
     type: dict
-  az:
+    sample: {
+        'annotation': 'abc123'
+    }
+  availability_zone:
     description: Availability zone
     type: str
+    sample: eu-de-01
   cluster:
     description:
       - CCE cluster name or id which hosts the cce cluster node
@@ -42,25 +46,77 @@ options:
     description: List of data volumes attached to the cluster node.
     type: list
     elements: dict
-    sample:
-      - SATA: 100
-        SAS: 120
-  description:
+    sample: [
+        {
+            'SATA': 100
+        },
+        {
+            'SAS': 200
+        }
+    ]
+  dedicated_host:
     description:
-      - Cluster node description
+      - ID of a Dedicated Host where the cluster node will be located to.
+    type: str
+    sample: 12223421354drfsadf123
+  ecs_group:
+    description: ID of the ECS group where the CCE node can belong to.
+    type: str
+  fault_domain:
+    description: The node is created in the specified fault domain.
     type: str
   flavor:
     description:
-      - Flavor of the cluster node
+      - Flavor ID of the cluster node
     type: str
+    sample s2.large.2
+  floating_ip:
+    description: Floating IP used to connect to public networks.
+    type: str
+  k8s_tags:
+    description: Dictionary of Kubernetes tags.
+    type: dict
+    sample: {
+        "myk8s": "tag"
+    }
   keypair:
     description:
       - Name of the public key to login
     type: str
+  labels:
+    description: Labels for the CCE cluster node
+    type: dict
+    sample: {
+      'label1': 'mylabel'
+    }
+  lvm_config:
+    description: ConfigMap of the Docker data disk.
+    type: str
+    sample: 'dockerThinpool=vgpaas/90%VG;kubernetesLV=vgpaas/10%VG;diskType=evs;lvType=linear'
+  max_pods:
+    description: Maximum number of pods on the node.
+    type: int
+    sample: 100
   name:
     description:
       - Name of the CCE cluster node.
     required: true
+    type: str
+  node_image_id:
+    description: ID of a custom image used in a baremetall scenario.
+    type: str
+  offload_node:
+    description: If node is offloading its components.
+    type: bool
+  os:
+    description: Operating System of the cluster node.
+    type: str
+    sample 'CentOS 7.7'
+  postinstall_script:
+    description: Base64 encoded post installation script.
+    type: str
+  preinstall_script:
+    description: Base64 encoded pre installation script.
     type: str
   root_volume_size:
     description:
@@ -95,12 +151,12 @@ requirements: ['openstacksdk', 'otcextensions']
 
 RETURN = '''
 id:
-    description: The CCE Cluster UUID.
+    description: The CCE Cluster Node UUID.
     returned: On success when C(state=present)
     type: str
     sample: '39007a7e-ee4f-4d13-8283-b4da2e037c69'
-cce_cluster:
-    description: Dictionary describing the Cluster.
+cce_cluster_ node:
+    description: Dictionary describing the Cluster Node.
     returned: On success when C(state=present)
     type: complex
     contains:
@@ -164,20 +220,24 @@ class CceClusterNodeModule(OTCModule):
         fault_domain=dict(required=False),
         flavor=dict(required=False),
         floating_ip=dict(required=False),
-        k8s_tags=dict(required=False),
+        k8s_tags=dict(required=False, type=dict),
         keypair=dict(required=False),
         labels=dict(required=False, type=dict),
-        max_pods=dict(required=False)
+        lvm_config=dict(required=False),
+        max_pods=dict(required=False, type=int),
         name=dict(required=True),
-        offload_node=dict(required=False, type=bool)
-        os=dict(required=False)
+        node_image_id=dict(required=False),
+        offload_node=dict(required=False, type=bool),
+        os=dict(required=False),
+        postinstall_script=dict(required=False),
+        preinstall_script=dict(required=False),
         root_volume_size=dict(required=False, type=int, default=40),
         root_volume_type=dict(
             required=False,
             choices=['SATA', 'SAS', 'SSD'],
             default='SATA'),
         state=dict(default='present', choices=['absent', 'present']),
-        tags=dict(required=False, type=list, elements=dict)
+        tags=dict(required=False, type=list, elements=dict),
         timeout=dict(required=False, type='int', default=180),
         wait=dict(required=False, type='bool', default=True)
     )
@@ -185,49 +245,15 @@ class CceClusterNodeModule(OTCModule):
         required_if=[
             ('state', 'present',
              ['az', 'cluster', 'flavor', 'keypair']),
-            ('state', 'absent', ['cluster']),
+            ('state', 'absent', ['cluster', 'name']),
         ]
     )
 
-    def create_data_volumes(self, volume_list):
-        volumes = []
-        volume_types = ['SATA', 'SAS', 'SSD']
-
-        if volume_list:
-            for item in volume_list:
-                for key in item:
-                    if key not in volume_types:
-                        self.fail_json(
-                            msg='The specified data volume type %s does not '
-                                'match the clouds specification: %s'
-                                % (key, volume_types)
-                        )
-                    if not (100 <= item[key] <= 32768):
-                        self.fail_json(
-                            msg='The data volume size must be specified '
-                                'between 100 and 32768 GB.'
-                        )
-                    volumes.append({
-                        'volumetype': key,
-                        'size': item[key]
-                    })
-
-        return volumes
+    otce_min__version = '0.13.0'
 
     def run(self):
-        annotations = self.params['annotations']
-        az = self.params['az']
+        self.params['wait_timeout'] = self.params['timeout']
         cce_cluster = self.params['cluster']
-        count = self.params['count']
-        data_volumes = self.params['data_volumes']
-        flavor = self.params['flavor']
-        keypair = self.params['keypair']
-        labels = self.params['labels']
-        name = self.params['name']
-        root_volume_size = self.params['root_volume_size']
-        root_volume_type = self.params['root_volume_type']
-        timeout = self.params['timeout']
-        wait = self.params['wait']
 
         cluster = None
         data = None
@@ -238,7 +264,7 @@ class CceClusterNodeModule(OTCModule):
             ignore_missing=True)
         cluster_node = self.conn.cce.find_cluster_node(
             cluster=cluster,
-            node=name)
+            node=self.params['name'])
 
         if not cluster:
             self.fail_json(
@@ -249,60 +275,16 @@ class CceClusterNodeModule(OTCModule):
         # Create CCE node
         if self.params['state'] == 'present':
             if not cluster_node:
-                if data_volumes:
-                    data_volumes = self.create_data_volumes(data_volumes)
-                if root_volume_size and (root_volume_size < 40):
-                    self.fail_json(
-                        msg='root_volume_size %s is smaller than 40 GB'
-                            % root_volume_size)
-
-                data = {
-                    'kind': 'Node',
-                    'apiVersion': 'v3',
-                    'metadata': {
-                        'name': name,
-                        'labels': labels,
-                        'annotations': annotations
-                    },
-                    'spec': {
-                        'flavor': flavor,
-                        'az': az,
-                        'login': {
-                            'sshKey': keypair
-                        },
-                        'rootVolume': {
-                            'size': root_volume_size,
-                            'volumetype': root_volume_type
-                        },
-                        'dataVolumes': data_volumes,
-                        'count': count,
-                    }
-                }
-
-                cluster_node = self.conn.cce.create_cluster_node(
-                    cluster=cluster,
-                    **data
+                self.params.pop('cluster')
+                cluster_node = self.conn.create_cce_cluster_node(
+                    cluster=cluster.id,
+                    **self.params
                 )
                 changed = True
-
-                if not self.params['wait']:
-                    self.exit_json(
-                        changed=changed,
-                        cce_cluster_node=cluster_node.to_dict(),
-                        id=cluster_node.id
-                    )
-
-                if cluster_node.job_id:
-                    self.conn.cce.wait_for_job(
-                        cluster_node.job_id,
-                        wait=timeout
-                    )
-
-                # Refetch the cluster node
-                cluster_node = self.conn.cce.get_cluster_node(
-                    cluster=cluster,
-                    node_id=cluster_node.id
-                )
+            else:
+                # Modify CCE Cluster Node
+                # not available right now
+                pass
 
             self.exit_json(
                 changed=changed,
@@ -315,13 +297,20 @@ class CceClusterNodeModule(OTCModule):
             changed = False
 
             if cluster_node:
-                info = self.conn.cce.delete_cluster_node(
-                    cluster=cce_cluster,
-                    node=cluster_node.id)
-                if self.params['wait'] and info.job_id:
-                    self.conn.cce.wait_for_job(info.job_id, wait=timeout)
-
+                attrs = {
+                    'cluster': cluster.id
+                    'node': cluster_node.id
+                }
+                if self.params['wait']:
+                    attrs['wait'] = True
+                if self.params['timeout']:
+                    attrs['wait_timeout'] = self.params.['timeout']
                 changed = True
+                self.conn.cce.delete_cce_cluster_node(
+                    cluster=cluster.id,
+                    node=cluster_node.id,
+                    **attrs
+                )
 
             self.exit_json(changed=changed)
 
