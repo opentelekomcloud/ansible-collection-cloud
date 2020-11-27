@@ -79,6 +79,12 @@ options:
     required: false
     elements: str
     default: []
+  switch_alarm_state:
+    description:
+      - If true switches the alarm state from on to off or off to on. Requires state == present
+    type: bool
+    required: false
+    default: False
 
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -163,7 +169,7 @@ alarms:
 
 EXAMPLES = '''
 # Creating an Alarm with two instances in it:
-- name: Creating a record
+- name: Creating a alarm
   opentelekomcloud.cloud.ces_alarms:
     alarm_name: alarm-test
     state: present
@@ -207,13 +213,8 @@ class CesAlarmsModule(OTCModule):
         alarm_level=dict(required=False, type='int', default=2),
         alarm_actions=dict(required=False, type='list', elements='str', default=[]),
         ok_actions=dict(required=False, type='list', elements='str', default=[]),
+        switch_alarm_state=dict(required=False, type='bool', default='False'),
         state=dict(type='str', choices=['present', 'absent'], default='present')
-    )
-    module_kwargs = dict(
-        required_if=[
-            ('state', 'present', ['metric', 'condition']),
-        ],
-        supports_check_mode=True
     )
 
     def run(self):
@@ -226,44 +227,58 @@ class CesAlarmsModule(OTCModule):
             changed = True
 
         if self.params['state'] == 'present':
-            metric_var = self.params["metric"]
-            condition_var = self.params['condition']
 
-            if self.params['alarm_action_enabled']:
-                if self.params['ok_actions'] == [] and self.params['alarm_actions'] == []:
+            if self.params['switch_alarm_state'] is True:
+                al = self.conn.ces.find_alarm(self.params['alarm_name'])
+                alarms = self.conn.ces.switch_alarm_state(al)
+                self.exit(changed=True, alarms=al.to_dict())
+
+            elif self.params['switch_alarm_state'] is False:
+                if not self.params['metric'] or not self.params['condition']:
                     self.exit(
                         changed=False,
                         failed=True,
-                        message=('alarm_action_enabled == True but neither ok_actions '
-                                 'nor alarm_action specified but needed for creation. ')
+                        message=('You want to create an Alarm but did not specify '
+                                 'metric or condition parameters which are required for creation ')
                     )
+                metric_var = self.params["metric"]
+                condition_var = self.params['condition']
 
-            attrs = {
-                "alarm_name": self.params['alarm_name'],
-                "alarm_description": self.params['alarm_description'],
-                "metric": {
-                    "namespace": metric_var['namespace'],
-                    "dimensions": metric_var['dimensions'],
-                    "metric_name": metric_var['metric_name']
-                },
-                "condition": {
-                    "period": condition_var['period'],
-                    "filter": condition_var['filter'],
-                    "comparison_operator": condition_var['comparison_operator'],
-                    "value": condition_var['value'],
-                    "unit": condition_var['unit'],
-                    "count": condition_var['count'],
-                },
-                "alarm_enabled": self.params['alarm_enabled'],
-                "alarm_action_enabled": self.params['alarm_action_enabled'],
-                "alarm_level": self.params['alarm_level'],
-                "ok_actions": self.params['ok_actions'],
-                "alarm_actions": self.params['alarm_actions']
+                if self.params['alarm_action_enabled']:
+                    if self.params['ok_actions'] == [] and self.params['alarm_actions'] == []:
+                        self.exit(
+                            changed=False,
+                            failed=True,
+                            message=('alarm_action_enabled == True but neither ok_actions '
+                                     'nor alarm_action specified but needed for creation. ')
+                        )
 
-            }
+                attrs = {
+                    "alarm_name": self.params['alarm_name'],
+                    "alarm_description": self.params['alarm_description'],
+                    "metric": {
+                        "namespace": metric_var['namespace'],
+                        "dimensions": metric_var['dimensions'],
+                        "metric_name": metric_var['metric_name']
+                    },
+                    "condition": {
+                        "period": condition_var['period'],
+                        "filter": condition_var['filter'],
+                        "comparison_operator": condition_var['comparison_operator'],
+                        "value": condition_var['value'],
+                        "unit": condition_var['unit'],
+                        "count": condition_var['count'],
+                    },
+                    "alarm_enabled": self.params['alarm_enabled'],
+                    "alarm_action_enabled": self.params['alarm_action_enabled'],
+                    "alarm_level": self.params['alarm_level'],
+                    "ok_actions": self.params['ok_actions'],
+                    "alarm_actions": self.params['alarm_actions']
 
-            alarms = self.conn.ces.create_alarm(**attrs)
-            self.exit(changed=True, alarms=alarms.to_dict())
+                }
+
+                alarms = self.conn.ces.create_alarm(**attrs)
+                self.exit(changed=True, alarms=alarms.to_dict())
 
         self.exit(
             changed=changed
