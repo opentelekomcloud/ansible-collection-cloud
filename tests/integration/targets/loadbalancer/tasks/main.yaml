@@ -17,13 +17,13 @@
         pool_name: "{{ ( prefix + '_acc-lb-pool') }}"
 
     - name: Create network for ELB
-      os_network:
+      openstack.cloud.os_network:
         name: "{{ network_name }}"
         state: present
       register: lb_net
 
     - name: Create subnet for ELB
-      os_subnet:
+      openstack.cloud.os_subnet:
         name: "{{ subnet_name }}"
         state: present
         network_name: "{{ lb_net.network.name }}"
@@ -32,7 +32,7 @@
       register: lb_net_subnet
 
     - name: Create Router for ELB
-      os_router:
+      openstack.cloud.os_router:
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
@@ -43,7 +43,7 @@
       register: lb_net_router
 
     - name: Create loadbalancer - check mode
-      loadbalancer:
+      opentelekomcloud.cloud.loadbalancer:
         state: present
         name: "{{ loadbalancer_name }}"
         vip_subnet: "{{ subnet_name }}"
@@ -57,7 +57,7 @@
           - loadbalancer_check is changed
 
     - name: Create loadbalancer
-      loadbalancer:
+      opentelekomcloud.cloud.loadbalancer:
         state: present
         name: "{{ loadbalancer_name }}"
         vip_subnet: "{{ subnet_name }}"
@@ -71,7 +71,7 @@
           - lb is changed
 
     - name: Assign EIP to existing loadbalancer
-      loadbalancer:
+      opentelekomcloud.cloud.loadbalancer:
         name: "{{ loadbalancer_name }}"
         state: present
         vip_subnet: "{{ subnet_name }}"
@@ -80,7 +80,7 @@
         timeout: 600
 
     - name: Get loadbalancer by Name
-      loadbalancer_info:
+      opentelekomcloud.cloud.loadbalancer_info:
         name: "{{ lb.loadbalancer.name }}"
       register: res
 
@@ -93,7 +93,7 @@
           - res.loadbalancers.vip_address is defined
 
     - name: Create listener for existing loadbalancer
-      lb_listener:
+      opentelekomcloud.cloud.lb_listener:
         state: present
         protocol_port: 80
         protocol: tcp
@@ -108,7 +108,7 @@
           - lstnr is changed
 
     - name: Modify existing listener
-      lb_listener:
+      opentelekomcloud.cloud.lb_listener:
         state: present
         description: changed
         name: "{{ listener_name }}"
@@ -121,7 +121,7 @@
           - lstnr is changed
 
     - name: Get listener by name
-      lb_listener_info:
+      opentelekomcloud.cloud.lb_listener_info:
         name: "{{ lstnr.listener.name }}"
       register: res
 
@@ -133,7 +133,7 @@
           - res.listeners[0].id is defined
 
     - name: Create Backend Server Group
-      lb_pool:
+      opentelekomcloud.cloud.lb_pool:
         state: present
         name: "{{ pool_name }}"
         protocol: tcp
@@ -149,7 +149,7 @@
           - pool is changed
 
     - name: Modify Backend Server Group
-      lb_pool:
+      opentelekomcloud.cloud.lb_pool:
         state: present
         name: "{{ pool_name }}"
         session_persistence:
@@ -164,7 +164,7 @@
           - pool is changed
 
     - name: Get Backend Server Group by name
-      lb_pool_info:
+      opentelekomcloud.cloud.lb_pool_info:
         name: "{{ pool.server_group.name }}"
       register: res
 
@@ -176,7 +176,7 @@
           - res.server_groups[0].id is defined
 
     - name: Drop existing pool by name
-      lb_pool:
+      opentelekomcloud.cloud.lb_pool:
         state: absent
         name: "{{ pool_name }}"
       register: dropped
@@ -188,7 +188,7 @@
           - dropped is changed
 
     - name: Drop existing listener by name
-      lb_listener:
+      opentelekomcloud.cloud.lb_listener:
         state: absent
         name: "{{ listener_name }}"
       register: dropped
@@ -200,7 +200,7 @@
           - dropped is changed
 
     - name: Drop existing loadbalancer
-      loadbalancer:
+      opentelekomcloud.cloud.loadbalancer:
         # pass ID as name
         name: "{{ lb.loadbalancer.id }}"
         state: absent
@@ -214,7 +214,7 @@
           - dropped is changed
 
     - name: Drop not more existing loadbalancer
-      loadbalancer:
+      opentelekomcloud.cloud.loadbalancer:
         # pass ID as name
         name: "{{ lb.loadbalancer.id }}"
         state: absent
@@ -230,26 +230,26 @@
     - block:
       # Cleanup
       - name: Drop perhaps existing loadbalancer
-        loadbalancer:
+        opentelekomcloud.cloud.loadbalancer:
           name: "{{ lb.loadbalancer.id }}"
           state: absent
           delete_public_ip: yes
         register: lb
 
       - name: Drop existing Router
-        os_router:
+        openstack.cloud.os_router:
           name: "{{ router_name }}"
           state: absent
         register: lb_net_router
 
       - name: Drop existing subnet
-        os_subnet:
+        openstack.cloud.os_subnet:
           name: "{{ subnet_name }}"
           state: absent
         register: lb_net_subnet
 
       - name: Drop existing network
-        os_network:
+        openstack.cloud.os_network:
           name: "{{ network_name }}"
           state: absent
         register: lb_net

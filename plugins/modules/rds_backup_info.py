@@ -64,7 +64,7 @@ rds_backups:
       type: str
       sample: "COMPLETED"
     begin_time:
-      description: Indicates the backup start time in the "yyyy-mm-ddThh:mm:ssZ" format.
+      description: Backup start time in the "yyyy-mm-ddThh:mm:ssZ" format.
       type: str
       sample: "2018-08-06T12:41:14+0800"
     end_time:
@@ -75,43 +75,43 @@ rds_backups:
       description: Indicates the database version.
       type: dict
     databases:
-      description: Indicates a list of self-built databases that support partial backups.
+      description: List of self-built databases that support partial backups.
       type: list
     instance_id:
-      description: Indicates the ID of the DB instance for which the backup is creates.
+      description: The ID of the DB instance for which the backup is creates.
       type: str
       sample: "a11a111a111a11111bbbbb2222ccc3333304"
 '''
 
 EXAMPLES = '''
-# Get RDS Backups (all parameters are specified, names of rds instance and backup are used)
-- rds_backup_info:
+# Get RDS Backups (status and names of rds instance and backup are used)
+- opentelekomcloud.cloud.rds_backup_info:
     instance: "test_instance_name"
     backup: "test_backup_name"
     backup_type: "auto"
   register: rds_backup
 
-# Get RDS Backups (all parameters are specified, IDs of rds instance and backup are used)
-- rds_backup_info:
+# Get RDS Backups (status and IDs of rds instance and backup are used)
+- opentelekomcloud.cloud.rds_backup_info:
     instance: "a11a111a111a11111bbbbb2222ccc3333305"
     backup: "a11a111a111a11111bbbbb2222ccc3333307"
     backup_type: "manual"
   register: rds_backup
 
 # Get RDS Backups (instance name and backup type are specified)
-- rds_backup_info:
+- opentelekomcloud.cloud.rds_backup_info:
     instance: "test_instance_name"
     backup_type: "manual"
   register: rds_backup
 
 # Get RDS Backups (instance id and backup name are specified)
-- rds_backup_info:
+- opentelekomcloud.cloud.rds_backup_info:
     instance: "a11a111a111a11111bbbbb2222ccc3333305"
     backup: "test_backup_name"
   register: rds_backup
 
 # Get RDS Backups (instance name is specified)
-- rds_backup_info:
+- opentelekomcloud.cloud.rds_backup_info:
     instance: "test_instance_name"
   register: rds_backup
 '''
@@ -147,6 +147,9 @@ class RdsBackupInfoModule(OTCModule):
                 query['backup_id'] = backup.id
             if backup_type_filter:
                 query['backup_type'] = backup_type_filter
+        else:
+            self.fail(changed=False,
+                      msg='RDS instance is missing')
 
         for raw in self.conn.rds.backups(**query):
             dt = raw.to_dict()
