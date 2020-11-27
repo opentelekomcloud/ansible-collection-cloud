@@ -55,9 +55,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 
 class CesQuotasInfoModule(OTCModule):
-    argument_spec = dict(
-
-    )
+    argument_spec = dict()
 
     def run(self):
 
