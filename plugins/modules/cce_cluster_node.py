@@ -384,8 +384,7 @@ class CceClusterNodeModule(OTCModule):
                 )
                 changed = True
             else:
-                # Modify CCE Cluster Node
-                # not available right now
+                # Modify CCE Cluster Node not available right now
                 pass
 
             self.exit_json(
