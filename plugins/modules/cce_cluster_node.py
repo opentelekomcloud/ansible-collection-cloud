@@ -352,7 +352,7 @@ class CceClusterNodeModule(OTCModule):
         ]
     )
 
-    otce_min__version = '0.13.0'
+    otce_min__version = '0.12.1'
 
     def run(self):
         self.params['wait_timeout'] = self.params['timeout']
