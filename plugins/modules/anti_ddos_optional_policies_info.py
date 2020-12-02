@@ -14,7 +14,7 @@
 DOCUMENTATION = '''
 ---
 module: anti_ddos_optional_policies_info
-short_description: Get Anti-DDoS defense policies info
+short_description: Get Anti-DDoS optional defense policies info
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.2.1"
 author: "Irina Pereiaslavskaia (@irina-pereiaslavskaia)"
