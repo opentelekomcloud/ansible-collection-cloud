@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: cce_cluster_node_info
 short_description: Get CCE node info
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.2.0"
+version_added: "0.4.0"
 author: "Tino Schreiber (@tischrei)"
 description:
   - Get CCE node info

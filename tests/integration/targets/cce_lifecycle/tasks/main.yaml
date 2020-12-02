@@ -22,6 +22,7 @@
         router_name: "{{ ( prefix + '-cce-router') }}"
         cce_cluster_name: "{{ ( 'z-' + prefix + '-cce-test') }}"
         cce_node_name: "{{ ( 'z-' + prefix + '-cce-node') }}"
+        cce_node_name2: "{{ ( 'z-' + prefix + '-cce-node2') }}"
         keypair_name: "{{ ( prefix + '-cce-keypair' ) }}"
         cce_node_flavor: "s2.large.2"
         cce_flavor: "cce.s1.small"
@@ -71,6 +72,7 @@
         that:
           - cluster is success
           - cluster is changed
+          - cluster.id is defined
 
     - name: Get CCE Cluster info
       opentelekomcloud.cloud.cce_cluster_info:
@@ -94,7 +96,7 @@
           - keypair is success
           - keypair.key.private_key is defined
 
-    - name: Create CCE cluster node
+    - name: Create CCE cluster node 1, reserved for cluster deletion
       opentelekomcloud.cloud.cce_cluster_node:
         annotations:
           annotation1: 'annoval1'
@@ -126,6 +128,28 @@
       assert:
         that:
           - node is success
+          - node.cce_cluster_node.id is defined
+
+    - name: Create CCE cluster node 2, reserved for node deletion
+      opentelekomcloud.cloud.cce_cluster_node:
+        availability_zone: 'eu-de-02'
+        cluster: "{{ cce_cluster_name }}"
+        flavor: "{{ cce_node_flavor }}"
+        keypair: "{{ keypair_name }}"
+        name: "{{ cce_node_name2 }}"
+        root_volume_size: 40
+        root_volume_type: SATA
+        data_volumes:
+          - SATA: 150
+          - SAS: 100
+        wait: true
+      register: node2
+
+    - name: assert result
+      assert:
+        that:
+          - node2 is success
+          - node2.cce_cluster_node.id is defined
 
     - name: Get CCE Cluster node info
       opentelekomcloud.cloud.cce_cluster_node_info:
@@ -141,6 +165,14 @@
   always:
     - block:
       # Cleanup
+      - name: Drop node 2
+        opentelekomcloud.cloud.cce_cluster_node:
+          cluster: "{{ cce_cluster_name }}"
+          name: "{{ cce_node_name2 }}"
+          state: absent
+          wait: true
+        register: node2
+
       - name: Drop cluster
         opentelekomcloud.cloud.cce_cluster:
           name: "{{ cce_cluster_name }}"

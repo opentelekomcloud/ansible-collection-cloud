@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: cce_cluster_node
 short_description: Add/Delete CCE Cluster node
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: '0.3.0'
+version_added: '0.4.0'
 author: 'Tino Schreiber (@tischrei)'
 description:
   - Add or Remove CCE Cluster node in OTC
@@ -271,7 +271,7 @@ opentelekomcloud.cloud.cce_cluster_node:
   annotations:
     annotation1: 'abc'
   availability_zone: 'eu-de-02'
-  cluster: '7ca53d10-2a70-11eb-9ade-0255ac101123'
+  cluster: "{{ cluster_name_or_id }}"
   count: 1
   data_volumes:
     - SATA: 150
@@ -279,27 +279,27 @@ opentelekomcloud.cloud.cce_cluster_node:
   flavor: 's2.large.2'
   k8s_tags:
     testtag: 'value'
-  keypair: 'tischrei-pub'
+  keypair: 'sshkey-pub'
   labels:
     mein: 'label'
   max_pods: 16
-  name: '{{ cce_node_name }}'
+  name: "{{ cce_node_name }}"
   os: 'CentOS 7.7'
   root_volume_size: 40
   root_volume_type: SATA
   tags:
-    - key: 'hellokey1'
-      value: 'hellovalue1'
-    - key: 'hellokey2'
-      value: 'hellovalue2'
+    - key: 'key1'
+      value: 'value1'
+    - key: 'key2'
+      value: 'value2'
   wait: true
   state: present
 register: node
 
 # Delete CCE cluster node
 opentelekomcloud.cloud.cce_cluster_node:
-  cluster: '7ca53d10-2a70-11eb-9ade-0255ac101123'
-  name: 'my-node'
+  cluster: "{{ cluster_name_or_id }}"
+  name: "{{ cce_node_name }}"
   state: absent
 register: result
 '''
@@ -347,7 +347,7 @@ class CceClusterNodeModule(OTCModule):
     module_kwargs = dict(
         required_if=[
             ('state', 'present',
-             ['availability_zone', 'cluster', 'flavor', 'keypair']),
+             ['availability_zone', 'cluster', 'flavor', 'keypair', 'data_volumes']),
             ('state', 'absent', ['cluster', 'name']),
         ]
     )
@@ -398,16 +398,13 @@ class CceClusterNodeModule(OTCModule):
             changed = False
 
             if cluster_node:
-                attrs = {
-                    'cluster': cluster.id,
-                    'node': cluster_node.id
-                }
+                attrs = {}
                 if self.params['wait']:
                     attrs['wait'] = True
                 if self.params['timeout']:
                     attrs['wait_timeout'] = self.params['timeout']
                 changed = True
-                self.conn.cce.delete_cce_cluster_node(
+                self.conn.delete_cce_cluster_node(
                     cluster=cluster.id,
                     node=cluster_node.id,
                     **attrs
