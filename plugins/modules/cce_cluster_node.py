@@ -267,41 +267,39 @@ cce_cluster_node:
 
 EXAMPLES = '''
 # Create CCE cluster node
-opentelekomcloud.cloud.cce_cluster_node:
-  annotations:
-    annotation1: 'abc'
-  availability_zone: 'eu-de-02'
-  cluster: "{{ cluster_name_or_id }}"
-  count: 1
-  data_volumes:
-    - SATA: 150
-    - SAS: 100
-  flavor: 's2.large.2'
-  k8s_tags:
-    testtag: 'value'
-  keypair: 'sshkey-pub'
-  labels:
-    mein: 'label'
-  max_pods: 16
-  name: "{{ cce_node_name }}"
-  os: 'CentOS 7.7'
-  root_volume_size: 40
-  root_volume_type: SATA
-  tags:
-    - key: 'key1'
-      value: 'value1'
-    - key: 'key2'
-      value: 'value2'
-  wait: true
-  state: present
-register: node
+- opentelekomcloud.cloud.cce_cluster_node:
+    annotations:
+      annotation1: 'abc'
+    availability_zone: 'eu-de-02'
+    cluster: "{{ cluster_name_or_id }}"
+    count: 1
+    data_volumes:
+      - SATA: 150
+      - SAS: 100
+    flavor: 's2.large.2'
+    k8s_tags:
+      testtag: 'value'
+    keypair: 'sshkey-pub'
+    labels:
+      mein: 'label'
+    max_pods: 16
+    name: "{{ cce_node_name }}"
+    os: 'CentOS 7.7'
+    root_volume_size: 40
+    root_volume_type: SATA
+    tags:
+      - key: 'key1'
+        value: 'value1'
+      - key: 'key2'
+        value: 'value2'
+    wait: true
+    state: present
 
 # Delete CCE cluster node
-opentelekomcloud.cloud.cce_cluster_node:
-  cluster: "{{ cluster_name_or_id }}"
-  name: "{{ cce_node_name }}"
-  state: absent
-register: result
+- opentelekomcloud.cloud.cce_cluster_node:
+    cluster: "{{ cluster_name_or_id }}"
+    name: "{{ cce_node_name }}"
+    state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
