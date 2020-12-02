@@ -5,6 +5,8 @@ plugins/modules/as_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_cert_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_info.py validate-modules:missing-gplv3-license
+plugins/modules/cce_cluster_node_info.py validate-modules:missing-gplv3-license
+plugins/modules/cce_cluster_node.py validate-modules:missing-gplv3-license
 plugins/modules/dns_floating_ip.py validate-modules:missing-gplv3-license
 plugins/modules/dns_recordset.py validate-modules:missing-gplv3-license
 plugins/modules/dns_zones.py validate-modules:missing-gplv3-license
