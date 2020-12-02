@@ -13,7 +13,7 @@
 
 DOCUMENTATION = '''
 ---
-module: anti_ddos_configs_info
+module: anti_ddos_optional_policies_info
 short_description: Get Anti-DDoS defense policies info
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.2.1"
@@ -25,7 +25,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-anti_ddos_configs_info:
+anti_ddos_optional_policies_info:
   description: Lists of defense policies info.
   type: complex
   returned: On Success
@@ -110,14 +110,14 @@ anti_ddos_configs_info:
 
 EXAMPLES = '''
 # Querying Optional Anti-DDoS Defense Policies
-- opentelekomcloud.cloud.anti_ddos_configs_info:
-  register: anti_ddos_configs_info
+- opentelekomcloud.cloud.anti_ddos_optional_policies_info:
+  register: anti_ddos_optional_policies_info
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class AntiDDoSConfigsInfoModule(OTCModule):
+class AntiDDoSOptionalPoliciesInfoModule(OTCModule):
     argument_spec = dict()
 
     def run(self):
@@ -129,11 +129,11 @@ class AntiDDoSConfigsInfoModule(OTCModule):
             dt.pop('location')
             data.append(dt)
 
-        self.exit(changed=False, anti_ddos_configs_info=data)
+        self.exit(changed=False, anti_ddos_optional_policies_info=data)
 
 
 def main():
-    module = AntiDDoSConfigsInfoModule()
+    module = AntiDDoSOptionalPoliciesInfoModule()
     module()
 
 
