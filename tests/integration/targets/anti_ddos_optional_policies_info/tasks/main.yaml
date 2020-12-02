@@ -3,7 +3,7 @@
     opentelekomcloud.cloud.anti_ddos_optional_policies_info:
       cloud: "{{ test_cloud }}"
   block:
-    - name: Get Anti-DDoS Floating IPs statuses
+    - name: Get Anti-DDoS optional defense policies
       opentelekomcloud.cloud.anti_ddos_optional_policies_info:
       register: anti_ddos_optional_policies_info
 
