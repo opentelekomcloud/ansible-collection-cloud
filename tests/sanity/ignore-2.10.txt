@@ -50,3 +50,4 @@ plugins/modules/lb_healthmonitor_info.py validate-modules:missing-gplv3-license
 plugins/modules/lb_certificate_info.py validate-modules:missing-gplv3-license
 plugins/modules/lb_certificate.py validate-modules:missing-gplv3-license
 plugins/modules/anti_ddos_fip_statuses_info.py validate-modules:missing-gplv3-license
+plugins/modules/anti_ddos_optional_policies_info.py validate-modules:missing-gplv3-license
