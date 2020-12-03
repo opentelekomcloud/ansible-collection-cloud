@@ -51,4 +51,4 @@
         that:
           - vpn_services_info is not success
           - vpn_services_info is not changed
-          - 'vpn_services_info.msg == "Subnet fake_router not found"'
+          - 'vpn_services_info.msg == "Router fake_router not found"'
