@@ -210,7 +210,26 @@ class CceClusterModule(OTCModule):
             changed = False
 
             if cluster:
-                # TODO(gtema) perhaps delete all nodes here first
+                # Delete all nodes from cluster
+                nodes = []
+                job_ids = []
+                nodes = self.conn.cce.cluster_nodes(
+                    cluster=cluster.id
+                )
+                if nodes:
+                    for node in nodes:
+                        raw = self.conn.cce.delete_cluster_node(
+                            node=node.id,
+                            cluster=cluster.id,
+                            ignore_missing=True
+                        )
+                        if raw.status.job_id:
+                            job_ids.append(raw.status.job_id)
+                    for id in job_ids:
+                        self.conn.cce.wait_for_job(
+                            job_id=id,
+                            status='success')
+                # Delete cluster
                 attrs = {
                     'cluster': cluster.id
                 }
