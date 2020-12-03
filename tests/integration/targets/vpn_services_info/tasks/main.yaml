@@ -1,15 +1,54 @@
 ---
 - module_defaults:
-    vpn_services_info:
+    opentelekomcloud.cloud.vpn_services_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: Get list of vpn services
-      vpn_services_info:
-      register: vpn_services
+      opentelekomcloud.cloud.vpn_services_info:
+      register: vpn_services_info
       ignore_errors: yes
 
     - name: assert result
       assert:
         that:
-          - vpn_services is success
-          - vpn_services is not changed
+          - vpn_services_info is success
+          - vpn_services_info is not changed
+
+    - name: Get error when name of VPN service is wrong
+      opentelekomcloud.cloud.vpn_services_info:
+        vpn_service: "fake_vpn"
+      register: vpn_services_info
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - vpn_services_info is not success
+          - vpn_services_info is not changed
+          - 'vpn_services_info.msg == "VPN service fake_vpn not found"'
+
+    - name: Get error when subnet is not found
+      opentelekomcloud.cloud.vpn_services_info:
+        subnet: "fake_subnet"
+      register: vpn_services_info
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - vpn_services_info is not success
+          - vpn_services_info is not changed
+          - 'vpn_services_info.msg == "Subnet fake_subnet not found"'
+
+    - name: Get error when router is not found
+      opentelekomcloud.cloud.vpn_services_info:
+        router: "fake_router"
+      register: vpn_services_info
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - vpn_services_info is not success
+          - vpn_services_info is not changed
+          - 'vpn_services_info.msg == "Subnet fake_router not found"'

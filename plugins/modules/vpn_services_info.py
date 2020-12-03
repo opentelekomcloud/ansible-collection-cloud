@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: vpn_services_info
 short_description: Query VPN services.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.2.0"
+version_added: "0.5.0"
 author: "Irina Pereiaslavskaia (@irina-pereiaslavskaia)"
 description:
   - This module is used to query VPN services.
@@ -33,15 +33,15 @@ options:
   external_v6_ip:
     description: Specifies the IPv6 address of the VPN service external gateway.
     type: str
-  router_id:
-    description: Specifies the router ID.
+  router:
+    description: Name or ID of router.
     type: str
   status:
     description: Specifies whether the VPN service is currently operational.
     choices: [active, down, build, error, pending_create, pending_update, pending_delete]
     type: str
-  subnet_id:
-    description: Specifies the subnet ID
+  subnet:
+    description: Name or ID of subnet.
     type: str
   tenant_id:
     description: Specifies the project ID
@@ -66,11 +66,13 @@ vpnservices:
       type: str
       sample: "This is description"
     external_v4_ip:
-      description: Specifies the IPv4 address of the VPN service external gateway.
+      description:
+        - Specifies the IPv4 address of the VPN service external gateway.
       type: str
       sample: "172.32.1.11"
     external_v6_ip:
-      description: Specifies the IPv6 address of the VPN service external gateway.
+      description:
+        - Specifies the IPv6 address of the VPN service external gateway.
       type: str
       sample: "2001:db8::1"
     id:
@@ -86,7 +88,8 @@ vpnservices:
       type: str
       sample: "66e3b16c-8ce5-40fb-bb49-ab6d8dc3f2aa"
     status:
-      description: Specifies whether the VPN service is currently operational.
+      description:
+        - Specifies whether the VPN service is currently operational.
       type: str
       sample: "PENDING_CREATE"
     subnet_id:
@@ -105,9 +108,9 @@ EXAMPLES = '''
     description: "This is description"
     external_v4_ip: "172.32.1.11"
     external_v6_ip: "2001:db8::1"
-    router_id: "66e3b16c-8ce5-40fb-bb49-ab6d8dc3f2aa"
+    router: "66e3b16c-8ce5-40fb-bb49-ab6d8dc3f2aa"
     status: "PENDING_CREATE"
-    subnet_id: "14067794-975d-461e-b502-dd40c0383d26"
+    subnet: "14067794-975d-461e-b502-dd40c0383d26"
     tenant_id: "959db9b6000d4a1fa1c6fd17b6820f00"
     vpn_service: "test_vpn"
   register: vpn_services
@@ -122,11 +125,12 @@ class VpnServicesInfoModule(OTCModule):
         description=dict(type='str', required=False),
         external_v4_ip=dict(type='str', required=False),
         external_v6_ip=dict(type='str', required=False),
-        router_id=dict(type='str', requiered=False),
+        router=dict(type='str', requiered=False),
         status=dict(required=False,
-                    choices=["active", "down", "build", "error",
-                             "pending_create", "pending_update", "pending_delete"]),
-        subnet_id=dict(type='str', required=False),
+                    choices=["active", "down", "build",
+                             "error", "pending_create",
+                             "pending_update", "pending_delete"]),
+        subnet=dict(type='str', required=False),
         tenant_id=dict(type='str', required=False),
         vpn_service=dict(type='str', required=False)
     )
@@ -136,26 +140,35 @@ class VpnServicesInfoModule(OTCModule):
         description = self.params['description']
         external_v4_ip = self.params['external_v4_ip']
         external_v6_ip = self.params['external_v6_ip']
-        router_id = self.params['router_id']
+        router = self.params['router']
         status = self.params['status']
-        subnet_id = self.params['subnet_id']
+        subnet = self.params['subnet']
         tenant_id = self.params['tenant_id']
         vpn_service = self.params['vpn_service']
 
         data = []
         query = {}
         if vpn_service:
-            vpn = self.conn.network.find_vpn(name_or_id=vpn_service)
+            vpn = self.conn.network.find_vpn_service(name_or_id=vpn_service)
             if vpn:
                 query['vpn_service'] = vpn
-        if subnet_id:
-            subnet = self.conn.network.find_subnet(name_or_id=subnet_id)
-            if subnet:
-                query['subnet_id'] = subnet.id
-        if router_id:
-            router = self.conn.network.find_router(name_or_id=router_id)
-            if router:
-                query['router_id'] = router.id
+            else:
+                self.fail(changed=False,
+                          msg='VPN service %s not found' % vpn_service)
+        if subnet:
+            sub_net = self.conn.network.find_subnet(name_or_id=subnet)
+            if sub_net:
+                query['subnet'] = sub_net.id
+            else:
+                self.fail(changed=False,
+                          msg='Subnet %s not found' % subnet)
+        if router:
+            rtr = self.conn.network.find_router(name_or_id=router)
+            if rtr:
+                query['router_id'] = rtr.id
+            else:
+                self.fail(changed=False,
+                          msg='Router %s not found' % router)
         if admin_state_up:
             query['admin_state_up'] = admin_state_up
         if description:
@@ -176,7 +189,7 @@ class VpnServicesInfoModule(OTCModule):
 
         self.exit(
             changed=False,
-            vpn_services=data
+            vpn_services_info=data
         )
 
 
