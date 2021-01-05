@@ -10,7 +10,8 @@ plugins/modules/ces_alarms_info.py validate-modules:missing-gplv3-license
 plugins/modules/ces_event_data_info.py validate-modules:missing-gplv3-license
 plugins/modules/ces_metric_data_info.py validate-modules:missing-gplv3-license
 plugins/modules/ces_metrics_info.py validate-modules:missing-gplv3-license
-plugins/modules/ces_quotas_info.py validate-modules:missing-gplv3-license
+plugins/modules/cce_cluster_node_info.py validate-modules:missing-gplv3-license
+plugins/modules/cce_cluster_node.py validate-modules:missing-gplv3-license
 plugins/modules/dns_floating_ip.py validate-modules:missing-gplv3-license
 plugins/modules/dns_recordset.py validate-modules:missing-gplv3-license
 plugins/modules/dns_zones.py validate-modules:missing-gplv3-license
@@ -56,3 +57,4 @@ plugins/modules/lb_healthmonitor_info.py validate-modules:missing-gplv3-license
 plugins/modules/lb_certificate_info.py validate-modules:missing-gplv3-license
 plugins/modules/lb_certificate.py validate-modules:missing-gplv3-license
 plugins/modules/anti_ddos_fip_statuses_info.py validate-modules:missing-gplv3-license
+plugins/modules/anti_ddos_optional_policies_info.py validate-modules:missing-gplv3-license
