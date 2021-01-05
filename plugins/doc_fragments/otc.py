@@ -67,7 +67,7 @@ options:
       - Whether or not SSL API requests should be verified.
       - Before Ansible 2.3 this defaulted to C(yes).
     type: bool
-    default: false
+    default: none
     aliases: [ verify ]
   ca_cert:
     description:
