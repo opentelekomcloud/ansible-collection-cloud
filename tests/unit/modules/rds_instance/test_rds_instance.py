@@ -131,7 +131,7 @@ class RdsInstanceTest(TestCase):
             router=None,
             security_group=None,
             state='present',
-            validate_certs=None,
+            validate_certs=False,
             volume_size=None,
             volume_type=None,
             wait=True,
