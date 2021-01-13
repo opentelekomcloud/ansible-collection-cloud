@@ -1,0 +1,18 @@
+---
+- block:
+    - name: Get all Node Pools of a cluster
+      cce_node_pool_info:
+        cloud: "{{ test_cloud }}"
+        cce_cluster: tino-test
+      register: pools
+
+    - name: debug pools
+      debug:
+        var: pools.cce_node_pools
+
+    - name: assert result
+      assert:
+        that:
+          - pools is success
+          - pools is not changed
+          - pools.cce_node_pools is defined
