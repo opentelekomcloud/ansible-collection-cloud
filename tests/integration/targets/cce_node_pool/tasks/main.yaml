@@ -1,0 +1,22 @@
+---
+- block:
+    - name: Get all Node Pools of a cluster
+      cce_node_pool:
+        cloud: "{{ test_cloud }}"
+        cluster: tino-test
+        flavor: s2.large.2
+        os: 'EulerOS 2.5'
+        name: tino-ansible
+        network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a9cb'
+        ssh_key: 'tischrei-pub'
+        state: present
+      register: pools
+
+    - name: debug pools
+      debug:
+        var: pools.cce_node_pool
+
+    - name: assert result
+      assert:
+        that:
+          - pools.cce_node_pool is defined

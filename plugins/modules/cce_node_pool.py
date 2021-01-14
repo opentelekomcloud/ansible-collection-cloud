@@ -13,77 +13,67 @@
 
 DOCUMENTATION = '''
 ---
-module: cce_cluster_node
-short_description: Add/Delete CCE Cluster node
+module: cce_node_pool
+short_description: Add/Delete CCE Node Pool
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: '0.4.0'
+version_added: '0.5.0'
 author: 'Tino Schreiber (@tischrei)'
 description:
-  - Add or Remove CCE Cluster node in OTC
+  - Add or Remove CCE Node Pool in OTC
 options:
-  annotations:
-    description: Specifiy annotations for CCE node
-    type: dict
   availability_zone:
-    description: Availability zone
+    description: Availability zone or 'random' for all zones
     type: str
+  autoscaling_enabled:
+    description: Enable or disable Autoscaling
+    type: bool
+    default: False
   cluster:
     description:
-      - CCE cluster name or id which hosts the cce cluster node
+      - CCE cluster name or id which hosts the CCE Node Pool
     type: str
-  count:
-    description:
-      - Cluster node count which will be created.
-      - If node count is greater than 1 the name of the node
-      - gets a suffix.
-    type: int
-    default: 1
   data_volumes:
     description: List of data volumes attached to the cluster node.
     type: list
     elements: dict
-  dedicated_host:
-    description:
-      - ID of a Dedicated Host where the cluster node will be located to.
-    type: str
   ecs_group:
     description: ID of the ECS group where the CCE node can belong to.
-    type: str
-  fault_domain:
-    description: The node is created in the specified fault domain.
     type: str
   flavor:
     description: Flavor ID of the cluster node
     type: str
-  floating_ip:
-    description: Floating IP used to connect to public networks.
-    type: str
+  initial_node_count:
+    description: Expected number of nodes in this node pool.
+    type: int
   k8s_tags:
     description: Dictionary of Kubernetes tags.
-    type: dict
-  keypair:
-    description: Name of the public key to login
-    type: str
-  labels:
-    description: Labels for the CCE cluster node
     type: dict
   lvm_config:
     description: ConfigMap of the Docker data disk.
     type: str
+  max_node_count:
+    description: Maximum number of nodes after scale-up.
+    type: int
+  min_node_count:
+    description: Mnimum number of nodes after scale-up.
+    type: int
   max_pods:
     description: Maximum number of pods on the node.
     type: int
   name:
     description:
-      - Name of the CCE cluster node.
+      - Name of the CCE Node Pool
     required: true
     type: str
-  node_image_id:
-    description: ID of a custom image used in a baremetall scenario.
+  network_id:
+    description:
+      - ID of the network to which the CE node pool belongs to.
     type: str
-  offload_node:
-    description: If node is offloading its components.
-    type: bool
+  node_image_id:
+    description:
+      - Mandatory if custom image is used on a
+      - bare metall node.
+    type: str
   os:
     description: Operating System of the cluster node.
     type: str
@@ -92,6 +82,12 @@ options:
     type: str
   preinstall_script:
     description: Base64 encoded pre installation script.
+    type: str
+  priority:
+    description: Node pool weight for scale-up operations.
+    type: int
+  public_key:
+    description: Additional public key to be added for login.
     type: str
   root_volume_size:
     description:
@@ -104,38 +100,39 @@ options:
     type: str
     choices: [SATA, SAS, SSD]
     default: SATA
+  scale_down_cooldown_time:
+    description:
+      - Interval in minutes during which nodes added after a scale-up will
+      - not be deleted.
+    type: int
+  ssh_key:
+    description: Name of the public key to login into the nodes
+    type: str
   state:
     description:
       - Should the resource be present or absent.
     choices: [present, absent]
     default: present
     type: str
-  wait:
-    description:
-      - If the module should wait for the cluster node to be
-      - created or deleted.
-    type: bool
-    default: true
   tags:
-    description: CCE cluster node tags
+    description: List of tags used to build UI labels.
     type: list
     elements: dict
-  timeout:
-    description:
-      - The amount of time the module should wait.
-    default: 180
-    type: int
+  taints:
+    description: List of taints.
+    type: list
+    elements: dict
 requirements: ['openstacksdk', 'otcextensions']
 '''
 
 RETURN = '''
 id:
-  description: The CCE Cluster Node UUID.
+  description: The CCE Node Pool UUID.
   returned: On success when C(state=present)
   type: str
   sample: '39007a7e-ee4f-4d13-8283-b4da2e037123'
-cce_cluster_node:
-  description: Dictionary describing the Cluster Node.
+cce_node_pool:
+  description: Dictionary describing the CCE Node Pool.
   returned: On success when C(state=present)
   type: dict
   sample: {
@@ -266,94 +263,89 @@ cce_cluster_node:
 '''
 
 EXAMPLES = '''
-# Create CCE cluster node
-- opentelekomcloud.cloud.cce_cluster_node:
-    annotations:
-      annotation1: 'abc'
-    availability_zone: 'eu-de-02'
-    cluster: "{{ cluster_name_or_id }}"
-    count: 1
-    data_volumes:
-      - SATA: 150
-      - SAS: 100
-    flavor: 's2.large.2'
-    k8s_tags:
-      testtag: 'value'
-    keypair: 'sshkey-pub'
-    labels:
-      mein: 'label'
-    max_pods: 16
-    name: "{{ cce_node_name }}"
-    os: 'CentOS 7.7'
-    root_volume_size: 40
-    root_volume_type: SATA
-    tags:
-      - key: 'key1'
-        value: 'value1'
-      - key: 'key2'
-        value: 'value2'
-    wait: true
+# Create CCE Node Pool
+- cce_node_pool:
+    cloud: "{{ test_cloud }}"
+    cluster: clustername
+    flavor: s2.large.2
+    os: 'EulerOS 2.5'
+    name: my-nodepool
+    network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
+    ssh_key: 'ssh-pub'
     state: present
+  register: pools
 
-# Delete CCE cluster node
-- opentelekomcloud.cloud.cce_cluster_node:
+# Delete CCE Node Pool
+- opentelekomcloud.cloud.cce_node_pool:
     cluster: "{{ cluster_name_or_id }}"
-    name: "{{ cce_node_name }}"
+    name: "{{ cce_node_pool_name_or_id }}"
     state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class CceClusterNodeModule(OTCModule):
+class CceNodePoolModule(OTCModule):
     argument_spec = dict(
-        annotations=dict(required=False, type='dict'),
         availability_zone=dict(required=False),
+        autoscaling_enabled=dict(required=False, type='bool', default=False),
         cluster=dict(required=False),
-        count=dict(required=False, type='int', default=1),
         data_volumes=dict(
             required=False,
             type='list',
-            elements='dict'
+            elements='dict',
+            default=[{
+                'volumetype': 'SATA',
+                'size': 100,
+                'encrypted': False,
+                'cmk_id': ''
+            }]
         ),
-        dedicated_host=dict(required=False),
         ecs_group=dict(required=False),
-        fault_domain=dict(required=False),
         flavor=dict(required=False),
-        floating_ip=dict(required=False),
+        initial_node_count=dict(required=False, type='int', default=0),
         k8s_tags=dict(required=False, type='dict'),
-        keypair=dict(required=False),
-        labels=dict(required=False, type='dict'),
         lvm_config=dict(required=False),
+        min_node_count=dict(required=False, type='int'),
+        max_node_count=dict(required=False, type='int'),
         max_pods=dict(required=False, type='int'),
         name=dict(required=True),
+        network_id=dict(required=False),
         node_image_id=dict(required=False),
-        offload_node=dict(required=False, type='bool'),
         os=dict(required=False),
         postinstall_script=dict(required=False),
         preinstall_script=dict(required=False),
+        priority=dict(required=False, type='int'),
+        public_key=dict(required=False),
         root_volume_size=dict(required=False, type='int', default=40),
         root_volume_type=dict(
             required=False,
             choices=['SATA', 'SAS', 'SSD'],
             default='SATA'),
+        scale_down_cooldown_time=dict(required=False, type='int'),
+        ssh_key=dict(required=False),
         state=dict(default='present', choices=['absent', 'present']),
         tags=dict(required=False, type='list', elements='dict'),
-        timeout=dict(required=False, type='int', default=180),
-        wait=dict(required=False, type='bool', default=True)
+        taints=dict(required=False, type='list', elements='dict'),
     )
     module_kwargs = dict(
         required_if=[
             ('state', 'present',
-             ['availability_zone', 'cluster', 'flavor', 'keypair', 'data_volumes']),
+                [
+                    'cluster',
+                    'flavor',
+                    'os',
+                    'name',
+                    'network_id',
+                    'ssh_key'
+                ]),
             ('state', 'absent', ['cluster', 'name']),
         ]
     )
 
-    otce_min__version = '0.12.1'
+    otce_min__version = '0.13.0'
 
     def run(self):
-        self.params['wait_timeout'] = self.params['timeout']
         cce_cluster = self.params['cluster']
 
         cluster = None
@@ -362,9 +354,9 @@ class CceClusterNodeModule(OTCModule):
         cluster = self.conn.cce.find_cluster(
             name_or_id=cce_cluster,
             ignore_missing=True)
-        cluster_node = self.conn.cce.find_cluster_node(
+        node_pool = self.conn.cce.find_node_pool(
             cluster=cluster,
-            node=self.params['name'])
+            node_pool=self.params['name'])
 
         if not cluster:
             self.fail_json(
@@ -372,47 +364,40 @@ class CceClusterNodeModule(OTCModule):
                     % cce_cluster
             )
 
-        # Create CCE node
+        # Create CCE node pool
         if self.params['state'] == 'present':
-            if not cluster_node:
+            if not node_pool:
                 self.params.pop('cluster')
-                cluster_node = self.conn.create_cce_cluster_node(
+                node_pool = self.conn.create_cce_node_pool(
                     cluster=cluster.id,
                     **self.params
                 )
                 changed = True
             else:
-                # Modify CCE Cluster Node not available right now
+                # Modify CCE node pool not available right now
                 pass
 
             self.exit_json(
                 changed=changed,
-                cce_cluster_node=cluster_node.to_dict(),
-                id=cluster_node.id
+                cce_node_pool=node_pool.to_dict(),
+                id=node_pool.id
             )
 
-        # CCE cluster node deletion
+        # CCE node pool deletion
         elif self.params['state'] == 'absent':
             changed = False
 
-            if cluster_node:
-                attrs = {}
-                if self.params['wait']:
-                    attrs['wait'] = True
-                if self.params['timeout']:
-                    attrs['wait_timeout'] = self.params['timeout']
+            if node_pool:
                 changed = True
-                self.conn.delete_cce_cluster_node(
+                self.conn.cce.delete_node_pool(
                     cluster=cluster.id,
-                    node=cluster_node.id,
-                    **attrs
+                    node_pool=node_pool.id,
                 )
-
             self.exit_json(changed=changed)
 
 
 def main():
-    module = CceClusterNodeModule()
+    module = CceNodePoolModule()
     module()
 
 
