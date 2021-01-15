@@ -3,7 +3,7 @@
     - name: Get all Node Pools of a cluster
       cce_node_pool_info:
         cloud: "{{ test_cloud }}"
-        cce_cluster: tino-test
+        cce_cluster: test-cluster
       register: pools
 
     - name: debug pools

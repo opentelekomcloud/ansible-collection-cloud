@@ -24,6 +24,7 @@ options:
   availability_zone:
     description: Availability zone or 'random' for all zones
     type: str
+    default: random
   autoscaling_enabled:
     description: Enable or disable Autoscaling
     type: bool
@@ -36,6 +37,7 @@ options:
     description: List of data volumes attached to the cluster node.
     type: list
     elements: dict
+    default: [{'volumetype': 'SATA', 'size': 100, 'encrypted': False, 'cmk_id': ''}]
   ecs_group:
     description: ID of the ECS group where the CCE node can belong to.
     type: str
@@ -136,144 +138,161 @@ cce_node_pool:
   returned: On success when C(state=present)
   type: dict
   sample: {
-      cce_cluster_node: {
-          'api_version': 'v3',
-          'id': 'a815a926-30cd-11eb-b02d-0255ac101123',
-          'kind': 'Node',
-          'location': {
-              'cloud': 'otc',
-              'project': {
-                  'domain_id': null,
-                  'domain_name': null,
-                  'id': '16d53a84a13b49529d2e2c3646691123',
-                  'name': 'eu-de'
-              },
-              'region_name': 'eu-de',
-              'zone': null
+    'api_version': 'v3',
+    'id': 'e2d0d5f3-572e-11eb-8fea-0255ac101123',
+    'kind': 'NodePool',
+    'metadata': null,
+    'name': 'test-ansible2',
+    'spec': {
+      'autoscaling': {
+        'enable': true,
+        'max_node_count': 3,
+        'min_node_count': 1,
+        'priority': 2,
+        'scale_down_cooldown_time': 5
+      },
+      'initial_node_count': 0,
+      'node_management': {
+        'ecs_group': null,
+      },
+      'node_pool_type': 'vm',
+      'node_template_spec': {
+        'availability_zone': 'random',
+        'billing_mode': 0,
+        'count': null,
+        'data_volumes': [
+          {
+            'extend_params': null,
+            'metadata': null,
+            'size': 120,
+            'type': 'SSD'
           },
-          'metadata': {
-              'annotations': {
-                  'annotation1': 'abc'
-              },
-              'created_at': null,
-              'id': 'a815a926-30cd-11eb-b02d-0255ac101123',
-              'labels': {
-                  'mein': 'label'
-              },
-              'location': null,
-              'name': 'testccenode',
-              'updated_at': null
-          },
-          'name': 'testccenode',
-          'spec': {
-              'availability_zone': 'eu-de-02',
-              'billing_mode': 0,
-              'count': 1,
-              'data_volumes': [
-                  {
-                      'id': null,
-                      'location': null,
-                      'name': null,
-                      'size': 150,
-                      'type': 'SATA'
-                  },
-                  {
-                      'id': null,
-                      'location': null,
-                      'name': null,
-                      'size': 100,
-                      'type': 'SAS'
-                  }
-              ],
-              'dedicated_host': null,
-              'ecs_group': null,
-              'extend_params': {
-                  'id': null,
-                  'location': null,
-                  'lvm_config': null,
-                  'max_pods': 16,
-                  'name': null,
-                  'node_image_id': null,
-                  'postinstall_script': null,
-                  'preinstall_script': null
-              },
-              'fault_domain': null,
-              'flavor': 's2.large.2',
-              'floating_ip': {
-                  'count': null,
-                  'floating_ip': {
-                      'bandwidth': {}
-                  },
-                  'id': null,
-                  'ids': null,
-                  'location': null,
-                  'name': null
-              },
-              'id': null,
-              'k8s_tags': {
-                  'kubernetes.io/eniquota': '12',
-                  'kubernetes.io/subeniquota': '0',
-                  'testtag': 'value'
-              },
-              'location': null,
-              'login': {
-                  'sshKey': 'sshkey-pub',
-                  'userPassword': {}
-              },
-              'name': null,
-              'offload_node': null,
-              'os': 'CentOS 7.7',
-              'root_volume': {
-                  'id': null,
-                  'location': null,
-                  'name': null,
-                  'size': 40,
-                  'type': 'SATA'
-              },
-              'tags': [
-                  {
-                      'id': null,
-                      'key': 'hellokey1',
-                      'location': null,
-                      'name': null,
-                      'value': 'hellovalue1'
-                  },
-                  {
-                      'id': null,
-                      'key': 'hellokey2',
-                      'location': null,
-                      'name': null,
-                      'value': 'hellovalue2'
-                  }
-              ],
-              'taints': null
-          },
-          'status': {
-              'floating_ip': null,
-              'id': null,
-              'instance_id': null,
-              'job_id': 'a8168c15-30cd-11eb-b02d-0255ac101123',
-              'location': null,
-              'name': null,
-              'private_ip': null,
-              'status': null
+          {
+            'extend_params': null,
+            'metadata': null,
+            'size': 100,
+            'type': 'SATA'
           }
+        ],
+        'ecs_group': null,
+        'extend_params': {
+          'lvm_config': null,
+          'max_pods': 110,
+          'node_image_id': null,
+          'postinstall_script': null,
+          'preinstall_script': null,
+          'public_key': 'ssh_pubkey_value'
+        },
+        'flavor': 's2.large.2',
+        'floating_ip': {
+          'count': null,
+          'floating_ip_spec': {
+            'bandwidth': {}
+          },
+          'ids': null,
+        },
+        'k8s_tags': {
+          'cce.cloud.com/cce-nodepool': 'nodepool-name',
+          'mysecondtag': 'mysecondvalue',
+          'mytag': 'myvalue'
+        },
+        'login': {
+          'ssh_key': 'tischrei-pub'
+        },
+        'node_nic_spec': {
+          'primary_nic': {
+            'network_id': '25d24fc8-d019-4a34-9fff-0a09fde6a123'
+          }
+        },
+        'os': 'CentOS 7.7',
+        'root_volume': {
+          'size': 40,
+          'type': 'SATA'
+        },
+        'tags': [
+          {
+            'key': 'my_first_key',
+            'value': 'my_first_value'
+          },
+          {
+            'key': 'my_second_key',
+            'value': 'my_secound_value'
+          }
+        ],
+        'taints': [
+          {
+            'effect': 'NoSchedule',
+            'key': 'first_taint_key',
+            'value': 'first_taint_value'
+          },
+          {
+            'effect': 'NoExecute',
+            'key': 'second_taint_key',
+            'value': 'secound_taint_value'
+          }
+        ]
       }
+    },
+    'status': {
+      'current_node': 0,
+      'status': ''
+    }
   }
 '''
 
 EXAMPLES = '''
-# Create CCE Node Pool
+# Create CCE Node Pool with minimal configuration
 - cce_node_pool:
     cloud: "{{ test_cloud }}"
     cluster: clustername
     flavor: s2.large.2
-    os: 'EulerOS 2.5'
+    os: 'CentOS 7.7'
     name: my-nodepool
     network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
     ssh_key: 'ssh-pub'
     state: present
-  register: pools
+  register: pool
+
+# Create CCE Node Pool with fine-grained configuration
+- cce_node_pool:
+    cloud: "{{ test_cloud }}"
+    availability_zone: "random"
+    autoscaling_enabled: True
+    cluster: tino-test
+    data_volumes:
+      - volumetype: SSD
+        size: 120
+      - volumetype: SATA
+        size: 100
+        encrypted: False
+        cmk_id: ''
+    flavor: s2.large.2
+    initial_node_count: 0
+    k8s_tags:
+      mytag: myvalue
+      mysecondtag: mysecondvalue
+    min_node_count: 1
+    max_node_count: 3
+    name: test-ansible2
+    network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
+    priority: 2
+    os: 'CentOS 7.7'
+    scale_down_cooldown_time: 5
+    ssh_key: 'sshkey-pub'
+    tags:
+      - key: 'my_first_key'
+        value: 'my_first_value'
+      - key: 'my_second_key'
+        value: 'my_secound_value'
+    taints:
+      - key: 'first_taint_key'
+        value: 'first_taint_value'
+        effect: 'NoSchedule'
+      - key: 'second_taint_key'
+        value: 'secound_taint_value'
+        effect: 'NoExecute'
+    state: present
+  register: pool
 
 # Delete CCE Node Pool
 - opentelekomcloud.cloud.cce_node_pool:
@@ -287,7 +306,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class CceNodePoolModule(OTCModule):
     argument_spec = dict(
-        availability_zone=dict(required=False),
+        availability_zone=dict(required=False, default="random"),
         autoscaling_enabled=dict(required=False, type='bool', default=False),
         cluster=dict(required=False),
         data_volumes=dict(

@@ -1,22 +1,51 @@
 ---
 - block:
-    - name: Get all Node Pools of a cluster
+    - name: Create Node Pool
       cce_node_pool:
         cloud: "{{ test_cloud }}"
-        cluster: tino-test
+        availability_zone: "random"
+        autoscaling_enabled: True
+        cluster: test-cluster
+        data_volumes:
+          - volumetype: SSD
+            size: 120
+          - volumetype: SATA
+            size: 100
+            encrypted: False
+            cmk_id: ''
         flavor: s2.large.2
+        initial_node_count: 0
+        k8s_tags:
+          mytag: myvalue
+          mysecondtag: mysecondvalue
+        min_node_count: 1
+        max_node_count: 3
+        name: test-ansible2
+        network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
+        priority: 2
         os: 'EulerOS 2.5'
-        name: tino-ansible
-        network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a9cb'
-        ssh_key: 'tischrei-pub'
+        scale_down_cooldown_time: 5
+        ssh_key: 'ssh-pub'
+        tags:
+          - key: 'my_first_key'
+            value: 'my_first_value'
+          - key: 'my_second_key'
+            value: 'my_secound_value'
+        taints:
+          - key: 'first_taint_key'
+            value: 'first_taint_value'
+            effect: 'NoSchedule'
+          - key: 'second_taint_key'
+            value: 'secound_taint_value'
+            effect: 'NoExecute'
         state: present
-      register: pools
+      register: pool
 
-    - name: debug pools
+    - name: debug pool
       debug:
-        var: pools.cce_node_pool
+        var: pool.cce_node_pool
 
     - name: assert result
       assert:
         that:
-          - pools.cce_node_pool is defined
+          - pool.cce_node_pool is defined
