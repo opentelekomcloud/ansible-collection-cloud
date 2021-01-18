@@ -57,7 +57,7 @@ options:
     description: Maximum number of nodes after scale-up.
     type: int
   min_node_count:
-    description: Mnimum number of nodes after scale-up.
+    description: Minimum number of nodes after a scale-down.
     type: int
   max_pods:
     description: Maximum number of pods on the node.
@@ -69,7 +69,7 @@ options:
     type: str
   network_id:
     description:
-      - ID of the network to which the CE node pool belongs to.
+      - ID of the network to which the CCE node pool belongs to.
     type: str
   node_image_id:
     description:
@@ -362,7 +362,7 @@ class CceNodePoolModule(OTCModule):
         ]
     )
 
-    otce_min__version = '0.13.0'
+    otce_min_version = '0.13.0'
 
     def run(self):
         cce_cluster = self.params['cluster']

@@ -166,7 +166,7 @@ class CCENodePoolInfoModule(OTCModule):
         name=dict(required=False),
     )
 
-    otce_min__version = '0.13.0'
+    otce_min_version = '0.13.0'
 
     def run(self):
 
