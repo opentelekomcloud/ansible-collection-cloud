@@ -133,6 +133,8 @@ class CCEClusterNodeInfoModule(OTCModule):
         name=dict(required=False),
     )
 
+    otce_min__version = '0.12.1'
+
     def run(self):
 
         data = []

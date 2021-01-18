@@ -5,6 +5,8 @@ plugins/modules/as_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_cert_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_info.py validate-modules:missing-gplv3-license
+plugins/modules/cce_node_pool_info.py validate-modules:missing-gplv3-license
+plugins/modules/cce_node_pool.py validate-modules:missing-gplv3-license
 plugins/modules/ces_alarms.py validate-modules:missing-gplv3-license
 plugins/modules/ces_alarms_info.py validate-modules:missing-gplv3-license
 plugins/modules/ces_event_data_info.py validate-modules:missing-gplv3-license
