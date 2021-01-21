@@ -6,6 +6,14 @@ plugins/modules/cce_cluster.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_node.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_cert_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_info.py validate-modules:missing-gplv3-license
+plugins/modules/cce_node_pool_info.py validate-modules:missing-gplv3-license
+plugins/modules/cce_node_pool.py validate-modules:missing-gplv3-license
+plugins/modules/ces_alarms_info.py validate-modules:missing-gplv3-license
+plugins/modules/ces_alarms.py validate-modules:missing-gplv3-license
+plugins/modules/ces_event_data_info.py validate-modules:missing-gplv3-license
+plugins/modules/ces_metric_data_info.py validate-modules:missing-gplv3-license
+plugins/modules/ces_metrics_info.py validate-modules:missing-gplv3-license
+plugins/modules/ces_quotas_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_node_info.py validate-modules:missing-gplv3-license
 plugins/modules/dns_floating_ip.py validate-modules:missing-gplv3-license
 plugins/modules/dns_recordset.py validate-modules:missing-gplv3-license

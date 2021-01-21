@@ -100,7 +100,7 @@ options:
     default: 40
   root_volume_type:
     description:
-      - Type of the cluster node
+      - Type of the root volume.
     type: str
     choices: [SATA, SAS, SSD]
     default: SATA
