@@ -1,0 +1,72 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.vpn_service_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get list of vpn services
+      opentelekomcloud.cloud.vpn_service_info:
+      register: vpn_service_info
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - vpn_service_info is success
+          - vpn_service_info is not changed
+
+    - name: Get empty list when name of VPN service is wrong
+      opentelekomcloud.cloud.vpn_service_info:
+        vpn_service: "fake_vpn"
+      register: vpn_service_info
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - vpn_service_info is success
+          - vpn_service_info is not changed
+          - 'vpn_service_info.msg == "VPN service fake_vpn not found"'
+          - vpn_service_info['vpn_services']|length == 0
+
+    - name: Get empty list when subnet is not found
+      opentelekomcloud.cloud.vpn_service_info:
+        subnet: "fake_subnet"
+      register: vpn_service_info
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - vpn_service_info is success
+          - vpn_service_info is not changed
+          - 'vpn_service_info.msg == "Subnet fake_subnet not found"'
+          - vpn_service_info['vpn_services']|length == 0
+
+    - name: Get empty list when router is not found
+      opentelekomcloud.cloud.vpn_service_info:
+        router: "fake_router"
+      register: vpn_service_info
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - vpn_service_info is success
+          - vpn_service_info is not changed
+          - 'vpn_service_info.msg == "Router fake_router not found"'
+          - vpn_service_info['vpn_services']|length == 0
+
+    - name: Get empty list when name, subnet, router is not found
+      opentelekomcloud.cloud.vpn_service_info:
+        vpn_service: "fake_vpn"
+        subnet: "fake_subnet"
+        router: "fake_router"
+      register: vpn_service_info
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - vpn_service_info is success
+          - vpn_service_info is not changed
+          - vpn_service_info['vpn_services']|length == 0

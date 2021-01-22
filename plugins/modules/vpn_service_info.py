@@ -13,7 +13,7 @@
 
 DOCUMENTATION = '''
 ---
-module: vpn_services_info
+module: vpn_service_info
 short_description: Query VPN services.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.5.0"
@@ -43,7 +43,7 @@ options:
   subnet:
     description: Name or ID of subnet.
     type: str
-  tenant_id:
+  project_id:
     description: Specifies the project ID
     type: str
   vpn_service:
@@ -95,7 +95,7 @@ vpnservices:
     subnet_id:
       description: Specifies the subnet ID
       type: str
-    tenant_id:
+    project_id:
       description: Specifies the project ID
       type: str
       sample: "10039663455a446d8ba2cbb058b0f578"
@@ -103,7 +103,7 @@ vpnservices:
 
 EXAMPLES = '''
 # Get VPN Services (all parameters are specified)
-- opentelekomcloud.cloud.vpn_services_info:
+- opentelekomcloud.cloud.vpn_service_info:
     admin_state_up: true
     description: "This is description"
     external_v4_ip: "172.32.1.11"
@@ -111,7 +111,7 @@ EXAMPLES = '''
     router: "66e3b16c-8ce5-40fb-bb49-ab6d8dc3f2aa"
     status: "PENDING_CREATE"
     subnet: "14067794-975d-461e-b502-dd40c0383d26"
-    tenant_id: "959db9b6000d4a1fa1c6fd17b6820f00"
+    project_id: "959db9b6000d4a1fa1c6fd17b6820f00"
     vpn_service: "test_vpn"
   register: vpn_services
 '''
@@ -131,7 +131,7 @@ class VpnServicesInfoModule(OTCModule):
                              "error", "pending_create",
                              "pending_update", "pending_delete"]),
         subnet=dict(type='str', required=False),
-        tenant_id=dict(type='str', required=False),
+        project_id=dict(type='str', required=False),
         vpn_service=dict(type='str', required=False)
     )
 
@@ -143,7 +143,7 @@ class VpnServicesInfoModule(OTCModule):
         router = self.params['router']
         status = self.params['status']
         subnet = self.params['subnet']
-        tenant_id = self.params['tenant_id']
+        project_id = self.params['project_id']
         vpn_service = self.params['vpn_service']
 
         data = []
@@ -153,21 +153,24 @@ class VpnServicesInfoModule(OTCModule):
             if vpn:
                 query['vpn_service'] = vpn
             else:
-                self.fail(changed=False,
+                self.exit(changed=False,
+                          vpn_services=[],
                           msg='VPN service %s not found' % vpn_service)
         if subnet:
             sub_net = self.conn.network.find_subnet(name_or_id=subnet)
             if sub_net:
                 query['subnet'] = sub_net.id
             else:
-                self.fail(changed=False,
+                self.exit(changed=False,
+                          vpn_services=[],
                           msg='Subnet %s not found' % subnet)
         if router:
             rtr = self.conn.network.find_router(name_or_id=router)
             if rtr:
                 query['router_id'] = rtr.id
             else:
-                self.fail(changed=False,
+                self.exit(changed=False,
+                          vpn_services=[],
                           msg='Router %s not found' % router)
         if admin_state_up:
             query['admin_state_up'] = admin_state_up
@@ -177,8 +180,8 @@ class VpnServicesInfoModule(OTCModule):
             query['external_v4_ip'] = external_v4_ip
         if external_v6_ip:
             query['external_v6_ip'] = external_v6_ip
-        if tenant_id:
-            query['tenant_id'] = tenant_id
+        if project_id:
+            query['project_id'] = project_id
         if status:
             query['status'] = status.upper()
 
@@ -189,7 +192,7 @@ class VpnServicesInfoModule(OTCModule):
 
         self.exit(
             changed=False,
-            vpn_services_info=data
+            vpn_services=data
         )
 
 

@@ -41,7 +41,7 @@ action_groups:
     - vpc_peering_info
     - vpc_route_info
     - vpc_route
-    - vpn_services_info
+    - vpn_service_info
     - waf_domain
     - waf_domain_info
     - lb_listener
