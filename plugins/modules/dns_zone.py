@@ -12,7 +12,7 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: dns_zones
+module: dns_zone
 short_description: Get DNS PTR Records
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.1.2"
@@ -104,7 +104,7 @@ zone:
 EXAMPLES = '''
 # Creating / Updating a Zone:
 - name: Testing
-  opentelekomcloud.cloud.dns_zones:
+  opentelekomcloud.cloud.dns_zone:
     name: "test.com."
     state: present
     zone_type: private
