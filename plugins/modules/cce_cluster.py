@@ -19,50 +19,67 @@ extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
-  - Add or Remove CCE Cluster in OTC
-    service(ELB).
+  - Add or Remove CCE Cluster in OTC.
 options:
   name:
-    description:
-      - Name that has to be given to the load balancer
+    description: Name that has to be given to the cluster.
     required: true
     type: str
   state:
-    description:
-      - Should the resource be present or absent.
+    description: Should the resource be present or absent.
     choices: [present, absent]
     default: present
     type: str
   flavor:
-    description:
-      - Cluster flavor name
-    required: true
-    choices: [cce.s1.small, cce.s1.medium]
+    description: Cluster flavor name.
     type: str
-  cluster_type:
+  type:
     description: Cluster type
-    choices: [baremetal, virtualmachine]
-    required: true
+    choices: [virtualmachine]
+    default: virtualmachine
     type: str
   description:
-    description:
-      - Cluster description
+    description: Cluster description.
     type: str
   router:
-    description:
-      - Name or ID of the Neutron router
-    required: true
+    description: Name or ID of the Neutron router.
     type: str
   network:
-    description:
-      - Name or ID of the Neutron network
-    required: true
+    description: Name or ID of the Neutron network.
     type: str
-  network_mode:
-    description: Network type
-    required: true
+  container_network_mode:
+    description: Network type.
     type: str
     choices: [overlay_l2, underlay_ipvlan, vpc-router]
+  container_network_cidr:
+    description: CIDR for the internal network.
+    type: str
+  external_ip:
+    description: External IP to be assigned to the cluster.
+    type: str
+  version:
+    description: Version of the Kubernetes.
+    type: str
+  authentication_mode:
+    description: Cluster authentication mode.
+    type: str
+    choices: [rbac, x509, authenticating_proxy]
+  authentication_proxy_ca:
+    description: CA root certificate provided in the authenticating_proxy mode.
+    type: str
+  service_ip_range:
+    description: |
+      Service CIDR block or the IP address range which the
+      kubernetes clusterIp must fall within.
+    type: str
+  kube_proxy_mode:
+    description: Service forwarding mode.
+    type: str
+    choices: [iptables, ipvs]
+  availability_zone:
+    description: Cluster AZ. Use 'multi_az' for spreading muster nodes across
+                 AZ.
+    type: str
   wait:
     description:
       - If the module should wait for the cluster to be created or deleted.
@@ -71,7 +88,7 @@ options:
   timeout:
     description:
       - The amount of time the module should wait.
-    default: 180
+    default: 1800
     type: int
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -98,6 +115,14 @@ cce_cluster:
 '''
 
 EXAMPLES = '''
+- name: Create cluster
+  opentelekomcloud.cloud.cce:
+    name: "{{ cce_cluster_name }}"
+    flavor: "{{ cce_flavor }}"
+    description: "Ansible collection test"
+    router: "{{ router_name }}"
+    network: "{{ network_name }}"
+    container_network_mode: "{{ container_network_mode }}"
 '''
 
 
@@ -106,28 +131,42 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class CceClusterModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=True),
-        state=dict(default='present', choices=['absent', 'present']),
-        cluster_type=dict(required=True, choices=['virtualmachine', 'baremetal']),
-        flavor=dict(required=True, choices=[
-            'cce.s1.small',
-            'cce.s1.medium'
-        ]),
-        description=dict(required=False),
-        router=dict(required=True),
-        network=dict(required=True),
-        network_mode=dict(required=True, choices=['overlay_l2',
-                                                  'underlay_ipvlan',
-                                                  'vpc-router']),
+        name=dict(type='str', required=True),
+        state=dict(type='str', default='present', choices=['absent', 'present']),
+        type=dict(type='str', default='virtualmachine',
+                  choices=['virtualmachine']),
+        flavor=dict(type='str'),
+        description=dict(type='str'),
+        router=dict(type='str'),
+        network=dict(type='str'),
+        container_network_mode=dict(
+            type='str',
+            choices=['overlay_l2', 'underlay_ipvlan', 'vpc-router']),
+        container_network_cidr=dict(type='str'),
+        external_ip=dict(type='str'),
+        version=dict(type='str'),
+        authentication_mode=dict(type='str', choices=['rbac', 'x509',
+                                                      'authenticating_proxy']),
+        authentication_proxy_ca=dict(type='str'),
+        service_ip_range=dict(type='str'),
+        kube_proxy_mode=dict(type='str', choices=['iptables', 'ipvs']),
+        availability_zone=dict(type='str'),
+
         wait=dict(required=False, type='bool', default=True),
-        timeout=dict(required=False, type='int', default=180)
+        timeout=dict(required=False, type='int', default=1800)
     )
     module_kwargs = dict(
+        supports_check_mode=True,
         required_if=[
             ('state', 'present',
-             ['flavor', 'cluster_type', 'router', 'network', 'network_mode'])
+             ['flavor', 'router', 'network',
+              'container_network_mode']),
+            ('authentication_mode', 'authenticating_proxy',
+             ['authentication_proxy_ca'])
         ]
     )
+
+    otce_min_version = '0.11.0'
 
     def _system_state_change(self, cluster):
         state = self.params['state']
@@ -140,79 +179,23 @@ class CceClusterModule(OTCModule):
         return False
 
     def run(self):
-        name = self.params['name']
-        cluster_type = self.params['cluster_type']
-        flavor = self.params['flavor']
-        description = self.params['description']
-        router = self.params['router']
-        network = self.params['network']
-        network_mode = self.params['network_mode']
-        timeout = self.params['timeout']
+        self.params['wait_timeout'] = self.params['timeout']
+        if self.params['type'].lower() == 'virtualmachine':
+            self.params['type'] = 'VirtualMachine'
 
         cluster = None
-        data = None
         changed = False
 
         cluster = self.conn.cce.find_cluster(
-            name_or_id=name)
+            name_or_id=self.params['name'])
 
-        if self.check_mode:
+        if self.ansible.check_mode:
             self.exit_json(changed=self._system_state_change(cluster))
 
         if self.params['state'] == 'present':
             if not cluster:
-                cloud_network = self.conn.network.find_network(network)
-                cloud_router = self.conn.network.find_router(router)
-                if not cloud_network:
-                    self.fail_json(
-                        msg='Network %s is not found' % network
-                    )
-                if not cloud_router:
-                    self.fail_json(
-                        msg='Router %s is not found' % router
-                    )
-
-                cluster_type = 'BareMetal' \
-                    if cluster_type.lower() == 'baremetal' \
-                    else 'VirtualMachine'
-
-                data = {
-                    'metadata': {'name': name},
-                    'spec': {
-                        'type': cluster_type,
-                        'version': 'v1.9.10-r2',
-                        'hostNetwork': {
-                            'vpc': cloud_router.id,
-                            'subnet': cloud_network.id
-                        },
-                        'flavor': flavor,
-                        'containerNetwork': {
-                            'mode': network_mode,
-                            'cidr': '172.16.0.0/16'
-                        }
-                    }
-                }
-                if description:
-                    data['spec']['description'] = description
-
-                cluster = self.conn.cce.create_cluster(
-                    **data
-                )
                 changed = True
-
-                if not self.params['wait']:
-                    self.exit_json(
-                        changed=changed,
-                        cce_cluster=cluster.to_dict(),
-                        id=cluster.id
-                    )
-
-                if cluster.job_id:
-                    self.conn.cce.wait_for_job(cluster.job_id,
-                                               wait=timeout)
-
-                # Refetch the cluster
-                cluster = self.conn.cce.get_cluster(cluster)
+                cluster = self.conn.create_cce_cluster(**self.params)
             else:
                 # Decide whether update is required
                 pass
@@ -227,9 +210,36 @@ class CceClusterModule(OTCModule):
             changed = False
 
             if cluster:
-                # TODO perhaps delete all nodes here first
-                self.conn.cce.delete_cluster(cluster)
+                # Delete all nodes from cluster
+                nodes = []
+                job_ids = []
+                nodes = self.conn.cce.cluster_nodes(
+                    cluster=cluster.id
+                )
+                if nodes:
+                    for node in nodes:
+                        raw = self.conn.cce.delete_cluster_node(
+                            node=node.id,
+                            cluster=cluster.id,
+                            ignore_missing=True
+                        )
+                        if raw.status.job_id:
+                            job_ids.append(raw.status.job_id)
+                    for id in job_ids:
+                        self.conn.cce.wait_for_job(
+                            job_id=id,
+                            status='success')
+                # Delete cluster
+                attrs = {
+                    'cluster': cluster.id
+                }
+                if self.params['wait']:
+                    attrs['wait'] = True
+                    if self.params['timeout']:
+                        attrs['wait_timeout'] = self.params['timeout']
+
                 changed = True
+                self.conn.delete_cce_cluster(**attrs)
 
             self.exit_json(changed=changed)
 
