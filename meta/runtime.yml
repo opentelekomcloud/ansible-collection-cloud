@@ -31,6 +31,7 @@ action_groups:
     - rds_backup
     - rds_backup_info
     - security_group_info
+    - server_group_info
     - tag
     - volume_backup
     - waf_certificate
