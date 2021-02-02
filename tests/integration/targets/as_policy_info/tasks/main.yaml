@@ -1,0 +1,29 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.as_policy_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get error message that required parameter is missing
+      opentelekomcloud.cloud.as_policy_info:
+      register: result
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - result is not success
+          - result is not changed
+          - 'result.msg == "missing required arguments: scaling_group_id"'
+
+    - name: Get error when AS group id is missing
+      opentelekomcloud.cloud.as_policy_info:
+        scaling_group_id:
+      register: result
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - result is not success
+          - result is not changed
+          - 'result.msg == "Scaling group id is missing"'
