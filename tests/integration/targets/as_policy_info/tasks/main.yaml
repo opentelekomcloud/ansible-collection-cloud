@@ -2,28 +2,129 @@
 - module_defaults:
     opentelekomcloud.cloud.as_policy_info:
       cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.as_group:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_keypair:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_network:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_subnet:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_router:
+      cloud: "{{ test_cloud }}"
   block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        as_group_name: "{{ ( prefix + '_as_group') }}"
+        key_name: "{{ ( prefix + '_key') }}"
+        network_name: "{{ ( prefix + '_network') }}"
+        subnet_name: "{{ ( prefix + '_subnet') }}"
+        router_name:  "{{ ( prefix + '_router') }}"
+
+    - name: Create keypair
+      openstack.cloud.os_keypair:
+        name: "{{ key_name }}"
+
+    - name: Create network
+      openstack.cloud.os_network:
+        name: "{{ network_name }}"
+        state: present
+      register: network
+
+    - name: Create subnet
+      openstack.cloud.os_subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ network.network.name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: subnet
+
+    - name: Create router
+      openstack.cloud.os_router:
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ network.network.name }}"
+            subnet: "{{ subnet.subnet.name }}"
+      register: router
+
+    - name: Create as group
+      opentelekomcloud.cloud.as_group:
+        scaling_group_name: "{{ as_group_name }}"
+        networks: [{'id': "{{ network.network.id }}"}]
+        router: "{{ router.router.id }}"
+      register: as_group
+
+    - name: Get list of AS Policies
+      opentelekomcloud.cloud.as_policy_info:
+        scaling_group_id: "{{ as_group.as_group.id }}"
+      register: as_policies
+
+    - name: assert result
+      assert:
+        that:
+          - as_policies is success
+          - as_policies is not changed
+          - as_policies['scaling_policies']|length == 0
+
     - name: Get error message that required parameter is missing
       opentelekomcloud.cloud.as_policy_info:
-      register: result
+      register: as_policies
       ignore_errors: yes
 
     - name: assert result
       assert:
         that:
-          - result is not success
-          - result is not changed
-          - 'result.msg == "missing required arguments: scaling_group_id"'
+          - as_policies is not success
+          - as_policies is not changed
+          - 'as_policies.msg == "missing required arguments: scaling_group_id"'
 
     - name: Get error when AS group id is missing
       opentelekomcloud.cloud.as_policy_info:
         scaling_group_id:
-      register: result
+      register: as_policies
       ignore_errors: yes
 
     - name: assert result
       assert:
         that:
-          - result is not success
-          - result is not changed
-          - 'result.msg == "Scaling group id is missing"'
+          - as_policies is not success
+          - as_policies is not changed
+          - 'as_policies.msg == "Scaling group id is missing"'
+
+  always:
+    - block:
+      # Cleanup
+      - name: Delete as group
+        opentelekomcloud.cloud.as_group:
+          scaling_group_name: "{{ as_group_name }}"
+          state: absent
+        register: dropped_as_group
+
+      - name: Delete keypair
+        openstack.cloud.os_keypair:
+            name: "{{ key_name }}"
+            state: absent
+
+      - name: Drop existing router
+        openstack.cloud.os_router:
+          name: "{{ router.router.name }}"
+          state: absent
+
+      - name: Drop existing subnet
+        openstack.cloud.os_subnet:
+          name: "{{ subnet.subnet.name }}"
+          state: absent
+
+      - name: Drop existing network
+        openstack.cloud.os_network:
+          name: "{{ network.network.name }}"
+          state: absent
+      ignore_errors: true

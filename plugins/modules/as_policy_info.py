@@ -25,17 +25,12 @@ options:
     description: Specifies the AS group ID.
     type: str
     required: true
-  scaling_policy_name:
-    description:
-      - Specifies the AS policy name.
-      - Supports fuzzy search.
+  scaling_policy:
+    description: Specifies the AS policy name or ID.
     type: str
   scaling_policy_type:
     description: Specifies the AS policy type.
     choices: [alarm, scheduled, recurrence]
-    type: str
-  scaling_policy_id:
-    description: Specifies the AS policy ID.
     type: str
   start_number:
     description: Specifies the start line number.
@@ -153,8 +148,16 @@ EXAMPLES = '''
 # Get Auto Scaling Policies
 - opentelekomcloud.cloud.as_policy_info:
     scaling_group_id: "89af599d-a8ab-4c29-a063-0b719ed77e8e"
-    scaling_policy_name: "test_name"
-    scaling_policy_id: "c3e1c13e-a5e5-428e-a8bc-6c5fc0f4b3f5"
+    scaling_policy: "test_name"
+    scaling_policy_type: "alarm"
+    start_number: 2
+    limit: 20
+  register: as_policies
+
+# Get Auto Scaling Policies
+- opentelekomcloud.cloud.as_policy_info:
+    scaling_group_id: "89af599d-a8ab-4c29-a063-0b719ed77e8e"
+    scaling_policy: "c3e1c13e-a5e5-428e-a8bc-6c5fc0f4b3f5"
     scaling_policy_type: "alarm"
     start_number: 2
     limit: 20
@@ -167,20 +170,18 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class ASPolicyInfoModule(OTCModule):
     argument_spec = dict(
         scaling_group_id=dict(type='str', required=True),
-        scaling_policy_name=dict(type='str', required=False),
+        scaling_policy=dict(type='str', required=False),
         scaling_policy_type=dict(type='str',
                                  choices=["alarm", "scheduled", "recurrence"],
                                  required=False),
-        scaling_policy_id=dict(type='str', required=False),
         start_number=dict(type='int', required=False, default=0),
         limit=dict(type='int', required=False, default=20)
     )
 
     def run(self):
         as_group_id = self.params['scaling_group_id']
-        as_policy_name = self.params['scaling_policy_name']
+        as_policy = self.params['scaling_policy']
         as_policy_type = self.params['scaling_policy_type']
-        as_policy_id = self.params['scaling_policy_id']
         start_number = self.params['start_number']
         limit = self.params['limit']
 
@@ -192,9 +193,9 @@ class ASPolicyInfoModule(OTCModule):
             )
             if group_id:
                 query['group'] = group_id.id
-                if as_policy_name:
+                if as_policy:
                     policy = self.conn.auto_scaling.find_policy(
-                        name_or_id=as_policy_name,
+                        name_or_id=as_policy,
                         group=group_id.id
                     )
                     if policy:
@@ -203,20 +204,7 @@ class ASPolicyInfoModule(OTCModule):
                         self.exit(
                             changed=False,
                             scaling_policies=[],
-                            msg='Policy with name %s not found' % as_policy_name
-                        )
-                if as_policy_id:
-                    policy = self.conn.auto_scaling.find_policy(
-                        name_or_id=as_policy_id,
-                        group=group_id.id
-                    )
-                    if policy:
-                        query['name'] = policy.name
-                    else:
-                        self.exit(
-                            changed=False,
-                            scaling_policies=[],
-                            msg='Policy with id %s not found' % as_policy_id
+                            msg='Policy with %s not found' % as_policy
                         )
                 if as_policy_type:
                     query['type'] = as_policy_type.upper()
