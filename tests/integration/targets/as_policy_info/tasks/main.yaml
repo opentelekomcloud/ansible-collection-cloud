@@ -62,9 +62,21 @@
         router: "{{ router.router.id }}"
       register: as_group
 
-    - name: Get list of AS Policies
+    - name: Get list of AS Policies using as group id
       opentelekomcloud.cloud.as_policy_info:
-        scaling_group_id: "{{ as_group.as_group.id }}"
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_policies
+
+    - name: assert result
+      assert:
+        that:
+          - as_policies is success
+          - as_policies is not changed
+          - as_policies['scaling_policies']|length == 0
+
+    - name: Get list of AS Policies using as group name
+      opentelekomcloud.cloud.as_policy_info:
+        scaling_group: "{{ as_group.as_group.name }}"
       register: as_policies
 
     - name: assert result
@@ -84,11 +96,11 @@
         that:
           - as_policies is not success
           - as_policies is not changed
-          - 'as_policies.msg == "missing required arguments: scaling_group_id"'
+          - 'as_policies.msg == "missing required arguments: scaling_group"'
 
     - name: Get error when AS group id is missing
       opentelekomcloud.cloud.as_policy_info:
-        scaling_group_id:
+        scaling_group:
       register: as_policies
       ignore_errors: yes
 
@@ -97,7 +109,7 @@
         that:
           - as_policies is not success
           - as_policies is not changed
-          - 'as_policies.msg == "Scaling group id is missing"'
+          - 'as_policies.msg == "Scaling group is missing"'
 
   always:
     - block:

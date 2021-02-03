@@ -21,8 +21,8 @@ author: "Irina Pereiaslavskaia (@irina-pereiaslavskaia)"
 description:
   - This interface is used to query AS policies based on search criteria.
 options:
-  scaling_group_id:
-    description: Specifies the AS group ID.
+  scaling_group:
+    description: Specifies the AS group name or ID.
     type: str
     required: true
   scaling_policy:
@@ -142,12 +142,12 @@ as_policies:
 EXAMPLES = '''
 # Get Auto Scaling Policies
 - opentelekomcloud.cloud.as_policy_info:
-    scaling_group_id: "89af599d-a8ab-4c29-a063-0b719ed77e8e"
+    scaling_group: "89af599d-a8ab-4c29-a063-0b719ed77e8e"
   register: as_policies
 
 # Get Auto Scaling Policies
 - opentelekomcloud.cloud.as_policy_info:
-    scaling_group_id: "89af599d-a8ab-4c29-a063-0b719ed77e8e"
+    scaling_group: "test_group"
     scaling_policy: "test_name"
     scaling_policy_type: "alarm"
     start_number: 2
@@ -156,7 +156,7 @@ EXAMPLES = '''
 
 # Get Auto Scaling Policies
 - opentelekomcloud.cloud.as_policy_info:
-    scaling_group_id: "89af599d-a8ab-4c29-a063-0b719ed77e8e"
+    scaling_group: "89af599d-a8ab-4c29-a063-0b719ed77e8e"
     scaling_policy: "c3e1c13e-a5e5-428e-a8bc-6c5fc0f4b3f5"
     scaling_policy_type: "alarm"
     start_number: 2
@@ -169,7 +169,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class ASPolicyInfoModule(OTCModule):
     argument_spec = dict(
-        scaling_group_id=dict(type='str', required=True),
+        scaling_group=dict(type='str', required=True),
         scaling_policy=dict(type='str', required=False),
         scaling_policy_type=dict(type='str',
                                  choices=["alarm", "scheduled", "recurrence"],
@@ -179,7 +179,7 @@ class ASPolicyInfoModule(OTCModule):
     )
 
     def run(self):
-        as_group_id = self.params['scaling_group_id']
+        as_group = self.params['scaling_group']
         as_policy = self.params['scaling_policy']
         as_policy_type = self.params['scaling_policy_type']
         start_number = self.params['start_number']
@@ -187,16 +187,16 @@ class ASPolicyInfoModule(OTCModule):
 
         data = []
         query = {}
-        if as_group_id:
-            group_id = self.conn.auto_scaling.find_group(
-                name_or_id=as_group_id
+        if as_group:
+            group = self.conn.auto_scaling.find_group(
+                name_or_id=as_group
             )
-            if group_id:
-                query['group'] = group_id.id
+            if group:
+                query['group'] = group.id
                 if as_policy:
                     policy = self.conn.auto_scaling.find_policy(
                         name_or_id=as_policy,
-                        group=group_id.id
+                        group=group.id
                     )
                     if policy:
                         query['name'] = policy.name
@@ -220,12 +220,12 @@ class ASPolicyInfoModule(OTCModule):
             else:
                 self.fail(
                     changed=False,
-                    msg='Group with id %s not found' % group_id
+                    msg='Group %s not found' % group
                 )
         else:
             self.fail(
                 changed=False,
-                msg='Scaling group id is missing'
+                msg='Scaling group is missing'
             )
 
         for raw in self.conn.auto_scaling.policies(**query):
