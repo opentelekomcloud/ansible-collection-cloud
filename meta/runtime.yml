@@ -6,6 +6,7 @@ action_groups:
     - as_config_info
     - as_group
     - as_policy_info
+    - availability_zone_info
     - cce_cluster
     - cce_cluster_cert_info
     - cce_cluster_info
