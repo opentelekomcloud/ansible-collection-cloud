@@ -1,0 +1,20 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.availability_zone_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get AZ info (check mode)
+      opentelekomcloud.cloud.availability_zone_info:
+      check_mode: yes
+      register: az
+
+    - name: Get AZ info
+      opentelekomcloud.cloud.availability_zone_info:
+      register: az
+
+    - name: assert result
+      assert:
+        that:
+          - az is success
+          - az is not changed
+          - az.availability_zones is defined
