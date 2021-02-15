@@ -129,6 +129,9 @@ class DNSRecordsetModule(OTCModule):
         type=dict(required=False),
         zone_id=dict(required=True)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         changed = False
@@ -153,6 +156,8 @@ class DNSRecordsetModule(OTCModule):
 
         # recordset deletion
         if self.params['state'] == 'absent':
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
             changed = False
             if rs:
                 self.conn.dns.delete_recordset(
@@ -166,6 +171,8 @@ class DNSRecordsetModule(OTCModule):
 
             # Modify recordset
             if rs:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
                 if self.params['records']:
                     for item in self.params['records']:
                         if item not in rs.records:
@@ -186,6 +193,8 @@ class DNSRecordsetModule(OTCModule):
 
             # create recordset
             if not rs:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
                 attrs['name'] = self.params['recordset_name']
                 if self.params['description']:
                     attrs['description'] = self.params['description']

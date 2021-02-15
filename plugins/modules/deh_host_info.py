@@ -177,6 +177,9 @@ class DehHostInfoModule(OTCModule):
                                              "released"]),
         tags=dict(required=False, type='list', elements='str')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

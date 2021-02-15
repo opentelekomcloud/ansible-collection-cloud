@@ -97,6 +97,9 @@ class DNSFloatingIpModule(OTCModule):
         ttl=dict(required=False, type='int'),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         changed = False
@@ -114,6 +117,8 @@ class DNSFloatingIpModule(OTCModule):
         if self.params['state'] == 'absent':
             changed = False
             # Set eu-de: in front of the id to comly with the API. Nothing else as eu-de is available currently
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
             self.conn.dns.unset_floating_ip(floating_ip=('eu-de:' + fl.id))
             changed = True
 
@@ -135,6 +140,8 @@ class DNSFloatingIpModule(OTCModule):
             try:
                 flip = self.conn.dns.get_floating_ip(floating_ip=('eu-de:' + fl.id))
             except Exception:
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
                 output = self.conn.dns.set_floating_ip(floating_ip=('eu-de:' + fl.id), **attrs)
                 self.exit(
                     changed=True,
@@ -146,6 +153,8 @@ class DNSFloatingIpModule(OTCModule):
                     changed = True
                 if self.params['ttl'] != flip.ttl:
                     changed = True
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
                 output = self.conn.dns.update_floating_ip(floating_ip=('eu-de:' + fl.id), **attrs)
                 self.exit(
                     changed=changed,

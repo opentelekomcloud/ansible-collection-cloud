@@ -69,6 +69,7 @@ class AutoScalingConfigInfoModule(OTCModule):
     module_kwargs = dict(
         supports_check_mode=True
     )
+
     def run(self):
         name_filter = self.params['name']
         image_id_filter = self.params['image_id']

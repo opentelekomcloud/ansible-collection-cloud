@@ -146,6 +146,9 @@ class DehHostModule(OTCModule):
         tags=dict(required=False, type='list', elements='dict'),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def _system_state_change(self, obj):
         state = self.params['state']
