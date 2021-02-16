@@ -116,6 +116,9 @@ class LoadBalancerMemberInfoModule(OTCModule):
         admin_state_up=dict(required=False, type='bool'),
         weight=dict(required=False, type='int')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         name_filter = self.params['name']
