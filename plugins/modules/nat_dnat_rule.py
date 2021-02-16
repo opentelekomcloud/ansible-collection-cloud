@@ -159,13 +159,17 @@ class NatDnatModule(OTCModule):
         project_id=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         changed = False
 
         if self.params['state'] == 'absent':
             changed = False
-
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
             if self.params['id']:
                 dnat_rule = self.conn.nat.get_dnat_rule(
                     dnat_rule=self.params['id']
@@ -189,7 +193,8 @@ class NatDnatModule(OTCModule):
 
         elif self.params['state'] == 'present':
             attrs = {}
-
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
             if self.params['admin_state_up']:
                 attrs['admin_state_up'] = self.params['admin_state_up']
             if self.params['floating_ip']:

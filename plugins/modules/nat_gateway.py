@@ -135,6 +135,9 @@ class NATGatewayModule(OTCModule):
         spec=dict(required=False, default='1', choices=["1", "2", "3", "4"]),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def _system_state_change(self, obj):
         state = self.params['state']
