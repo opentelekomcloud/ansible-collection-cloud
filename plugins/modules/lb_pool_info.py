@@ -92,7 +92,6 @@ class LoadBalancerPoolInfoModule(OTCModule):
         supports_check_mode=True
     )
 
-
     def run(self):
         data = []
 
