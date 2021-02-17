@@ -37,7 +37,7 @@ options:
       - Specifies the AS policy type
     choices: [alarm, scheduled, recurrence]
     type: str
-  alarm_id:
+  alarm:
     description:
       - Specifies the periodic or scheduled AS policy.
       - This parameter is mandatory when scaling_policy_type is set to ALARM.
@@ -160,7 +160,7 @@ EXAMPLES = '''
     scaling_group: "as-group-test"
     scaling_policy: "collection-test"
     scaling_policy_type: "alarm"
-    alarm_id: "as-alarm-test"
+    alarm: "as-alarm-test"
   register: result
 
 '''
@@ -175,7 +175,7 @@ class ASPolicyModule(OTCModule):
         scaling_group=dict(type='str', required=True),
         scaling_policy_type=dict(type='str', required=False,
                                  choices=['alarm', 'scheduled', 'recurrence']),
-        alarm_id=dict(type='str', required=False),
+        alarm=dict(type='str', required=False),
         scheduled_policy=dict(type='dict', required=False, options=dict(
             launch_time = dict(type = 'str', required = False),
             recurrence_type = dict(type = 'str', required = False,
@@ -192,7 +192,7 @@ class ASPolicyModule(OTCModule):
             instance_percentage = dict(type = 'int', required = False)
         )),
         cool_down_time=dict(type='int', required=False, default=300),
-        state=dict(type='str', required=False,choices=['present', 'absent'])
+        state=dict(type='str', required=False,choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -200,18 +200,110 @@ class ASPolicyModule(OTCModule):
 
     otce_min_version = '0.7.1'
 
-    def _get_attrs_for_policy_update(self,policy, filters=None):
-        pass
+    def _set_attrs_for_alarm_policy_type(self, changed, attrs, alarm):
+        alarm_id = self.conn.ces.find_alarm(name_or_id=alarm)
+        if alarm_id:
+            attrs['alarm_id'] = alarm_id.id
+            return attrs
+        else:
+            self.fail(changed=changed, msg='Alarm ID %s not found' % alarm)
 
-    def _needs_update(self,policy, filters):
-        pass
+    def _set_attrs_for_scheduled_policy_type(self, changed, attrs, scheduled_policy):
 
-    def _system_state_change(self, obj, filters=None):
+        launch_time = scheduled_policy['launch_time']
+        recurrence_type = scheduled_policy['recurrence_type']
+        recurrence_value = scheduled_policy['recurrence_value']
+        start_time = scheduled_policy['start_time']
+        end_time = scheduled_policy['end_time']
+
+        if launch_time:
+            attrs['scheduled_policy']['launch_time'] = launch_time
+            if recurrence_type:
+                attrs['scheduled_policy']['recurrence_type'] = recurrence_type.title()
+            if recurrence_value:
+                attrs['scheduled_policy']['recurrence_value'] = recurrence_value
+            if start_time:
+                attrs['scheduled_policy']['start_time'] = start_time
+            if end_time:
+                attrs['scheduled_policy']['end_time'] = end_time
+            return attrs
+        else:
+            self.fail(changed=changed, msg='Launch time is required')
+
+    def _set_attrs_for_recurrence_policy_type(self, changed, attrs, scheduled_policy):
+
+        launch_time = scheduled_policy['launch_time']
+        recurrence_type = scheduled_policy['recurrence_type']
+        recurrence_value = scheduled_policy['recurrence_value']
+        start_time = scheduled_policy['start_time']
+        end_time = scheduled_policy['end_time']
+
+        if launch_time:
+            attrs['scheduled_policy']['launch_time'] = launch_time
+            if recurrence_type:
+                attrs['scheduled_policy']['recurrence_type'] = recurrence_type.title()
+                if recurrence_value:
+                    attrs['scheduled_policy']['recurrence_value'] = recurrence_value
+                    if start_time:
+                        attrs['scheduled_policy']['start_time'] = start_time
+                    if end_time:
+                        attrs['scheduled_policy']['end_time'] = end_time
+                        return attrs
+                    else:
+                        self.fail(changed=changed, msg='End time is required')
+                else:
+                    self.fail(changed=changed, msg='Recurrence value is required')
+            else:
+                self.fail(changed=changed, msg='Recurrence type is required')
+        else:
+            self.fail(changed=changed, msg ='Launch time is required')
+
+    def _set_attrs_for_scaling_policy_action(self, attrs, scaling_policy_action):
+
+        operation = scaling_policy_action['operation']
+        instance_number = scaling_policy_action['instance_number']
+        instance_percentage = scaling_policy_action['instance_percentage']
+
+        if operation:
+            attrs['scaling_policy_action']['operation'] = operation.upper()
+        if instance_number:
+            attrs['scaling_policy_action']['instance_number'] = instance_number
+        if instance_percentage:
+            attrs['scaling_policy_action']['instance_percentage'] = instance_percentage
+        return attrs
+
+    def _needs_update(self,policy):
+
+        as_policy = self.params['scaling_policy']
+        as_policy_type = self.params['scaling_policy_type']
+        alarm = self.params['alarm']
+        scheduled_policy = self.params['scheduled_policy']
+        scaling_policy_action = self.params['scaling_policy_action']
+        cool_down_time = self.params['cool_down_time']
+
+        if as_policy and policy.name != as_policy:
+            return True
+        if as_policy_type and policy.type != as_policy_type:
+            return True
+        if alarm:
+            alarm_id = self.conn.ces.find_alarm(name_or_id=alarm)
+            if alarm_id and policy.alarm_id != alarm_id.id:
+                return True
+        if scheduled_policy and policy.scheduled_policy != scheduled_policy:
+            return True
+        if scaling_policy_action and policy.scaling_policy_action != scaling_policy_action:
+            return True
+        if cool_down_time and policy.cool_down_time != cool_down_time:
+            return True
+        return False
+
+    def _system_state_change(self, obj):
+
         state = self.params['state']
         if state == 'present':
             if not obj:
                 return True
-            return self._needs_update(obj, filters)
+            return self._needs_update(obj)
         elif state == 'absent' and obj:
             return True
         return False
@@ -221,17 +313,9 @@ class ASPolicyModule(OTCModule):
         as_policy = self.params['scaling_policy']
         as_group = self.params['scaling_group']
         as_policy_type = self.params['scaling_policy_type']
-        alarm_id = self.params['alarm_id']
+        alarm = self.params['alarm']
         scheduled_policy = self.params['scheduled_policy']
-        launch_time = scheduled_policy['launch_time']
-        recurrence_type = scheduled_policy['recurrence_type']
-        recurrence_value = scheduled_policy['recurrence_value']
-        start_time = scheduled_policy['start_time']
-        end_time = scheduled_policy['end_time']
         scaling_policy_action = self.params['scaling_policy_action']
-        operation = scaling_policy_action['operation']
-        instance_number = scaling_policy_action['instance_number']
-        instance_percentage = scaling_policy_action['instance_percentage']
         cool_down_time = self.params['cool_down_time']
         state = self.params['state']
 
@@ -244,142 +328,102 @@ class ASPolicyModule(OTCModule):
                 name_or_id=as_group
             )
             if group:
+                attrs['scaling_group_id'] = group.id
                 if as_policy:
                     policy = self.conn.auto_scaling.find_policy(
                         name_or_id=as_policy,
                         group=group.id
                     )
                     if policy:
+
+                        if self.ansible.check_mode:
+                            self.exit(changed = self._system_state_change(policy))
+
                         if state == 'present':
-                            #update
-                            #collect attrs for updating
                             if policy.name != as_policy and policy.id != as_policy:
                                 attrs['name'] = as_policy
                             if as_policy_type and policy.type != as_policy_type.upper():
                                 attrs['type'] = as_policy_type.upper()
-                            if as_policy_type == 'alarm':
-                                if alarm_id:
-                                    attrs['alarm_id'] = alarm_id
-                                elif policy.alarm_id is None:
-                                    self.fail(changed=changed, msg='Alarm id is required')
-                            elif as_policy_type == 'scheduled' or as_policy_type == 'recurrence':
-                                if launch_time:
-                                    attrs['scheduled_policy']['launch_time'] = launch_time
-                                elif policy.scheduled_policy.launch_time is None:
-                                    self.fail(changed=changed, msg='Launch time is required')
-                            elif as_policy_type == 'scheduled':
-                                if recurrence_type and policy.scheduled_policy.recurrence_type != recurrence_type.title():
-                                    attrs['scheduled_policy']['recurrence_type'] = recurrence_type.title()
-                                if recurrence_value and policy.scheduled_policy.recurrence_value != recurrence_value:
-                                    attrs['scheduled_policy']['recurrence_value'] = recurrence_value
-                                if start_time and policy.scheduled_policy.start_time != start_time:
-                                    attrs['scheduled_policy']['start_time'] = start_time
-                                if end_time and policy.scheduled_policy.end_time != end_time:
-                                    attrs['scheduled_policy']['end_time'] = end_time
-                            elif as_policy_type == 'recurrence':
-                                if recurrence_type and policy.scheduled_policy.recurrence_type != recurrence_type.title():
-                                    attrs['scheduled_policy']['recurrence_type'] = recurrence_type.title()
-                                elif policy.scheduled_policy.recurrence_type is None:
-                                    self.fail(changed=changed, msg='Recurrence type is required')
-                                if recurrence_value and policy.scheduled_policy.recurrence_value != recurrence_value:
-                                    attrs['scheduled_policy']['recurrence_value'] = recurrence_value
-                                elif policy.scheduled_policy.recurrence_value is None:
-                                    self.fail(changed=changed, msg='Recurrence value is required')
-                                if start_time and policy.scheduled_policy.start_time != start_time:
-                                    attrs['scheduled_policy']['start_time'] = start_time
-                                if end_time and policy.scheduled_policy.end_time != end_time:
-                                    attrs['scheduled_policy']['end_time'] = end_time
-                                elif policy.scheduled_policy.end_time is None:
-                                    self.fail(changed=changed, msg='End time is required')
-                            if operation and policy.scaling_policy_action.operation != operation.upper():
-                                attrs['scaling_policy_action']['operation'] = operation.upper()
-                            if instance_number and policy.scaling_policy_action.instance_number != instance_number:
-                                attrs['scaling_policy_action']['instance_number'] = instance_number
-                            if instance_percentage and policy.scaling_policy_action.instance_percentage != instance_percentage:
-                                attrs['scaling_policy_action']['instance_percentage'] = instance_percentage
+                                if as_policy_type == 'alarm':
+                                    if alarm:
+                                        attrs = self._set_attrs_for_alarm_policy_type(changed, attrs, alarm)
+                                    elif policy.alarm_id is None:
+                                        self.fail(changed=changed, msg='Alarm ID is required')
+                                elif as_policy_type == 'scheduled':
+                                    if scheduled_policy and policy.scheduled_policy != scheduled_policy:
+                                        attrs = self._set_attrs_for_scheduled_policy_type(changed, attrs, scheduled_policy)
+                                    elif policy.scheduled_policy is None:
+                                        self.fail(changed=changed, msg='Scheduled policy is required')
+                                elif as_policy_type == 'recurrence':
+                                    if scheduled_policy and policy.scheduled_policy != scheduled_policy:
+                                        attrs = self._set_attrs_for_recurrence_policy_type(changed, attrs, scheduled_policy)
+                                    elif policy.scheduled_policy is None:
+                                        self.fail(changed=changed, msg='Scheduled policy is required')
+                            if scaling_policy_action and policy.scaling_policy_action != scaling_policy_action:
+                                attrs = self._set_attrs_for_scaling_policy_action()
                             if cool_down_time and policy.cool_down_time != cool_down_time:
                                 attrs['cool_down_time'] = cool_down_time
                             #update policy
                             policy = self.conn.auto_scaling.update_policy(policy=policy, **attrs)
                             changed = True
-                            self.exit(changed=changed, policy=policy.to_dict(),
-                                      id=policy.id, msg='Scaling policy %s was created' % as_policy)
+                            self.exit(changed=changed, policy=policy, msg='Scaling policy %s was created' % as_policy)
 
                         elif state == 'absent':
                             #delete policy
                             self.conn.auto_scaling.delete_policy(policy=policy)
                             changed = True
                             self.exit(changed=changed, msg='Scaling policy %s was deleted' % as_policy)
+
                     else:
                         if state == 'present':
                             #create policy
-                            #collect attrs for updating
                             attrs['name'] = as_policy
                             if as_policy_type:
                                 attrs['type'] = as_policy_type.upper()
+                                if as_policy_type == 'alarm':
+                                    if alarm:
+                                        attrs = self._set_attrs_for_alarm_policy_type(changed, attrs, alarm)
+                                    else:
+                                        self.fail(changed = changed, msg = 'Alarm id is required')
+                                elif as_policy_type == 'scheduled':
+                                    if scheduled_policy:
+                                        attrs = self._set_attrs_for_scheduled_policy_type(changed, attrs, scheduled_policy)
+                                    else:
+                                        self.fail(changed = changed, msg = 'Scheduled policy is required')
+                                elif as_policy_type == 'recurrence':
+                                    if scheduled_policy:
+                                        attrs = self._set_attrs_for_scheduled_policy_type(changed, attrs, scheduled_policy)
+                                    else:
+                                        self.fail(changed = changed, msg = 'Scheduled policy is required')
                             else:
                                 self.fail(changed=changed, msg='Scaling policy type is required')
-                            if as_policy_type == 'alarm':
-                                if alarm_id:
-                                    attrs['alarm_id'] = alarm_id
-                                elif policy.alarm_id is None:
-                                    self.fail(changed=changed, msg='Alarm id is required')
-                            if as_policy_type == 'scheduled' or as_policy_type == 'recurrence':
-                                if launch_time:
-                                    attrs['scheduled_policy']['launch_time'] = launch_time
-                                else:
-                                    self.fail(changed=changed, msg='Launch time is required')
-                            if as_policy_type == 'scheduled':
-                                if recurrence_type:
-                                    attrs['scheduled_policy']['recurrence_type'] = recurrence_type.title()
-                                if recurrence_value:
-                                    attrs['scheduled_policy']['recurrence_value'] = recurrence_value
-                                if start_time:
-                                    attrs['scheduled_policy']['start_time'] = start_time
-                                if end_time:
-                                    attrs['scheduled_policy']['end_time'] = end_time
-                            if as_policy_type == 'recurrence':
-                                if recurrence_type:
-                                    attrs['scheduled_policy']['recurrence_type'] = recurrence_type.title()
-                                else:
-                                    self.fail(changed=changed, msg='Recurrence type is required')
-                                if recurrence_value:
-                                    attrs['scheduled_policy']['recurrence_value'] = recurrence_value
-                                else:
-                                    self.fail(changed=changed, msg='Recurrence value is required')
-                                if start_time:
-                                    attrs['scheduled_policy']['start_time'] = start_time
-                                if end_time:
-                                    attrs['scheduled_policy']['end_time'] = end_time
-                                else:
-                                    self.fail(changed=changed, msg='End time is required')
-                            if operation:
-                                attrs['scaling_policy_action']['operation'] = operation.upper()
-                            if instance_number:
-                                attrs['scaling_policy_action']['instance_number'] = instance_number
-                            if instance_percentage:
-                                attrs['scaling_policy_action']['instance_percentage'] = instance_percentage
+                            if scaling_policy_action:
+                                attrs = self._set_attrs_for_scaling_policy_action(attrs, scaling_policy_action)
                             if cool_down_time:
                                 attrs['cool_down_time'] = cool_down_time
+
                             policy = self.conn.auto_scaling.create_policy(**attrs)
                             changed = True
-                            self.exit(changed=changed, policy=policy.to_dict(),
-                                      id=policy.id, msg='Scaling policy %s was created' % policy)
+                            self.exit(changed=changed, policy=policy, msg='Scaling policy %s was created' % policy.name)
+
                         else:
                             self.fail(
                                 changed=changed,
                                 msg='Policy %s not found' % policy
                             )
+
                 else:
                     self.fail(
                         changed=changed,
                         msg='Scaling policy is missing'
                     )
+
             else:
                 self.fail(
                     changed=changed,
                     msg='AS group %s not found' % group
                 )
+
         else:
             self.fail(
                 changed=changed,
