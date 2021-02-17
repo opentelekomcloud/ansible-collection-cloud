@@ -26,7 +26,7 @@ options:
     type: str
   service:
     description:
-      - Service name to list supported avaiability zones for.
+      - Service name to list supported availability zones for.
       - Currently only compute is supported
     type: str
     default: compute
