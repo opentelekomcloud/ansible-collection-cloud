@@ -1,10 +1,10 @@
 ---
 # author: @tischrei
 - module_defaults:
-    # openstack.cloud.deh_host:
-    #   cloud: "{{ test_cloud }}"
-    # openstack.cloud.deh_host_info:
-    #   cloud: "{{ test_cloud }}"
+    openstack.cloud.deh_host:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.deh_host_info:
+      cloud: "{{ test_cloud }}"
 
   block:
     - name: Set random prefix
