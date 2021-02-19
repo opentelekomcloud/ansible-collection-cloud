@@ -48,7 +48,7 @@ options:
     type: int
   loadbalancer:
     description:
-      - Specifies the associated load balancer.
+      - Specifies the associated load balancer ID or Name.
     type: str
   connection_limit:
     description:
@@ -151,7 +151,7 @@ EXAMPLES = '''
     state: present
     protocol_port: 80
     protocol: TCP
-    loadbalancer_id: "0416b6f1-877f-4a51-987e-978b3f084253"
+    loadbalancer: "0416b6f1-877f-4a51-987e-978b3f084253"
     name: listener-test
     admin_state_up: true
 
@@ -161,7 +161,7 @@ EXAMPLES = '''
     protocol_port: 443
     protocol: terminated_https
     default_tls_container_ref: "02dcd56799e045bf8b131533cc911dd6"
-    loadbalancer_id: "0416b6f1-877f-4a51-987e-978b3f084253"
+    loadbalancer: "0416b6f1-877f-4a51-987e-978b3f084253"
     name: listener-test
     admin_state_up: true
 
@@ -171,7 +171,7 @@ EXAMPLES = '''
     protocol_port: 443
     protocol: terminated_https
     default_tls_container_ref: "02dcd56799e045bf8b131533cc911dd6"
-    loadbalancer_id: "0416b6f1-877f-4a51-987e-978b3f084253"
+    loadbalancer: "0416b6f1-877f-4a51-987e-978b3f084253"
     name: listener-test
     admin_state_up: true
     sni_container_refs: ["e15d1b5000474adca383c3cd9ddc06d4", "5882325fd6dd4b95a88d33238d293a0f"]
@@ -277,11 +277,11 @@ class LoadBalancerListenerModule(OTCModule):
                     mattrs['admin_state_up'] = admin_state_up_filter
                 if 'default_pool_id' in attrs and lb_listener.default_pool_id != attrs['default_pool_id']:
                     mattrs['default_pool_id'] = attrs['default_pool_id']
-                if default_tls_container_ref_filter and\
+                if default_tls_container_ref_filter and \
                         lb_listener.default_tls_container_ref != default_tls_container_ref_filter:
                     mattrs['default_tls_container_ref'] = default_tls_container_ref_filter
-                if sni_container_refs_filter and\
-                        hash(lb_listener.sni_container_refs) != hash(sni_container_refs_filter):
+                if sni_container_refs_filter and \
+                        lb_listener.sni_container_refs != sni_container_refs_filter:
                     mattrs['sni_container_refs'] = sni_container_refs_filter
                 if mattrs:
                     changed = True
