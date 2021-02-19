@@ -97,7 +97,6 @@ members:
 EXAMPLES = '''
 # Get a lb member info.
 - lb_member_info:
-    state: present
     name: member-test
   register: lb_mmbr_info
 '''

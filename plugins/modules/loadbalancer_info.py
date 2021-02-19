@@ -94,7 +94,6 @@ EXAMPLES = '''
       username: admin
       password: passme
       project_name: admin
-    state: present
     name: my_lb
   register: lb_info
 '''

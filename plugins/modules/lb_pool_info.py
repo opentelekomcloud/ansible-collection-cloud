@@ -76,7 +76,6 @@ lb_pool_info:
 EXAMPLES = '''
 # Get a lb pool info.
 - lb_pool_info:
-    state: present
     name: pool-test
   register: lb_pool_info
 '''
