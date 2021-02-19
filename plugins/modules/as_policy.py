@@ -212,7 +212,36 @@ class ASPolicyModule(OTCModule):
                 msg='Alarm ID %s not found' % alarm
             )
 
-    def _attrs_for_scheduled_or_recurrence_policy_type(
+    def _attrs_for_scheduled_policy_type(self, changed, attrs, scheduled_policy):
+
+        launch_time = scheduled_policy['launch_time']
+        recurrence_type = scheduled_policy['recurrence_type']
+        recurrence_value = scheduled_policy['recurrence_value']
+        start_time = scheduled_policy['start_time']
+        end_time = scheduled_policy['end_time']
+
+        sc_policy = {}
+
+        if launch_time:
+            sc_policy['launch_time'] = launch_time
+            if recurrence_type:
+                sc_policy['recurrence_type'] = recurrence_type.title()
+            if recurrence_value:
+                sc_policy['recurrence_value'] = recurrence_value
+            if start_time:
+                sc_policy['start_time'] = start_time
+            if end_time:
+                sc_policy['end_time'] = end_time
+            attrs['scheduled_policy'] = sc_policy
+            return attrs
+        else:
+            self.fail(
+                changed=changed,
+                msg='Launch time is required'
+            )
+
+
+    def _attrs_for_recurrence_policy_type(
             self, changed, attrs, scheduled_policy
     ):
 
@@ -222,18 +251,19 @@ class ASPolicyModule(OTCModule):
         start_time = scheduled_policy['start_time']
         end_time = scheduled_policy['end_time']
 
+        sc_policy = {}
+
         if launch_time:
-            attrs['scheduled_policy']['launch_time'] = launch_time
+            sc_policy['launch_time'] = launch_time
             if recurrence_type:
-                attrs['scheduled_policy']['recurrence_type'] = \
-                    recurrence_type.title()
+                sc_policy['recurrence_type'] = recurrence_type.title()
                 if recurrence_value:
-                    attrs['scheduled_policy']['recurrence_value'] = \
-                        recurrence_value
+                    sc_policy['recurrence_value'] = recurrence_value
                     if start_time:
-                        attrs['scheduled_policy']['start_time'] = start_time
+                        sc_policy['start_time'] = start_time
                     if end_time:
-                        attrs['scheduled_policy']['end_time'] = end_time
+                        sc_policy['end_time'] = end_time
+                        attrs['scheduled_policy'] = sc_policy
                         return attrs
                     else:
                         self.fail(
@@ -262,14 +292,16 @@ class ASPolicyModule(OTCModule):
         instance_number = scaling_policy_action['instance_number']
         instance_percentage = scaling_policy_action['instance_percentage']
 
+        sc_pol_act = {}
+
         if operation:
-            attrs['scaling_policy_action']['operation'] = operation.upper()
+            sc_pol_act['operation'] = operation.upper()
         if instance_number:
-            attrs['scaling_policy_action']['instance_number'] = \
-                instance_number
+            sc_pol_act['instance_number'] = instance_number
         if instance_percentage:
-            attrs['scaling_policy_action']['instance_percentage'] = \
-                instance_percentage
+            sc_pol_act['instance_percentage'] = instance_percentage
+        attrs['scaling_policy_action'] = sc_pol_act
+
         return attrs
 
     def _needs_update(self, policy):
@@ -359,13 +391,25 @@ class ASPolicyModule(OTCModule):
                                             changed=changed,
                                             msg='Alarm ID is required'
                                         )
-                                elif (as_policy_type == 'recurrence' or
-                                      as_policy_type == 'scheduled'):
+                                elif as_policy_type == 'scheduled':
                                     if (scheduled_policy and
                                             policy.scheduled_policy !=
                                             scheduled_policy):
                                         attrs = \
-                                            self._attrs_for_scheduled_or_recurrence_policy_type(
+                                            self._attrs_for_scheduled_policy_type(
+                                                changed, attrs, scheduled_policy
+                                            )
+                                    elif policy.scheduled_policy is None:
+                                        self.fail(
+                                            changed=changed,
+                                            msg='Scheduled policy is required'
+                                        )
+                                elif as_policy_type == 'recurrence':
+                                    if (scheduled_policy and
+                                            policy.scheduled_policy !=
+                                            scheduled_policy):
+                                        attrs = \
+                                            self._attrs_for_recurrence_policy_type(
                                                 changed, attrs, scheduled_policy
                                             )
                                     elif policy.scheduled_policy is None:
@@ -418,11 +462,21 @@ class ASPolicyModule(OTCModule):
                                             changed=changed,
                                             msg='Alarm id is required'
                                         )
-                                elif (as_policy_type == 'scheduled' and
-                                      as_policy_type == 'recurrence'):
+                                elif as_policy_type == 'scheduled':
                                     if scheduled_policy:
                                         attrs = \
-                                            self._attrs_for_scheduled_or_recurrence_policy_type(
+                                            self._attrs_for_scheduled_policy_type(
+                                                changed, attrs, scheduled_policy
+                                            )
+                                    else:
+                                        self.fail(
+                                            changed=changed,
+                                            msg='Scheduled policy is required'
+                                        )
+                                elif as_policy_type == 'recurrence':
+                                    if scheduled_policy:
+                                        attrs = \
+                                            self._attrs_for_recurrence_policy_type(
                                                 changed, attrs, scheduled_policy
                                             )
                                     else:
