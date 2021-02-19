@@ -48,7 +48,7 @@ options:
     type: int
   loadbalancer:
     description:
-      - Specifies the associated load balancer ID or Name.
+      - Specifies the associated load balancer by ID or Name.
     type: str
   connection_limit:
     description:
