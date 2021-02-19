@@ -70,7 +70,6 @@ elb_certificates:
 EXAMPLES = '''
 # Get a lb certificate info.
 - lb_certificate_info:
-    state: present
     name: certificate-test
   register: lb_cert
 '''
