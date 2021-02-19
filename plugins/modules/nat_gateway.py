@@ -157,13 +157,11 @@ class NATGatewayModule(OTCModule):
             name_or_id=name,
             ignore_missing=True)
 
-        if self.ansible.check_mode:
-            self.exit(changed=self._system_state_change(gateway))
-
         # Gateway deletion
         if self.params['state'] == 'absent':
             changed = False
-
+            if self.ansible.check_mode:
+                self.exit(changed=True)
             if gateway:
                 self.conn.nat.delete_gateway(gateway)
                 changed = True
@@ -228,13 +226,16 @@ class NATGatewayModule(OTCModule):
                                      % self.params['router']),
                             failed=True
                         )
-
                 if attrs:
+                    if self.ansible.check_mode:
+                        self.exit(changed=True)
                     gateway = self.conn.nat.update_gateway(
                         gateway=gateway,
                         **attrs)
                     self.exit(changed=True, gateway=gateway.to_dict())
                 # Gateway with same specs exists
+                if self.ansible.check_mode:
+                    self.exit(changed=False)
                 self.exit(changed=False, gateway=gateway.to_dict())
 
             # New gateway creatioon
@@ -276,7 +277,8 @@ class NATGatewayModule(OTCModule):
 
             if self.params['spec']:
                 attrs['spec'] = self.params['spec']
-
+            if self.ansible.check_mode:
+                self.exit(changed=True)
             gateway = self.conn.nat.create_gateway(**attrs)
             self.exit(changed=True, gateway=gateway.to_dict())
 
