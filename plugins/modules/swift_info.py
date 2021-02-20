@@ -10,6 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 DOCUMENTATION = '''
 ---
 module: swift_info
@@ -22,96 +23,83 @@ description:
     container object, object content info from the OTC.
 options:
   container:
-    description:
-      - Name of container in Swift.
+    description: Name of container in Swift.
     type: str
   object_name:
-    description:
-      - Name of object in Swift.
+    description: Name of object in Swift.
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-if container and object:
 swift:
-  description: List of dictionaries describing object content.
-  type: complex
-  returned: On Success.
-  contains:
-    content:
-      description: Object content.
-      type: str
-      sample: "test\n"
-
-if container:
-swift:
-  description: List of dictionaries describing objects in container.
-  type: complex
-  returned: On Success.
-  contains:
-    objects:
-      type: list
-      elements: dict
-        name:
-          description: Name of the object.
-          type: str
-        content_type:
-          description: Content type of the object.
-          type: str
-        _bytes:
-          description: Total number of bytes that are stored in OBS for the
-            object.
-          type: int
-        _hash:
-          description: MD5 checksum value of the object content.
-          type: str
-          sample: "e1cbb0c3879af8347246f12c559a86b5"
-        accept_ranges:
-          description: Type of ranges that the object accepts.
-          type: str
-        etag:
-          description: For ordinary objects, this value is
-            the MD5 checksum of the object content.
-            For manifest objects, this value is the MD5 checksum of the
-            concatenated string of MD5 checksums for each of the segments in
-            the manifest.
-          type: str
-          sample: "e1cbb0c3879af8347246f12c559a86b5"
-        last_modified_at:
-          description: Modification time and date
-          type: str
-          sample: "2021-02-18T13:40:09.640760"
-        timestamp:
-          description: Creation time and date
-          type: str
-          sample: "2021-02-18T13:40:09.640760"
-
-swift:
-  description: List of dictionaries describing containers.
+  description: List of dictionaries describing containers, objects
+    and object content in container.
   type: complex
   returned: On Success.
   contains:
     containers:
+      description: Specifies the lost of available containers.
+        Shows when no params passed.
       type: list
-      elements: dict
-        bytes:
-          description: Total number of bytes that are stored in OBS for the
-            object.
-          type: int
-        content_type:
-          description: Content type of the object.
-          type: str
-        count:
-          description: Count of objects in container
-          type: int
-        name:
-          description: Name of the container
-          type: str
-        timestamp:
-          description: Creation time and date
-          type: str
-          sample: "2021-02-18T13:40:09.640760"
+      sample: [
+        {
+          "bytes": 5449,
+          "bytes_used": 5449,
+          "content_type": null,
+          "count": 1,
+          "id": "otc",
+          "if_none_match": null,
+          "is_content_type_detected": null,
+          "is_newest": null,
+          "meta_temp_url_key": null,
+          "meta_temp_url_key_2": null,
+          "name": "otc",
+          "object_count": 1,
+          "read_ACL": null,
+          "sync_key": null,
+          "sync_to": null,
+          "timestamp": null,
+          "versions_location": null,
+          "write_ACL": null
+        }
+      ]
+    objects:
+      description: Specifies the list of objects in container.
+        Shows when container param is not Null
+      type: list
+      sample: [
+        {
+          "_bytes": 273,
+          "_content_type": "text/plain",
+          "_hash": "58c6362a0e013dae97594abe7b06d801",
+          "_last_modified": "2021-02-18T14:23:55.259610",
+          "accept_ranges": null,
+          "content_disposition": null,
+          "content_encoding": null,
+          "content_length": 273,
+          "content_type": "text/plain",
+          "copy_from": null,
+          "delete_after": null,
+          "delete_at": null,
+          "etag": "58c6362a0e013dae97594abe7b06d801",
+          "expires_at": null,
+          "id": "my.txt",
+          "last_modified_at": "2021-02-18T14:23:55.259610",
+          "multipart_manifest": null,
+          "name": "my.txt",
+          "object_manifest": null,
+          "range": null,
+          "signature": null,
+          "timestamp": null,
+          "transfer_encoding": null
+        }
+      ]
+    content:
+      description: Specifies the object content.
+        Shows when container and object_name params is not Null
+      type: str
+      sample: "text"
 '''
 
 EXAMPLES = '''
