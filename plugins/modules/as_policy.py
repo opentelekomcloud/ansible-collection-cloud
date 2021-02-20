@@ -536,7 +536,7 @@ class ASPolicyModule(OTCModule):
                         else:
                             self.fail(
                                 changed=changed,
-                                msg='Policy %s not found' % policy
+                                msg='Scaling policy %s not found' % as_policy
                             )
 
                 else:

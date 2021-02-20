@@ -124,6 +124,7 @@
         that:
           - as_policy is not success
           - as_policy is not changed
+          - 'as_policy.msg == "Scaling policy {{ as_policy_name }} exists"'
 
     - name: Get list of AS Policies
       opentelekomcloud.cloud.as_policy_info:
@@ -173,7 +174,7 @@
         that:
           - as_policy is not success
           - as_policy is not changed
-          - 'as_policy.msg == "Policy None not found"'
+          - 'as_policy.msg == "Scaling policy {{ as_policy_name }} not found"'
 
   always:
     - block:
