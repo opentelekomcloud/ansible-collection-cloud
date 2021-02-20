@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: as_policy
 short_description: Create/Remove Auto Scaling Policy from the OTC
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.6.0"
+version_added: "0.8.0"
 author: "Irina Pereiaslavskaia (@irina-pereiaslavskaia)"
 description:
   - Create/Remove Auto Scaling Policy from the OTC.
@@ -321,11 +321,36 @@ class ASPolicyModule(OTCModule):
             alarm_id = self.conn.ces.find_alarm(name_or_id=alarm)
             if alarm_id and policy.alarm_id != alarm_id.id:
                 return True
-        if scheduled_policy and policy.scheduled_policy != scheduled_policy:
-            return True
-        if scaling_policy_action and policy.scaling_policy_action != \
-                scaling_policy_action:
-            return True
+        if scheduled_policy:
+            if (scheduled_policy['launch_time'] and
+                policy.scheduled_policy['launch_time'] !=
+                    scheduled_policy['launch_time']):
+                return True
+            if (scheduled_policy['recurrence_type'] and
+                    policy.scheduled_policy['recurrence_type'] !=
+                    scheduled_policy['recurrence_type']):
+                return True
+            if (scheduled_policy['start_time'] and
+                    policy.scheduled_policy['start_time'] !=
+                    scheduled_policy['start_time']):
+                return True
+            if (scheduled_policy['end_time'] and
+                    policy.scheduled_policy['end_time'] !=
+                    scheduled_policy['end_time']):
+                return True
+        if scaling_policy_action:
+            if (scheduled_policy['operation'] and
+                    policy.scaling_policy_action['operation'] !=
+                    scheduled_policy['operation']):
+                return True
+            if (scaling_policy_action['instance_number'] and
+                    policy.scaling_policy_action['instance_number'] !=
+                    scaling_policy_action['instance_number']):
+                return True
+            if (scaling_policy_action['instance_percentage'] and
+                    policy.scaling_policy_action['instance_percentage'] !=
+                    scaling_policy_action['instance_percentage']):
+                return True
         if cool_down_time and policy.cool_down_time != cool_down_time:
             return True
         return False
@@ -435,6 +460,12 @@ class ASPolicyModule(OTCModule):
                                 policy=policy,
                                 msg='Scaling policy %s was created' % as_policy
                             )
+
+                            if not self._needs_update(policy):
+                                self.fail(
+                                    changed=changed,
+                                    msg='Scaling policy %s exists' % as_policy
+                                )
 
                         elif state == 'absent':
 
