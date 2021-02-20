@@ -394,7 +394,9 @@ class ASPolicyModule(OTCModule):
                     if policy:
 
                         if self.ansible.check_mode:
-                            self.exit(changed=self._system_state_change(policy))
+                            self.exit(
+                                changed=self._system_state_change(policy)
+                            )
 
                         if state == 'present':
 
@@ -475,6 +477,11 @@ class ASPolicyModule(OTCModule):
                             )
 
                     else:
+
+                        if self.ansible.check_mode:
+                            self.exit(
+                                changed=self._system_state_change(policy)
+                            )
 
                         if state == 'present':
 

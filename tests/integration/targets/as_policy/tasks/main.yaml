@@ -94,6 +94,21 @@
         router: "{{ router.router.id }}"
       register: as_group
 
+    - name: Create AS Policy - check_mode
+      opentelekomcloud.cloud.as_policy:
+        scaling_group: "{{ as_group_name }}"
+        scaling_policy: "{{ as_policy_name }}"
+        scaling_policy_type: "alarm"
+        alarm: "{{ alarm_name }}"
+        state: "present"
+      check_mode: yes
+      register: as_policy
+
+    - name: assert result
+      assert:
+        that:
+          - as_policy is changed
+
     - name: Create AS policy
       opentelekomcloud.cloud.as_policy:
         scaling_group: "{{ as_group_name }}"
@@ -136,6 +151,19 @@
         that:
           - as_policies is success
           - as_policies['scaling_policies']|length == 1
+
+    - name: Delete AS policy -check mode
+      opentelekomcloud.cloud.as_policy:
+        scaling_group: "{{ as_group_name}}"
+        scaling_policy: "{{ as_policy_name }}"
+        state: "absent"
+      register: as_policy
+      check_mode: yes
+
+    - name: assert result
+      assert:
+        that:
+          - as_policy is changed
 
     - name: Delete AS policy
       opentelekomcloud.cloud.as_policy:
