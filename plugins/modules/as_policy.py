@@ -313,46 +313,44 @@ class ASPolicyModule(OTCModule):
         scaling_policy_action = self.params['scaling_policy_action']
         cool_down_time = self.params['cool_down_time']
 
-        if as_policy and policy.name != as_policy:
-            return True
-        if as_policy_type and policy.type != as_policy_type:
-            return True
+        if as_policy:
+            return policy.name != as_policy
+
+        if as_policy_type:
+            return policy.type != as_policy_type
+
         if alarm:
             alarm_id = self.conn.ces.find_alarm(name_or_id=alarm)
-            if alarm_id and policy.alarm_id != alarm_id.id:
-                return True
+            return alarm_id and policy.alarm_id != alarm_id.id
+
         if scheduled_policy:
-            if (scheduled_policy['launch_time'] and
-                policy.scheduled_policy['launch_time'] !=
-                    scheduled_policy['launch_time']):
-                return True
-            if (scheduled_policy['recurrence_type'] and
-                    policy.scheduled_policy['recurrence_type'] !=
-                    scheduled_policy['recurrence_type']):
-                return True
-            if (scheduled_policy['start_time'] and
-                    policy.scheduled_policy['start_time'] !=
-                    scheduled_policy['start_time']):
-                return True
-            if (scheduled_policy['end_time'] and
-                    policy.scheduled_policy['end_time'] !=
-                    scheduled_policy['end_time']):
-                return True
+            return ((scheduled_policy['launch_time'] and
+                     policy.scheduled_policy['launch_time'] !=
+                     scheduled_policy['launch_time']) or
+                    (scheduled_policy['recurrence_type'] and
+                     policy.scheduled_policy['recurrence_type'] !=
+                     scheduled_policy['recurrence_type']) or
+                    (scheduled_policy['start_time'] and
+                     policy.scheduled_policy['start_time'] !=
+                     scheduled_policy['start_time']) or
+                    (scheduled_policy['end_time'] and
+                     policy.scheduled_policy['end_time'] !=
+                     scheduled_policy['end_time']))
+
         if scaling_policy_action:
-            if (scheduled_policy['operation'] and
-                    policy.scaling_policy_action['operation'] !=
-                    scheduled_policy['operation']):
-                return True
-            if (scaling_policy_action['instance_number'] and
-                    policy.scaling_policy_action['instance_number'] !=
-                    scaling_policy_action['instance_number']):
-                return True
-            if (scaling_policy_action['instance_percentage'] and
-                    policy.scaling_policy_action['instance_percentage'] !=
-                    scaling_policy_action['instance_percentage']):
-                return True
-        if cool_down_time and policy.cool_down_time != cool_down_time:
-            return True
+            return ((scheduled_policy['operation'] and
+                     policy.scaling_policy_action['operation'] !=
+                     scheduled_policy['operation']) or
+                    (scaling_policy_action['instance_number'] and
+                     policy.scaling_policy_action['instance_number'] !=
+                     scaling_policy_action['instance_number']) or
+                    (scaling_policy_action['instance_percentage'] and
+                     policy.scaling_policy_action['instance_percentage'] !=
+                     scaling_policy_action['instance_percentage']))
+
+        if cool_down_time:
+            return policy.cool_down_time != cool_down_time
+
         return False
 
     def _system_state_change(self, obj):
@@ -399,6 +397,12 @@ class ASPolicyModule(OTCModule):
                             self.exit(changed=self._system_state_change(policy))
 
                         if state == 'present':
+
+                            if not self._needs_update(policy):
+                                self.fail(
+                                    changed=changed,
+                                    msg='Scaling policy %s exists' % as_policy
+                                )
 
                             if (policy.name != as_policy and
                                     policy.id != as_policy):
@@ -460,12 +464,6 @@ class ASPolicyModule(OTCModule):
                                 policy=policy,
                                 msg='Scaling policy %s was created' % as_policy
                             )
-
-                            if not self._needs_update(policy):
-                                self.fail(
-                                    changed=changed,
-                                    msg='Scaling policy %s exists' % as_policy
-                                )
 
                         elif state == 'absent':
 
