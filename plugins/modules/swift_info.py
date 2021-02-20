@@ -19,7 +19,7 @@ version_added: "0.8.0"
 author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Get Swift containers,
-  - container object, object content info from the OTC.
+    container object, object content info from the OTC.
 options:
   container:
     description:
