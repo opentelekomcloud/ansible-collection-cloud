@@ -115,7 +115,7 @@ swift:
 '''
 
 EXAMPLES = '''
-# Get configs versions.
+# Get swift containers/objects/object content.
 - swift_info:
   register: sw
 
