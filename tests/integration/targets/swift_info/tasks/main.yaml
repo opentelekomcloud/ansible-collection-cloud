@@ -1,10 +1,10 @@
 ---
 - module_defaults:
-    opentelekomcloud.cloud.as_config_info:
+    opentelekomcloud.cloud.swift_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: List available containers
-      opentelekomcloud.cloud.as_config_info:
+      opentelekomcloud.cloud.swift_info:
       register: containers
 
     - name: assert result
