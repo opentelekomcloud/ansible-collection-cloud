@@ -152,6 +152,25 @@
           - as_policies is success
           - as_policies['scaling_policies']|length == 1
 
+    - name: Update AS policy (add scaling_policy_action)
+      opentelekomcloud.cloud.as_policy:
+        scaling_group: "{{ as_group_name }}"
+        scaling_policy: "{{ as_policy_name }}"
+        scaling_policy_type: "alarm"
+        alarm: "{{ alarm_name }}"
+        state: "present"
+        scaling_policy_action:
+          operation: "add"
+          instance_number: 1
+          instance_percentage: 1
+      register: as_policy
+
+    - name: assert result
+      assert:
+        that:
+          - as_policy is success
+          - as_policy is changed
+
     - name: Delete AS policy -check mode
       opentelekomcloud.cloud.as_policy:
         scaling_group: "{{ as_group_name}}"
