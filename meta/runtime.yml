@@ -186,8 +186,6 @@ plugin_routing:
       redirect: openstack.cloud.subnets_info
     volume:
       redirect: openstack.cloud.volume
-    volume:
-      redirect: openstack.cloud.volume
     volume_info:
       redirect: openstack.cloud.volume_info
     volume_snapshot:
