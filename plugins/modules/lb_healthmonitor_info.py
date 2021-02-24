@@ -130,7 +130,6 @@ healthmonitors:
 EXAMPLES = '''
 # Get a lb health monitor info.
 - lb_healthmonitor_info:
-    state: present
     name: hm-test
   register: healthmonitor
 '''

@@ -76,7 +76,6 @@ lb_listener_info:
 EXAMPLES = '''
 # Get a lb listener info.
 - lb_listener_info:
-    state: present
     name: listener-test
   register: lb_lstnr_info
 '''
