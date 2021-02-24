@@ -344,23 +344,23 @@ class ASPolicyModule(OTCModule):
                 return True
 
         if scheduled_policy:
-            if (scheduled_policy['launch_time'] and
-                    (policy.scheduled_policy['launch_time'] != scheduled_policy['launch_time']) or
-                scheduled_policy['recurrence_type'] and
-                    (policy.scheduled_policy['recurrence_type'] != scheduled_policy['recurrence_type']) or
-                scheduled_policy['start_time'] and
-                    (policy.scheduled_policy['start_time'] != scheduled_policy['start_time']) or
-                scheduled_policy['end_time'] and
-                    (policy.scheduled_policy['end_time'] != scheduled_policy['end_time'])):
+            if scheduled_policy['launch_time'] and \
+                    (policy.scheduled_policy['launch_time'] != scheduled_policy['launch_time']) or \
+               scheduled_policy['recurrence_type'] and \
+                    (policy.scheduled_policy['recurrence_type'] != scheduled_policy['recurrence_type']) or \
+               scheduled_policy['start_time'] and \
+                    (policy.scheduled_policy['start_time'] != scheduled_policy['start_time']) or \
+               scheduled_policy['end_time'] and \
+                    (policy.scheduled_policy['end_time'] != scheduled_policy['end_time']):
                 return True
 
         if scaling_policy_action:
-            if (scaling_policy_action['operation'] and
-                    (policy.scaling_policy_action['operation'] != scaling_policy_action['operation']) or
-                scaling_policy_action['instance_number'] and
-                    (policy.scaling_policy_action['instance_number'] != scaling_policy_action['instance_number']) or
-                scaling_policy_action['instance_percentage'] and
-                    (policy.scaling_policy_action['instance_percentage'] != scaling_policy_action['instance_percentage'])):
+            if scaling_policy_action['operation'] and \
+                    (policy.scaling_policy_action['operation'] != scaling_policy_action['operation']) or \
+               scaling_policy_action['instance_number'] and \
+                    (policy.scaling_policy_action['instance_number'] != scaling_policy_action['instance_number']) or \
+               scaling_policy_action['instance_percentage'] and \
+                    (policy.scaling_policy_action['instance_percentage'] != scaling_policy_action['instance_percentage']):
                 return True
 
         if cool_down_time and policy.cool_down_time != cool_down_time:
@@ -421,11 +421,11 @@ class ASPolicyModule(OTCModule):
                                     msg='Scaling policy %s exists' % as_policy
                                 )
 
-                            if ((policy.name != as_policy and
-                                    policy.id != as_policy)):
+                            if policy.name != as_policy and \
+                                    policy.id != as_policy:
                                 attrs['name'] = as_policy
-                            if (as_policy_type and
-                                    (policy.type != as_policy_type.upper())):
+                            if as_policy_type and \
+                                    (policy.type != as_policy_type.upper()):
                                 attrs['type'] = as_policy_type.upper()
                                 if as_policy_type == 'alarm':
                                     if alarm:
@@ -438,8 +438,8 @@ class ASPolicyModule(OTCModule):
                                             msg='Alarm ID is required'
                                         )
                                 elif as_policy_type == 'scheduled':
-                                    if (scheduled_policy and
-                                            (policy.scheduled_policy != scheduled_policy)):
+                                    if scheduled_policy and \
+                                            (policy.scheduled_policy != scheduled_policy):
                                         attrs = \
                                             self._attrs_for_scheduled_policy_type(
                                                 changed, attrs, scheduled_policy
@@ -450,8 +450,8 @@ class ASPolicyModule(OTCModule):
                                             msg='Scheduled policy is required'
                                         )
                                 elif as_policy_type == 'recurrence':
-                                    if (scheduled_policy and
-                                            (policy.scheduled_policy != scheduled_policy)):
+                                    if scheduled_policy and \
+                                            (policy.scheduled_policy != scheduled_policy):
                                         attrs = \
                                             self._attrs_for_recurrence_policy_type(
                                                 changed, attrs, scheduled_policy
@@ -461,13 +461,13 @@ class ASPolicyModule(OTCModule):
                                             changed=changed,
                                             msg='Scheduled policy is required'
                                         )
-                            if (scaling_policy_action and
-                                    (policy.scaling_policy_action != scaling_policy_action)):
+                            if scaling_policy_action and \
+                                    (policy.scaling_policy_action != scaling_policy_action):
                                 attrs = self._attrs_for_scaling_policy_action(
                                     attrs, scaling_policy_action
                                 )
-                            if (cool_down_time and
-                                    (policy.cool_down_time != cool_down_time)):
+                            if cool_down_time and \
+                                    (policy.cool_down_time != cool_down_time):
                                 attrs['cool_down_time'] = cool_down_time
 
                             policy = self.conn.auto_scaling.update_policy(
