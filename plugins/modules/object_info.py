@@ -136,14 +136,14 @@ swift:
 
 EXAMPLES = '''
 # Get swift containers/objects/object content.
-- swift_info:
+- object_info:
   register: sw
 
-- swift_info:
+- object_info:
     container: my_container
   register: sw
 
-- swift_info:
+- object_info:
     container: my_container
     object_name: my_object
   register: sw
