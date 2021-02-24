@@ -244,21 +244,21 @@ class ASPolicyModule(OTCModule):
 
         if launch_time:
             sc_policy['launch_time'] = launch_time
-            if recurrence_type:
-                sc_policy['recurrence_type'] = recurrence_type.title()
-            if recurrence_value:
-                sc_policy['recurrence_value'] = recurrence_value
-            if start_time:
-                sc_policy['start_time'] = start_time
-            if end_time:
-                sc_policy['end_time'] = end_time
-            attrs['scheduled_policy'] = sc_policy
-            return attrs
         else:
             self.fail(
                 changed=changed,
                 msg='Launch time is required'
             )
+        if recurrence_type:
+            sc_policy['recurrence_type'] = recurrence_type.title()
+        if recurrence_value:
+            sc_policy['recurrence_value'] = recurrence_value
+        if start_time:
+            sc_policy['start_time'] = start_time
+        if end_time:
+            sc_policy['end_time'] = end_time
+        attrs['scheduled_policy'] = sc_policy
+        return attrs
 
     def _attrs_for_recurrence_policy_type(
             self, changed, attrs, scheduled_policy
@@ -274,36 +274,36 @@ class ASPolicyModule(OTCModule):
 
         if launch_time:
             sc_policy['launch_time'] = launch_time
-            if recurrence_type:
-                sc_policy['recurrence_type'] = recurrence_type.title()
-                if recurrence_value:
-                    sc_policy['recurrence_value'] = recurrence_value
-                    if start_time:
-                        sc_policy['start_time'] = start_time
-                    if end_time:
-                        sc_policy['end_time'] = end_time
-                        attrs['scheduled_policy'] = sc_policy
-                        return attrs
-                    else:
-                        self.fail(
-                            changed=changed,
-                            msg='End time is required'
-                        )
-                else:
-                    self.fail(
-                        changed=changed,
-                        msg='Recurrence value is required'
-                    )
-            else:
-                self.fail(
-                    changed=changed,
-                    msg='Recurrence type is required'
-                )
         else:
             self.fail(
                 changed=changed,
                 msg='Launch time is required'
             )
+        if recurrence_type:
+            sc_policy['recurrence_type'] = recurrence_type.title()
+        else:
+            self.fail(
+                changed=changed,
+                msg='Recurrence type is required'
+            )
+        if recurrence_value:
+            sc_policy['recurrence_value'] = recurrence_value
+        else:
+            self.fail(
+                changed=changed,
+                msg='Recurrence value is required'
+            )
+        if start_time:
+            sc_policy['start_time'] = start_time
+        if end_time:
+            sc_policy['end_time'] = end_time
+        else:
+            self.fail(
+                changed=changed,
+                msg='End time is required'
+            )
+        attrs['scheduled_policy'] = sc_policy
+        return attrs
 
     def _attrs_for_scaling_policy_action(self, attrs, scaling_policy_action):
 
