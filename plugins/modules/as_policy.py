@@ -111,6 +111,7 @@ options:
         description:
           - Specifies the number of instances to be operated.
           - The default number is 1.
+          - Either instance_number or instance_percentage is required.
           - If operation is set to SET, the value range is 0 to 200.
           - If operation is set to ADD, REMOVE or REDUCE,\
           the value range is 1 to 200.
@@ -155,13 +156,32 @@ as_policy:
 '''
 
 EXAMPLES = '''
-#
+# Create AS Policy
 - opentelekomcloud.cloud.as_policy:
     scaling_group: "as-group-test"
     scaling_policy: "collection-test"
     scaling_policy_type: "alarm"
     alarm: "as-alarm-test"
   register: result
+
+# Update AS Policy
+- opentelekomcloud.cloud.as_policy:
+    scaling_group: "as-group-test"
+    scaling_policy: "collection-test"
+    scaling_policy_type: "alarm"
+    alarm: "as-alarm-test"
+    state: "present"
+    scaling_policy_action:
+      operation: "add"
+      instance_number: 1
+  register: as_policy
+
+# Delete AS Policy
+- opentelekomcloud.cloud.as_policy:
+    scaling_group: "{{ as_group_name}}"
+    scaling_policy: "{{ as_policy_name }}"
+    state: "absent"
+  register: as_policy
 
 '''
 
