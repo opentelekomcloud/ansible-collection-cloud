@@ -189,28 +189,47 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
+def _value_changed(old, new, keys):
+    """Check if there are updates for ``old`` in ``new`` for given keys"""
+    if not new:
+        return False
+    for key in keys:
+        new_val = new[key]
+        if not new_val:
+            continue
+        if new_val != old[key]:
+            return True
+    return False
+
+
 class ASPolicyModule(OTCModule):
+    __scaling_policy_action = dict(
+        operation=dict(type='str', required=False, default='add',
+                       choices=['add', 'remove', 'reduce', 'set']),
+        instance_number=dict(type='int', required=False, default=1),
+        instance_percentage=dict(type='int', required=False)
+    )
+
+    __scheduled_policy = dict(
+        launch_time=dict(type='str', required=False),
+        recurrence_type=dict(type='str', required=False,
+                             choices=['daily', 'weekly', 'monthly']),
+        recurrence_value=dict(type='str', required=False),
+        start_time=dict(type='str', required=False),
+        end_time=dict(type='str', required=False),
+    )
+
     argument_spec = dict(
         scaling_policy=dict(type='str', required=True),
         scaling_group=dict(type='str', required=False),
         scaling_policy_type=dict(type='str', required=False,
                                  choices=['alarm', 'scheduled', 'recurrence']),
         alarm=dict(type='str', required=False),
-        scheduled_policy=dict(type='dict', required=False, options=dict(
-            launch_time=dict(type='str', required=False),
-            recurrence_type=dict(type='str', required=False,
-                                 choices=['daily', 'weekly', 'monthly']),
-            recurrence_value=dict(type='str', required=False),
-            start_time=dict(type='str', required=False),
-            end_time=dict(type='str', required=False),
-        )),
-        scaling_policy_action=dict(type='dict', required=False, options=dict(
-            operation=dict(type='str', required=False, default='add',
-                           choices=['add', 'remove', 'reduce', 'set']),
-            instance_number=dict(type='int', required=False,
-                                 default=1),
-            instance_percentage=dict(type='int', required=False)
-        )),
+        scheduled_policy=dict(
+            type='dict',
+            required=False,
+            options=__scheduled_policy),
+        scaling_policy_action=dict(type='dict', required=False, options=__scaling_policy_action),
         cool_down_time=dict(type='int', required=False, default=300),
         state=dict(type='str', required=False, choices=['present', 'absent'],
                    default='present')
@@ -338,33 +357,26 @@ class ASPolicyModule(OTCModule):
         if as_policy_type and policy.type != as_policy_type.upper():
             return True
 
+        policy_changed = _value_changed(
+            policy.scheduled_policy, scheduled_policy,
+            ['launch_time', 'recurrence_type', 'start_time', 'end_time']
+        )
+
+        policy_action_changed = _value_changed(
+            policy.scaling_policy_action, scaling_policy_action,
+            ['operation', 'instance_number', 'instance_percentage']
+        )
+
+        if policy_changed or policy_action_changed:
+            return True
+
+        if cool_down_time and policy.cool_down_time != cool_down_time:
+            return True
+
         if alarm:
             alarm_id = self.conn.ces.find_alarm(name_or_id=alarm)
             if alarm_id and policy.alarm_id != alarm_id.id:
                 return True
-
-        if scheduled_policy:
-            if scheduled_policy['launch_time'] and \
-                    (policy.scheduled_policy['launch_time'] != scheduled_policy['launch_time']) or \
-               scheduled_policy['recurrence_type'] and \
-                    (policy.scheduled_policy['recurrence_type'] != scheduled_policy['recurrence_type']) or \
-               scheduled_policy['start_time'] and \
-                    (policy.scheduled_policy['start_time'] != scheduled_policy['start_time']) or \
-               scheduled_policy['end_time'] and \
-                    (policy.scheduled_policy['end_time'] != scheduled_policy['end_time']):
-                return True
-
-        if scaling_policy_action:
-            if scaling_policy_action['operation'] and \
-                    (policy.scaling_policy_action['operation'] != scaling_policy_action['operation']) or \
-               scaling_policy_action['instance_number'] and \
-                    (policy.scaling_policy_action['instance_number'] != scaling_policy_action['instance_number']) or \
-               scaling_policy_action['instance_percentage'] and \
-                    (policy.scaling_policy_action['instance_percentage'] != scaling_policy_action['instance_percentage']):
-                return True
-
-        if cool_down_time and policy.cool_down_time != cool_down_time:
-            return True
 
         return False
 
@@ -398,6 +410,11 @@ class ASPolicyModule(OTCModule):
             group = self.conn.auto_scaling.find_group(
                 name_or_id=as_group
             )
+            if not group:
+                self.fail(
+                    changed=changed,
+                    msg='AS group %s not found' % group
+                )
             if group:
                 attrs['scaling_group_id'] = group.id
 
@@ -565,12 +582,6 @@ class ASPolicyModule(OTCModule):
                         changed=changed,
                         msg='Scaling policy is missing'
                     )
-
-            else:
-                self.fail(
-                    changed=changed,
-                    msg='AS group %s not found' % group
-                )
 
         else:
             self.fail(
