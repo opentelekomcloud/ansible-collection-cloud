@@ -13,14 +13,14 @@
 
 DOCUMENTATION = '''
 ---
-module: swift_info
+module: object_info
 short_description: Get Swift info.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.8.0"
 author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Get Swift containers,
-    container object, object content info from the OTC.
+    container object, object metadata info from the OTC.
 options:
   container:
     description: Name of container in Swift.
@@ -34,7 +34,7 @@ requirements: ["openstacksdk", "otcextensions"]
 RETURN = '''
 swift:
   description: List of dictionaries describing containers, objects
-    and object content in container.
+    and object metadata in container.
   type: complex
   returned: On Success.
   contains:
@@ -95,11 +95,43 @@ swift:
           "transfer_encoding": null
         }
       ]
-    content:
-      description: Specifies the object content.
+    metadata:
+      description: Specifies the object metadata.
         Shows when container and object_name params is not Null
-      type: str
-      sample: "text"
+      type: dict
+      sample: {
+        "_bytes": null,
+        "_content_type": null,
+        "_hash": null,
+        "_last_modified": null,
+        "accept_ranges": "bytes",
+        "container": "test",
+        "content_disposition": null,
+        "content_encoding": null,
+        "content_length": 5,
+        "content_type": "text/plain",
+        "copy_from": null,
+        "delete_after": null,
+        "delete_at": null,
+        "etag": "e1cbb0c3879af8347246f12c559a86b5",
+        "expires_at": null,
+        "id": "my2.txt",
+        "if_match": null,
+        "if_modified_since": null,
+        "if_none_match": null,
+        "if_unmodified_since": null,
+        "is_content_type_detected": null,
+        "is_newest": null,
+        "is_static_large_object": null,
+        "last_modified_at": "Thu, 18 Feb 2021 13:40:09 GMT",
+        "multipart_manifest": null,
+        "name": null,
+        "object_manifest": null,
+        "range": null,
+        "signature": null,
+        "timestamp": "1613655609.64076",
+        "transfer_encoding": null
+      }
 '''
 
 EXAMPLES = '''
@@ -129,8 +161,9 @@ class SwiftInfoModule(OTCModule):
         container = self.params['container']
         object_name = self.params['object_name']
         if container and object_name:
-            content = self.conn.object_store.download_object(object_name, container)
-            self.exit(changed=False, swift=dict(content=content))
+            metadata = self.conn.object_store.get_object(object_name, container)
+            metadata.pop('location')
+            self.exit(changed=False, swift=dict(metadata=metadata))
 
         if container:
             objects = []
