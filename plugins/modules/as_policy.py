@@ -474,7 +474,8 @@ class ASPolicyModule(OTCModule):
 
         return attrs
 
-    def _needs_update(self, as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy):
+    def _needs_update(self, as_policy, as_policy_type, alarm, scheduled_policy,
+                      scaling_policy_action, cool_down_time, policy):
 
         if as_policy and policy.name != as_policy and policy.id != as_policy:
             return True
@@ -505,13 +506,18 @@ class ASPolicyModule(OTCModule):
 
         return False
 
-    def _system_state_change(self, as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy):
+    def _system_state_change(self, as_policy, as_policy_type, alarm,
+                             scheduled_policy, scaling_policy_action,
+                             cool_down_time, policy):
 
         state = self.params['state']
         if state == 'present':
             if not policy:
                 return True
-            return self._needs_update(as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy)
+            return self._needs_update(
+                as_policy, as_policy_type, alarm, scheduled_policy,
+                scaling_policy_action, cool_down_time, policy
+            )
         elif state == 'absent' and policy:
             return True
         return False
@@ -549,12 +555,20 @@ class ASPolicyModule(OTCModule):
 
                         if self.ansible.check_mode:
                             self.exit(
-                                changed=self._system_state_change(as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy)
+                                changed=self._system_state_change(
+                                    as_policy, as_policy_type, alarm,
+                                    scheduled_policy, scaling_policy_action,
+                                    cool_down_time, policy
+                                )
                             )
 
                         if state == 'present':
 
-                            if not self._needs_update(as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy):
+                            if not self._needs_update(
+                                    as_policy, as_policy_type, alarm,
+                                    scheduled_policy, scaling_policy_action,
+                                    cool_down_time, policy
+                            ):
                                 self.fail(
                                     changed=changed,
                                     msg='Scaling policy %s exists' % as_policy
@@ -589,7 +603,11 @@ class ASPolicyModule(OTCModule):
 
                         if self.ansible.check_mode:
                             self.exit(
-                                changed=self._system_state_change(as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy)
+                                changed=self._system_state_change(
+                                    as_policy, as_policy_type, alarm,
+                                    scheduled_policy, scaling_policy_action,
+                                    cool_down_time, policy
+                                )
                             )
 
                         if state == 'present':
