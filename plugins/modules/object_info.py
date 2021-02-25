@@ -136,14 +136,14 @@ swift:
 
 EXAMPLES = '''
 # Get swift containers/objects/object content.
-- object_info:
+- opentelekomcloud.cloud.object_info:
   register: sw
 
-- object_info:
+- opentelekomcloud.cloud.object_info:
     container: my_container
   register: sw
 
-- object_info:
+- opentelekomcloud.cloud.object_info:
     container: my_container
     object_name: my_object
   register: sw
