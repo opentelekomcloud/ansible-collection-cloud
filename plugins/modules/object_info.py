@@ -39,7 +39,7 @@ swift:
   returned: On Success.
   contains:
     containers:
-      description: Specifies the lost of available containers.
+      description: Specifies the list of available containers.
         Shows when no params passed.
       type: list
       sample: [
