@@ -65,7 +65,7 @@
           count: 1
         alarm_enabled: True
         alarm_action_enabled: False
-      register: ces_al
+      register: alarm
 
     - name: Create subnet
       openstack.cloud.os_subnet:

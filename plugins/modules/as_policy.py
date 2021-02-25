@@ -170,7 +170,6 @@ EXAMPLES = '''
     scaling_policy: "collection-test"
     scaling_policy_type: "alarm"
     alarm: "as-alarm-test"
-    state: "present"
     scaling_policy_action:
       operation: "add"
       instance_number: 1
@@ -203,33 +202,27 @@ def _value_changed(old, new, keys):
 
 
 class ASPolicyModule(OTCModule):
-    __scaling_policy_action = dict(
-        operation=dict(type='str', required=False, default='add',
-                       choices=['add', 'remove', 'reduce', 'set']),
-        instance_number=dict(type='int', required=False, default=1),
-        instance_percentage=dict(type='int', required=False)
-    )
-
-    __scheduled_policy = dict(
-        launch_time=dict(type='str', required=False),
-        recurrence_type=dict(type='str', required=False,
-                             choices=['daily', 'weekly', 'monthly']),
-        recurrence_value=dict(type='str', required=False),
-        start_time=dict(type='str', required=False),
-        end_time=dict(type='str', required=False),
-    )
-
     argument_spec = dict(
         scaling_policy=dict(type='str', required=True),
         scaling_group=dict(type='str', required=False),
         scaling_policy_type=dict(type='str', required=False,
                                  choices=['alarm', 'scheduled', 'recurrence']),
         alarm=dict(type='str', required=False),
-        scheduled_policy=dict(
-            type='dict',
-            required=False,
-            options=__scheduled_policy),
-        scaling_policy_action=dict(type='dict', required=False, options=__scaling_policy_action),
+        scheduled_policy=dict(type='dict', required=False, options=dict(
+            launch_time=dict(type='str', required=False),
+            recurrence_type=dict(type='str', required=False,
+                                 choices=['daily', 'weekly', 'monthly']),
+            recurrence_value=dict(type='str', required=False),
+            start_time=dict(type='str', required=False),
+            end_time=dict(type='str', required=False),
+        )),
+        scaling_policy_action=dict(type='dict', required=False, options=dict(
+            operation=dict(type='str', required=False, default='add',
+                           choices=['add', 'remove', 'reduce', 'set']),
+            instance_number=dict(type='int', required=False,
+                                 default=1),
+            instance_percentage=dict(type='int', required=False)
+        )),
         cool_down_time=dict(type='int', required=False, default=300),
         state=dict(type='str', required=False, choices=['present', 'absent'],
                    default='present')
@@ -242,9 +235,11 @@ class ASPolicyModule(OTCModule):
 
     def _attrs_for_alarm_policy_type(self, changed, attrs, alarm):
         alarm_id = self.conn.ces.find_alarm(name_or_id=alarm)
+
         if alarm_id:
             attrs['alarm_id'] = alarm_id.id
             return attrs
+
         else:
             self.fail(
                 changed=changed,
@@ -252,7 +247,6 @@ class ASPolicyModule(OTCModule):
             )
 
     def _attrs_for_scheduled_policy_type(self, changed, attrs, scheduled_policy):
-
         launch_time = scheduled_policy['launch_time']
         recurrence_type = scheduled_policy['recurrence_type']
         recurrence_value = scheduled_policy['recurrence_value']
@@ -263,26 +257,29 @@ class ASPolicyModule(OTCModule):
 
         if launch_time:
             sc_policy['launch_time'] = launch_time
+
         else:
             self.fail(
                 changed=changed,
                 msg='Launch time is required'
             )
+
         if recurrence_type:
             sc_policy['recurrence_type'] = recurrence_type.title()
+
         if recurrence_value:
             sc_policy['recurrence_value'] = recurrence_value
+
         if start_time:
             sc_policy['start_time'] = start_time
+
         if end_time:
             sc_policy['end_time'] = end_time
+
         attrs['scheduled_policy'] = sc_policy
         return attrs
 
-    def _attrs_for_recurrence_policy_type(
-            self, changed, attrs, scheduled_policy
-    ):
-
+    def _attrs_for_recurrence_policy_type(self, changed, attrs, scheduled_policy):
         launch_time = scheduled_policy['launch_time']
         recurrence_type = scheduled_policy['recurrence_type']
         recurrence_value = scheduled_policy['recurrence_value']
@@ -293,39 +290,47 @@ class ASPolicyModule(OTCModule):
 
         if launch_time:
             sc_policy['launch_time'] = launch_time
+
         else:
             self.fail(
                 changed=changed,
                 msg='Launch time is required'
             )
+
         if recurrence_type:
             sc_policy['recurrence_type'] = recurrence_type.title()
+
         else:
             self.fail(
                 changed=changed,
                 msg='Recurrence type is required'
             )
+
         if recurrence_value:
             sc_policy['recurrence_value'] = recurrence_value
+
         else:
             self.fail(
                 changed=changed,
                 msg='Recurrence value is required'
             )
+
         if start_time:
             sc_policy['start_time'] = start_time
+
         if end_time:
             sc_policy['end_time'] = end_time
+
         else:
             self.fail(
                 changed=changed,
                 msg='End time is required'
             )
+
         attrs['scheduled_policy'] = sc_policy
         return attrs
 
     def _attrs_for_scaling_policy_action(self, attrs, scaling_policy_action):
-
         operation = scaling_policy_action['operation']
         instance_number = scaling_policy_action['instance_number']
         instance_percentage = scaling_policy_action['instance_percentage']
@@ -334,22 +339,142 @@ class ASPolicyModule(OTCModule):
 
         if operation:
             sc_pol_act['operation'] = operation.upper()
+
         if instance_number:
             sc_pol_act['instance_number'] = instance_number
+
         if instance_percentage:
             sc_pol_act['instance_percentage'] = instance_percentage
+
         attrs['scaling_policy_action'] = sc_pol_act
+        return attrs
+
+    def _attrs_for_creating_scaling_policy(self, attrs, changed, as_policy,
+                                           as_policy_type, alarm, scheduled_policy,
+                                           scaling_policy_action, cool_down_time):
+
+        if as_policy:
+            attrs['name'] = as_policy
+
+        if as_policy_type:
+            attrs['type'] = as_policy_type.upper()
+
+            if as_policy_type == 'alarm':
+
+                if alarm:
+                    attrs = self._attrs_for_alarm_policy_type(
+                        changed, attrs, alarm
+                    )
+
+                else:
+                    self.fail(
+                        changed=changed,
+                        msg='Alarm id is required'
+                    )
+
+            elif as_policy_type == 'scheduled':
+
+                if scheduled_policy:
+                    attrs = self._attrs_for_scheduled_policy_type(
+                        changed, attrs, scheduled_policy
+                    )
+
+                else:
+                    self.fail(
+                        changed=changed,
+                        msg='Scheduled policy is required'
+                    )
+
+            elif as_policy_type == 'recurrence':
+
+                if scheduled_policy:
+                    attrs = self._attrs_for_recurrence_policy_type(
+                        changed, attrs, scheduled_policy
+                    )
+
+                else:
+                    self.fail(
+                        changed=changed,
+                        msg='Scheduled policy is required'
+                    )
+
+        else:
+            self.fail(
+                changed=changed,
+                msg='Scaling policy type is required'
+            )
+
+        if scaling_policy_action:
+            attrs = self._attrs_for_scaling_policy_action(
+                attrs, scaling_policy_action
+            )
+
+        if cool_down_time:
+            attrs['cool_down_time'] = cool_down_time
 
         return attrs
 
-    def _needs_update(self, policy):
+    def _attrs_for_updating_scaling_policy(self, attrs, changed, as_policy,
+                                           as_policy_type, alarm, scheduled_policy,
+                                           scaling_policy_action, cool_down_time,
+                                           policy):
 
-        as_policy = self.params['scaling_policy']
-        as_policy_type = self.params['scaling_policy_type']
-        alarm = self.params['alarm']
-        scheduled_policy = self.params['scheduled_policy']
-        scaling_policy_action = self.params['scaling_policy_action']
-        cool_down_time = self.params['cool_down_time']
+        if policy.name != as_policy and policy.id != as_policy:
+            attrs['name'] = as_policy
+
+        if as_policy_type and (policy.type != as_policy_type.upper()):
+            attrs['type'] = as_policy_type.upper()
+
+            if as_policy_type == 'alarm':
+
+                if alarm:
+                    attrs = self._attrs_for_alarm_policy_type(
+                        changed, attrs, alarm
+                    )
+
+                elif policy.alarm_id is None:
+                    self.fail(
+                        changed=changed,
+                        msg='Alarm ID is required'
+                    )
+
+            elif as_policy_type == 'scheduled':
+
+                if scheduled_policy and (policy.scheduled_policy != scheduled_policy):
+                    attrs = self._attrs_for_scheduled_policy_type(
+                        changed, attrs, scheduled_policy
+                    )
+
+                elif policy.scheduled_policy is None:
+                    self.fail(
+                        changed=changed,
+                        msg='Scheduled policy is required'
+                    )
+
+            elif as_policy_type == 'recurrence':
+
+                if scheduled_policy and (policy.scheduled_policy != scheduled_policy):
+                    attrs = self._attrs_for_recurrence_policy_type(
+                        changed, attrs, scheduled_policy
+                    )
+
+                elif policy.scheduled_policy is None:
+                    self.fail(
+                        changed=changed,
+                        msg='Scheduled policy is required'
+                    )
+
+        if scaling_policy_action and (policy.scaling_policy_action != scaling_policy_action):
+            attrs = self._attrs_for_scaling_policy_action(
+                attrs, scaling_policy_action
+            )
+
+        if cool_down_time and (policy.cool_down_time != cool_down_time):
+            attrs['cool_down_time'] = cool_down_time
+
+        return attrs
+
+    def _needs_update(self, as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy):
 
         if as_policy and policy.name != as_policy and policy.id != as_policy:
             return True
@@ -380,14 +505,14 @@ class ASPolicyModule(OTCModule):
 
         return False
 
-    def _system_state_change(self, obj):
+    def _system_state_change(self, as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy):
 
         state = self.params['state']
         if state == 'present':
-            if not obj:
+            if not policy:
                 return True
-            return self._needs_update(obj)
-        elif state == 'absent' and obj:
+            return self._needs_update(as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy)
+        elif state == 'absent' and policy:
             return True
         return False
 
@@ -410,11 +535,7 @@ class ASPolicyModule(OTCModule):
             group = self.conn.auto_scaling.find_group(
                 name_or_id=as_group
             )
-            if not group:
-                self.fail(
-                    changed=changed,
-                    msg='AS group %s not found' % group
-                )
+
             if group:
                 attrs['scaling_group_id'] = group.id
 
@@ -423,70 +544,27 @@ class ASPolicyModule(OTCModule):
                         name_or_id=as_policy,
                         group=group.id
                     )
+
                     if policy:
 
                         if self.ansible.check_mode:
                             self.exit(
-                                changed=self._system_state_change(policy)
+                                changed=self._system_state_change(as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy)
                             )
 
                         if state == 'present':
 
-                            if not self._needs_update(policy):
+                            if not self._needs_update(as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy):
                                 self.fail(
                                     changed=changed,
                                     msg='Scaling policy %s exists' % as_policy
                                 )
 
-                            if policy.name != as_policy and \
-                                    policy.id != as_policy:
-                                attrs['name'] = as_policy
-                            if as_policy_type and \
-                                    (policy.type != as_policy_type.upper()):
-                                attrs['type'] = as_policy_type.upper()
-                                if as_policy_type == 'alarm':
-                                    if alarm:
-                                        attrs = self._attrs_for_alarm_policy_type(
-                                            changed, attrs, alarm
-                                        )
-                                    elif policy.alarm_id is None:
-                                        self.fail(
-                                            changed=changed,
-                                            msg='Alarm ID is required'
-                                        )
-                                elif as_policy_type == 'scheduled':
-                                    if scheduled_policy and \
-                                            (policy.scheduled_policy != scheduled_policy):
-                                        attrs = \
-                                            self._attrs_for_scheduled_policy_type(
-                                                changed, attrs, scheduled_policy
-                                            )
-                                    elif policy.scheduled_policy is None:
-                                        self.fail(
-                                            changed=changed,
-                                            msg='Scheduled policy is required'
-                                        )
-                                elif as_policy_type == 'recurrence':
-                                    if scheduled_policy and \
-                                            (policy.scheduled_policy != scheduled_policy):
-                                        attrs = \
-                                            self._attrs_for_recurrence_policy_type(
-                                                changed, attrs, scheduled_policy
-                                            )
-                                    elif policy.scheduled_policy is None:
-                                        self.fail(
-                                            changed=changed,
-                                            msg='Scheduled policy is required'
-                                        )
-                            if scaling_policy_action and \
-                                    (policy.scaling_policy_action != scaling_policy_action):
-                                attrs = self._attrs_for_scaling_policy_action(
-                                    attrs, scaling_policy_action
-                                )
-                            if cool_down_time and \
-                                    (policy.cool_down_time != cool_down_time):
-                                attrs['cool_down_time'] = cool_down_time
-
+                            attrs = self._attrs_for_updating_scaling_policy(
+                                attrs, changed, as_policy, as_policy_type, alarm,
+                                scheduled_policy, scaling_policy_action,
+                                cool_down_time, policy
+                            )
                             policy = self.conn.auto_scaling.update_policy(
                                 policy=policy,
                                 **attrs
@@ -511,64 +589,22 @@ class ASPolicyModule(OTCModule):
 
                         if self.ansible.check_mode:
                             self.exit(
-                                changed=self._system_state_change(policy)
+                                changed=self._system_state_change(as_policy, as_policy_type, alarm, scheduled_policy, scaling_policy_action, cool_down_time, policy)
                             )
 
                         if state == 'present':
 
-                            attrs['name'] = as_policy
-                            if as_policy_type:
-                                attrs['type'] = as_policy_type.upper()
-                                if as_policy_type == 'alarm':
-                                    if alarm:
-                                        attrs = self._attrs_for_alarm_policy_type(
-                                            changed, attrs, alarm
-                                        )
-                                    else:
-                                        self.fail(
-                                            changed=changed,
-                                            msg='Alarm id is required'
-                                        )
-                                elif as_policy_type == 'scheduled':
-                                    if scheduled_policy:
-                                        attrs = \
-                                            self._attrs_for_scheduled_policy_type(
-                                                changed, attrs, scheduled_policy
-                                            )
-                                    else:
-                                        self.fail(
-                                            changed=changed,
-                                            msg='Scheduled policy is required'
-                                        )
-                                elif as_policy_type == 'recurrence':
-                                    if scheduled_policy:
-                                        attrs = \
-                                            self._attrs_for_recurrence_policy_type(
-                                                changed, attrs, scheduled_policy
-                                            )
-                                    else:
-                                        self.fail(
-                                            changed=changed,
-                                            msg='Scheduled policy is required'
-                                        )
-                            else:
-                                self.fail(
-                                    changed=changed,
-                                    msg='Scaling policy type is required'
-                                )
-                            if scaling_policy_action:
-                                attrs = self._attrs_for_scaling_policy_action(
-                                    attrs, scaling_policy_action
-                                )
-                            if cool_down_time:
-                                attrs['cool_down_time'] = cool_down_time
-
+                            attrs = self._attrs_for_creating_scaling_policy(
+                                attrs, changed, as_policy, as_policy_type, alarm,
+                                scheduled_policy, scaling_policy_action,
+                                cool_down_time
+                            )
                             policy = self.conn.auto_scaling.create_policy(**attrs)
                             changed = True
                             self.exit(
                                 changed=changed,
                                 policy=policy,
-                                msg='Scaling policy %s was created' % policy.name
+                                msg='Scaling policy %s was created' % as_policy
                             )
 
                         else:
@@ -582,6 +618,12 @@ class ASPolicyModule(OTCModule):
                         changed=changed,
                         msg='Scaling policy is missing'
                     )
+
+            else:
+                self.fail(
+                    changed=changed,
+                    msg='AS group %s not found' % as_group
+                )
 
         else:
             self.fail(
