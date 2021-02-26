@@ -20,9 +20,19 @@ author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get Instance Informations
 options:
-  instance_id:
+  id:
     description:
       - Instance ID of the chosen DCS Instance
+    type: str
+    required: false
+  status:
+    description:
+      - Status of the chosen DCS Instance
+    type: str
+    required: false
+  name:
+    description:
+      - Name of the chosen DCS Instance
     type: str
     required: false
 requirements: ["openstacksdk", "otcextensions"]
@@ -91,7 +101,9 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DcsInstanceInfoModule(OTCModule):
     argument_spec = dict(
-        instance_id=dict(required=False),
+        id=dict(required=False),
+        name=dict(required=False),
+        status=dict(required=False),
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -108,11 +120,21 @@ class DcsInstanceInfoModule(OTCModule):
             data.append(dt)
 
         # The API doesn't support queries, but we want to be able to not only list but also look for params of a specific instance
-        # This part removes other instances from the data result so that only the one with the given id will be shown
+        # This part removes other instances from the data result so that only the one with the given params will be shown
         i = 0
         while i < len(data):
-            if self.params['instance_id']:
-                if data[i]['id'] != self.params['instance_id']:
+            if self.params['id']:
+                if data[i]['id'] != self.params['id']:
+                    del data[i]
+                    i = 0
+                    continue
+            if self.params['name']:
+                if data[i]['name'] != self.params['name']:
+                    del data[i]
+                    i = 0
+                    continue
+            if self.params['status']:
+                if data[i]['status'] != self.params['status']:
                     del data[i]
                     i = 0
                     continue
