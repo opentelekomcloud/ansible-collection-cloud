@@ -59,3 +59,5 @@ action_groups:
     - lb_certificate
     - anti_ddos_fip_statuses_info.py
     - anti_ddos_optional_policies_info.py
+    - object.py
+

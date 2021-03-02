@@ -1,0 +1,111 @@
+---
+- hosts: localhost
+  tasks:
+    - name:
+      set_fact:
+        container_name: "test-container"
+        first_object_name: "first-object"
+        second_object_name: "second-object"
+        content_file: "./object.txt"
+
+    - name: Create container and the first object
+      opentelekomcloud.cloud.object:
+        container: "{{ container_name }}"
+        object: "{{ first_object_name }}"
+        content: "{{ content_file }}"
+        ignore_nonexistent_container: true
+        mode: create
+      register: container
+
+    - name: assert result
+      assert:
+        that:
+          - container is success
+          - container is changed
+
+    - name: Create second object
+      opentelekomcloud.cloud.object:
+        container: "{{ container_name }}"
+        object: "{{ second_object_name }}"
+        content: "{{ content_file }}"
+        mode: create
+      register: second_obj
+
+    - name: assert result
+      assert:
+        that:
+          - second_obj is success
+          - second_obj is changed
+
+    - name: Overwrite the first object with a content
+      opentelekomcloud.cloud.object:
+        container: "{{ container_name }}"
+        object: "{{ first_object_name }}"
+        content:
+          obj:
+            var1: 1
+            var2: 2
+        overwrite: true
+        mode: create
+      register: overwrt_first_object
+
+    - name: assert result
+      assert:
+        that:
+          - overwrt_first_object is success
+          - overwrt_first_object is changed
+
+    - name: Set object metadata
+      opentelekomcloud.cloud.object:
+        container: "{{ container_name }}"
+        object: "{{ first_object_name }}"
+        metadata: "content_encoding='utf-8'"
+        mode: set-metadata
+      register: obj_with_meta
+
+    - name: assert result
+      assert:
+        that:
+          - obj_with_meta is success
+          - obj_with_meta is changed
+
+    - name: Delete object metadata
+      opentelekomcloud.cloud.object:
+        container: "{{ container_name }}"
+        object: "{{ first_object_name }}"
+        mode: delete-metadata
+        keys:
+          - content_encoding
+      register: obj_without_meta
+
+    - name: assert result
+      assert:
+        that:
+          - obj_without_meta is success
+          - obj_without_meta is changed
+
+    - name: Delete object
+      opentelekomcloud.cloud.object:
+        container: "{{ container_name }}"
+        object: "{{ first_object_name }}"
+        mode: delete
+      register: deleted_obj
+
+    - name: assert result
+      assert:
+        that:
+          - deleted_obj is success
+          - deleted_obj is changed
+
+    - name: Delete container with left object
+      opentelekomcloud.cloud.object:
+        container: "{{ container_name }}"
+        delete_with_all_objects: true
+        mode: delete
+      register: deleted_container
+
+    - name: assert result
+      assert:
+        that:
+          - deleted_obj is success
+          - deleted_obj is changed
