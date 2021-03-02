@@ -2,7 +2,6 @@
 - module_defaults:
     opentelekomcloud.cloud.object:
       cloud: "{{ test_cloud }}"
-
   block:
     - name:
       set_fact:
@@ -12,6 +11,7 @@
         path_file: ./
         content_file: testfile.txt
         dest: "./dest.txt"
+        content_var:
 
     - name: Create file with content
       file:
@@ -42,7 +42,7 @@
       opentelekomcloud.cloud.object:
         container: "{{ container_name }}"
         object: "{{ second_object_name }}"
-        content: "{{ content_file }}"
+        content: "{{ path_file }}/{{ content_file }}"
         mode: create
       register: second_obj
 
@@ -154,20 +154,20 @@
 
   always:
     - block:
-      # Cleanup
-    - name: Delete container with left object
-      opentelekomcloud.cloud.object:
-        container: "{{ container_name }}"
-        delete_with_all_objects: true
-        mode: delete
+        # Cleanup
+      - name: Delete container with left object
+        opentelekomcloud.cloud.object:
+          container: "{{ container_name }}"
+          delete_with_all_objects: true
+          mode: delete
 
-    - name: Delete file with content
-      file:
-        path: "{{ path_file }}/{{ content_file }}"
-        state: absent
+      - name: Delete file with content
+        file:
+          path: "{{ path_file }}/{{ content_file }}"
+          state: absent
 
-    - name: Delete file dest
-      file:
-        path: "{{ dest }}"
-        state: absent
-    ignore_errors: yes
+      - name: Delete file dest
+        file:
+          path: "{{ dest }}"
+          state: absent
+      ignore_errors: yes

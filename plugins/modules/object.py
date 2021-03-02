@@ -46,16 +46,27 @@ options:
     required: false
   metadata:
     description:
+        - Key/value pairs to be set as metadata on the container or object.
+        - Both custom and system metadata can be set.
+        - Custom metadata are keys and values defined by the user.
+        - The system metadata keys are:
+                `- content_type`
+                `- content_encoding`
+                `- content_disposition`
+                `- delete_after`
+                `- delete_at`
+                `- is_content_type_detected`
     type: dict
     required: false
   keys:
     description: Keys from 'metadata' to be deleted. Used with mode='delete-metadata'.
     type: list
+    elements: str
     required: false
   mode:
     description: Switches the module behaviour.
     required: true
-    choices: ['create', 'delete', 'fetch', 'upload', 'set-metadata', 'delete-metadata']
+    choices: ['create', 'delete', 'fetch', 'set-metadata', 'delete-metadata']
     type: str
   overwrite:
     description: Whether object should be overwritten or not in case it is already exists (when 'create' operation).
@@ -73,6 +84,7 @@ requirements: ["openstacksdk", "otcextensions"]
 RETURN = '''
 container:
   description: Specifies the container.
+  returned: On success when C(mode=create)
   type: dict
   sample:
     {
@@ -97,6 +109,7 @@ container:
     }
 objects:
   description: Specifies the list of objects in container.
+  returned: On success when C(mode=create)
   type: list
   sample: [
     {
@@ -216,13 +229,19 @@ class SwiftModule(OTCModule):
         dest=dict(type='path', required=False),
         metadata=dict(type='dict', required=False),
         keys=dict(type='list', required=False),
-        mode=dict(type='str', required=True, choices=['create', 'delete', 'fetch', 'upload', 'set-metadata', 'delete-metadata']),
+        mode=dict(type='str', required=True,
+                  choices=['create', 'delete', 'fetch', 'set-metadata', 'delete-metadata']),
         delete_with_all_objects=dict(type='bool', default=False, required=False),
         overwrite=dict(type='bool', default=False, required=False),
         ignore_nonexistent_container=dict(type='bool', default=False, required=False)
     )
+    module_kwargs = dict(
+        required_if=[
+            ('mode', 'fetch', ['object'])
+        ]
+    )
 
-    def create(self, container, object):
+    def create(self, container, object=None):
 
         content = self.params['content']
         data = {}
@@ -266,7 +285,7 @@ class SwiftModule(OTCModule):
         changed = True
         self.exit(changed=changed, **data)
 
-    def set_metadata(self, container, object):
+    def set_metadata(self, container, object=None):
 
         metadata = self.params["metadata"]
         changed = False
@@ -291,7 +310,7 @@ class SwiftModule(OTCModule):
 
         self.exit(changed=changed, **data)
 
-    def delete_metadata(self, container, object):
+    def delete_metadata(self, container, object=None):
         keys = self.params["keys"]
         changed = False
         if not object:
@@ -324,10 +343,9 @@ class SwiftModule(OTCModule):
         except self.sdk.exceptions.ResourceNotFound:
             return False
 
-    def delete(self, container, object):
+    def delete(self, container, object=None):
 
         if not object:
-
             if self._container_exist(container):
                 objects = []
                 for raw in self.conn.object_store.objects(container):
