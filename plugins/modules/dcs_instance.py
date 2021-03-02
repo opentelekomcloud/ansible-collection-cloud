@@ -15,48 +15,81 @@ DOCUMENTATION = '''
 module: dcs_instance
 short_description: Manage DCS Instances on Open Telekom Cloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.1.2"
+version_added: "0.8.0"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Manage DCS Instances on Open Telekom Cloud
 options:
-  auto_placement:
+  name:
     description:
-      - Specifies whether to allow an ECS to be placed on any available DeH if
-      - its DeH ID is not specified during its creation.
+      - Specifies the name of the instance
     type: str
-    default: 'on'
-    choices: ['on', 'off']
-  availability_zone:
+  description:
     description:
-      - Specifies the Availability zone to which the Dedicated host belongs.
-      - Mandatory for DeH creation.
-    type: str
-  host_type:
-    description:
-      - Specifies the DeH type.
-      - Mandatory for DeH creation.
+      - Specifies the description of the instance
     type: str
   id:
     description:
-      - ID of the DeH.
-      - Parameter is usable for update or deletion of a DeH host.
+      - ID of the instance. Needed when modifying an instance
     type: str
-  name:
+  engine:
     description:
-      - Name or ID of the DeH.
-      - Mandatory for DeH creation.
+      - Cache engine
     type: str
-  quantity:
+    default: Redis
+  engine_version:
     description:
-      - Number of DeHs to allocate.
+      - Cache Engine Version
+    type: str
+    default: 3.0
+  capacity:
+    description:
+      - Cache capacity in GB
     type: int
-    default: 1
-  tags:
+  password:
     description:
-      - Specifies the DeH tags.
+      - Password of a DCS instance
+      - Password must meet following criteria
+      - String 8 to 32 chars, different than the old one, at least 3 of the types (Lowercase, Uppercase, Digits, Special)
+    type: str
+  vpc_id:
+    description:
+      - VPC ID
+    type: str
+  security_group_id:
+    description:
+      - ID of the Security Group where the instance belongs to
+    type: str
+  subnet_id:
+    description:
+      - Network ID of the Subnet
+    type: str
+  available_zones:
+    description:
+      - ID of the AZ where the cache node resides and which has available ressources.
     type: list
-    elements: dict
+    elements: str
+  product_id:
+    description:
+      - ID of the product that can be created
+    type: str
+  instance_backup_policy:
+    description:
+      - Backup policy
+    type: dict
+    elements: list
+  maintain_begin:
+    description:
+      - Time at which the maintenance time window starts.
+      - Format   HH mm ss
+      - Must be set in pairs with maintain_end
+    type: str
+  maintain_end:
+    description:
+      - Time at which the maintenance time window ends.
+      - Format   HH mm ss
+      - Must be set in pairs with maintain_begin
+    type: str
   state:
     choices: [present, absent]
     default: present
@@ -67,67 +100,134 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 deh_host:
-    description: Dictionary of DeH host
+    description: Dictionary of DCS instance
     returned: changed
     type: dict
     sample: {
-        deh_host: {
-          "allocated_at": null,
-          "auto_placement": "on",
-          "availability_zone": "eu-de-01",
-          "available_memory": null,
-          "available_vcpus": null,
-          "dedicated_host_ids": [
-              "6d113075-038c-403c-b9cd-fc567f1fd123"
-          ],
-          "host_properties": null,
-          "host_type": "s2-medium",
-          "id": null,
-          "instance_total": null,
-          "instance_uuids": null,
-          "name": "deh-host",
-          "project_id": null,
-          "quantity": 1,
-          "released_at": null,
-          "status": null,
-          "tags": [
-              {
-                  "key": "key1",
-                  "value": "value1"
-              },
-              {
-                  "key": "key2",
-                  "value": "value2"
-              }
-          ]
+        "dcs_instance": {
+            "available_zones": [
+                "123456786ce4e948da0b97d9a7d62fb"
+            ],
+            "backup_policy": {
+                "backup_policy_id": "12345678-6d67-4b79-a9b8-0ba20b365070",
+                "created_at": "2021-03-01T12:43:05.233Z",
+                "policy": {
+                    "backup_type": "manual",
+                    "periodical_backup_plan": {
+                        "backup_at": [
+                            1,
+                            2,
+                            3,
+                            4
+                        ],
+                        "begin_at": "00:00-01:00",
+                        "period_type": "weekly",
+                        "timezone_offset": null
+                    },
+                    "save_days": 2
+                },
+                "tenant_id": "12345678a13b49529d2e2c3646691288",
+                "updated_at": "2021-03-02T08:59:16.069Z"
+            },
+            "capacity": 8,
+            "charging_mode": 0,
+            "created_at": "2021-03-01T12:43:05.245Z",
+            "description": "",
+            "domain_name": "",
+            "engine": "Redis",
+            "engine_version": "3.0",
+            "error_code": null,
+            "id": "12345678-20fb-441b-a0cd-46369a9f7db0",
+            "internal_version": null,
+            "ip": "192.168.10.177",
+            "location": {
+                "cloud": "otc",
+                "project": {
+                    "domain_id": null,
+                    "domain_name": null,
+                    "id": "12345678a13b49529d2e2c3646691288",
+                    "name": "eu-de"
+                },
+                "region_name": "eu-de",
+                "zone": null
+            },
+            "lock_time": null,
+            "lock_time_left": null,
+            "maintain_begin": "22:00:00",
+            "maintain_end": "02:00:00",
+            "max_memory": 6554,
+            "message": null,
+            "name": "test_dcs",
+            "order_id": null,
+            "password": null,
+            "port": 6379,
+            "product_id": "OTC_DCS_MS",
+            "resource_spec_code": "dcs.master_standby",
+            "result": null,
+            "retry_times_left": null,
+            "security_group_id": "12345678-b782-4aff-8311-19896597fd4e",
+            "security_group_name": "sg-test",
+            "status": "RUNNING",
+            "subnet_cidr": "192.168.10.0/24",
+            "subnet_id": "12345678-ca80-4b49-bbbb-85ea9b96f8b3",
+            "subnet_name": "subnet-sebastian",
+            "used_memory": 4,
+            "user_id": "1234567890bb4c6f81bc358d54693962",
+            "user_name": "sgode",
+            "vpc_id": "12345678-dc40-4e3a-95b1-5a0756441e12",
+            "vpc_name": "vpc-test"
         }
     }
 '''
 
 EXAMPLES = '''
-# Allocate Dedicated host
-- opentelekomcloud.cloud.deh_host:
-    cloud: otc
-    availability_zone: eu-de-01
-    host_type: s2-medium
-    name: "{{ deh_host_name }}"
-    state: present
-    quantity: 1
-    tags:
-      - key: key1
-        value: value1
-      - key: key2
-        value: value2
-  register: deh
+# Create DCS Instance
+- opentelekomcloud.cloud.dcs_instance:
+    name: "dcs_test"
+    password: "Thatson3v3rysecureP4ssw0rd"
+    capacity: "4"
+    vpc_id: 12345678-dc40-4e3a-95b1-5a0756441e12
+    security_group_id: 12345678-b782-4aff-8311-19896597fd4e
+    subnet_id: 12345678-ca80-4b49-bbbb-85ea9b96f8b3
+    available_zones:
+        - bf84aba586ce4e948da0b97d9a7d62fb
+    product_id: OTC_DCS_MS
+    instance_backup_policy:
+        save_days: "2"
+        backup_type: "manual"
+        periodical_backup_plan:
+        begin_at: "00:00-01:00"
+        period_type: "weekly"
+        backup_at:
+            - 1
+            - 2
+            - 3
+            - 4
+    maintain_begin: "22:00:00"
+    maintain_end: "02:00:00"
 
-# Modify Dedicated Host
-- opentelekomcloud.cloud.deh_host:
-    cloud: otc
-    id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
-    auto_placement: off
-  when:
-    - deh is defined
-  register: deh
+# Modify DCS Instance
+- opentelekomcloud.cloud.dcs_instance:
+    name: "dcs_test_2"
+    id: 12345678-dc40-4e3a-95b1-5a0756441e12
+    description: "Test-description"
+    instance_backup_policy:
+        save_days: "2"
+        backup_type: "manual"
+        periodical_backup_plan:
+        begin_at: "00:00-01:00"
+        period_type: "weekly"
+        backup_at:
+            - 1
+            - 2
+            - 3
+    maintain_begin: "23:00:00"
+    maintain_end: "03:00:00"
+
+# Delete DCS Instance
+- opentelekomcloud.cloud.dcs_instance:
+    name: "dcs_test_2"
+    state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -140,14 +240,14 @@ class DehHostModule(OTCModule):
         description=dict(required=False),
         engine=dict(required=False, default='Redis'),
         engine_version=dict(required=False, default='3.0'),
-        capacity=dict(required=False, type='int', default=2),
+        capacity=dict(required=False, type='int'),
         password=dict(required=False),
         vpc_id=dict(required=False),
         security_group_id=dict(required=False),
         subnet_id=dict(required=False),
-        available_zones=dict(required=False, type='list'),
+        available_zones=dict(required=False, type='list', elements='str'),
         product_id=dict(required=False),
-        instance_backup_policy=dict(required=False, type='dict'),
+        instance_backup_policy=dict(required=False, type='dict', elements='list'),
         maintain_begin=dict(required=False),
         maintain_end=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present')
