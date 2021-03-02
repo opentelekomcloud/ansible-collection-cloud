@@ -77,7 +77,7 @@ options:
     description:
       - Backup policy
     type: dict
-    elements: list
+    elements: str
   maintain_begin:
     description:
       - Time at which the maintenance time window starts.
@@ -99,7 +99,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-deh_host:
+dcs_instance:
     description: Dictionary of DCS instance
     returned: changed
     type: dict
@@ -233,7 +233,7 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class DehHostModule(OTCModule):
+class DcsInstanceModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
         id=dict(required=False),
@@ -247,7 +247,7 @@ class DehHostModule(OTCModule):
         subnet_id=dict(required=False),
         available_zones=dict(required=False, type='list', elements='str'),
         product_id=dict(required=False),
-        instance_backup_policy=dict(required=False, type='dict', elements='list'),
+        instance_backup_policy=dict(required=False, type='dict', elements='str'),
         maintain_begin=dict(required=False),
         maintain_end=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present')
@@ -501,7 +501,7 @@ class DehHostModule(OTCModule):
 
 
 def main():
-    module = DehHostModule()
+    module = DcsInstanceModule()
     module()
 
 
