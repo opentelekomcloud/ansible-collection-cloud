@@ -49,13 +49,8 @@ options:
         - Key/value pairs to be set as metadata on the container or object.
         - Both custom and system metadata can be set.
         - Custom metadata are keys and values defined by the user.
-        - The system metadata keys are:
-                `- content_type`
-                `- content_encoding`
-                `- content_disposition`
-                `- delete_after`
-                `- delete_at`
-                `- is_content_type_detected`
+        - The system metadata keys are content_type, content_encoding, content_disposition, delete_after,\
+         delete_at, is_content_type_detected
     type: dict
     required: false
   keys:
@@ -228,7 +223,7 @@ class SwiftModule(OTCModule):
         content=dict(type='str', required=False),
         dest=dict(type='path', required=False),
         metadata=dict(type='dict', required=False),
-        keys=dict(type='list', required=False),
+        keys=dict(type='list', required=False, elements='str'),
         mode=dict(type='str', required=True,
                   choices=['create', 'delete', 'fetch', 'set-metadata', 'delete-metadata']),
         delete_with_all_objects=dict(type='bool', default=False, required=False),

@@ -11,7 +11,7 @@
         path_file: ./
         content_file: testfile.txt
         dest: "./dest.txt"
-        content_var:
+        content_var: "content"
 
     - name: Create file with content
       file:
@@ -38,11 +38,11 @@
           - container is success
           - container is changed
 
-    - name: Create second object
+    - name: Create second object with a content from variable
       opentelekomcloud.cloud.object:
         container: "{{ container_name }}"
         object: "{{ second_object_name }}"
-        content: "{{ path_file }}/{{ content_file }}"
+        content: "{{ content_var }}"
         mode: create
       register: second_obj
 
