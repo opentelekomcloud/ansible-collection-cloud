@@ -57,7 +57,7 @@ options:
 '''
 
 RETURN = '''
-as_instances:
+scaling_instances:
   description:
     - Query Instances in an AS Group based on search criteria.
   type: complex
@@ -194,36 +194,36 @@ class ASPolicyInfoModule(OTCModule):
         query = {}
 
         if as_group:
-            group = self.conn.auto_scaling.find_group(
-                name_or_id=as_group
-            )
-
-            if not group:
-                self.fail(
-                    changed=False,
-                    msg='AS group %s not found' % as_group
+            try:
+                group = self.conn.auto_scaling.find_group(
+                    name_or_id=as_group,
+                    ignore_missing=False
                 )
-
-            else:
                 query['group'] = group.id
 
-                if lifecycle_state:
-                    query['lifecycle_state'] = lifecycle_state.upper()
+            except self.sdk.exceptions.ResourceNotFound:
+                self.fail(
+                    changed=False,
+                    msg='Scaling group %s not found' % as_group
+                )
 
-                if health_status:
-                    query['health_status'] = health_status
+            if lifecycle_state:
+                query['lifecycle_state'] = lifecycle_state.upper()
 
-                if start_number >= 0:
-                    query['marker'] = start_number
+            if health_status:
+                query['health_status'] = health_status
 
-                if 0 <= limit <= 100:
-                    query['limit'] = limit
+            if start_number >= 0:
+                query['marker'] = start_number
 
-                else:
-                    self.fail(
-                        changed=False,
-                        msg='Limit is out of range'
-                    )
+            if 0 <= limit <= 100:
+                query['limit'] = limit
+
+            else:
+                self.fail(
+                    changed=False,
+                    msg='Limit is out of range'
+                )
 
         for raw in self.conn.auto_scaling.instances(**query):
             dt = raw.to_dict()
