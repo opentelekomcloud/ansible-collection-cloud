@@ -1,18 +1,34 @@
 ---
-- hosts: localhost
-  tasks:
+# author: @tischrei
+- module_defaults:
+    opentelekomcloud.cloud.object:
+      cloud: "{{ test_cloud }}"
+
+  block:
     - name:
       set_fact:
         container_name: "test-container"
         first_object_name: "first-object"
         second_object_name: "second-object"
-        content_file: "./object.txt"
+        path_file: ./
+        content_file: testfile.txt
+        dest: "./dest.txt"
+
+    - name: Create file with content
+      file:
+        path: "{{ path_file }}/{{ content_file }}"
+        state: touch
+
+    - name: Write to file with content
+      shell:
+        chdir: "{{ path_file }}"
+        cmd: "echo 'Some text.' > {{ content_file }}"
 
     - name: Create container and the first object
       opentelekomcloud.cloud.object:
         container: "{{ container_name }}"
         object: "{{ first_object_name }}"
-        content: "{{ content_file }}"
+        content: "{{ path_file }}/{{ content_file }}"
         ignore_nonexistent_container: true
         mode: create
       register: container
@@ -69,6 +85,33 @@
           - obj_with_meta is success
           - obj_with_meta is changed
 
+    - name: Fetch object content to the terminal
+      opentelekomcloud.cloud.object:
+        container: "{{ container_name }}"
+        object: "{{ first_object_name }}"
+        mode: fetch
+      register: fetched_content_tr
+
+    - name: assert result
+      assert:
+        that:
+          - fetched_content_tr is success
+          - fetched_content_tr is changed
+
+    - name: Fetch object content to the file
+      opentelekomcloud.cloud.object:
+        container: "{{ container_name }}"
+        object: "{{ first_object_name }}"
+        mode: fetch
+        dest: "{{ dest }}"
+      register: fetched_content_fl
+
+    - name: assert result
+      assert:
+        that:
+          - fetched_content_fl is success
+          - fetched_content_fl is changed
+
     - name: Delete object metadata
       opentelekomcloud.cloud.object:
         container: "{{ container_name }}"
@@ -109,3 +152,23 @@
         that:
           - deleted_obj is success
           - deleted_obj is changed
+
+  always:
+    - block:
+      # Cleanup
+    - name: Delete container with left object
+      opentelekomcloud.cloud.object:
+        container: "{{ container_name }}"
+        delete_with_all_objects: true
+        mode: delete
+
+    - name: Delete file with content
+      file:
+        path: "{{ path_file }}/{{ content_file }}"
+        state: absent
+
+    - name: Delete file dest
+      file:
+        path: "{{ dest }}"
+        state: absent
+    ignore_errors: yes

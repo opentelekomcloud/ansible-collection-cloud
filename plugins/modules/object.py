@@ -24,112 +24,108 @@ options:
   container:
     description: Name of container in Swift.
     type: str
-    required: yes
+    required: true
   object:
     description: Name of object in Swift.
     type: str
+    required: false
   content:
     description: Content to upload, can be filepath or variable.
     type: str
+    required: false
   dest:
     description: The destination file path when downloading an object with a 'fetch' operation.
     type: path
+    required: false
   delete_with_all_objects:
     description: 
         - Whether the container should be deleted with all objects or not.
         - Without this parameter set to "true", an attempt to delete a container that contains objects will fail.
     type: bool
     default: False
-    required: no
+    required: false
   metadata:
     description:
     type: dict
-    required: no
+    required: false
   keys:
     description: Keys from 'metadata' to be deleted. Used with mode='delete-metadata'.
     type: list
-    required: no
+    required: false
   mode:
     description: Switches the module behaviour.
-    required: yes
-    choices: 'create', 'delete', 'fetch', 'upload', 'set-metadata', 'delete-metadata']
+    required: true
+    choices: ['create', 'delete', 'fetch', 'upload', 'set-metadata', 'delete-metadata']
     type: str
   overwrite:
     description:
       - Whether object should be overwritten or not in case it is already exists.
     type: bool
     default: False
-    required: no
+    required: false
   ignore_nonexistent_container:
-    description:
-      - Whether container should be created or not in case it doesn't exist, but object is set.
+    description: Whether container should be created or not in case it doesn't exist, but object is set.
     type: bool
     default: False
-    required: no
+    required: false
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-swift:
-  description: Container object and list of its objects.
-  type: complex
-  returned: On Success.
-  contains:
-    container:
-      description: Specifies the container.
-      type: dict
-      sample: 
-        {
-          "bytes": 5449,
-          "bytes_used": 5449,
-          "content_type": null,
-          "count": 1,
-          "id": "otc",
-          "if_none_match": null,
-          "is_content_type_detected": null,
-          "is_newest": null,
-          "meta_temp_url_key": null,
-          "meta_temp_url_key_2": null,
-          "name": "otc",
-          "object_count": 1,
-          "read_ACL": null,
-          "sync_key": null,
-          "sync_to": null,
-          "timestamp": null,
-          "versions_location": null,
-          "write_ACL": null
-        }
-    objects:
-      description: Specifies the list of objects in container.
-        Shows when container param is not Null
-      type: list
-      sample: [
-        {
-          "_bytes": 273,
-          "_content_type": "text/plain",
-          "_hash": "58c6362a0e013dae97594abe7b06d801",
-          "_last_modified": "2021-02-18T14:23:55.259610",
-          "accept_ranges": null,
-          "content_disposition": null,
-          "content_encoding": null,
-          "content_length": 273,
-          "content_type": "text/plain",
-          "copy_from": null,
-          "delete_after": null,
-          "delete_at": null,
-          "etag": "58c6362a0e013dae97594abe7b06d801",
-          "expires_at": null,
-          "id": "my.txt",
-          "last_modified_at": "2021-02-18T14:23:55.259610",
-          "multipart_manifest": null,
-          "name": "my.txt",
-          "object_manifest": null,
-          "range": null,
-          "signature": null,
-          "timestamp": null,
-          "transfer_encoding": null
-        }
-      ]
+container:
+  description: Specifies the container.
+  type: dict
+  sample: 
+    {
+      "bytes": 5449,
+      "bytes_used": 5449,
+      "content_type": null,
+      "count": 1,
+      "id": "otc",
+      "if_none_match": null,
+      "is_content_type_detected": null,
+      "is_newest": null,
+      "meta_temp_url_key": null,
+      "meta_temp_url_key_2": null,
+      "name": "otc",
+      "object_count": 1,
+      "read_ACL": null,
+      "sync_key": null,
+      "sync_to": null,
+      "timestamp": null,
+      "versions_location": null,
+      "write_ACL": null
+    }
+objects:
+  description: Specifies the list of objects in container.
+  type: list
+  sample: [
+    {
+      "_bytes": 273,
+      "_content_type": "text/plain",
+      "_hash": "58c6362a0e013dae97594abe7b06d801",
+      "_last_modified": "2021-02-18T14:23:55.259610",
+      "accept_ranges": null,
+      "content_disposition": null,
+      "content_encoding": null,
+      "content_length": 273,
+      "content_type": "text/plain",
+      "copy_from": null,
+      "delete_after": null,
+      "delete_at": null,
+      "etag": "58c6362a0e013dae97594abe7b06d801",
+      "expires_at": null,
+      "id": "object",
+      "last_modified_at": "2021-02-18T14:23:55.259610",
+      "multipart_manifest": null,
+      "name": "my.txt",
+      "object_manifest": null,
+      "range": null,
+      "signature": null,
+      "timestamp": null,
+      "transfer_encoding": null
+    }
+  ]
 '''
 
 EXAMPLES = '''
@@ -294,14 +290,20 @@ class SwiftModule(OTCModule):
         changed = False
 
         if self._object_exist(object, container):
+
             content = self.conn.object_store.download_object(object, container)
-            content = content.decode('utf-8')
             changed = True
-            with open(dest, 'w+') as f:
-                f.write(content)
+
+            if dest:
+                with open(dest, 'wb+') as f:
+                    f.write(content)
+                self.exit(changed=changed)
+            else:
+                data = content
+                self.exit(changed=changed, data=data)
+
         else:
             self.fail_exit(msg="This object doesn't exist")
-        self.exit(changed=changed)
 
     def run(self):
         container = self.params['container']
