@@ -159,29 +159,117 @@ class DehHostModule(OTCModule):
     def run(self):
         changed = False
         query = {}
+        if self.params['id']:
+            nameid = self.params['id']
+        elif self.params['name']:
+            nameid = self.params['name']
+        else:
+            self.exit(
+                changed=False,
+                message=('No Name or ID provided, but required!'),
+                failed=True
+            )
+
+        instance = self.conn.dcs.find_instance(
+            name_or_id=nameid,
+            ignore_missing=True
+        )
+
+        # Instance Deletion
+        if self.params['state'] == 'absent':
+            if instance:
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
+                dcs_instance = self.conn.dcs.delete_instance(instance.id)
+                self.exit(changed=True, dcs_instance=dcs_instance)
+
         if self.params['state'] == 'present':
-            if self.params['description']:
-                query['description'] = self.params['description']
-            if self.params['name']:
-                query['name'] = self.params['name']
-                nameid = self.params['name']
-            else:
-                if not self.params['id']:
+            attrs = {}
+            # Modifying an Instance
+            if instance:
+                # Scaling up
+                if instance.to_dict()['capacity'] < self.params['capacity']:
+                    if self.ansible.check_mode:
+                        self.exit(changed=True)
+                    dcs_instance = self.conn.dcs.extend_instance(instance.id, self.params['capacity'])
+                    self.exit(changed=True, dcs_instance=dcs_instance.to_dict(), message='Scaling instance up, ignoring other params')
+                elif instance.to_dict()['capacity'] > self.params['capacity']:
                     self.exit(
                         changed=False,
-                        message=('No Name or ID provided, but required!'),
+                        message=('''When extending an DCS Instance the capacity needs to be larger!
+                                The Instance has a capacity of %s and new provided capacity was %s'''
+                                 % (instance.to_dict()['capacity'], self.params['capacity'])),
                         failed=True
                     )
-                nameid = self.params['id']
+                # Changing other params
+                elif instance.to_dict()['capacity'] == self.params['capacity']:
+                    changed = False
+                    if instance.to_dict()['name'] != self.params['name']:
+                        changed = True
+                        attrs['name'] = self.params['name']
+                    if instance.to_dict()['description'] != self.params['description']:
+                        changed = True
+                        attrs['description'] = self.params['description']
+                    if instance.to_dict()['security_group_id'] != self.params['security_group_id']:
+                        changed = True
+                        attrs['security_group_id'] = self.params['security_group_id']
+                    if (instance.to_dict()['maintain_begin'] != self.params['maintain_begin']) and \
+                       (instance.to_dict()['maintain_end'] != self.params['maintain_end']):
+                        changed = True
+                        attrs['maintain_begin'] = self.params['maintain_begin']
+                        attrs['maintain_end'] = self.params['maintain_end']
+                    elif (instance.to_dict()['maintain_begin'] != self.params['maintain_begin']) or \
+                         (instance.to_dict()['maintain_end'] != self.params['maintain_end']):
+                        self.exit(
+                            changed=False,
+                            message=('''You need to specify maintain_begin and maintain_end when trying to change one of them'''),
+                            failed=True
+                        )
+                    # The Query API currently will always give a NULL response for backup_policy so this will always result in "changed"
+                    # There's no way to go around this
+                    if instance.to_dict()['backup_policy'] != self.params['instance_backup_policy']:
+                        changed = True
+                        instance_backup_policy_var = self.params['instance_backup_policy']
+                        # In case the user didn't specify timezone_offset or something we need to give the API an null type so it won't throw an error
+                        try:
+                            var = (instance_backup_policy_var['periodical_backup_plan']['timezone_offset'])
+                        except Exception:
+                            instance_backup_policy_var['periodical_backup_plan']['timezone_offset'] = None
+                        try:
+                            var = (instance_backup_policy_var['save_days'])
+                        except Exception:
+                            instance_backup_policy_var['save_days'] = None
+                        try:
+                            var = (instance_backup_policy_var['backup_type'])
+                        except Exception:
+                            instance_backup_policy_var['backup_type'] = None
 
-            instance = self.conn.dcs.find_instance(
-                name_or_id=nameid,
-                ignore_missing=True
-            )
+                        attrs['instance_backup_policy'] = {
+                            "save_days": instance_backup_policy_var['save_days'],
+                            "backup_type": instance_backup_policy_var['backup_type'],
+                            "periodical_backup_plan": {
+                                "begin_at": instance_backup_policy_var['periodical_backup_plan']['begin_at'],
+                                "period_type": instance_backup_policy_var['periodical_backup_plan']['period_type'],
+                                "backup_at": instance_backup_policy_var['periodical_backup_plan']['backup_at'],
+                                "timezone_offset": instance_backup_policy_var['periodical_backup_plan']['timezone_offset']
+                            }
+                        }
+
+                    if self.ansible.check_mode:
+                        self.exit(changed=True)
+                    dcs_instance = self.conn.dcs.update_instance(instance.id, **attrs)
+                    self.exit(changed=True, dcs_instance=dcs_instance.to_dict())
 
             # Creating a new Instance
             if not instance:
-                attrs = {}
+                if self.params['name']:
+                    name_var = self.params['name']
+                else:
+                    self.exit(
+                        changed=False,
+                        message=('No name param provided, but required!'),
+                        failed=True
+                    )
                 if self.params['engine']:
                     engine_var = self.params['engine']
                 else:
@@ -302,7 +390,8 @@ class DehHostModule(OTCModule):
                             "timezone_offset": instance_backup_policy_var['periodical_backup_plan']['timezone_offset']
                         }
                     }
-
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 dcs_instance = self.conn.dcs.create_instance(**attrs)
                 self.exit(changed=True, dcs_instance=dcs_instance.to_dict())
 
