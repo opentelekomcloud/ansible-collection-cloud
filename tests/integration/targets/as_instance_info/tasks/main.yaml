@@ -1,0 +1,130 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.as_instance_info:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.as_group:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_network:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_subnet:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_router:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        as_group_name: "{{ ( prefix + '_as_group') }}"
+        network_name: "{{ ( prefix + '_network') }}"
+        subnet_name: "{{ ( prefix + '_subnet') }}"
+        router_name:  "{{ ( prefix + '_router') }}"
+
+    - name: Create network
+      openstack.cloud.os_network:
+        name: "{{ network_name }}"
+        state: present
+      register: network
+
+    - name: Create subnet
+      openstack.cloud.os_subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ network.network.name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: subnet
+
+    - name: Create router
+      openstack.cloud.os_router:
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ network.network.name }}"
+            subnet: "{{ subnet.subnet.name }}"
+      register: router
+
+    - name: Create as group
+      opentelekomcloud.cloud.as_group:
+        scaling_group_name: "{{ as_group_name }}"
+        networks: [{'id': "{{ network.network.id }}"}]
+        router: "{{ router.router.id }}"
+      register: as_group
+
+    - name: Get list of AS instances using as group id
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_instances
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is success
+          - as_instances is not changed
+          - as_instances['scaling_instances']|length == 0
+
+    - name: Get list of AS instances using as group name
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.name }}"
+      register: as_instances
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is success
+          - as_instances is not changed
+          - as_instances['scaling_instances']|length == 0
+
+    - name: Get error message that required parameter is missing
+      opentelekomcloud.cloud.as_instance_info:
+      register: as_instances
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is not success
+          - as_instances is not changed
+          - 'as_instances.msg == "missing required arguments: scaling_group"'
+
+    - name: Get error when AS group id is missing
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group:
+      register: as_instances
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is not success
+          - as_instances is not changed
+          - 'as_instances.msg == "Auto Scaling group is missing"'
+
+  always:
+    - block:
+      # Cleanup
+      - name: Delete as group
+        opentelekomcloud.cloud.as_group:
+          scaling_group_name: "{{ as_group_name }}"
+          state: absent
+        register: dropped_as_group
+
+      - name: Drop existing router
+        openstack.cloud.os_router:
+          name: "{{ router.router.name }}"
+          state: absent
+
+      - name: Drop existing subnet
+        openstack.cloud.os_subnet:
+          name: "{{ subnet.subnet.name }}"
+          state: absent
+
+      - name: Drop existing network
+        openstack.cloud.os_network:
+          name: "{{ network.network.name }}"
+          state: absent
+      ignore_errors: true
