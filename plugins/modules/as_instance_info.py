@@ -198,7 +198,13 @@ class ASPolicyInfoModule(OTCModule):
                 name_or_id=as_group
             )
 
-            if group:
+            if not group:
+                self.fail(
+                    changed=False,
+                    msg='AS group %s not found' % as_group
+                )
+
+            else:
                 query['group'] = group.id
 
                 if lifecycle_state:
@@ -218,18 +224,6 @@ class ASPolicyInfoModule(OTCModule):
                         changed=False,
                         msg='Limit is out of range'
                     )
-
-            else:
-                self.fail(
-                    changed=False,
-                    msg='AS group %s not found' % as_group
-                )
-
-        else:
-            self.fail(
-                changed=False,
-                msg='Auto Scaling group is missing'
-            )
 
         for raw in self.conn.auto_scaling.instances(**query):
             dt = raw.to_dict()
