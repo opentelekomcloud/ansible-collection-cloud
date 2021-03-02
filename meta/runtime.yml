@@ -5,6 +5,9 @@ action_groups:
     - as_config
     - as_config_info
     - as_group
+    - as_group_info
+    - as_instance_info
+    - as_policy
     - as_policy_info
     - availability_zone_info
     - as_policy
