@@ -77,7 +77,6 @@ options:
     description:
       - Backup policy
     type: dict
-    elements: str
   maintain_begin:
     description:
       - Time at which the maintenance time window starts.
@@ -247,7 +246,7 @@ class DcsInstanceModule(OTCModule):
         subnet_id=dict(required=False),
         available_zones=dict(required=False, type='list', elements='str'),
         product_id=dict(required=False),
-        instance_backup_policy=dict(required=False, type='dict', elements='str'),
+        instance_backup_policy=dict(required=False, type='dict'),
         maintain_begin=dict(required=False),
         maintain_end=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present')
