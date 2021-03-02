@@ -1,5 +1,4 @@
 ---
-# author: @tischrei
 - module_defaults:
     opentelekomcloud.cloud.object:
       cloud: "{{ test_cloud }}"

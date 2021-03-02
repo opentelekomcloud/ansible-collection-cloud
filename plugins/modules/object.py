@@ -38,7 +38,7 @@ options:
     type: path
     required: false
   delete_with_all_objects:
-    description: 
+    description:
         - Whether the container should be deleted with all objects or not.
         - Without this parameter set to "true", an attempt to delete a container that contains objects will fail.
     type: bool
@@ -58,8 +58,7 @@ options:
     choices: ['create', 'delete', 'fetch', 'upload', 'set-metadata', 'delete-metadata']
     type: str
   overwrite:
-    description:
-      - Whether object should be overwritten or not in case it is already exists.
+    description: Whether object should be overwritten or not in case it is already exists (when 'create' operation).
     type: bool
     default: False
     required: false
@@ -75,7 +74,7 @@ RETURN = '''
 container:
   description: Specifies the container.
   type: dict
-  sample: 
+  sample:
     {
       "bytes": 5449,
       "bytes_used": 5449,
@@ -129,8 +128,80 @@ objects:
 '''
 
 EXAMPLES = '''
-#
+# Create empty container
+ - opentelekomcloud.cloud.object:
+    container: "new-container"
+    mode: create
 
+# Create object and container if it doesn't exist
+ - opentelekomcloud.cloud.object:
+    container: "new-container"
+    object: "new-object"
+    content: "./content.txt"
+    ignore_nonexistent_container: true
+    mode: create
+
+# Create object in container with a content from file
+ - opentelekomcloud.cloud.object:
+    container: "new-container"
+    object: "new-object"
+    content: "./content.txt"
+    mode: create
+
+# Create object in container with a content from variable and overwrite it when object already exists
+ - opentelekomcloud.cloud.object:
+    container: "new-container"
+    object: "new-object"
+    content:
+      obj:
+        var1: 1
+        var2: 2
+    overwrite: true
+    mode: create
+
+# Set metadata for object
+ - opentelekomcloud.cloud.object:
+    container: "new-container"
+    object: "new-object"
+    metadata: "content_encoding='utf-8'"
+    mode: set-metadata
+
+# Delete some keys from metadata of a container
+ - opentelekomcloud.cloud.object:
+    container: "new-container"
+    keys:
+        - content_type
+    mode: delete-metadata
+
+# Fetch object to file which located in 'dest' (if file doesn't exist, will be created)
+ - opentelekomcloud.cloud.object:
+    container: "new-container"
+    object: "new-object"
+    mode: fetch
+    dest: "./newfile.txt"
+
+# Output content of the object to the terminal
+ - opentelekomcloud.cloud.object:
+    container: "new-container"
+    object: "new-object"
+    mode: fetch
+
+# Delete object
+ - opentelekomcloud.cloud.object:
+    container: "new-container"
+    object: "new-object"
+    mode: delete
+
+# Delete container
+ - opentelekomcloud.cloud.object:
+    container: "new-container"
+    mode: delete
+
+# Delete container and its objects
+ - opentelekomcloud.cloud.object:
+    container: "new-container"
+    delete_with_all_objects: true
+    mode: delete
 '''
 
 import os
