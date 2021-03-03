@@ -240,17 +240,14 @@ class SwiftModule(OTCModule):
 
         content = self.params['content']
         data = {}
-        changed = False
         if not object:
             if not self._container_exist(container):
                 container_data = self.conn.object_store.create_container(name=container).to_dict()
                 container_data.pop('location')
                 data['container'] = container_data
-                changed = True
-                self.exit_json(changed=changed, **data)
+                self.exit_json(changed=True, **data)
             else:
-                changed = False
-                self.exit_json(changed=changed)
+                self.exit_json(changed=False)
 
         if not self._container_exist(container):
             if self.params['ignore_nonexistent_container']:
@@ -277,45 +274,40 @@ class SwiftModule(OTCModule):
         object_data.pop('location')
         object_data['content'] = content
         data['object'] = object_data
-        changed = True
-        self.exit(changed=changed, **data)
+        self.exit(changed=True, **data)
 
     def set_metadata(self, container, object=None):
 
         metadata = self.params["metadata"]
-        changed = False
         data = {}
         if not object:
             if self._container_exist(container):
                 new_container = self.conn.object_store.set_container_metadata(container, **metadata).to_dict()
                 new_container.pop('location')
                 data['container'] = new_container
-                changed = True
-                self.exit(changed=changed, **data)
-            else:
-                self.fail_json(msg="Container doesn't exist")
+                self.exit(changed=True, **data)
+            self.fail_json(msg="Container doesn't exist")
 
-        if self._object_exist(object, container):
-            new_object = self.conn.object_store.set_object_metadata(object, container, **metadata).to_dict()
-            new_object.pop('location')
-            data['object'] = new_object
-            changed = True
-        else:
+        if not self._object_exist(object, container):
             self.fail_json(msg="Object doesn't exist")
 
-        self.exit(changed=changed, **data)
+        new_object = self.conn.object_store.set_object_metadata(object, container, **metadata).to_dict()
+        new_object.pop('location')
+        data['object'] = new_object
+
+        self.exit(changed=True, **data)
 
     def delete_metadata(self, container, object=None):
         keys = self.params["keys"]
-        changed = False
+
         if not object:
             if self._container_exist(container):
                 self.conn.object_store.delete_container_metadata(container=container, keys=keys)
-                changed = True
-                self.exit(changed=changed)
+                self.exit(changed=True)
             else:
                 self.fail_json(msg="Container doesn't exist")
 
+        changed = False
         if self._object_exist(object, container):
             self.conn.object_store.delete_object_metadata(obj=object, container=container, keys=keys)
             changed = True
@@ -341,6 +333,7 @@ class SwiftModule(OTCModule):
     def delete(self, container, object=None):
 
         if not object:
+            changed = False
             if self._container_exist(container):
                 objects = []
                 for raw in self.conn.object_store.objects(container):
@@ -356,8 +349,6 @@ class SwiftModule(OTCModule):
 
                 self.conn.object_store.delete_container(container=container)
                 changed = True
-            else:
-                changed = False
 
             self.exit(changed=changed)
 
@@ -371,7 +362,6 @@ class SwiftModule(OTCModule):
     def fetch(self, container, object):
 
         dest = self.params['dest']
-        changed = False
 
         if self._object_exist(object, container):
 
@@ -386,8 +376,7 @@ class SwiftModule(OTCModule):
                 data = content
                 self.exit(changed=changed, data=data)
 
-        else:
-            self.fail_exit(msg="This object doesn't exist")
+        self.fail_json(msg="This object doesn't exist")
 
     def run(self):
         container = self.params['container']
