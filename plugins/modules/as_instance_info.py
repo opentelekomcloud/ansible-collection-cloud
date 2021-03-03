@@ -193,37 +193,36 @@ class ASPolicyInfoModule(OTCModule):
         data = []
         query = {}
 
-        if as_group:
-            try:
-                group = self.conn.auto_scaling.find_group(
-                    name_or_id=as_group,
-                    ignore_missing=False
-                )
-                query['group'] = group.id
+        try:
+            group = self.conn.auto_scaling.find_group(
+                name_or_id=as_group,
+                ignore_missing=False
+            )
+            query['group'] = group.id
 
-            except self.sdk.exceptions.ResourceNotFound:
-                self.fail(
-                    changed=False,
-                    msg='Scaling group %s not found' % as_group
-                )
+        except self.sdk.exceptions.ResourceNotFound:
+            self.fail(
+                changed=False,
+                msg='Scaling group %s not found' % as_group
+            )
 
-            if lifecycle_state:
-                query['lifecycle_state'] = lifecycle_state.upper()
+        if lifecycle_state:
+            query['lifecycle_state'] = lifecycle_state.upper()
 
-            if health_status:
-                query['health_status'] = health_status
+        if health_status:
+            query['health_status'] = health_status
 
-            if start_number >= 0:
-                query['marker'] = start_number
+        if start_number >= 0:
+            query['marker'] = start_number
 
-            if 0 <= limit <= 100:
-                query['limit'] = limit
+        if 0 <= limit <= 100:
+            query['limit'] = limit
 
-            else:
-                self.fail(
-                    changed=False,
-                    msg='Limit is out of range'
-                )
+        else:
+            self.fail(
+                changed=False,
+                msg='Limit is out of range'
+            )
 
         for raw in self.conn.auto_scaling.instances(**query):
             dt = raw.to_dict()
