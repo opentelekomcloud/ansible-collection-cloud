@@ -165,8 +165,6 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class DcsInstanceParamsInfoModule(OTCModule):
     argument_spec = dict(
         id=dict(required=True),
-        beginTime=dict(required=False),
-        endTime=dict(required=False)
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -174,19 +172,13 @@ class DcsInstanceParamsInfoModule(OTCModule):
 
     def run(self):
         data = []
-        query = {}
 
-        query['instance'] = self.params['id']
-        if self.params['beginTime']:
-            query['beginTime'] = self.params['beginTime']
-        if self.params['endTime']:
-            query['endTime'] = self.params['endTime']
-
-        for raw in self.conn.dcs.restore_records(**query):
+        for raw in self.conn.dcs.backups(self.params['id']):
+            # raise Exception(raw.to_dict())
             dt = raw.to_dict()
             dt.pop('location')
-            data.append(dt)
-
+            data = dt
+        
         self.exit(
             changed=False,
             instances=data
