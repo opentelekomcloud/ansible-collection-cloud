@@ -30,7 +30,7 @@ options:
     type: str
     required: false
   content:
-    description: Content to upload, can be filepath or variable.
+    description: Content to upload, can be absolute filepath or variable.
     type: str
     required: false
   dest:
@@ -246,8 +246,7 @@ class SwiftModule(OTCModule):
                 container_data.pop('location')
                 data['container'] = container_data
                 self.exit_json(changed=True, **data)
-            else:
-                self.exit_json(changed=False)
+            self.exit_json(changed=False)
 
         if not self._container_exist(container):
             if self.params['ignore_nonexistent_container']:
