@@ -172,7 +172,7 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class ASPolicyInfoModule(OTCModule):
+class ASInstanceInfoModule(OTCModule):
     argument_spec = dict(
         scaling_group=dict(type='str', required=True),
         lifecycle_state=dict(type='str', required=False,
@@ -236,7 +236,7 @@ class ASPolicyInfoModule(OTCModule):
 
 
 def main():
-    module = ASPolicyInfoModule()
+    module = ASInstanceInfoModule()
     module()
 
 
