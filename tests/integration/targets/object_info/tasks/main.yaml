@@ -1,0 +1,14 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.object_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: List available containers
+      opentelekomcloud.cloud.object_info:
+      register: containers
+
+    - name: assert result
+      assert:
+        that:
+          - containers is success
+          - containers.swift.containers is defined
