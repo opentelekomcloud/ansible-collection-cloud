@@ -12,7 +12,7 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: dcs_instance_params_info
+module: dcs_instance_backup_info
 short_description: Get Instance Params
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.3.0"
@@ -52,14 +52,14 @@ instances:
 
 EXAMPLES = '''
 # Query Params
-- opentelekomcloud.cloud.dcs_instance_params_info:
+- opentelekomcloud.cloud.dcs_instance_backup_info:
         id: 12345678-20fb-441b-a0cd-46369a9f7db0
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class DcsInstanceParamsInfoModule(OTCModule):
+class DcsInstanceBackupInfoModule(OTCModule):
     argument_spec = dict(
         id=dict(required=True),
     )
@@ -83,7 +83,7 @@ class DcsInstanceParamsInfoModule(OTCModule):
 
 
 def main():
-    module = DcsInstanceParamsInfoModule()
+    module = DcsInstanceBackupInfoModule()
     module()
 
 
