@@ -39,7 +39,7 @@ options:
 '''
 
 RETURN = '''
-metrics:
+instances:
     description: Dictionary of Metrics
     returned: changed
     type: list
