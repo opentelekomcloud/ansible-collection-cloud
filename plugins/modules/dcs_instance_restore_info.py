@@ -13,12 +13,12 @@
 
 DOCUMENTATION = '''
 module: dcs_instance_restore_info
-short_description: Get Instance Params
+short_description: Get Instance Restore infos
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.3.0"
 author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Get Instance Statistics
+  - Get Instance Restore infos
 requirements: ["openstacksdk", "otcextensions"]
 options:
   id:

@@ -89,6 +89,15 @@ options:
       - Format   HH mm ss
       - Must be set in pairs with maintain_begin
     type: str
+  redis_config:
+    description:
+      - If this param is set for modification, only redis_config will be changed
+    type: dict
+  restart_instance:
+    description:
+      - Restart the instance. Do nothing else if true
+    type: bool
+    default: false
   state:
     choices: [present, absent]
     default: present
@@ -249,6 +258,8 @@ class DcsInstanceModule(OTCModule):
         instance_backup_policy=dict(required=False, type='dict'),
         maintain_begin=dict(required=False),
         maintain_end=dict(required=False),
+        redis_config=dict(required=False, type='dict'),
+        restart_instance=dict(required=False, type='bool', default='false'),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
@@ -286,13 +297,32 @@ class DcsInstanceModule(OTCModule):
             attrs = {}
             # Modifying an Instance
             if instance:
+                if not self.params['capacity']:
+                    capacity_var = -1  # This is done to prevent an error if no capacity has been given
+                else:
+                    capacity_var = self.params['capacity']
+                if self.params['restart_instance'] is True:
+                    if self.ansible.check_mode:
+                        self.exit(changed=True)
+                    dcs_instance = self.conn.dcs.restart_instance(instance.id)
+                    self.exit(changed=True, dcs_instance=dcs_instance.to_dict())
+                # elif self.params['redis_config']:
+                #     attrs['redis_config'] = {
+                #         'param_id': self.params['redis_config']['param_id'],
+                #         'param_name': self.params['redis_config']['param_name'],
+                #         'param_value': self.params['redis_config']['param_value']
+                #     }
+                #     if self.ansible.check_mode:
+                #         self.exit(changed=True)
+                #     dcs_instance = self.conn.dcs.update_instance_params(instance.id, **attrs)
+                #     self.exit(changed=True, dcs_instance=dcs_instance.to_dict())
                 # Scaling up
-                if instance.to_dict()['capacity'] < self.params['capacity']:
+                elif instance.to_dict()['capacity'] < capacity_var and capacity_var != -1:
                     if self.ansible.check_mode:
                         self.exit(changed=True)
                     dcs_instance = self.conn.dcs.extend_instance(instance.id, self.params['capacity'])
                     self.exit(changed=True, dcs_instance=dcs_instance.to_dict(), message='Scaling instance up, ignoring other params')
-                elif instance.to_dict()['capacity'] > self.params['capacity']:
+                elif instance.to_dict()['capacity'] > capacity_var and capacity_var != -1:
                     self.exit(
                         changed=False,
                         message=('''When extending an DCS Instance the capacity needs to be larger!
@@ -301,7 +331,7 @@ class DcsInstanceModule(OTCModule):
                         failed=True
                     )
                 # Changing other params
-                elif instance.to_dict()['capacity'] == self.params['capacity']:
+                elif instance.to_dict()['capacity'] == capacity_var or capacity_var == -1:
                     changed = False
                     if instance.to_dict()['name'] != self.params['name']:
                         changed = True
