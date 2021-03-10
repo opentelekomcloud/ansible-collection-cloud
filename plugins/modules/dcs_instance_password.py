@@ -72,7 +72,6 @@ class DcsInstancePasswordModule(OTCModule):
 
     def run(self):
         changed = False
-        query = {}
 
         instance = self.conn.dcs.find_instance(
             name_or_id=self.params['id'],
