@@ -12,20 +12,14 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: dcs_instance_backup_info
-short_description: Get Instance Params
+module: dcs_instance_maintain_info
+short_description: Get Instance Maintenance Informations
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.3.0"
 author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Get Instance Statistics
+  - Get Instance Maintenance Informations
 requirements: ["openstacksdk", "otcextensions"]
-options:
-  id:
-    description:
-      - Instance ID of the chosen DCS Instance
-    type: str
-    required: true
 '''
 
 RETURN = '''
