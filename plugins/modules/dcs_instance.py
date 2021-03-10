@@ -361,15 +361,16 @@ class DcsInstanceModule(OTCModule):
                         instance_backup_policy_var = self.params['instance_backup_policy']
                         # In case the user didn't specify timezone_offset or something we need to give the API an null type so it won't throw an error
                         try:
-                            var = (instance_backup_policy_var['periodical_backup_plan']['timezone_offset'])
+                            instance_backup_policy_var['periodical_backup_plan']['timezone_offset'] = \
+                                (instance_backup_policy_var['periodical_backup_plan']['timezone_offset'])
                         except Exception:
                             instance_backup_policy_var['periodical_backup_plan']['timezone_offset'] = None
                         try:
-                            var = (instance_backup_policy_var['save_days'])
+                            instance_backup_policy_var['save_days'] = (instance_backup_policy_var['save_days'])
                         except Exception:
                             instance_backup_policy_var['save_days'] = None
                         try:
-                            var = (instance_backup_policy_var['backup_type'])
+                            instance_backup_policy_var['backup_type'] = (instance_backup_policy_var['backup_type'])
                         except Exception:
                             instance_backup_policy_var['backup_type'] = None
 
