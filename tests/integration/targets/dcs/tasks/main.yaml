@@ -70,7 +70,6 @@
         available_zones: "{{ dcs_available_zones }}"
         product_id: OTC_DCS_MS
         instance_backup_policy:
-          save_days: "{{ dcs_ibp_save_days }}"
           backup_type: "{{ dcs_ibp_backup_type }}"
           periodical_backup_plan:
             begin_at: "{{ dcs_ibp_pbp_begin_at }}"
