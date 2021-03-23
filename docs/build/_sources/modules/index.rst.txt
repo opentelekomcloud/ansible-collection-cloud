@@ -1,0 +1,98 @@
+:orphan:
+
+.. _plugins_in_opentelekomcloud.cloud:
+
+Opentelekomcloud.Cloud
+======================
+
+Collection version 0.0.1
+
+.. toctree::
+    :maxdepth: 1
+
+Plugin Index
+------------
+
+These are the plugins in the opentelekomcloud.cloud collection
+
+
+Modules
+~~~~~~~
+
+* :ref:`anti_ddos_fip_statuses_info <ansible_collections.opentelekomcloud.cloud.anti_ddos_fip_statuses_info_module>` -- Get Anti-DDoS statuses info
+* :ref:`anti_ddos_optional_policies_info <ansible_collections.opentelekomcloud.cloud.anti_ddos_optional_policies_info_module>` -- Get Anti-DDoS optional defense policies info
+* :ref:`as_config <ansible_collections.opentelekomcloud.cloud.as_config_module>` -- Create/Remove AutoScaling configuration from the OTC
+* :ref:`as_config_info <ansible_collections.opentelekomcloud.cloud.as_config_info_module>` -- Get AutoScaling configs
+* :ref:`as_group <ansible_collections.opentelekomcloud.cloud.as_group_module>` -- Create/Remove AutoScaling group from the OTC
+* :ref:`as_group_info <ansible_collections.opentelekomcloud.cloud.as_group_info_module>` -- Get AutoScaling groups
+* :ref:`as_instance_info <ansible_collections.opentelekomcloud.cloud.as_instance_info_module>` -- Query Instances in an AS Group.
+* :ref:`as_policy <ansible_collections.opentelekomcloud.cloud.as_policy_module>` -- Create/Remove Auto Scaling Policy from the OTC
+* :ref:`as_policy_info <ansible_collections.opentelekomcloud.cloud.as_policy_info_module>` -- Query AS policies based on search criteria.
+* :ref:`availability_zone_info <ansible_collections.opentelekomcloud.cloud.availability_zone_info_module>` -- Get AZ info
+* :ref:`cce_cluster <ansible_collections.opentelekomcloud.cloud.cce_cluster_module>` -- Add/Delete CCE Cluster
+* :ref:`cce_cluster_cert_info <ansible_collections.opentelekomcloud.cloud.cce_cluster_cert_info_module>` -- Get Certificates of a CCE cluster
+* :ref:`cce_cluster_info <ansible_collections.opentelekomcloud.cloud.cce_cluster_info_module>` -- Get information about CCE clusters
+* :ref:`cce_cluster_node <ansible_collections.opentelekomcloud.cloud.cce_cluster_node_module>` -- Add/Delete CCE Cluster node
+* :ref:`cce_cluster_node_info <ansible_collections.opentelekomcloud.cloud.cce_cluster_node_info_module>` -- Get CCE node info
+* :ref:`cce_node_pool <ansible_collections.opentelekomcloud.cloud.cce_node_pool_module>` -- Add/Delete CCE Node Pool
+* :ref:`cce_node_pool_info <ansible_collections.opentelekomcloud.cloud.cce_node_pool_info_module>` -- Get CCE node pool info
+* :ref:`ces_alarms <ansible_collections.opentelekomcloud.cloud.ces_alarms_module>` -- Modify or Create Alarms
+* :ref:`ces_alarms_info <ansible_collections.opentelekomcloud.cloud.ces_alarms_info_module>` -- Get Alarms
+* :ref:`ces_event_data_info <ansible_collections.opentelekomcloud.cloud.ces_event_data_info_module>` -- Get Event Data
+* :ref:`ces_metric_data_info <ansible_collections.opentelekomcloud.cloud.ces_metric_data_info_module>` -- Get Metric Data
+* :ref:`ces_metrics_info <ansible_collections.opentelekomcloud.cloud.ces_metrics_info_module>` -- Get Metrics
+* :ref:`ces_quotas_info <ansible_collections.opentelekomcloud.cloud.ces_quotas_info_module>` -- Get ressource Quotas
+* :ref:`deh_host <ansible_collections.opentelekomcloud.cloud.deh_host_module>` -- Manage Dedicated Hosts on Open Telekom Cloud
+* :ref:`deh_host_info <ansible_collections.opentelekomcloud.cloud.deh_host_info_module>` -- Get Dedicated host info
+* :ref:`deh_host_type_info <ansible_collections.opentelekomcloud.cloud.deh_host_type_info_module>` -- Get info about all available host types in a AZ
+* :ref:`deh_server_info <ansible_collections.opentelekomcloud.cloud.deh_server_info_module>` -- Get info about ECSs on a Dedicated host
+* :ref:`dns_floating_ip <ansible_collections.opentelekomcloud.cloud.dns_floating_ip_module>` -- Modify DNS Floating IPs
+* :ref:`dns_recordset <ansible_collections.opentelekomcloud.cloud.dns_recordset_module>` -- Modify DNS Recordsets
+* :ref:`dns_zone <ansible_collections.opentelekomcloud.cloud.dns_zone_module>` -- Get DNS PTR Records
+* :ref:`dns_zones <ansible_collections.opentelekomcloud.cloud.dns_zones_module>` -- Get DNS PTR Records
+* :ref:`floating_ip <ansible_collections.opentelekomcloud.cloud.floating_ip_module>` -- Manage floating IP
+* :ref:`lb_certificate <ansible_collections.opentelekomcloud.cloud.lb_certificate_module>` -- Manage ELB certificates
+* :ref:`lb_certificate_info <ansible_collections.opentelekomcloud.cloud.lb_certificate_info_module>` -- Get elb certificate info from OpenTelekomCloud
+* :ref:`lb_healthmonitor <ansible_collections.opentelekomcloud.cloud.lb_healthmonitor_module>` -- Add//Update/Delete a health check for a backend server group in load balancer from OpenTelekomCloud
+* :ref:`lb_healthmonitor_info <ansible_collections.opentelekomcloud.cloud.lb_healthmonitor_info_module>` -- Get health checks info from OpenTelekomCloud
+* :ref:`lb_listener <ansible_collections.opentelekomcloud.cloud.lb_listener_module>` -- Add/Delete listener for load balancer from OpenTelekomCloud
+* :ref:`lb_listener_info <ansible_collections.opentelekomcloud.cloud.lb_listener_info_module>` -- Get listener info from OpenTelekomCloud
+* :ref:`lb_member <ansible_collections.opentelekomcloud.cloud.lb_member_module>` -- Add/Delete a member for a pool in load balancer from OpenTelekomCloud
+* :ref:`lb_member_info <ansible_collections.opentelekomcloud.cloud.lb_member_info_module>` -- Get backend server group member info from OpenTelekomCloud
+* :ref:`lb_pool <ansible_collections.opentelekomcloud.cloud.lb_pool_module>` -- Add/Delete backend server group for load balancer from OpenTelekomCloud
+* :ref:`lb_pool_info <ansible_collections.opentelekomcloud.cloud.lb_pool_info_module>` -- Get load balancer backend server group info from OpenTelekomCloud
+* :ref:`loadbalancer <ansible_collections.opentelekomcloud.cloud.loadbalancer_module>` -- Add/Delete load balancer from OpenTelekomCloud
+* :ref:`loadbalancer_info <ansible_collections.opentelekomcloud.cloud.loadbalancer_info_module>` -- Get load balancer info
+* :ref:`nat_dnat_rule <ansible_collections.opentelekomcloud.cloud.nat_dnat_rule_module>` -- Manage NAT DNAT rules
+* :ref:`nat_dnat_rule_info <ansible_collections.opentelekomcloud.cloud.nat_dnat_rule_info_module>` -- Get DNAT rule details
+* :ref:`nat_gateway <ansible_collections.opentelekomcloud.cloud.nat_gateway_module>` -- Manage NAT gateway instances
+* :ref:`nat_gateway_info <ansible_collections.opentelekomcloud.cloud.nat_gateway_info_module>` -- Get NAT gateways
+* :ref:`nat_snat_rule <ansible_collections.opentelekomcloud.cloud.nat_snat_rule_module>` -- Manage NAT SNAT rule instances
+* :ref:`nat_snat_rule_info <ansible_collections.opentelekomcloud.cloud.nat_snat_rule_info_module>` -- Get SNAT rule details
+* :ref:`object_info <ansible_collections.opentelekomcloud.cloud.object_info_module>` -- Get Swift info.
+* :ref:`rds_backup <ansible_collections.opentelekomcloud.cloud.rds_backup_module>` -- Manage RDS backup
+* :ref:`rds_backup_info <ansible_collections.opentelekomcloud.cloud.rds_backup_info_module>` -- Get RDS Backup info
+* :ref:`rds_datastore_info <ansible_collections.opentelekomcloud.cloud.rds_datastore_info_module>` -- Get supported RDS datastore versions
+* :ref:`rds_flavor_info <ansible_collections.opentelekomcloud.cloud.rds_flavor_info_module>` -- Get RDS flavor info
+* :ref:`rds_instance <ansible_collections.opentelekomcloud.cloud.rds_instance_module>` -- Manage RDS instance
+* :ref:`rds_instance_info <ansible_collections.opentelekomcloud.cloud.rds_instance_info_module>` -- Get RDS Instance info
+* :ref:`security_group_info <ansible_collections.opentelekomcloud.cloud.security_group_info_module>` -- Lists security groups
+* :ref:`server_group_info <ansible_collections.opentelekomcloud.cloud.server_group_info_module>` -- Lists server groups
+* :ref:`tag <ansible_collections.opentelekomcloud.cloud.tag_module>` -- Manage tags on diverse OpenStack/OTC resources
+* :ref:`volume_backup <ansible_collections.opentelekomcloud.cloud.volume_backup_module>` -- Add/Delete Volume backup
+* :ref:`volume_backup_info <ansible_collections.opentelekomcloud.cloud.volume_backup_info_module>` -- Get Backups
+* :ref:`volume_snapshot_info <ansible_collections.opentelekomcloud.cloud.volume_snapshot_info_module>` -- Get information about volume snapshots
+* :ref:`vpc_peering <ansible_collections.opentelekomcloud.cloud.vpc_peering_module>` -- Add/Update/Delete vpc peering connection from OpenTelekomCloud
+* :ref:`vpc_peering_info <ansible_collections.opentelekomcloud.cloud.vpc_peering_info_module>` -- Get information about vpc peerings
+* :ref:`vpc_route <ansible_collections.opentelekomcloud.cloud.vpc_route_module>` -- Add/Delete vpc route from OpenTelekomCloud
+* :ref:`vpc_route_info <ansible_collections.opentelekomcloud.cloud.vpc_route_info_module>` -- Get information about vpc routes info
+* :ref:`vpn_service_info <ansible_collections.opentelekomcloud.cloud.vpn_service_info_module>` -- Query VPN services.
+* :ref:`waf_certificate <ansible_collections.opentelekomcloud.cloud.waf_certificate_module>` -- Manage WAF certificates
+* :ref:`waf_certificate_info <ansible_collections.opentelekomcloud.cloud.waf_certificate_info_module>` -- Get WAF certificate info
+* :ref:`waf_domain <ansible_collections.opentelekomcloud.cloud.waf_domain_module>` -- Add/Modify/Delete WAF domain
+* :ref:`waf_domain_info <ansible_collections.opentelekomcloud.cloud.waf_domain_info_module>` -- Get WAF domain info
+
+
+.. seealso::
+
+    List of :ref:`collections <list_of_collections>` with docs hosted here.

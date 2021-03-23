@@ -1,0 +1,851 @@
+.. Document meta
+
+:orphan:
+
+.. Anchors
+
+.. _ansible_collections.opentelekomcloud.cloud.cce_node_pool_module:
+
+.. Anchors: short name for ansible.builtin
+
+.. Anchors: aliases
+
+
+
+.. Title
+
+opentelekomcloud.cloud.cce_node_pool -- Add/Delete CCE Node Pool
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. Collection note
+
+.. note::
+    This plugin is part of the `opentelekomcloud.cloud collection <https://galaxy.ansible.com/opentelekomcloud/cloud>`_ (version 0.0.1).
+
+    To install it use: :code:`ansible-galaxy collection install opentelekomcloud.cloud`.
+
+    To use it in a playbook, specify: :code:`opentelekomcloud.cloud.cce_node_pool`.
+
+.. version_added
+
+.. versionadded:: 0.5.0 of opentelekomcloud.cloud
+
+.. contents::
+   :local:
+   :depth: 1
+
+.. Deprecated
+
+
+Synopsis
+--------
+
+.. Description
+
+- Add or Remove CCE Node Pool in OTC
+
+
+.. Aliases
+
+
+.. Requirements
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- openstacksdk
+- openstacksdk >= 0.36.0
+- otcextensions
+- python >= 3.6
+
+
+.. Options
+
+Parameters
+----------
+
+.. raw:: html
+
+    <table  border=0 cellpadding=0 class="documentation-table">
+        <tr>
+            <th colspan="1">Parameter</th>
+            <th>Choices/<font color="blue">Defaults</font></th>
+                        <th width="100%">Comments</th>
+        </tr>
+                    <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-api_timeout"></div>
+                    <b>api_timeout</b>
+                    <a class="ansibleOptionLink" href="#parameter-api_timeout" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>How long should the socket layer wait before timing out for API calls. If this is omitted, nothing will be passed to the requests library.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-auth"></div>
+                    <b>auth</b>
+                    <a class="ansibleOptionLink" href="#parameter-auth" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Dictionary containing auth information as needed by the cloud&#x27;s auth plugin strategy. For the default <em>password</em> plugin, this would contain <em>auth_url</em>, <em>username</em>, <em>password</em>, <em>project_name</em> and any information about domains (for example, <em>os_user_domain_name</em> or <em>os_project_domain_name</em>) if the cloud supports them. For other plugins, this param will need to contain whatever parameters that auth plugin requires. This parameter is not needed if a named cloud is provided or OpenStack OS_* environment variables are present.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-auth_type"></div>
+                    <b>auth_type</b>
+                    <a class="ansibleOptionLink" href="#parameter-auth_type" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Name of the auth plugin to use. If the cloud uses something other than password authentication, the name of the plugin should be indicated here and the contents of the <em>auth</em> parameter should be updated accordingly.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-autoscaling_enabled"></div>
+                    <b>autoscaling_enabled</b>
+                    <a class="ansibleOptionLink" href="#parameter-autoscaling_enabled" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                                                                                    <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                                <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                                                                                                                                                                                <li>yes</li>
+                                                                                    </ul>
+                                                                            </td>
+                                                                <td>
+                                            <div>Enable or disable Autoscaling</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-availability_zone"></div>
+                    <b>availability_zone</b>
+                    <a class="ansibleOptionLink" href="#parameter-availability_zone" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                                    <b>Default:</b><br/><div style="color: blue">"random"</div>
+                                    </td>
+                                                                <td>
+                                            <div>Availability zone or &#x27;random&#x27; for all zones</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-ca_cert"></div>
+                    <b>ca_cert</b>
+                    <a class="ansibleOptionLink" href="#parameter-ca_cert" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>A path to a CA Cert bundle that can be used as part of verifying SSL API requests.</div>
+                                                                <div style="font-size: small; color: darkgreen"><br/>aliases: cacert</div>
+                                    </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-client_cert"></div>
+                    <b>client_cert</b>
+                    <a class="ansibleOptionLink" href="#parameter-client_cert" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>A path to a client certificate to use as part of the SSL transaction.</div>
+                                                                <div style="font-size: small; color: darkgreen"><br/>aliases: cert</div>
+                                    </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-client_key"></div>
+                    <b>client_key</b>
+                    <a class="ansibleOptionLink" href="#parameter-client_key" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>A path to a client key to use as part of the SSL transaction.</div>
+                                                                <div style="font-size: small; color: darkgreen"><br/>aliases: key</div>
+                                    </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-cloud"></div>
+                    <b>cloud</b>
+                    <a class="ansibleOptionLink" href="#parameter-cloud" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">raw</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Named cloud or cloud config to operate against. If <em>cloud</em> is a string, it references a named cloud config as defined in an OpenStack clouds.yaml file. Provides default values for <em>auth</em> and <em>auth_type</em>. This parameter is not needed if <em>auth</em> is provided or if OpenStack OS_* environment variables are present. If <em>cloud</em> is a dict, it contains a complete cloud configuration like would be in a section of clouds.yaml.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-cluster"></div>
+                    <b>cluster</b>
+                    <a class="ansibleOptionLink" href="#parameter-cluster" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>CCE cluster name or id which hosts the CCE Node Pool</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-data_volumes"></div>
+                    <b>data_volumes</b>
+                    <a class="ansibleOptionLink" href="#parameter-data_volumes" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=dictionary</span>                                            </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                                    <b>Default:</b><br/><div style="color: blue">[{"cmk_id": "", "encrypted": false, "size": 100, "volumetype": "SATA"}]</div>
+                                    </td>
+                                                                <td>
+                                            <div>List of data volumes attached to the cluster node.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-ecs_group"></div>
+                    <b>ecs_group</b>
+                    <a class="ansibleOptionLink" href="#parameter-ecs_group" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>ID of the ECS group where the CCE node can belong to.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-flavor"></div>
+                    <b>flavor</b>
+                    <a class="ansibleOptionLink" href="#parameter-flavor" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Flavor ID of the cluster node</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-initial_node_count"></div>
+                    <b>initial_node_count</b>
+                    <a class="ansibleOptionLink" href="#parameter-initial_node_count" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Expected number of nodes in this node pool.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-interface"></div>
+                    <b>interface</b>
+                    <a class="ansibleOptionLink" href="#parameter-interface" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                            <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                                <li>admin</li>
+                                                                                                                                                                                                <li>internal</li>
+                                                                                                                                                                                                <li><div style="color: blue"><b>public</b>&nbsp;&larr;</div></li>
+                                                                                    </ul>
+                                                                            </td>
+                                                                <td>
+                                            <div>Endpoint URL type to fetch from the service catalog.</div>
+                                                                <div style="font-size: small; color: darkgreen"><br/>aliases: endpoint_type</div>
+                                    </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-k8s_tags"></div>
+                    <b>k8s_tags</b>
+                    <a class="ansibleOptionLink" href="#parameter-k8s_tags" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Dictionary of Kubernetes tags.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-lvm_config"></div>
+                    <b>lvm_config</b>
+                    <a class="ansibleOptionLink" href="#parameter-lvm_config" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>ConfigMap of the Docker data disk.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-max_node_count"></div>
+                    <b>max_node_count</b>
+                    <a class="ansibleOptionLink" href="#parameter-max_node_count" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Maximum number of nodes after scale-up.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-max_pods"></div>
+                    <b>max_pods</b>
+                    <a class="ansibleOptionLink" href="#parameter-max_pods" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Maximum number of pods on the node.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-min_node_count"></div>
+                    <b>min_node_count</b>
+                    <a class="ansibleOptionLink" href="#parameter-min_node_count" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Minimum number of nodes after a scale-down.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-name"></div>
+                    <b>name</b>
+                    <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                 / <span style="color: red">required</span>                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Name of the CCE Node Pool</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-network_id"></div>
+                    <b>network_id</b>
+                    <a class="ansibleOptionLink" href="#parameter-network_id" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>ID of the network to which the CCE node pool belongs to.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-node_image_id"></div>
+                    <b>node_image_id</b>
+                    <a class="ansibleOptionLink" href="#parameter-node_image_id" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Mandatory if custom image is used on a</div>
+                                            <div>bare metall node.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-os"></div>
+                    <b>os</b>
+                    <a class="ansibleOptionLink" href="#parameter-os" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Operating System of the cluster node.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-postinstall_script"></div>
+                    <b>postinstall_script</b>
+                    <a class="ansibleOptionLink" href="#parameter-postinstall_script" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Base64 encoded post installation script.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-preinstall_script"></div>
+                    <b>preinstall_script</b>
+                    <a class="ansibleOptionLink" href="#parameter-preinstall_script" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Base64 encoded pre installation script.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-priority"></div>
+                    <b>priority</b>
+                    <a class="ansibleOptionLink" href="#parameter-priority" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Node pool weight for scale-up operations.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-public_key"></div>
+                    <b>public_key</b>
+                    <a class="ansibleOptionLink" href="#parameter-public_key" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Additional public key to be added for login.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-region_name"></div>
+                    <b>region_name</b>
+                    <a class="ansibleOptionLink" href="#parameter-region_name" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Name of the region.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-root_volume_size"></div>
+                    <b>root_volume_size</b>
+                    <a class="ansibleOptionLink" href="#parameter-root_volume_size" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                                    <b>Default:</b><br/><div style="color: blue">40</div>
+                                    </td>
+                                                                <td>
+                                            <div>Size of the root volume</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-root_volume_type"></div>
+                    <b>root_volume_type</b>
+                    <a class="ansibleOptionLink" href="#parameter-root_volume_type" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                            <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                                <li><div style="color: blue"><b>SATA</b>&nbsp;&larr;</div></li>
+                                                                                                                                                                                                <li>SAS</li>
+                                                                                                                                                                                                <li>SSD</li>
+                                                                                    </ul>
+                                                                            </td>
+                                                                <td>
+                                            <div>Type of the root volume.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-scale_down_cooldown_time"></div>
+                    <b>scale_down_cooldown_time</b>
+                    <a class="ansibleOptionLink" href="#parameter-scale_down_cooldown_time" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Interval in minutes during which nodes added after a scale-up will</div>
+                                            <div>not be deleted.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-ssh_key"></div>
+                    <b>ssh_key</b>
+                    <a class="ansibleOptionLink" href="#parameter-ssh_key" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>Name of the public key to login into the nodes</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-state"></div>
+                    <b>state</b>
+                    <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                            <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                                <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
+                                                                                                                                                                                                <li>absent</li>
+                                                                                    </ul>
+                                                                            </td>
+                                                                <td>
+                                            <div>Should the resource be present or absent.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-tags"></div>
+                    <b>tags</b>
+                    <a class="ansibleOptionLink" href="#parameter-tags" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=dictionary</span>                                            </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>List of tags used to build UI labels.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-taints"></div>
+                    <b>taints</b>
+                    <a class="ansibleOptionLink" href="#parameter-taints" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=dictionary</span>                                            </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>List of taints.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-timeout"></div>
+                    <b>timeout</b>
+                    <a class="ansibleOptionLink" href="#parameter-timeout" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                                    <b>Default:</b><br/><div style="color: blue">180</div>
+                                    </td>
+                                                                <td>
+                                            <div>How long should ansible wait for the requested resource.</div>
+                                                        </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-validate_certs"></div>
+                    <b>validate_certs</b>
+                    <a class="ansibleOptionLink" href="#parameter-validate_certs" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                                                                                    <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                                <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                                                                                                                                                                                <li>yes</li>
+                                                                                    </ul>
+                                                                            </td>
+                                                                <td>
+                                            <div>Whether or not SSL API requests should be verified.</div>
+                                            <div>Before Ansible 2.3 this defaulted to <code>yes</code>.</div>
+                                                                <div style="font-size: small; color: darkgreen"><br/>aliases: verify</div>
+                                    </td>
+            </tr>
+                                <tr>
+                                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-wait"></div>
+                    <b>wait</b>
+                    <a class="ansibleOptionLink" href="#parameter-wait" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                                                                    </div>
+                                                        </td>
+                                <td>
+                                                                                                                                                                                                                    <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                                                                                                                                                <li>no</li>
+                                                                                                                                                                                                <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                                                                                    </ul>
+                                                                            </td>
+                                                                <td>
+                                            <div>Should ansible wait until the requested resource is complete.</div>
+                                                        </td>
+            </tr>
+                        </table>
+    <br/>
+
+.. Notes
+
+Notes
+-----
+
+.. note::
+   - The standard OpenStack environment variables, such as ``OS_USERNAME`` may be used instead of providing explicit values.
+   - Auth information is driven by openstacksdk, which means that values can come from a yaml config file in /etc/ansible/openstack.yaml, /etc/openstack/clouds.yaml or ~/.config/openstack/clouds.yaml, then from standard environment variables, then finally by explicit parameters in plays. More information can be found at https://docs.openstack.org/openstacksdk/
+
+.. Seealso
+
+
+.. Examples
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    # Create CCE Node Pool with minimal configuration
+    - cce_node_pool:
+        cloud: "{{ test_cloud }}"
+        cluster: clustername
+        flavor: s2.large.2
+        os: 'CentOS 7.7'
+        name: my-nodepool
+        network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
+        ssh_key: 'ssh-pub'
+        state: present
+      register: pool
+
+    # Create CCE Node Pool with fine-grained configuration
+    - cce_node_pool:
+        cloud: "{{ test_cloud }}"
+        availability_zone: "random"
+        autoscaling_enabled: True
+        cluster: tino-test
+        data_volumes:
+          - volumetype: SSD
+            size: 120
+          - volumetype: SATA
+            size: 100
+            encrypted: False
+            cmk_id: ''
+        flavor: s2.large.2
+        initial_node_count: 0
+        k8s_tags:
+          mytag: myvalue
+          mysecondtag: mysecondvalue
+        min_node_count: 1
+        max_node_count: 3
+        name: test-ansible2
+        network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
+        priority: 2
+        os: 'CentOS 7.7'
+        scale_down_cooldown_time: 5
+        ssh_key: 'sshkey-pub'
+        tags:
+          - key: 'my_first_key'
+            value: 'my_first_value'
+          - key: 'my_second_key'
+            value: 'my_secound_value'
+        taints:
+          - key: 'first_taint_key'
+            value: 'first_taint_value'
+            effect: 'NoSchedule'
+          - key: 'second_taint_key'
+            value: 'secound_taint_value'
+            effect: 'NoExecute'
+        state: present
+      register: pool
+
+    # Delete CCE Node Pool
+    - opentelekomcloud.cloud.cce_node_pool:
+        cluster: "{{ cluster_name_or_id }}"
+        name: "{{ cce_node_pool_name_or_id }}"
+        state: absent
+
+
+
+
+.. Facts
+
+
+.. Return values
+
+Return Values
+-------------
+Common return values are documented :ref:`here <common_return_values>`, the following are the fields unique to this module:
+
+.. raw:: html
+
+    <table border=0 cellpadding=0 class="documentation-table">
+        <tr>
+            <th colspan="1">Key</th>
+            <th>Returned</th>
+            <th width="100%">Description</th>
+        </tr>
+                    <tr>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-cce_node_pool"></div>
+                    <b>cce_node_pool</b>
+                    <a class="ansibleOptionLink" href="#return-cce_node_pool" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">dictionary</span>
+                                          </div>
+                                    </td>
+                <td>On success when <code>state=present</code></td>
+                <td>
+                                            <div>Dictionary describing the CCE Node Pool.</div>
+                                        <br/>
+                                            <div style="font-size: smaller"><b>Sample:</b></div>
+                                                <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;api_version&#x27;: &#x27;v3&#x27;, &#x27;id&#x27;: &#x27;e2d0d5f3-572e-11eb-8fea-0255ac101123&#x27;, &#x27;kind&#x27;: &#x27;NodePool&#x27;, &#x27;metadata&#x27;: None, &#x27;name&#x27;: &#x27;test-ansible2&#x27;, &#x27;spec&#x27;: {&#x27;autoscaling&#x27;: {&#x27;enable&#x27;: True, &#x27;max_node_count&#x27;: 3, &#x27;min_node_count&#x27;: 1, &#x27;priority&#x27;: 2, &#x27;scale_down_cooldown_time&#x27;: 5}, &#x27;initial_node_count&#x27;: 0, &#x27;node_management&#x27;: {&#x27;ecs_group&#x27;: None}, &#x27;node_pool_type&#x27;: &#x27;vm&#x27;, &#x27;node_template_spec&#x27;: {&#x27;availability_zone&#x27;: &#x27;random&#x27;, &#x27;billing_mode&#x27;: 0, &#x27;count&#x27;: None, &#x27;data_volumes&#x27;: [{&#x27;extend_params&#x27;: None, &#x27;metadata&#x27;: None, &#x27;size&#x27;: 120, &#x27;type&#x27;: &#x27;SSD&#x27;}, {&#x27;extend_params&#x27;: None, &#x27;metadata&#x27;: None, &#x27;size&#x27;: 100, &#x27;type&#x27;: &#x27;SATA&#x27;}], &#x27;ecs_group&#x27;: None, &#x27;extend_params&#x27;: {&#x27;lvm_config&#x27;: None, &#x27;max_pods&#x27;: 110, &#x27;node_image_id&#x27;: None, &#x27;postinstall_script&#x27;: None, &#x27;preinstall_script&#x27;: None, &#x27;public_key&#x27;: &#x27;ssh_pubkey_value&#x27;}, &#x27;flavor&#x27;: &#x27;s2.large.2&#x27;, &#x27;floating_ip&#x27;: {&#x27;count&#x27;: None, &#x27;floating_ip_spec&#x27;: {&#x27;bandwidth&#x27;: {}}, &#x27;ids&#x27;: None}, &#x27;k8s_tags&#x27;: {&#x27;cce.cloud.com/cce-nodepool&#x27;: &#x27;nodepool-name&#x27;, &#x27;mysecondtag&#x27;: &#x27;mysecondvalue&#x27;, &#x27;mytag&#x27;: &#x27;myvalue&#x27;}, &#x27;login&#x27;: {&#x27;ssh_key&#x27;: &#x27;tischrei-pub&#x27;}, &#x27;node_nic_spec&#x27;: {&#x27;primary_nic&#x27;: {&#x27;network_id&#x27;: &#x27;25d24fc8-d019-4a34-9fff-0a09fde6a123&#x27;}}, &#x27;os&#x27;: &#x27;CentOS 7.7&#x27;, &#x27;root_volume&#x27;: {&#x27;size&#x27;: 40, &#x27;type&#x27;: &#x27;SATA&#x27;}, &#x27;tags&#x27;: [{&#x27;key&#x27;: &#x27;my_first_key&#x27;, &#x27;value&#x27;: &#x27;my_first_value&#x27;}, {&#x27;key&#x27;: &#x27;my_second_key&#x27;, &#x27;value&#x27;: &#x27;my_secound_value&#x27;}], &#x27;taints&#x27;: [{&#x27;effect&#x27;: &#x27;NoSchedule&#x27;, &#x27;key&#x27;: &#x27;first_taint_key&#x27;, &#x27;value&#x27;: &#x27;first_taint_value&#x27;}, {&#x27;effect&#x27;: &#x27;NoExecute&#x27;, &#x27;key&#x27;: &#x27;second_taint_key&#x27;, &#x27;value&#x27;: &#x27;secound_taint_value&#x27;}]}}, &#x27;status&#x27;: {&#x27;current_node&#x27;: 0, &#x27;status&#x27;: &#x27;&#x27;}}</div>
+                                    </td>
+            </tr>
+                                <tr>
+                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-id"></div>
+                    <b>id</b>
+                    <a class="ansibleOptionLink" href="#return-id" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                                          </div>
+                                    </td>
+                <td>On success when <code>state=present</code></td>
+                <td>
+                                            <div>The CCE Node Pool UUID.</div>
+                                        <br/>
+                                            <div style="font-size: smaller"><b>Sample:</b></div>
+                                                <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">39007a7e-ee4f-4d13-8283-b4da2e037123</div>
+                                    </td>
+            </tr>
+                        </table>
+    <br/><br/>
+
+..  Status (Presently only deprecated)
+
+
+.. Authors
+
+Authors
+~~~~~~~
+
+- Tino Schreiber (@tischrei)
+
+
+
+.. Parsing errors
+
