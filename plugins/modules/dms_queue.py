@@ -104,7 +104,7 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class DehHostModule(OTCModule):
+class DmsQueueModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True),
         queue_mode=dict(required=False, default='NORMAL'),
@@ -119,7 +119,6 @@ class DehHostModule(OTCModule):
     )
 
     def run(self):
-        changed = False
         attrs = {}
         queue = self.conn.dms.find_queue(name_or_id=self.params['name'])
 
@@ -170,7 +169,7 @@ class DehHostModule(OTCModule):
 
 
 def main():
-    module = DehHostModule()
+    module = DmsQueueModule()
     module()
 
 
