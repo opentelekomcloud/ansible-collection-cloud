@@ -5,6 +5,9 @@ action_groups:
     - as_config
     - as_config_info
     - as_group
+    - as_group_info
+    - as_instance_info
+    - as_policy
     - as_policy_info
     - availability_zone_info
     - cce_cluster
@@ -59,6 +62,7 @@ action_groups:
     - lb_certificate
     - anti_ddos_fip_statuses_info.py
     - anti_ddos_optional_policies_info.py
+    - object_info.py
 
 plugin_routing:
   modules:
@@ -190,3 +194,4 @@ plugin_routing:
       redirect: openstack.cloud.volume_info
     volume_snapshot:
       redirect: openstack.cloud.volume_snapshot
+
