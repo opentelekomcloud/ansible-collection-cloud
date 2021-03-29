@@ -94,7 +94,6 @@ class DmsQueueModule(OTCModule):
     )
 
     def run(self):
-        changed = False
         attrs = {}
         queue = self.conn.dms.find_queue(name_or_id=self.params['queue_name'])
         if not queue:
