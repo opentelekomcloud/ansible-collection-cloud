@@ -90,29 +90,15 @@ deh_host:
 '''
 
 EXAMPLES = '''
-# Allocate Dedicated host
-- opentelekomcloud.cloud.deh_host:
-    cloud: otc
-    availability_zone: eu-de-01
-    host_type: s2-medium
-    name: "{{ deh_host_name }}"
+# Create Queue
+- opentelekomcloud.cloud.dms_queue:
+    name: 'test-queue'
     state: present
-    quantity: 1
-    tags:
-      - key: key1
-        value: value1
-      - key: key2
-        value: value2
-  register: deh
 
-# Modify Dedicated Host
-- opentelekomcloud.cloud.deh_host:
-    cloud: otc
-    id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
-    auto_placement: off
-  when:
-    - deh is defined
-  register: deh
+# Delete Queue
+- opentelekomcloud.cloud.dms_queue:
+    name: 'test-queue'
+    state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
