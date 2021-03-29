@@ -68,7 +68,6 @@ class DmsQueueInfoModule(OTCModule):
     def run(self):
 
         data = []
-        query = {}
 
         if self.params['queue']:
             queue = self.conn.dms.find_queue(
