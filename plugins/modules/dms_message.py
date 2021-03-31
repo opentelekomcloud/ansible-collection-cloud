@@ -69,16 +69,14 @@ deh_host:
 '''
 
 EXAMPLES = '''
-# Create Queue-Group
-- opentelekomcloud.cloud.dms_queue_group:
-    queue_name: 'test-queue'
-    group_name: 'test-group'
+# Create Queue
+- opentelekomcloud.cloud.dms_queue:
+    name: 'test-queue'
     state: present
 
-# Delete Queue-Group
-- opentelekomcloud.cloud.dms_queue_group:
-    queue_name: 'test-queue'
-    group_name: 'test-group'
+# Delete Queue
+- opentelekomcloud.cloud.dms_queue:
+    name: 'test-queue'
     state: absent
 '''
 
@@ -87,9 +85,14 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DmsQueueModule(OTCModule):
     argument_spec = dict(
-        queue_name=dict(required=True),
-        group_name=dict(required=True),
-        state=dict(type='str', choices=['present', 'absent'], default='present')
+        queue=dict(required=True),
+        group=dict(required=False),
+        messages=dict(required=False, type='list'),
+        max_msgs=dict(required=False, type='int', default=10),
+        time_wait=dict(required=False, type='int', default=3),
+        ack_wait=dict(required=False, type='int', default=30),
+        ack=dict(required=False, type='bool', default='True'),
+        task=dict(type='str', choices=['send', 'consume'], required=True)
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -97,53 +100,61 @@ class DmsQueueModule(OTCModule):
 
     def run(self):
         attrs = {}
-        queue = self.conn.dms.find_queue(name_or_id=self.params['queue_name'])
+        queue = self.conn.dms.find_queue(name_or_id=self.params['queue'])
         if not queue:
             self.exit(
                 changed=False,
                 failed=True,
                 message=('No Queue with name or ID %s found') % (self.params['queue_name'])
             )
-        queue_group = self.conn.dms.find_group(queue=queue, name_or_id=self.params['group_name'], ignore_missing=True)
 
-        if self.params['state'] == 'present':
+        if self.params['task'] == 'send':
 
-            # Queue-Group creation
-            if not queue_group:
-                attrs['queue'] = queue.id
-                attrs['name'] = self.params['group_name']
-
-                if self.ansible.check_mode:
-                    self.exit(changed=True)
-                group = self.conn.dms.create_group(**attrs)
-                self.exit(changed=True, group=group)
-
-            # Queue-Group Modification - not possible
-            elif queue:
-                self.exit(
-                    changed=False,
-                    failed=True,
-                    message=('A Queue-Group with this name already exists. Aborting')
-                )
-
-        if self.params['state'] == 'absent':
-
-            # Queue-Group Deletion
-            if queue_group:
-                attrs['queue'] = queue.id
-                attrs['group'] = queue_group.id
-
-                if self.ansible.check_mode:
-                    self.exit(changed=True)
-                queue = self.conn.dms.delete_group(**attrs)
+            attrs['queue'] = queue.id
+            attrs['messages'] = self.params['messages']
+            if self.ansible.check_mode:
                 self.exit(changed=True)
+            message = self.conn.dms.send_messages(**attrs)
+            self.exit(changed=True, message=message)
 
-            elif not queue_group:
+        if self.params['task'] == 'consume':
+            
+            if not self.params['group']:
                 self.exit(
                     changed=False,
                     failed=True,
-                    message=('No Queue-Group with name or ID %s found') % (self.params['name'])
+                    message=('No Group name or ID specified')
                 )
+            queue_group = self.conn.dms.find_group(queue=queue, name_or_id=self.params['group'], ignore_missing=True)
+            if not queue_group:
+                self.exit(
+                    changed=False,
+                    failed=True,
+                    message=('No Queue-Group with name or ID %s found') % (self.params['group'])
+                )
+            attrs['queue'] = queue.id
+            attrs['group'] = queue_group.id
+            attrs['max_msgs'] = self.params['max_msgs']
+            attrs['time_wait'] = self.params['time_wait']
+            attrs['ack_wait'] = self.params['ack_wait']
+            if self.ansible.check_mode:
+                self.exit(changed=True)
+            response = []
+            for message in self.conn.dms.consume_message(**attrs):
+                dt = message.to_dict()
+                response.append(dt)
+
+            if self.params['ack'] == False:
+                self.exit(changed=True, message=response)
+            else:
+                messages = {
+                    'handler': response[0]['id'],
+                    'status': 'success'
+                }
+                # raise Exception(response, '      ', messages)
+                result = self.conn.dms.ack_message(queue=queue, group=queue_group, messages=messages)
+                response.append(result)
+                self.exit(changed=True, message=response)
 
 
 def main():
