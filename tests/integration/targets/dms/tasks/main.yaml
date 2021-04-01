@@ -130,6 +130,29 @@
     #   register: dms_ins
     #   check_mode: false
 
+    # - name: Create Instance topic
+    #   opentelekomcloud.cloud.dms_instance_topic:
+    #     instance: 'test'
+    #     id: 'test2'
+    #   register: dms_ins_tp
+    #   check_mode: false
+
+    # - name: List Instance topics
+    #   opentelekomcloud.cloud.dms_instance_topic_info:
+    #     instance: 'test'
+    #   register: dms_ins_tp
+    #   check_mode: false
+
+    # - name: Delete Instance topic
+    #   opentelekomcloud.cloud.dms_instance_topic:
+    #     instance: 'test'
+    #     topics:
+    #       - 'test1'
+    #       - 'test2'
+    #     state: absent
+    #   register: dms_ins_tp
+    #   check_mode: false
+
   always:
     - block:
       - name: DMS Delete Queue Group
