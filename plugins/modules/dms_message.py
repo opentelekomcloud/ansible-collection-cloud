@@ -12,82 +12,126 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: dms_queue_group
-short_description: Manage DMS Queue-Groups on Open Telekom Cloud
+module: dms_message
+short_description: Manage DMS Messages on Open Telekom Cloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.1.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Manage DMS Queue-Groups on Open Telekom Cloud
+  - Manage DMS Messages on Open Telekom Cloud
 options:
-  queue_name:
+  queue:
     description:
       - Name of the Queue. Can also be ID.
     type: str
     required: true
-  group_name:
+  group:
     description:
-      - Name of the Group.
+      - Name of the Group. Can also be ID. Required when consuming.
     type: str
-    required: true
-  state:
-    choices: [present, absent]
-    default: present
-    description: Instance state
+    required: false
+  messages:
+    description:
+      - Messages.
+    type: list
+    elements: dict
+    required: false
+  max_msgs:
+    description:
+      - Max messages to consume.
+    type: int
+    required: false
+    default: 10
+  time_wait:
+    description:
+      - Time to wait for consuming.
+    type: int
+    required: false
+    default: 3
+  ack_wait:
+    description:
+      - Time to wait for confirmation.
+    type: int
+    required: false
+    default: 30
+  ack:
+    description:
+      - Whether to try confirming the consumed messages or not.
+    type: bool
+    required: false
+    default: True
+  task:
+    choices: [send, consume]
+    description: Task to do
     type: str
+    required: True
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-deh_host:
+message:
     description: Dictionary of DMS Queue
     returned: changed
     type: dict
     sample: {
-        "group": {
-            "available_deadletters": null,
-            "available_messages": null,
-            "consumed_messages": null,
-            "id": "g-8f271ad2-ec43-4d6f-b9f0-ff060b864f85",
-            "location": {
-                "cloud": "otc",
-                "project": {
-                    "domain_id": null,
-                    "domain_name": null,
-                    "id": "16d53a84a13b49529d2e2c3646691288",
-                    "name": "eu-de"
-                },
-                "region_name": "eu-de",
-                "zone": null
+        "message": [
+            {
+                "attributes": {},
+                "body": "test2",
+                "error": null,
+                "error_code": null,
+                "handler": null,
+                "id": "eyJ0b3BpYyI6InEtMTZkNTNhODRhMTNiNDk1MjlkMmUyYzM2N....",
+                "location": null,
+                "name": null,
+                "state": null
             },
-            "name": "group_test",
-            "produced_deadletters": null,
-            "produced_messages": null,
-            "queue_id": "e4508dbd-75ba-4199-970e-b1efdb1f4503"
-        }
+            {
+                "attributes": {},
+                "body": "test1",
+                "error": null,
+                "error_code": null,
+                "handler": null,
+                "id": "eyJ0b3BpYyI6InEtMTZkNTNhODRhMTNiNDk1MjlkMmUyYzM2N...",
+                "location": null,
+                "name": null,
+                "state": null
+            }
+        ]
     }
 '''
 
 EXAMPLES = '''
-# Create Queue
-- opentelekomcloud.cloud.dms_queue:
-    name: 'test-queue'
-    state: present
+# Send Message
+- opentelekomcloud.cloud.dms_message:
+    queue: 'queue'
+    messages:
+        - body: 'test1'
+          attributes:
+            attribute1: 'value1'
+            attribute2: 'value2'
+        - body: 'test2'
+          attributes:
+            attribute1: 'value3'
+            attribute2: 'value4'
+    task: send
 
-# Delete Queue
-- opentelekomcloud.cloud.dms_queue:
-    name: 'test-queue'
-    state: absent
+# Consume Message
+- opentelekomcloud.cloud.dms_message:
+    queue: 'queue'
+    group: 'group'
+    task: consume
+    ack: false
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class DmsQueueModule(OTCModule):
+class DmsMessageModule(OTCModule):
     argument_spec = dict(
         queue=dict(required=True),
         group=dict(required=False),
-        messages=dict(required=False, type='list'),
+        messages=dict(required=False, type='list', elements='dict'),
         max_msgs=dict(required=False, type='int', default=10),
         time_wait=dict(required=False, type='int', default=3),
         ack_wait=dict(required=False, type='int', default=30),
@@ -118,7 +162,7 @@ class DmsQueueModule(OTCModule):
             self.exit(changed=True, message=message)
 
         if self.params['task'] == 'consume':
-            
+
             if not self.params['group']:
                 self.exit(
                     changed=False,
@@ -144,21 +188,20 @@ class DmsQueueModule(OTCModule):
                 dt = message.to_dict()
                 response.append(dt)
 
-            if self.params['ack'] == False:
+            if self.params['ack'] is False:
                 self.exit(changed=True, message=response)
             else:
                 messages = {
                     'handler': response[0]['id'],
                     'status': 'success'
                 }
-                # raise Exception(response, '      ', messages)
                 result = self.conn.dms.ack_message(queue=queue, group=queue_group, messages=messages)
                 response.append(result)
                 self.exit(changed=True, message=response)
 
 
 def main():
-    module = DmsQueueModule()
+    module = DmsMessageModule()
     module()
 
 

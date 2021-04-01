@@ -12,45 +12,108 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: dms_queue
-short_description: Manage DMS Queues on Open Telekom Cloud
+module: dms_instance
+short_description: Manage DMS Instances on Open Telekom Cloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.1.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Manage DMS Queues on Open Telekom Cloud
+  - Manage DMS Instances on Open Telekom Cloud
 options:
   name:
     description:
-      - Name of the Queue. Can also be ID for deletion.
+      - Name of the Instance. Can also be ID for deletion.
     type: str
     required: true
-  queue_mode:
-    description:
-      - Indicates the queue type.
-    type: str
-    default: NORMAL
   description:
     description:
       - Description.
     type: str
-  redrive_policy:
+  engine:
     description:
-      - This parameter specifies whether to enable dead letter messages.
-      - Dead letter messages are messages that cannot be normally consumed.
-      - This parameter is valid only when queue_mode is set to NORMAL or FIFO.
+      - Indicates a message engine.
+      - Required for creation.
     type: str
-    default: disable
-  max_consume_count:
+    default: kafka
+  engine_version:
     description:
-      - Indicates the maximum number of allowed message consumption failures.
-      - This parameter is mandatory only when redrive_policy is set to enable.
-    type: int
-  retention_hours:
+      - Indicates the version of the message engine.
+      - Required for creation.
+    type: str
+    default: 2.3.0
+  storage_space:
     description:
-      - Indicates the hours of storing messages in the Kafka queue.
-      - This parameter is valid only when queue_mode is set to KAFKA_HA or KAFKA_HT.
+      - Indicates the message storage space with increments of 100 GB.
+      - Required for creation
     type: int
+  access_user:
+    description:
+      - Indicates a username.
+      - Required when ssl_enable is true.
+    type: str
+  password:
+    description:
+      - Indicates the instance password.
+      - Required when ssl_enable is true.
+    type: str
+  vpc_id:
+    description:
+      - Indicates VPC ID.
+      - Required for creation
+    type: str
+  security_group_id:
+    description:
+      - Indicates Security Group ID.
+      - Required for creation
+    type: str
+  subnet_id:
+    description:
+      - Indicates Network ID.
+      - Required for creation
+    type: str
+  available_zones:
+    description:
+      - Indicates ID of an AZ.
+      - Required for creation
+    type: list
+    elements: str
+  product_id:
+    description:
+      - Indicates Product ID.
+      - Required for creation
+    type: str
+  maintain_begin:
+    description:
+      - Indicates Beginning of mantenance time window.
+      - Must be set in pairs with maintain_end
+    type: str
+  maintain_end:
+    description:
+      - Indicates End of maintenance Window.
+      - Must be set in pairs with maintain_begin
+    type: str
+  ssl_enable:
+    description:
+      - Indicates whether to enable SSL-encrypted access to the Instance.
+    type: bool
+    default: False
+  enable_publicip:
+    description:
+      - Indicates whether to enable ppublic access to the instance.
+    type: bool
+  public_bandwidth:
+    description:
+      - Indicates the public network bandwidth.
+    type: str
+  retention_policy:
+    description:
+      - Indicates the action to be taken when the memory usage reaches the disk capacity threshold.
+    type: str
+  storage_spec_code:
+    description:
+      - Indicates I/O specification of a Kafka instance.
+      - Required for creation
+    type: str
   state:
     choices: [present, absent]
     default: present
@@ -60,51 +123,96 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-deh_host:
-    description: Dictionary of DMS Queue
+instance:
+    description: Dictionary of Instance
     returned: changed
     type: dict
     sample: {
-        "queue": {
-            "created": null,
+        "instance": {
+            "access_user": null,
+            "availability_zones": [
+                "eu-de-03"
+            ],
+            "charging_mode": null,
+            "connect_address": null,
+            "created_at": null,
             "description": null,
-            "id": "c28ff35a-dbd4-460a-a30d-cf31a6013eb0",
+            "engine_name": "kafka",
+            "engine_version": "2.3.0",
+            "id": "12345678-e7c4-4ba1-8aa2-f2c4eb507c43",
+            "instance_id": "12345678-e7c4-4ba1-8aa2-f2c4eb507c43",
+            "is_public": null,
+            "is_ssl": null,
+            "kafka_public_status": null,
             "location": {
                 "cloud": "otc",
                 "project": {
                     "domain_id": null,
                     "domain_name": null,
-                    "id": "16d53a84a13b49529d2e2c3646691288",
+                    "id": "1234",
                     "name": "eu-de"
                 },
                 "region_name": "eu-de",
                 "zone": null
             },
-            "max_consume_count": null,
-            "name": "test-queue",
-            "queue_mode": "NORMAL",
-            "redrive_policy": "disable",
-            "retention_hours": null
+            "maintenance_end": null,
+            "maintenance_start": null,
+            "max_partitions": null,
+            "name": "aed93756fa3c04e4083c5b48ad6ba6258-instance",
+            "network_id": "12345678-ca80-4b49-bbbb-85ea9b96f8b3",
+            "password": null,
+            "port": null,
+            "product_id": "00300-30308-0--0",
+            "public_bandwidth": null,
+            "retention_policy": null,
+            "router_id": "12345678-dc40-4e3a-95b1-5a0756441e12",
+            "router_name": null,
+            "security_group_id": "12345678-9b1f-4af8-9b53-527ff05c5e12",
+            "security_group_name": null,
+            "service_type": null,
+            "spec": null,
+            "spec_code": null,
+            "status": null,
+            "storage": 600,
+            "storage_resource_id": null,
+            "storage_spec_code": "dms.physical.storage.ultra",
+            "storage_type": null,
+            "total_storage": null,
+            "type": null,
+            "used_storage": null,
+            "user_id": null,
+            "user_name": null
         }
     }
 '''
 
 EXAMPLES = '''
-# Create Queue
-- opentelekomcloud.cloud.dms_queue:
-    name: 'test-queue'
-    state: present
+# Create Kafka Instance
+- opentelekomcloud.cloud.dms_instance:
+    name: 'test'
+    storage_space: '600'
+    vpc_id: '12345678-dc40-4e3a-95b1-5a0756441e12'
+    security_group_id: '12345678'
+    subnet_id: '12345678-ca80-4b49-bbbb-85ea9b96f8b3'
+    available_zones: ['eu-de-03']
+    product_id: '00300-30308-0--0'
+    storage_spec_code: 'dms.physical.storage.ultra'
 
-# Delete Queue
-- opentelekomcloud.cloud.dms_queue:
-    name: 'test-queue'
+# Delete Kafka Instance
+- opentelekomcloud.cloud.dms_instance:
+    name: 'kafka-c76z'
     state: absent
+
+# Update Kafka Instance
+- opentelekomcloud.cloud.dms_instance:
+    name: 'kafka-s1dd'
+    description: 'Test'
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class DmsQueueModule(OTCModule):
+class DmsInstanceModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True),
         description=dict(required=False),
@@ -117,7 +225,7 @@ class DmsQueueModule(OTCModule):
         security_group_id=dict(required=False),
         subnet_id=dict(required=False),
         product_id=dict(required=False),
-        available_zones=dict(required=False, type='list'),
+        available_zones=dict(required=False, type='list', elements='str'),
         maintain_begin=dict(required=False),
         maintain_end=dict(required=False),
         ssl_enable=dict(required=False, type='bool', default='False'),
@@ -135,13 +243,24 @@ class DmsQueueModule(OTCModule):
         attrs = {}
         instance = self.conn.dms.find_instance(name_or_id=self.params['name'], ignore_missing=True)
 
+        attrs['name'] = self.params['name']
+        if self.params['description']:
+            attrs['description'] = self.params['description']
+        if self.params['maintain_begin'] and self.params['maintain_end']:
+            attrs['maintain_begin'] = self.params['maintain_begin']
+            attrs['maintain_end'] = self.params['maintain_end']
+        elif self.params['maintain_end'] or self.params['maintain_begin']:
+            self.exit(
+                changed=False,
+                failed=True,
+                message=('Both maintain_end and maintain_begin need to be defined.')
+            )
+
         if self.params['state'] == 'present':
 
             # Instance creation
             if not instance:
-                attrs['name'] = self.params['name']
-                if self.params['description']:
-                    attrs['description'] = self.params['description']
+
                 if self.params['engine']:
                     attrs['engine'] = self.params['engine']
                 else:
@@ -222,15 +341,6 @@ class DmsQueueModule(OTCModule):
                         failed=True,
                         message=('No product_id param provided')
                     )
-                if self.params['maintain_begin'] and self.params['maintain_end']:
-                    attrs['maintain_begin'] = self.params['maintain_begin']
-                    attrs['maintain_end'] = self.params['maintain_end']
-                elif self.params['maintain_end'] or self.params['maintain_begin']:
-                    self.exit(
-                        changed=False,
-                        failed=True,
-                        message=('Both maintain_end and maintain_begin need to be defined.')
-                    )
                 if self.params['ssl_enable'] is True and self.params['password']:
                     attrs['ssl_enable'] = self.params['ssl_enable']
                 elif self.params['ssl_enable'] is True and not self.params['password']:
@@ -254,40 +364,40 @@ class DmsQueueModule(OTCModule):
                         message=('No storage_spec_code param provided')
                     )
 
-
                 if self.ansible.check_mode:
                     self.exit(changed=True)
-                #raise Exception(attrs)
                 instance = self.conn.dms.create_instance(**attrs)
                 self.exit(changed=True, instance=instance.to_dict())
 
-            # Queue Modification - not possible
-            elif queue:
-                self.exit(
-                    changed=False,
-                    failed=True,
-                    message=('A Queue with this name already exists. Aborting')
-                )
+            # Instance Modification
+            elif instance:
+                if self.params['security_group_id']:
+                    attrs['security_group_id'] = self.params['security_group_id']
+
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
+                instance = self.conn.dms.update_instance(instance, **attrs)
+                self.exit(changed=True, instance=instance.to_dict())
 
         if self.params['state'] == 'absent':
 
-            # Queue Deletion
-            if queue:
+            # Instance Deletion
+            if instance:
                 if self.ansible.check_mode:
                     self.exit(changed=True)
-                queue = self.conn.dms.delete_queue(queue=queue.id)
-                self.exit(changed=True)
+                instance = self.conn.dms.delete_instance(instance)
+                self.exit(changed=True, instance=instance)
 
-            elif not queue:
+            elif not instance:
                 self.exit(
                     changed=False,
                     failed=True,
-                    message=('No Queue with name or ID %s found') % (self.params['name'])
+                    message=('No Instance with name or ID %s found') % (self.params['name'])
                 )
 
 
 def main():
-    module = DmsQueueModule()
+    module = DmsInstanceModule()
     module()
 
 
