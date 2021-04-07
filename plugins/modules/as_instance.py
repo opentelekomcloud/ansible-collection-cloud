@@ -80,20 +80,14 @@ class ASInstanceModule(OTCModule):
         supports_check_mode = True
     )
 
+    def _system_state_change(self):
+        pass
+
     def _is_group_in_inservice_state(self, group):
         if group.status == 'INSERVICE':
             return True
         else:
             return False
-
-    def _get_max_number_of_instances(self, group):
-        return group.max_instance_number
-
-    def _get_min_number_of_instances(self, group):
-        return group.min_instance_number
-
-    def _get_current_instance_number(self, group):
-        return group.current_instance_number
 
     def _is_instance_in_inservice_state(self, instance):
         if instance.lifecycle_state == 'INSERVICE':
@@ -101,18 +95,30 @@ class ASInstanceModule(OTCModule):
         else:
             return False
 
-    def _get_instances_for_adding(self, as_instances):
+    def _get_instances_for_adding(self,group, as_instances):
         instances = []
+        max_instances = (group.max_instance_number -
+                         group.current_instance_number)
         for as_instance in as_instances:
             instance = self.sdk.compute.find_server(
                 name_or_id=as_instance
             )
             if instance:
                 instances.append(instance)
-        return instances
+        if len(instances) <= max_instances:
+            return instances
+        else:
+            msg='Number of instances is greater than maximum.' \
+                'Only {0} instances can be added'.format(max_instances)
+            self.fail(
+                changed=False,
+                msg=msg
+            )
 
-    def _get_instances_for_removing_or_protecting(self, group, as_instances):
+    def _get_instances_for_removing(self, group, as_instances):
         instances = []
+        max_instances = (group.current_instance_number -
+                                      group.min_instance_number)
         for as_instance in as_instances:
             instance = self.conn.auto_scaling.find_instance(
                 group=group,
@@ -125,7 +131,36 @@ class ASInstanceModule(OTCModule):
                     changed=False,
                     msg='Instance %s not found' % instance
                 )
-        return instances
+        if len(instances) <= max_instances:
+            return instances
+        else:
+            msg='Number of instances is less than minimum.' \
+                'Only {0} instances can be removed'.format(max_instances)
+            self.fail(
+                changed=False,
+                msg=msg
+            )
+
+    def _get_instances_for_protection(self, group, as_instances):
+        instances = []
+        max_instances = group.current_instance_number
+        for as_instance in as_instances:
+            instance = self.conn.auto_scaling.find_instance(
+                group=group,
+                name_or_id=as_instance
+            )
+            if instance and self._is_instance_in_inservice_state(instance):
+                instances.append(instance)
+        if len(instances) <= max_instances:
+            return instances
+        else:
+            msg='Number of instances is greater then current.' \
+                'Only {0} instances can be protect or unprotect'\
+                .format(max_instances)
+            self.fail(
+                changed=False,
+                msg=msg
+            )
 
     def run(self):
         as_group = self.params['scaling_group']
@@ -159,7 +194,7 @@ class ASInstanceModule(OTCModule):
                     msg='Action is incompatible with this state'
                 )
             else:
-                instances = self._get_instances_for_removing_or_protecting(group, as_instances)
+                instances = self._get_instances_for_removing(group, as_instances)
                 self.conn.auto_scaling.batch_instance_action(
                     group=group,
                     instances=instances,
@@ -172,7 +207,7 @@ class ASInstanceModule(OTCModule):
 
         else:
 
-            instances = self._get_instances_for_removing_or_protecting(group, as_instances)
+            instances = self._get_instances_for_removing(group, as_instances)
             if action is None:
                 if len(as_instances) == 1:
                     if len(instances) == 1:
