@@ -135,11 +135,6 @@ class ASInstanceModule(OTCModule):
             )
             if instance and self._is_instance_in_inservice_state(instance):
                 instances.append(instance)
-            elif not instance and len(as_instances) == 1:
-                self.fail(
-                    changed=False,
-                    msg='Instance %s not found' % instance
-                )
         if len(instances) <= max_instances:
             instances = self._slice_list(instances, 10)
         return instances
@@ -182,8 +177,9 @@ class ASInstanceModule(OTCModule):
         except self.sdk.exceptions.ResourceNotFound:
             self.fail(
                 changed=False,
-                msg='Scaling group %s not found' % as_group
+                msg='Scaling group {0} not found'.format(as_group)
             )
+
         max_adding = self._max_number_of_instances_for_adding(group)
         max_removing = self._max_number_of_instances_for_removing(group)
         max_protecting = self._max_number_of_instances_for_protecting(group)
@@ -223,13 +219,13 @@ class ASInstanceModule(OTCModule):
                             )
                             self.exit(
                                 changed=True,
-                                msg='Action %s was done' % action.upper()
+                                msg='Action {0} was done'.format(action.upper())
                             )
                         else:
                             self.fail(
                                 changed=False,
-                                msg='Instances can not be added because of AS group'
-                                    ' not in inservice state'
+                                msg='Instances can not be added because of AS '
+                                    'group not in inservice state'
                             )
             else:
                 instances = self._get_instances_for_protection(
@@ -253,7 +249,7 @@ class ASInstanceModule(OTCModule):
                         )
                         self.exit(
                             changed=True,
-                            msg='Action %s was done' % action.upper()
+                            msg='Action {0} was done'.format(action.upper())
                         )
 
         else:
@@ -274,43 +270,50 @@ class ASInstanceModule(OTCModule):
                 if action is None:
                     if len(as_instances) == 1:
                         if len(instances) == 1:
-                            for instance_group in instances:
-                                self.conn.auto_scaling.remove_instance(
-                                    instance = instance_group,
-                                    delete_instance = self._is_instance_delete(
-                                        instance_delete
-                                    )
+                            self.conn.auto_scaling.remove_instance(
+                                instance=instances[0],
+                                delete_instance=self._is_instance_delete(
+                                    instance_delete
                                 )
-                                self.exit(
-                                    changed = True,
-                                    msg = 'Instance %s was removed' % as_instances[0]
-                                )
+                            )
+                            msg = 'Instance {0} was removed'.format(
+                                as_instances[0]
+                            )
+                            self.exit(
+                                changed=True,
+                                msg=msg
+                            )
                         else:
+                            msg = 'Instance {0} not found or ' \
+                                  'Instance is not in INSERVICE ' \
+                                  'state'.format(as_instances[0])
                             self.fail(
-                                changed = False,
-                                msg = 'Instance is not in INSERVICE state'
+                                changed=False,
+                                msg=msg
                             )
                     else:
                         self.exit(
-                            changed = False,
-                            msg = 'Instances not changed'
+                            changed=False,
+                            msg='Instances not changed'
                         )
                 elif action.upper() == 'REMOVE':
                     for instance_group in instances:
                         self.conn.auto_scaling.batch_instance_action(
-                            group = group,
-                            instances = instance_group,
-                            action = action.upper(),
-                            delete_instance = self._is_instance_delete(instance_delete)
+                            group=group,
+                            instances=instance_group,
+                            action=action.upper(),
+                            delete_instance=self._is_instance_delete(
+                                instance_delete
+                            )
                         )
                         self.exit(
-                            changed = True,
-                            msg = 'Action %s was done' % action.upper()
+                            changed=True,
+                            msg='Action {0} was done'.format(action.upper())
                         )
                 else:
                     self.fail(
-                        changed = False,
-                        msg = 'Action is incompatible with this state'
+                        changed=False,
+                        msg='Action is incompatible with this state'
                     )
 
 
