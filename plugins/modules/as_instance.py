@@ -184,137 +184,145 @@ class ASInstanceModule(OTCModule):
         max_removing = self._max_number_of_instances_for_removing(group)
         max_protecting = self._max_number_of_instances_for_protecting(group)
 
-        if state == 'present':
+        if as_instances:
 
-            if action is None:
-                self.exit(
-                    changed=False,
-                    msg='Instances not changed'
-                )
-            elif action.upper() == 'REMOVE':
-                self.fail(
-                    changed=False,
-                    msg='Action is incompatible with this state'
-                )
-            elif action.upper() == 'ADD':
-                instances = self._get_instances_for_adding(
-                    group=group,
-                    as_instances=as_instances
-                )
-                if instances is None:
-                    msg = 'Instances not found or Number of instances is ' \
-                          'greater than maximum.Only {0} instances can ' \
-                          'be added'.format(max_adding)
+            if state == 'present':
+
+                if action is None:
+                    self.exit(
+                        changed = False,
+                        msg = 'Instances not changed'
+                    )
+                elif action.upper() == 'REMOVE':
                     self.fail(
                         changed = False,
-                        msg = msg
+                        msg = 'Action is incompatible with this state'
                     )
+                elif action.upper() == 'ADD':
+                    instances = self._get_instances_for_adding(
+                        group = group,
+                        as_instances = as_instances
+                    )
+                    if not instances:
+                        msg = 'Instances not found or Number of instances is ' \
+                              'greater than maximum.Only {0} instances can ' \
+                              'be added'.format(max_adding)
+                        self.fail(
+                            changed = False,
+                            msg = msg
+                        )
+                    else:
+                        for instance_group in instances:
+                            if self._is_group_in_inservice_state(group):
+                                self.conn.auto_scaling.batch_instance_action(
+                                    group = group,
+                                    instances = instance_group,
+                                    action = action.upper()
+                                )
+                                self.exit(
+                                    changed = True,
+                                    msg = 'Action {0} was done'.format(action.upper())
+                                )
+                            else:
+                                self.fail(
+                                    changed = False,
+                                    msg = 'Instances can not be added because of AS '
+                                          'group not in inservice state'
+                                )
                 else:
-                    for instance_group in instances:
-                        if self._is_group_in_inservice_state(group):
+                    instances = self._get_instances_for_protection(
+                        group = group,
+                        as_instances = as_instances
+                    )
+                    if not instances:
+                        msg = 'Instances not found or Number of instances is ' \
+                              'greater then current. Only {0} instances can be ' \
+                              'protect or unprotect'.format(max_protecting)
+                        self.fail(
+                            changed = False,
+                            msg = msg
+                        )
+                    else:
+                        for instance_group in instances:
                             self.conn.auto_scaling.batch_instance_action(
-                                group=group,
-                                instances=instance_group,
-                                action=action.upper()
+                                group = group,
+                                instances = instance_group,
+                                action = action.upper()
                             )
                             self.exit(
-                                changed=True,
-                                msg='Action {0} was done'.format(action.upper())
+                                changed = True,
+                                msg = 'Action {0} was done'.format(action.upper())
                             )
-                        else:
-                            self.fail(
-                                changed=False,
-                                msg='Instances can not be added because of AS '
-                                    'group not in inservice state'
-                            )
+
             else:
-                instances = self._get_instances_for_protection(
-                    group=group,
-                    as_instances=as_instances
+
+                instances = self._get_instances_for_removing(
+                    group = group,
+                    as_instances = as_instances
                 )
-                if instances is None:
+                if not instances:
                     msg = 'Instances not found or Number of instances is ' \
-                          'greater then current. Only {0} instances can be ' \
-                          'protect or unprotect'.format(max_protecting)
+                          'less than minimum. Only {0} instances can ' \
+                          'be removed'.format(max_removing)
                     self.fail(
                         changed = False,
                         msg = msg
                     )
                 else:
-                    for instance_group in instances:
-                        self.conn.auto_scaling.batch_instance_action(
-                            group=group,
-                            instances=instance_group,
-                            action=action.upper()
-                        )
-                        self.exit(
-                            changed=True,
-                            msg='Action {0} was done'.format(action.upper())
-                        )
-
-        else:
-
-            instances = self._get_instances_for_removing(
-                group=group,
-                as_instances=as_instances
-            )
-            if instances is None:
-                msg = 'Instances not found or Number of instances is ' \
-                      'less than minimum. Only {0} instances can ' \
-                      'be removed'.format(max_removing)
-                self.fail(
-                    changed = False,
-                    msg = msg
-                )
-            else:
-                if action is None:
-                    if len(as_instances) == 1:
-                        if len(instances) == 1:
-                            self.conn.auto_scaling.remove_instance(
-                                instance=instances[0],
-                                delete_instance=self._is_instance_delete(
+                    if action is None:
+                        if len(as_instances) == 1:
+                            if len(instances) == 1:
+                                self.conn.auto_scaling.remove_instance(
+                                    instance = instances[0],
+                                    delete_instance = self._is_instance_delete(
+                                        instance_delete
+                                    )
+                                )
+                                msg = 'Instance {0} was removed'.format(
+                                    as_instances[0]
+                                )
+                                self.exit(
+                                    changed = True,
+                                    msg = msg
+                                )
+                            else:
+                                msg = 'Instance {0} not found or ' \
+                                      'Instance is not in INSERVICE ' \
+                                      'state'.format(as_instances[0])
+                                self.fail(
+                                    changed = False,
+                                    msg = msg
+                                )
+                        else:
+                            self.exit(
+                                changed = False,
+                                msg = 'Instances not changed'
+                            )
+                    elif action.upper() == 'REMOVE':
+                        for instance_group in instances:
+                            self.conn.auto_scaling.batch_instance_action(
+                                group = group,
+                                instances = instance_group,
+                                action = action.upper(),
+                                delete_instance = self._is_instance_delete(
                                     instance_delete
                                 )
                             )
-                            msg = 'Instance {0} was removed'.format(
-                                as_instances[0]
-                            )
                             self.exit(
-                                changed=True,
-                                msg=msg
-                            )
-                        else:
-                            msg = 'Instance {0} not found or ' \
-                                  'Instance is not in INSERVICE ' \
-                                  'state'.format(as_instances[0])
-                            self.fail(
-                                changed=False,
-                                msg=msg
+                                changed = True,
+                                msg = 'Action {0} was done'.format(action.upper())
                             )
                     else:
-                        self.exit(
-                            changed=False,
-                            msg='Instances not changed'
+                        self.fail(
+                            changed = False,
+                            msg = 'Action is incompatible with this state'
                         )
-                elif action.upper() == 'REMOVE':
-                    for instance_group in instances:
-                        self.conn.auto_scaling.batch_instance_action(
-                            group=group,
-                            instances=instance_group,
-                            action=action.upper(),
-                            delete_instance=self._is_instance_delete(
-                                instance_delete
-                            )
-                        )
-                        self.exit(
-                            changed=True,
-                            msg='Action {0} was done'.format(action.upper())
-                        )
-                else:
-                    self.fail(
-                        changed=False,
-                        msg='Action is incompatible with this state'
-                    )
+
+        else:
+            self.fail(
+                changed=False,
+                msg='AS instances are empty'
+            )
 
 
 def main():
