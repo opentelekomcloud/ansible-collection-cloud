@@ -95,18 +95,26 @@ class ASInstanceModule(OTCModule):
         else:
             return False
 
+    def _slice_list(self, init_list, part_size):
+        return [init_list[i:i + part_size]
+                for i in range(0, len(init_list), part_size)]
+
     def _get_instances_for_adding(self,group, as_instances):
         instances = []
         max_instances = (group.max_instance_number -
                          group.current_instance_number)
         for as_instance in as_instances:
-            instance = self.sdk.compute.find_server(
+            instance_ecs = self.sdk.compute.find_server(
                 name_or_id=as_instance
             )
-            if instance:
-                instances.append(instance)
+            instance_as_group = self.conn.auto_scaling.find_instance(
+                group=group,
+                name_or_id=as_instance
+            )
+            if instance_ecs and instance_as_group is None:
+                instances.append(instance_ecs.id)
         if len(instances) <= max_instances:
-            return instances
+            return self._slice_list(instances, 10)
         else:
             msg='Number of instances is greater than maximum.' \
                 'Only {0} instances can be added'.format(max_instances)
@@ -132,7 +140,7 @@ class ASInstanceModule(OTCModule):
                     msg='Instance %s not found' % instance
                 )
         if len(instances) <= max_instances:
-            return instances
+            return self._slice_list(instances, 10)
         else:
             msg='Number of instances is less than minimum.' \
                 'Only {0} instances can be removed'.format(max_instances)
@@ -152,7 +160,7 @@ class ASInstanceModule(OTCModule):
             if instance and self._is_instance_in_inservice_state(instance):
                 instances.append(instance)
         if len(instances) <= max_instances:
-            return instances
+            return self._slice_list(instances, 10)
         else:
             msg='Number of instances is greater then current.' \
                 'Only {0} instances can be protect or unprotect'\
@@ -200,37 +208,42 @@ class ASInstanceModule(OTCModule):
                     msg='Action is incompatible with this state'
                 )
             elif action.upper() == 'ADD':
-                instances = self._get_instances_for_adding(group, as_instances)
-                if self._is_group_in_inservice_state(group):
+                instances = self._get_instances_for_adding(
+                    group=group,
+                    instances=as_instances
+                )
+                for instance_group in instances:
+                    if self._is_group_in_inservice_state(group):
+                        self.conn.auto_scaling.batch_instance_action(
+                            group=group,
+                            instances=instance_group,
+                            action=action.upper()
+                        )
+                        self.exit(
+                            changed=True,
+                            msg='Action %s was done' % action.upper()
+                        )
+                    else:
+                        self.fail(
+                            changed=False,
+                            msg='Instances can not be added because of AS group'
+                                ' not in inservice state'
+                        )
+            else:
+                instances = self._get_instances_for_protection(
+                    group=group,
+                    as_instances=as_instances
+                )
+                for instance_group in instances:
                     self.conn.auto_scaling.batch_instance_action(
                         group=group,
-                        instances=instances,
+                        instances=instance_group,
                         action=action.upper()
                     )
                     self.exit(
                         changed=True,
                         msg='Action %s was done' % action.upper()
                     )
-                else:
-                    self.fail(
-                        changed=False,
-                        msg='Instances can not be added because of AS group'
-                            ' not in inservice state'
-                    )
-            else:
-                instances = self._get_instances_for_protection(
-                    group=group,
-                    as_instances=as_instances
-                )
-                self.conn.auto_scaling.batch_instance_action(
-                    group=group,
-                    instances=instances,
-                    action=action.upper()
-                )
-                self.exit(
-                    changed=True,
-                    msg='Action %s was done' % action.upper()
-                )
 
         else:
 
@@ -241,16 +254,17 @@ class ASInstanceModule(OTCModule):
             if action is None:
                 if len(as_instances) == 1:
                     if len(instances) == 1:
-                        self.conn.auto_scaling.remove_instance(
-                            instance=instances[0],
-                            delete_instance=self._is_instance_delete(
-                                instance_delete
+                        for instance_group in instances:
+                            self.conn.auto_scaling.remove_instance(
+                                instance=instance_group,
+                                delete_instance=self._is_instance_delete(
+                                    instance_delete
+                                )
                             )
-                        )
-                        self.exit(
-                            changed=True,
-                            msg='Instance %s was removed' % as_instances[0]
-                        )
+                            self.exit(
+                                changed=True,
+                                msg='Instance %s was removed' % as_instances[0]
+                            )
                     else:
                         self.fail(
                             changed=False,
@@ -262,16 +276,17 @@ class ASInstanceModule(OTCModule):
                         msg='Instances not changed'
                     )
             elif action.upper() == 'REMOVE':
-                self.conn.auto_scaling.batch_instance_action(
-                    group=group,
-                    instances=instances,
-                    action=action.upper(),
-                    delete_instance=self._is_instance_delete(instance_delete)
-                )
-                self.exit(
-                    changed=True,
-                    msg='Action %s was done' % action.upper()
-                )
+                for instance_group in instances:
+                    self.conn.auto_scaling.batch_instance_action(
+                        group=group,
+                        instances=instance_group,
+                        action=action.upper(),
+                        delete_instance=self._is_instance_delete(instance_delete)
+                    )
+                    self.exit(
+                        changed=True,
+                        msg='Action %s was done' % action.upper()
+                    )
             else:
                 self.fail(
                     changed=False,
