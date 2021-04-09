@@ -119,7 +119,9 @@ class ASInstanceModule(OTCModule):
                 group=group,
                 name_or_id=as_instance
             )
-            if instance_ecs and instance_as_group is None:
+            if (instance_ecs and
+                    instance_ecs.availability_zone in group.availability_zones
+                    and instance_as_group is None):
                 instances.append(instance_ecs.id)
         if len(instances) <= max_instances:
             instances = self._slice_list(instances, 10)
@@ -219,16 +221,17 @@ class ASInstanceModule(OTCModule):
                                     instances = instance_group,
                                     action = action.upper()
                                 )
-                                self.exit(
-                                    changed = True,
-                                    msg = 'Action {0} was done'.format(action.upper())
-                                )
+                                # add waiting for group method
                             else:
                                 self.fail(
                                     changed = False,
                                     msg = 'Instances can not be added because of AS '
                                           'group not in inservice state'
                                 )
+                        self.exit(
+                            changed = True,
+                            msg = 'Action {0} was done'.format(action.upper())
+                        )
                 else:
                     instances = self._get_instances_for_protection(
                         group = group,
@@ -300,18 +303,25 @@ class ASInstanceModule(OTCModule):
                             )
                     elif action.upper() == 'REMOVE':
                         for instance_group in instances:
-                            self.conn.auto_scaling.batch_instance_action(
-                                group = group,
-                                instances = instance_group,
-                                action = action.upper(),
-                                delete_instance = self._is_instance_delete(
-                                    instance_delete
+                            if self._is_group_in_inservice_state(group):
+                                self.conn.auto_scaling.batch_instance_action(
+                                    group = group,
+                                    instances = instance_group,
+                                    action = action.upper(),
+                                    delete_instance = self._is_instance_delete(
+                                        instance_delete
+                                    )
                                 )
-                            )
-                            self.exit(
-                                changed = True,
-                                msg = 'Action {0} was done'.format(action.upper())
-                            )
+                            else:
+                                self.fail(
+                                    changed = False,
+                                    msg = 'Instances can not be removed because of AS '
+                                          'group not in inservice state'
+                                )
+                        self.exit(
+                            changed = True,
+                            msg = 'Action {0} was done'.format(action.upper())
+                        )
                     else:
                         self.fail(
                             changed = False,
