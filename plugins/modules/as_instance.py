@@ -86,8 +86,37 @@ class ASInstanceModule(OTCModule):
         supports_check_mode=True
     )
 
-    def _system_state_change(self):
-        pass
+    def _system_state_change(self, as_group, instances, as_instances,
+                             state, action):
+        if state == 'present':
+            if action is None:
+                return False
+            elif action.upper() == 'REMOVE':
+                return False
+            elif action.upper() == 'ADD':
+                if instances:
+                    return True
+                else:
+                    return False
+            else:
+                if instances:
+                    return True
+                else:
+                    return False
+        else:
+            if instances:
+                if action is None:
+                    if len(as_instances) == 1:
+                        if len(instances) == 1:
+                            return True
+                        else:
+                            return False
+                    else:
+                        return False
+                elif action.upper() == 'REMOVE':
+                    return True
+                else:
+                    return False
 
     def _is_group_in_inservice_state(self, group):
         if group.status.upper() == 'INSERVICE':
@@ -206,6 +235,7 @@ class ASInstanceModule(OTCModule):
         if as_instances:
 
             if state == 'present':
+                instances = []
 
                 if action is None:
                     self.exit(
@@ -267,10 +297,10 @@ class ASInstanceModule(OTCModule):
                                 instances=instance_group,
                                 action=action.upper()
                             )
-                            self.exit(
-                                changed=True,
-                                msg='Action {0} was done'.format(action.upper())
-                            )
+                        self.exit(
+                            changed=True,
+                            msg='Action {0} was done'.format(action.upper())
+                        )
 
             else:
 
