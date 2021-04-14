@@ -86,14 +86,13 @@ class ASInstanceModule(OTCModule):
         supports_check_mode=True
     )
 
-    def _system_state_change(self, as_group, instances, as_instances,
-                             state, action):
+    def _system_state_change(self, instances, as_instances, state, action):
         if state == 'present':
             if action is None:
                 return False
-            elif action.upper() == 'REMOVE':
+            elif action == 'remove':
                 return False
-            elif action.upper() == 'ADD':
+            elif action == 'add':
                 if instances:
                     return True
                 else:
@@ -113,7 +112,7 @@ class ASInstanceModule(OTCModule):
                             return False
                     else:
                         return False
-                elif action.upper() == 'REMOVE':
+                elif action == 'remove':
                     return True
                 else:
                     return False
@@ -190,6 +189,37 @@ class ASInstanceModule(OTCModule):
             instances = self._slice_list(instances, 10)
         return instances
 
+    def _get_instances(self, as_group, as_instances, state, action):
+        instances = []
+        if state == 'present':
+            if action == 'add':
+                instances = self._get_instances_for_adding(
+                    group=as_group,
+                    as_instances=as_instances
+                )
+            elif action == 'protect' or action == 'unprotect':
+                instances = self._get_instances_for_protection(
+                    group=as_group,
+                    as_instances=as_instances
+                )
+        else:
+            if action == 'remove' or action is None:
+                instances = self._get_instances_for_removing(
+                    group=as_group,
+                    as_instances=as_instances
+                )
+        return instances
+
+    def _batch_instances_action(self, instances, group, timeout, action):
+        for instance_group in instances:
+            self.conn.auto_scaling.batch_instance_action(
+                group=self._wait_for_group_inservice_status(
+                    as_group=group,
+                    timeout=timeout
+                ),
+                instances=instance_group,
+                action=action
+            )
 
     def _is_instance_delete(self, instance_delete):
         if instance_delete == 'yes':
@@ -233,25 +263,33 @@ class ASInstanceModule(OTCModule):
         max_protecting = self._max_number_of_instances_for_protecting(group)
 
         if as_instances:
+            instances = self._get_instances(
+                as_group=group,
+                as_instances=as_instances,
+                state=state,
+                action=action
+            )
+
+            if self.ansible.check_mode:
+                self.exit(
+                    changed=self._system_state_change(
+                        instances, as_instances, state, action
+                    )
+                )
 
             if state == 'present':
-                instances = []
 
                 if action is None:
                     self.exit(
                         changed=False,
                         msg='Instances not changed'
                     )
-                elif action.upper() == 'REMOVE':
+                elif action == 'remove':
                     self.fail(
                         changed=False,
                         msg='Action is incompatible with this state'
                     )
-                elif action.upper() == 'ADD':
-                    instances = self._get_instances_for_adding(
-                        group=group,
-                        as_instances=as_instances
-                    )
+                elif action == 'add':
                     if not instances:
                         msg = 'Instances not found or Number of instances is ' \
                               'greater than maximum.Only {0} instances can ' \
@@ -261,24 +299,17 @@ class ASInstanceModule(OTCModule):
                             msg=msg
                         )
                     else:
-                        for instance_group in instances:
-                            self.conn.auto_scaling.batch_instance_action(
-                                group=self._wait_for_group_inservice_status(
-                                    as_group=group,
-                                    timeout=timeout
-                                ),
-                                instances=instance_group,
-                                action=action.upper()
-                            )
+                        self._batch_instances_action(
+                            instances=instances,
+                            group=group,
+                            timeout=timeout,
+                            action=action
+                        )
                         self.exit(
                             changed=True,
                             msg='Action {0} was done'.format(action.upper())
                         )
                 else:
-                    instances = self._get_instances_for_protection(
-                        group=group,
-                        as_instances=as_instances
-                    )
                     if not instances:
                         msg = 'Instances not found or Number of instances is ' \
                               'greater then current. Only {0} instances can be ' \
@@ -288,15 +319,12 @@ class ASInstanceModule(OTCModule):
                             msg=msg
                         )
                     else:
-                        for instance_group in instances:
-                            self.conn.auto_scaling.batch_instance_action(
-                                group=self._wait_for_group_inservice_status(
-                                    as_group=group,
-                                    timeout=timeout
-                                ),
-                                instances=instance_group,
-                                action=action.upper()
-                            )
+                        self._batch_instances_action(
+                            instances=instances,
+                            group=group,
+                            timeout=timeout,
+                            action=action
+                        )
                         self.exit(
                             changed=True,
                             msg='Action {0} was done'.format(action.upper())
@@ -304,10 +332,6 @@ class ASInstanceModule(OTCModule):
 
             else:
 
-                instances = self._get_instances_for_removing(
-                    group=group,
-                    as_instances=as_instances
-                )
                 if not instances:
                     msg = 'Instances not found or Number of instances is ' \
                           'less than minimum. Only {0} instances can ' \
@@ -346,19 +370,13 @@ class ASInstanceModule(OTCModule):
                                 changed=False,
                                 msg='Instances not changed'
                             )
-                    elif action.upper() == 'REMOVE':
-                        for instance_group in instances:
-                            self.conn.auto_scaling.batch_instance_action(
-                                group=self._wait_for_group_inservice_status(
-                                    as_group=group,
-                                    timeout=timeout
-                                ),
-                                instances=instance_group,
-                                action=action.upper(),
-                                delete_instance=self._is_instance_delete(
-                                    instance_delete
-                                )
-                            )
+                    elif action == 'remove':
+                        self._batch_instances_action(
+                            instances=instances,
+                            group=group,
+                            timeout=timeout,
+                            action=action
+                        )
                         self.exit(
                             changed=True,
                             msg='Action {0} was done'.format(action.upper())
