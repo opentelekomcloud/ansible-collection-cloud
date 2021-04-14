@@ -28,7 +28,7 @@ options:
     description:
       - Specifies the port for providing external services.
       - Mandatory for DNAT rule creation
-    type: int
+    type: str
   floating_ip:
     description:
       - ID or Name of the floating IP
@@ -42,7 +42,7 @@ options:
     description:
       - Specifies the port used by ECSs or BMSs to provide services for external systems
       - Mandatory for DNAT rule creation
-    type: int
+    type: str
   nat_gateway:
     description:
       - ID or Name of the NAT gateway
@@ -91,7 +91,7 @@ dnat_rule:
             sample: "yyyy-mm-dd hh:mm:ss"
         external_service_port:
             description: Specifies the port for providing external services.
-            type: int
+            type: str
             sample: 80
         floating_ip:
             description: IP / ID of the floating IP Address assigned to the rule.
@@ -103,7 +103,7 @@ dnat_rule:
             sample: "5acab424-69fb-4408-93d1-b2801b306827"
         internal_service_port:
             description: Specifies the port used by ECSs or BMSs to provide services for external systems
-            type: int
+            type: str
             sample: 80
         nat_gateway_id:
             description: ID or name of the assigned Nat gateway.
@@ -147,10 +147,10 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class NatDnatModule(OTCModule):
     argument_spec = dict(
         admin_state_up=dict(required=False, type='bool'),
-        external_service_port=dict(required=False, type='int'),
+        external_service_port=dict(required=False, type='str'),
         floating_ip=dict(required=False),
         id=dict(required=False),
-        internal_service_port=dict(required=False, type='int'),
+        internal_service_port=dict(required=False, type='str'),
         nat_gateway=dict(required=False),
         port=dict(required=False),
         private_ip=dict(required=False),
