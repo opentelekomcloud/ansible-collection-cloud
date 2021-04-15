@@ -35,9 +35,8 @@ options:
   instance_delete:
     description:
       - Specifies whether an instance is deleted when it is removed from the AS group.
-    choices: [yes, no]
-    type: str
-    default: "no"
+    type: bool
+    default: 'no'
   action:
     description:
       - Specifies an action to be performed on instances in batches.
@@ -77,7 +76,7 @@ class ASInstanceModule(OTCModule):
     argument_spec = dict(
         scaling_group=dict(type='str', required=True),
         scaling_instances=dict(type='list', elements='str', required=True),
-        instance_delete=dict(type='str', choices=['yes', 'no'], default='no'),
+        instance_delete=dict(type='bool', default=False),
         action=dict(type='str', choices=['add', 'remove', 'protect', 'unprotect']),
         state=dict(type='str', choices=['present', 'absent'], default='present'),
         timeout=dict(type='int', default=200)
@@ -142,7 +141,7 @@ class ASInstanceModule(OTCModule):
         return [init_list[i:i + part_size]
                 for i in range(0, len(init_list), part_size)]
 
-    def _get_instances_for_adding(self,group, as_instances):
+    def _get_instances_for_adding(self, group, as_instances):
         instances = []
         max_instances = self._max_number_of_instances_for_adding(group)
         for as_instance in as_instances:
@@ -210,7 +209,8 @@ class ASInstanceModule(OTCModule):
                 )
         return instances
 
-    def _batch_instances_action(self, instances, group, timeout, action):
+    def _batch_instances_action(self, instances, group, timeout,
+                                action, instance_delete=False):
         for instance_group in instances:
             self.conn.auto_scaling.batch_instance_action(
                 group=self._wait_for_group_inservice_status(
@@ -218,7 +218,8 @@ class ASInstanceModule(OTCModule):
                     timeout=timeout
                 ),
                 instances=instance_group,
-                action=action
+                action=action,
+                delete_instance=instance_delete
             )
 
     def _is_instance_delete(self, instance_delete):
@@ -346,9 +347,7 @@ class ASInstanceModule(OTCModule):
                             if len(instances) == 1:
                                 self.conn.auto_scaling.remove_instance(
                                     instance=instances[0],
-                                    delete_instance=self._is_instance_delete(
-                                        instance_delete
-                                    )
+                                    delete_instance=instance_delete
                                 )
                                 msg = 'Instance {0} was removed'.format(
                                     as_instances[0]
@@ -375,7 +374,8 @@ class ASInstanceModule(OTCModule):
                             instances=instances,
                             group=group,
                             timeout=timeout,
-                            action=action
+                            action=action,
+                            instance_delete=instance_delete
                         )
                         self.exit(
                             changed=True,
