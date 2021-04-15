@@ -6,7 +6,9 @@
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.as_group:
       cloud: "{{ test_cloud }}"
-    opentelekom.cloud.as_config:
+    opentelekomcloud.cloud.as_config:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.security_group:
       cloud: "{{ test_cloud }}"
     openstack.cloud.os_network:
       cloud: "{{ test_cloud }}"
@@ -38,6 +40,20 @@
         server_name: "{{ ( prefix + '_ecs') }}"
         server_flavor: "s3.medium.1"
         image_name: Standard_Ubuntu_18.04_latest
+        volume_type: "SATA"
+        disk_type: "SYS"
+        disk_size: 4
+
+    - name: Create keypair
+      openstack.cloud.os_keypair:
+        name: "{{ kp_name }}"
+      register: kp
+
+    - name: Create security group
+      openstack.cloud.security_group:
+        name: "{{ secgroup_name }}"
+        state: present
+      register: secgroup
 
     - name: Create network
       openstack.cloud.os_network:
@@ -65,12 +81,49 @@
             subnet: "{{ subnet.subnet.name }}"
       register: router
 
-    - name: Create as group
+    - name: Create AS Config
+      opentelekomcloud.cloud.as_config:
+        scaling_configuration: "{{ as_config_name }}"
+        key_name: "{{ kp_name }}"
+        image: "{{ image_name }}"
+        flavor: "{{ server_flavor }}"
+        disk:
+          - size: "{{ disk_size }}"
+            volume_type: "{{ volume_type }}"
+            disk_type: "{{ disk_type }}"
+        public_ip:
+          - eip:
+              - ip_type: "5_bgp"
+                bandwidth:
+                  - size: 10
+                    share_type: "PER"
+                    charging_mode: "traffic"
+        security_groups: [{'id': "{{ secgroup.secgroup.id }}"}]
+      register: as_config
+
+    - name: Create AS group
       opentelekomcloud.cloud.as_group:
         scaling_group_name: "{{ as_group_name }}"
+        scaling_configuration: "{{ as_config_name }}"
+        min_instance_number: 0
+        desire_instance_number: 1
+        max_instance_number: 2
+        available_zones: ['eu-de-01', 'eu-de-02', 'eu-de-03']
         networks: [{'id': "{{ network.network.id }}"}]
+        security_groups: [{'id': "{{ secgroup.secgroup.id }}"}]
         router: "{{ router.router.id }}"
+        delete_publicip: True
+        delete_volume: True
       register: as_group
+
+    - name: Create ECS1 instance
+      openstack.cloud.server:
+        name: "{{ (as_instance_name + '_1') }}"
+        image: "{{ image_name }}"
+        network: "{{ network_name }}"
+        flavor: "{{ server_flavor }}"
+        auto_ip: True
+      register: ecs1
 
     - name: Get list of AS instances using as group id
       opentelekomcloud.cloud.as_instance_info:
@@ -82,31 +135,47 @@
         that:
           - as_instances is success
           - as_instances is not changed
-          - as_instances['scaling_instances']|length == 0
-
-
 
   always:
     - block:
       # Cleanup
+      - name: Delete ECS1
+        openstack.cloud.server:
+          name: "{{ ecs1.server.name}}"
+          state: absent
+
       - name: Delete as group
         opentelekomcloud.cloud.as_group:
           scaling_group_name: "{{ as_group_name }}"
           state: absent
-        register: dropped_as_group
 
-      - name: Drop existing router
+      - name: Delete as config
+        opentelekomcloud.cloud.as_config:
+          scaling_configuration: "{{ as_config_name }}"
+          state: absent
+
+      - name: Delete existing router
         openstack.cloud.os_router:
           name: "{{ router.router.name }}"
           state: absent
 
-      - name: Drop existing subnet
+      - name: Delete existing subnet
         openstack.cloud.os_subnet:
           name: "{{ subnet.subnet.name }}"
           state: absent
 
-      - name: Drop existing network
+      - name: Delete existing network
         openstack.cloud.os_network:
           name: "{{ network.network.name }}"
           state: absent
       ignore_errors: true
+
+      - name: Delete security group
+        openstack.cloud.security_group:
+          name: "{{ secgroup_name }}"
+          state: absent
+
+      - name: Delete keypair
+        openstack.cloud.os_keypair:
+          name: "{{ kp_name }}"
+          state: absent
