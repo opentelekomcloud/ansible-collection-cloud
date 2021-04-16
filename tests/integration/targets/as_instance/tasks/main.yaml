@@ -92,12 +92,12 @@
             volume_type: "{{ volume_type }}"
             disk_type: "{{ disk_type }}"
         public_ip:
-          - eip:
-              - ip_type: "5_bgp"
-                bandwidth:
-                  - size: 10
-                    share_type: "PER"
-                    charging_mode: "traffic"
+          eip:
+            ip_type: "5_bgp"
+            bandwidth:
+              size: 10
+              share_type: "PER"
+              charging_mode: "traffic"
         security_groups: [{'id': "{{ secgroup.secgroup.id }}"}]
       register: as_config
 
@@ -108,7 +108,7 @@
         min_instance_number: 0
         desire_instance_number: 1
         max_instance_number: 2
-        available_zones: ['eu-de-01', 'eu-de-02', 'eu-de-03']
+        available_zones: ["eu-de-03"]
         networks: [{'id': "{{ network.network.id }}"}]
         security_groups: [{'id': "{{ secgroup.secgroup.id }}"}]
         router: "{{ router.router.id }}"
@@ -122,7 +122,9 @@
         image: "{{ image_name }}"
         network: "{{ network_name }}"
         flavor: "{{ server_flavor }}"
+        availability_zone: "eu-de-03"
         auto_ip: True
+        delete_fip: True
       register: ecs1
 
     - name: Get list of AS instances using as group id
@@ -141,7 +143,7 @@
       # Cleanup
       - name: Delete ECS1
         openstack.cloud.server:
-          name: "{{ ecs1.server.name}}"
+          name: "{{ (as_instance_name + '_1') }}"
           state: absent
 
       - name: Delete as group
@@ -168,7 +170,6 @@
         openstack.cloud.os_network:
           name: "{{ network.network.name }}"
           state: absent
-      ignore_errors: true
 
       - name: Delete security group
         openstack.cloud.security_group:
@@ -179,3 +180,4 @@
         openstack.cloud.os_keypair:
           name: "{{ kp_name }}"
           state: absent
+      ignore_errors: true

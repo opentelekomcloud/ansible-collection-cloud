@@ -34,7 +34,8 @@ options:
     required: true
   instance_delete:
     description:
-      - Specifies whether an instance is deleted when it is removed from the AS group.
+      - Specifies whether an instance is deleted when it is
+        removed from the AS group.
     type: bool
     default: 'no'
   action:
@@ -77,8 +78,10 @@ class ASInstanceModule(OTCModule):
         scaling_group=dict(type='str', required=True),
         scaling_instances=dict(type='list', elements='str', required=True),
         instance_delete=dict(type='bool', default=False),
-        action=dict(type='str', choices=['add', 'remove', 'protect', 'unprotect']),
-        state=dict(type='str', choices=['present', 'absent'], default='present'),
+        action=dict(type='str',
+                    choices=['add', 'remove', 'protect', 'unprotect']),
+        state=dict(type='str',
+                   choices=['present', 'absent'], default='present'),
         timeout=dict(type='int', default=200)
     )
     module_kwargs = dict(
@@ -312,9 +315,10 @@ class ASInstanceModule(OTCModule):
                         )
                 else:
                     if not instances:
-                        msg = 'Instances not found or Number of instances is ' \
-                              'greater then current. Only {0} instances can be ' \
-                              'protect or unprotect'.format(max_protecting)
+                        msg = 'Instances not found or Number of ' \
+                              'instances is greater then current. ' \
+                              'Only {0} instances can be protect ' \
+                              'or unprotect'.format(max_protecting)
                         self.fail(
                             changed=False,
                             msg=msg
