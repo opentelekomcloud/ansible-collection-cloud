@@ -148,7 +148,7 @@ class ASInstanceModule(OTCModule):
         instances = []
         max_instances = self._max_number_of_instances_for_adding(group)
         for as_instance in as_instances:
-            instance_ecs = self.sdk.compute.find_server(
+            instance_ecs = self.conn.compute.find_server(
                 name_or_id=as_instance
             )
             instance_as_group = self.conn.auto_scaling.find_instance(
