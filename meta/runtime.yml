@@ -81,4 +81,3 @@ action_groups:
     - object_info.py
     - dns_nameserver_info.py
     - vpn_service.py
-

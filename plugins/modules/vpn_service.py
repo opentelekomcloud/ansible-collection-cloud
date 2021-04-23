@@ -88,31 +88,27 @@ vpn:
     admin_state_up:
       description: Specifies the administrative status. The value can be true or false.
       type: bool
-      sample: ""
+      sample: "true"
     subnet_id:
       description: Specifies the subnet ID.
       type: str
-      sample: ""
+      sample: "df9910d4-e04b-49db-9699-ab3bd368bc04"
     tenant_id:
       description: Specifies the project ID.
       type: str
-      sample:
+      sample: "5d9910d4-e04b-49db-9699-ab3bd368bc04"
     external_v4_ip:
       description: Specifies the IPv4 address of the VPN service external gateway.
       type: str
-      sample: ""
+      sample: "80.158.3.5"
     id:
       description: Specifies the VPN service ID.
       type: str
-      sample:
+      sample: "5d9910d4-e04b-49db-9699-ab3bd368bc04"
     description:
       description: Provides supplementary information about the VPN service.
       type: str
-      sample: ""
-    vpnservice:
-      description: Specifies the VPN service object.
-      type: object
-      sample: ""
+      sample: "description of vpn"
 '''
 
 EXAMPLES = '''
