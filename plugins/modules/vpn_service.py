@@ -47,7 +47,7 @@ options:
   tenant_id:
     description:
       - Specifies the project ID.
-    type: str  
+    type: str
   description:
     description:
       - Provides supplementary information about the VPN service. Can be changed for existing vpn service.
@@ -71,12 +71,12 @@ vpn:
     router_id:
       description: Specifies the router ID.
       type: str
-      sample: ""
+      sample: "5d9910d4-e04b-49db-9699-ab3bd368bc04"
     status:
       description: 	Specifies whether the VPN service is currently operational.\
         The value can be ACTIVE, DOWN, BUILD, ERROR, PENDING_CREATE, PENDING_UPDATE, or PENDING_DELETE.
       type: str
-      sample: ""
+      sample: "ACTIVE"
     name:
       description: Specifies the VPN service name.
       type: str
@@ -84,7 +84,7 @@ vpn:
     external_v6_ip:
       description: Specifies the IPv6 address of the VPN service external gateway.
       type: str
-      sample: ""
+      sample: "2001:db8::1"
     admin_state_up:
       description: Specifies the administrative status. The value can be true or false.
       type: bool
@@ -96,7 +96,7 @@ vpn:
     tenant_id:
       description: Specifies the project ID.
       type: str
-      sample: 
+      sample:
     external_v4_ip:
       description: Specifies the IPv4 address of the VPN service external gateway.
       type: str
@@ -104,7 +104,7 @@ vpn:
     id:
       description: Specifies the VPN service ID.
       type: str
-      sample: 
+      sample:
     description:
       description: Provides supplementary information about the VPN service.
       type: str
@@ -117,9 +117,28 @@ vpn:
 
 EXAMPLES = '''
 # Creating / Updating a vpn:
-- name: Testing
-  opentelekomcloud.cloud.vpn:
+- name: Create a new vpn 
+  opentelekomcloud.cloud.vpn_service:
+    router: "my-router"
+    name: "my-vpn:
+    subnet: "my-subnet"
 
+- name: Update vpn
+  opentelekomcloud.cloud.vpn_service:
+    router: "my-router"
+    name: "new_name_for_vpn"
+    service_id: "5d9910d4-e04b-49db-9699-ab3bd368bc04"
+    description: "new description"
+
+- name: Delete vpn by name
+  opentelekomcloud.cloud.vpn_service:
+    name: "my-vpn"
+    state: absent
+
+- name: Delete vpn by id
+  opentelekomcloud.cloud.vpn_service:
+    service_id: "5d9910d4-e04b-49db-9699-ab3bd368bc04"
+    state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -137,6 +156,10 @@ class VPNModule(OTCModule):
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
 
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
+
     def run(self):
         query = {}
 
@@ -148,6 +171,8 @@ class VPNModule(OTCModule):
         description = self.params['description']
         state = self.params['state']
 
+        existing_vpn = None
+
         if name:
             query['name'] = name
 
@@ -157,7 +182,25 @@ class VPNModule(OTCModule):
         if description:
             query['description'] = description
 
+        if service_id:
+            existing_vpn = self.conn.network.find_vpn_service(name_or_id=service_id)
+
+        if name:
+            existing_vpn = self.conn.network.find_vpn_service(name_or_id=name)
+
         if state == 'present':
+
+            if existing_vpn:
+                if self.check_mode:
+                    self.exit_json(changed=True)
+                updated_vpn = self.conn.network.update_vpn_service(existing_vpn, **query)
+                self.exit(changed=True, vpn=updated_vpn)
+
+            if subnet:
+                try:
+                    query['subnet_id'] = self.conn.network.find_subnet(name_or_id=subnet, ignore_missing=False).id
+                except self.sdk.exceptions.ResourceNotFound:
+                    self.fail_json("Subnet not found")
 
             if router:
                 try:
@@ -168,44 +211,19 @@ class VPNModule(OTCModule):
             else:
                 self.fail_json(msg='Router is mandatory for creation')
 
-            if service_id:
-                existing_vpn = self.conn.network.find_vpn_service(name_or_id=service_id)
-
-                if existing_vpn:
-                    updated_vpn = self.conn.network.update_vpn_service(existing_vpn, **query)
-                    self.exit(changed=True, vpn=updated_vpn)
-
-            if name:
-                existing_vpn = self.conn.network.find_vpn_service(name_or_id=name)
-
-                if existing_vpn:
-                    updated_vpn = self.conn.network.update_vpn_service(existing_vpn, **query)
-                    self.exit(changed=True, vpn=updated_vpn)
-
-            if subnet:
-                try:
-                    query['subnet_id'] = self.conn.network.find_subnet(name_or_id=subnet, ignore_missing=False).id
-                except self.sdk.exceptions.ResourceNotFound:
-                    self.fail_json("Subnet not found")
-
+            if self.check_mode:
+                self.exit_json(changed=True)
             new_vpn = self.conn.network.create_vpn_service(**query)
             self.exit(changed=True, vpn=new_vpn)
 
         else:
-            if service_id:
-                try:
-                    self.conn.network.delete_vpn_service(service_id, ignore_missing=False)
-                except self.sdk.exceptions.ResourceNotFound:
-                    self.exit(changed=False)
+            if existing_vpn:
+                if self.check_mode:
+                    self.exit_json(changed=True)
+                self.conn.network.delete_vpn_service(existing_vpn, ignore_missing=False)
 
-            if name:
-                try:
-                    self.conn.network.delete_vpn_service(name, ignore_missing=False)
-                    self.exit(msg="deleted")
-                except self.sdk.exceptions.ResourceNotFound:
-                    self.exit(changed=False)
-
-            self.fail_json(msg='"name" or "service_id" must be set for deleting')
+            if self.check_mode:
+                self.exit_json(changed=False)
 
 
 def main():
