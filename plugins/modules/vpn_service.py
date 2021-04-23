@@ -117,7 +117,7 @@ vpn:
 
 EXAMPLES = '''
 # Creating / Updating a vpn:
-- name: Create a new vpn 
+- name: Create a new vpn
   opentelekomcloud.cloud.vpn_service:
     router: "my-router"
     name: "my-vpn:
