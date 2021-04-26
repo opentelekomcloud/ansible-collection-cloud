@@ -194,7 +194,8 @@ class VPNModule(OTCModule):
 
             if subnet:
                 try:
-                    query['subnet_id'] = self.conn.network.find_subnet(name_or_id=subnet, ignore_missing=False).id
+                    subnet_id = self.conn.network.find_subnet(name_or_id=subnet, ignore_missing=False).id
+                    query['subnet_id'] = subnet_id
                 except self.sdk.exceptions.ResourceNotFound:
                     self.fail_json("Subnet not found")
 
