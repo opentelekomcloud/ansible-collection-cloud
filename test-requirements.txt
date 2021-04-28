@@ -1,7 +1,7 @@
 openstacksdk
 ansible-base
 pycodestyle
-flake8==3.8.4
+flake8
 pylint
 voluptuous
 yamllint
