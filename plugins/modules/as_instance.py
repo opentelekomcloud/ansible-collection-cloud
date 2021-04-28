@@ -49,6 +49,11 @@ options:
     choices: [present, absent]
     type: str
     default: "present"
+  wait:
+    description:
+      - If the module should wait for the RDS backup to be created or deleted.
+    type: bool
+    default: 'yes'
   timeout:
     description:
       - The duration in seconds that module should wait.
@@ -62,12 +67,44 @@ RETURN = '''
 '''
 
 EXAMPLES = '''
+# Add AS instances
+- opentelekomcloud.cloud.as_instance:
+    scaling_group: "89af599d-a8ab-4c29-a063-0b719125468"
+    scaling_instances: ["inst_name_1", "inst_name_2", "inst_name_3"]
+    action: "add"
+    state: present
+  register: as_instances
+
+# Protect AS instances
+- opentelekomcloud.cloud.as_instance:
+    scaling_group: "as_group_id"
+    scaling_instances: ["89af599d-a8ab-4c29-a063-0b719ed77e8e", "89af599d-a8ab-4c29-a063-0b719ed77555"]
+    action: "protect"
+    state: present
+  register: as_instances
+
+# Unprotect AS instances
+- opentelekomcloud.cloud.as_instance:
+    scaling_group: "89af599d-a8ab-4c29-a063-0b719ed88888"
+    scaling_instances: ["89af599d-a8ab-4c29-a063-0b719ed77e8e", "89af599d-a8ab-4c29-a063-0b719ed77555"]
+    action: "protect"
+    state: present
+  register: as_instances
+
 # Remove Instance in an AS Group
 - opentelekomcloud.cloud.as_instance:
     scaling_group: "test_group"
     scaling_instance: "89af599d-a8ab-4c29-a063-0b719ed77e8e"
     state: "absent"
   register: as_instance
+
+# Remove AS instances
+- opentelekomcloud.cloud.as_instance:
+    scaling_group: "as_group_id"
+    scaling_instances: ["inst_name_1", "inst_name_2", "inst_name_3"]
+    action: "remove"
+    state: absent
+  register: as_instances
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -82,6 +119,7 @@ class ASInstanceModule(OTCModule):
                     choices=['add', 'remove', 'protect', 'unprotect']),
         state=dict(type='str',
                    choices=['present', 'absent'], default='present'),
+        wait=dict(type='bool', default=True),
         timeout=dict(type='int', default=200)
     )
     module_kwargs = dict(
@@ -120,13 +158,13 @@ class ASInstanceModule(OTCModule):
                     return False
 
     def _is_group_in_inservice_state(self, group):
-        if group.status.upper() == 'INSERVICE':
+        if group.status.lower() == 'inservice':
             return True
         else:
             return False
 
     def _is_instance_in_inservice_state(self, instance):
-        if instance.lifecycle_state.upper() == 'INSERVICE':
+        if instance.lifecycle_state.lower() == 'inservice':
             return True
         else:
             return False
@@ -144,7 +182,13 @@ class ASInstanceModule(OTCModule):
         return [init_list[i:i + part_size]
                 for i in range(0, len(init_list), part_size)]
 
-    def _get_instances_for_adding(self, group, as_instances):
+    def _join_lists(self, init_list):
+        result = []
+        for element in init_list:
+            result.extend(element)
+        return result
+
+    def _get_instances_id_for_adding(self, group, as_instances):
         instances = []
         max_instances = self._max_number_of_instances_for_adding(group)
         for as_instance in as_instances:
@@ -163,7 +207,7 @@ class ASInstanceModule(OTCModule):
             instances = self._slice_list(instances, 10)
         return instances
 
-    def _get_instances_for_removing(self, group, as_instances):
+    def _get_instances_id_for_removing(self, group, as_instances):
         instances = []
         max_instances = self._max_number_of_instances_for_removing(group)
         for as_instance in as_instances:
@@ -172,12 +216,12 @@ class ASInstanceModule(OTCModule):
                 name_or_id=as_instance
             )
             if instance and self._is_instance_in_inservice_state(instance):
-                instances.append(instance)
+                instances.append(instance.id)
         if len(instances) <= max_instances:
             instances = self._slice_list(instances, 10)
         return instances
 
-    def _get_instances_for_protection(self, group, as_instances):
+    def _get_instances_id_for_protection(self, group, as_instances):
         instances = []
         max_instances = self._max_number_of_instances_for_protecting(group)
         for as_instance in as_instances:
@@ -186,27 +230,27 @@ class ASInstanceModule(OTCModule):
                 name_or_id=as_instance
             )
             if instance and self._is_instance_in_inservice_state(instance):
-                instances.append(instance)
+                instances.append(instance.id)
         if len(instances) <= max_instances:
             instances = self._slice_list(instances, 10)
         return instances
 
-    def _get_instances(self, as_group, as_instances, state, action):
+    def _get_instances_id(self, as_group, as_instances, state, action):
         instances = []
         if state == 'present':
             if action == 'add':
-                instances = self._get_instances_for_adding(
+                instances = self._get_instances_id_for_adding(
                     group=as_group,
                     as_instances=as_instances
                 )
             elif action == 'protect' or action == 'unprotect':
-                instances = self._get_instances_for_protection(
+                instances = self._get_instances_id_for_protection(
                     group=as_group,
                     as_instances=as_instances
                 )
         else:
             if action == 'remove' or action is None:
-                instances = self._get_instances_for_removing(
+                instances = self._get_instances_id_for_removing(
                     group=as_group,
                     as_instances=as_instances
                 )
@@ -225,12 +269,6 @@ class ASInstanceModule(OTCModule):
                 delete_instance=instance_delete
             )
 
-    def _is_instance_delete(self, instance_delete):
-        if instance_delete == 'yes':
-            return True
-        else:
-            return False
-
     def _wait_for_group_inservice_status(self, as_group, timeout):
         for count in self.sdk.utils.iterate_timeout(
             timeout=timeout,
@@ -242,12 +280,44 @@ class ASInstanceModule(OTCModule):
             else:
                 continue
 
+    def _wait_for_instances_inservice_status(self, timeout, interval,
+                                             group, instances_id):
+        inst_ids = self._join_lists(instances_id)
+        for count in self.sdk.utils.iterate_timeout(
+            timeout=timeout,
+            wait=interval,
+            message="Timeout waiting for instance to be in inservice state"
+        ):
+            all_instances = list(self.conn.auto_scaling.instances(group=group))
+            instances = [instance for instance in all_instances
+                         if instance.id in inst_ids and
+                         self._is_instance_in_inservice_state(instance)]
+            if len(instances) == len(inst_ids):
+                return
+
+    def _wait_for_delete_instances(self, timeout, interval,
+                                   group, instances_id):
+        inst_ids = self._join_lists(instances_id)
+        for count in self.sdk.utils.iterate_timeout(
+            timeout=timeout,
+            wait=interval,
+            message="Timeout waiting for instance to be delete"
+        ):
+            instances = list(self.conn.auto_scaling.instances(group=group))
+            existing_instances_ids = [instance.id for instance in instances]
+            result = [instance_id for instance_id in existing_instances_ids
+                      if instance_id in inst_ids]
+            if not result:
+                return
+
+
     def run(self):
         as_group = self.params['scaling_group']
         as_instances = self.params['scaling_instances']
         instance_delete = self.params['instance_delete']
         action = self.params['action']
         state = self.params['state']
+        wait = self.params['wait']
         timeout = self.params['timeout']
 
         try:
@@ -267,7 +337,7 @@ class ASInstanceModule(OTCModule):
         max_protecting = self._max_number_of_instances_for_protecting(group)
 
         if as_instances:
-            instances = self._get_instances(
+            instances_id = self._get_instances_id(
                 as_group=group,
                 as_instances=as_instances,
                 state=state,
@@ -277,7 +347,7 @@ class ASInstanceModule(OTCModule):
             if self.ansible.check_mode:
                 self.exit(
                     changed=self._system_state_change(
-                        instances, as_instances, state, action
+                        instances_id, as_instances, state, action
                     )
                 )
 
@@ -294,9 +364,10 @@ class ASInstanceModule(OTCModule):
                         msg='Action is incompatible with this state'
                     )
                 elif action == 'add':
-                    if not instances:
-                        msg = 'Instances not found or Number of instances is ' \
-                              'greater than maximum.Only {0} instances can ' \
+                    if not instances_id:
+                        msg = 'Instances not found or not in INSERVICE ' \
+                              'state or Number of instances is ' \
+                              'greater than maximum. Only {0} instances can ' \
                               'be added'.format(max_adding)
                         self.fail(
                             changed=False,
@@ -304,19 +375,27 @@ class ASInstanceModule(OTCModule):
                         )
                     else:
                         self._batch_instances_action(
-                            instances=instances,
+                            instances=instances_id,
                             group=group,
                             timeout=timeout,
                             action=action
                         )
+                        if wait:
+                            self._wait_for_instances_inservice_status(
+                                timeout = timeout,
+                                interval = 5,
+                                group = group,
+                                instances_id = instances_id
+                            )
                         self.exit(
                             changed=True,
                             msg='Action {0} was done'.format(action.upper())
                         )
                 else:
-                    if not instances:
-                        msg = 'Instances not found or Number of ' \
-                              'instances is greater then current. ' \
+                    if not instances_id:
+                        msg = 'Instances not found or not in INSERVICE ' \
+                              'state or Number of instances is ' \
+                              'greater then current. ' \
                               'Only {0} instances can be protect ' \
                               'or unprotect'.format(max_protecting)
                         self.fail(
@@ -325,11 +404,18 @@ class ASInstanceModule(OTCModule):
                         )
                     else:
                         self._batch_instances_action(
-                            instances=instances,
+                            instances=instances_id,
                             group=group,
                             timeout=timeout,
                             action=action
                         )
+                        if wait:
+                            self._wait_for_instances_inservice_status(
+                                timeout = timeout,
+                                interval = 5,
+                                group = group,
+                                instances_id = instances_id
+                            )
                         self.exit(
                             changed=True,
                             msg='Action {0} was done'.format(action.upper())
@@ -337,8 +423,9 @@ class ASInstanceModule(OTCModule):
 
             else:
 
-                if not instances:
-                    msg = 'Instances not found or Number of instances is ' \
+                if not instances_id:
+                    msg = 'Instances not found or not in INSERVICE ' \
+                          'state or Number of instances is ' \
                           'less than minimum. Only {0} instances can ' \
                           'be removed'.format(max_removing)
                     self.fail(
@@ -348,11 +435,18 @@ class ASInstanceModule(OTCModule):
                 else:
                     if action is None:
                         if len(as_instances) == 1:
-                            if len(instances) == 1:
+                            if len(instances_id) == 1:
                                 self.conn.auto_scaling.remove_instance(
-                                    instance=instances[0],
+                                    instance=instances_id[0],
                                     delete_instance=instance_delete
                                 )
+                                if wait:
+                                    self._wait_for_delete_instances(
+                                        timeout = timeout,
+                                        interval = 15,
+                                        group = group,
+                                        instances_id = instances_id
+                                    )
                                 msg = 'Instance {0} was removed'.format(
                                     as_instances[0]
                                 )
@@ -375,12 +469,19 @@ class ASInstanceModule(OTCModule):
                             )
                     elif action == 'remove':
                         self._batch_instances_action(
-                            instances=instances,
+                            instances=instances_id,
                             group=group,
                             timeout=timeout,
                             action=action,
                             instance_delete=instance_delete
                         )
+                        if wait:
+                            self._wait_for_delete_instances(
+                                timeout = timeout,
+                                interval = 15,
+                                group = group,
+                                instances_id = instances_id
+                            )
                         self.exit(
                             changed=True,
                             msg='Action {0} was done'.format(action.upper())
