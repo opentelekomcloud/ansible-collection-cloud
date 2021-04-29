@@ -217,6 +217,7 @@ class LoadBalancerModule(OTCModule):
         fip = None
         orig_public_ip = None
         new_public_ip = None
+        changed = False
         if public_vip_address or allocate_fip:
             ips = self.conn.network.ips(
                 port_id=lb.vip_port_id,
@@ -227,19 +228,23 @@ class LoadBalancerModule(OTCModule):
                 orig_public_ip = ips[0]
                 new_public_ip = orig_public_ip.floating_ip_address
 
-        if public_vip_address and public_vip_address != orig_public_ip:
+        if (
+            public_vip_address
+            and public_vip_address != orig_public_ip.floating_ip_address
+        ):
             fip = self.conn.network.find_ip(public_vip_address)
             if not fip:
                 self.fail_json(
                     msg='Public IP %s is unavailable' % public_vip_address
                 )
 
-            # Release origin public ip first
-            self.conn.network.update_ip(
-                orig_public_ip,
-                fixed_ip_address=None,
-                port_id=None
-            )
+            if orig_public_ip:
+                # Release origin public ip first
+                self.conn.network.update_ip(
+                    orig_public_ip,
+                    fixed_ip_address=None,
+                    port_id=None
+                )
 
             # Associate new public ip
             self.conn.network.update_ip(
@@ -249,6 +254,7 @@ class LoadBalancerModule(OTCModule):
             )
 
             new_public_ip = public_vip_address
+            changed = True
         elif allocate_fip and not orig_public_ip:
             fip = self.conn.network.find_available_ip()
             if not fip:
@@ -269,8 +275,9 @@ class LoadBalancerModule(OTCModule):
             )
 
             new_public_ip = fip.floating_ip_address
+            changed = True
 
-        return new_public_ip
+        return (new_public_ip, changed)
 
     def run(self):
         vip_subnet = self.params['vip_subnet']
@@ -319,7 +326,7 @@ class LoadBalancerModule(OTCModule):
             # Associate public ip to the load balancer VIP. If
             # public_vip_address is provided, use that IP, otherwise, either
             # find an available public ip or create a new one.
-            floating_ip = self.bind_floating_ip(
+            (floating_ip, ip_changed) = self.bind_floating_ip(
                 lb, public_vip_address, allocate_fip)
 
             if floating_ip:
@@ -327,7 +334,7 @@ class LoadBalancerModule(OTCModule):
                 lb = self.conn.network.find_load_balancer(name_or_id=lb.id)
                 lb_dict = lb.to_dict()
                 lb_dict.update({"public_vip_address": floating_ip})
-                changed = True
+                changed = changed and ip_changed
 
                 self.exit_json(
                     changed=changed,
