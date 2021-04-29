@@ -12,7 +12,7 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: vpn
+module: vpn_service
 short_description: Manage VPN
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.8.0"
@@ -42,7 +42,6 @@ options:
   admin_state_up:
     description:
       - Specifies the administrative status.
-    choices: [true, false]
     type: str
   tenant_id:
     description:
@@ -73,7 +72,7 @@ vpn:
       type: str
       sample: "5d9910d4-e04b-49db-9699-ab3bd368bc04"
     status:
-      description: 	Specifies whether the VPN service is currently operational.\
+      description: Specifies whether the VPN service is currently operational.\
         The value can be ACTIVE, DOWN, BUILD, ERROR, PENDING_CREATE, PENDING_UPDATE, or PENDING_DELETE.
       type: str
       sample: "ACTIVE"
@@ -112,11 +111,10 @@ vpn:
 '''
 
 EXAMPLES = '''
-# Creating / Updating a vpn:
 - name: Create a new vpn
   opentelekomcloud.cloud.vpn_service:
     router: "my-router"
-    name: "my-vpn:
+    name: "my-vpn"
     subnet: "my-subnet"
 
 - name: Update vpn
