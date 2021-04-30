@@ -166,6 +166,8 @@ class VPNModule(OTCModule):
         state = self.params['state']
 
         existing_vpn = None
+        updated_vpn = None
+        created_vpn = None
 
         if name:
             query['name'] = name
@@ -185,9 +187,8 @@ class VPNModule(OTCModule):
         if state == 'present':
 
             if existing_vpn:
-                if self.check_mode:
-                    self.exit_json(changed=True)
-                updated_vpn = self.conn.network.update_vpn_service(existing_vpn, **query)
+                if not self.check_mode:
+                    updated_vpn = self.conn.network.update_vpn_service(existing_vpn, **query)
                 self.exit(changed=True, vpn=updated_vpn)
 
             if subnet:
@@ -206,19 +207,15 @@ class VPNModule(OTCModule):
             else:
                 self.fail_json(msg='Router is mandatory for creation')
 
-            if self.check_mode:
-                self.exit_json(changed=True)
-            new_vpn = self.conn.network.create_vpn_service(**query)
-            self.exit(changed=True, vpn=new_vpn)
+            if not self.check_mode:
+                created_vpn = self.conn.network.create_vpn_service(**query)
+            self.exit(changed=True, vpn=created_vpn)
 
         else:
             if existing_vpn:
-                if self.check_mode:
-                    self.exit_json(changed=True)
-                self.conn.network.delete_vpn_service(existing_vpn, ignore_missing=False)
-
-            if self.check_mode:
-                self.exit_json(changed=False)
+                if not self.check_mode:
+                    self.conn.network.delete_vpn_service(existing_vpn, ignore_missing=False)
+            self.exit_json(changed=False)
 
 
 def main():
