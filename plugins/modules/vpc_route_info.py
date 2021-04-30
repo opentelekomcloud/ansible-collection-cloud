@@ -96,6 +96,9 @@ class VPCRouteInfoModule(OTCModule):
         destination=dict(required=False),
         type=dict(default='peering', required=False)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

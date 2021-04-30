@@ -216,6 +216,9 @@ class CesAlarmsModule(OTCModule):
         switch_alarm_state=dict(required=False, type='bool', default='False'),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         changed = False
@@ -223,6 +226,8 @@ class CesAlarmsModule(OTCModule):
         if self.params['state'] == 'absent':
             changed = False
             al = self.conn.ces.find_alarm(self.params['alarm_name'])
+            if self.ansible.check_mode:
+                self.exit(changed=True)
             self.conn.ces.delete_alarm(al)
             changed = True
 
@@ -230,6 +235,8 @@ class CesAlarmsModule(OTCModule):
 
             if self.params['switch_alarm_state'] is True:
                 al = self.conn.ces.find_alarm(self.params['alarm_name'])
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 alarms = self.conn.ces.switch_alarm_state(al)
                 self.exit(changed=True, alarms=al.to_dict())
 
@@ -252,7 +259,8 @@ class CesAlarmsModule(OTCModule):
                             message=('alarm_action_enabled == True but neither ok_actions '
                                      'nor alarm_action specified but needed for creation. ')
                         )
-
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 attrs = {
                     "alarm_name": self.params['alarm_name'],
                     "alarm_description": self.params['alarm_description'],

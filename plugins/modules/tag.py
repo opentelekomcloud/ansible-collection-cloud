@@ -154,6 +154,9 @@ class TagModule(OTCModule):
         tags=dict(default=[], elements='str', type='list'),
         mode=dict(default='replace', choices=['replace', 'set'])
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     @staticmethod
     def _get_tags_url(url_prefix, instance):
@@ -327,7 +330,7 @@ class TagModule(OTCModule):
                 # At least one tag should be removed
                 changed = True
 
-            if self.check_mode or not changed:
+            if self.ansible.check_mode or not changed:
                 self.exit_json(
                     changed=changed,
                     tags=new_tags)

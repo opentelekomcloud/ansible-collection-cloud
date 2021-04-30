@@ -348,6 +348,7 @@ class CceNodePoolModule(OTCModule):
         taints=dict(required=False, type='list', elements='dict'),
     )
     module_kwargs = dict(
+        supports_check_mode=True,
         required_if=[
             ('state', 'present',
                 [
@@ -386,6 +387,8 @@ class CceNodePoolModule(OTCModule):
         # Create CCE node pool
         if self.params['state'] == 'present':
             if not node_pool:
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 self.params.pop('cluster')
                 node_pool = self.conn.create_cce_node_pool(
                     cluster=cluster.id,
@@ -394,6 +397,8 @@ class CceNodePoolModule(OTCModule):
                 changed = True
             else:
                 # Modify CCE node pool not available right now
+                if self.ansible.check_mode:
+                    self.exit(changed=False)
                 pass
 
             self.exit_json(
@@ -408,6 +413,8 @@ class CceNodePoolModule(OTCModule):
 
             if node_pool:
                 changed = True
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 self.conn.cce.delete_node_pool(
                     cluster=cluster.id,
                     node_pool=node_pool.id,

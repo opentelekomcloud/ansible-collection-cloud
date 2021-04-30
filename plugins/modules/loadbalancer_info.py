@@ -105,6 +105,9 @@ class LoadBalancerInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         if self.params['name']:

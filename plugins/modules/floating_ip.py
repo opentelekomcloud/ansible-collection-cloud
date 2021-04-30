@@ -184,6 +184,9 @@ class FloatingIpModule(OTCModule):
         timeout=dict(required=False, type='int', default=60),
         purge=dict(required=False, type='bool', default=False),
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def _system_state_change(self, obj):
         state = self.params['state']
@@ -216,6 +219,8 @@ class FloatingIpModule(OTCModule):
                     msg="Either server and/or network are required")
 
             # Allocate floating IP without attaching it to any resource
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
             if self.params['network'] and not self.params['server']:
                 nw = cloud.network.find_network(network, ignore_missing=True)
                 if nw:
@@ -289,7 +294,8 @@ class FloatingIpModule(OTCModule):
             self.exit_json(changed=changed)
 
         elif state == 'absent':
-
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
             # Release floating ip
             if floating_ip_address and not server_name_or_id:
                 f_ip = _get_floating_ip(cloud, floating_ip_address)

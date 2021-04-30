@@ -67,6 +67,9 @@ class AutoScalingGroupInfoModule(OTCModule):
         status=dict(required=False, choices=[
             'inservice', 'paused', 'error', 'deleting'])
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 
