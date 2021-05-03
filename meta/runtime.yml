@@ -66,28 +66,14 @@ action_groups:
 
 plugin_routing:
   modules:
-    volume_backup:
-      redirect: openstack.cloud.volume_backup
-    volume_backup_info:
-      redirect: openstack.cloud.volume_backup_info
-    volume_snapshot_info:
-      redirect: openstack.cloud.volume_snapshot_info
     auth:
       redirect: openstack.cloud.auth
-    baremetal_inspect:
-      redirect: openstack.cloud.baremetal_inspect
-    baremetal_node:
-      redirect: openstack.cloud.baremetal_node
-    baremetal_node_action:
-      redirect: openstack.cloud.baremetal_node_action
     catalog_endpoint:
       redirect: openstack.cloud.catalog_endpoint
     catalog_service:
       redirect: openstack.cloud.catalog_service
     coe_cluster:
       redirect: openstack.cloud.coe_cluster
-    coe_cluster_template:
-      redirect: openstack.cloud.coe_cluster_template
     compute_flavor:
       redirect: openstack.cloud.compute_flavor
     compute_flavor_info:
@@ -96,14 +82,6 @@ plugin_routing:
       redirect: openstack.cloud.config
     endpoint:
       redirect: openstack.cloud.endpoint
-    federation_idp:
-      redirect: openstack.cloud.federation_idp
-    federation_idp_info:
-      redirect: openstack.cloud.federation_idp_info
-    federation_mapping:
-      redirect: openstack.cloud.federation_mapping
-    federation_mappinginfo:
-      redirect: openstack.cloud.federation_mapping_info
     group_assignment:
       redirect: openstack.cloud.group_assignment
     host_aggregate:
@@ -132,10 +110,6 @@ plugin_routing:
       redirect: openstack.cloud.keypair
     keypair_info:
       redirect: openstack.cloud.keypair_info
-    keystone_federation_protocol:
-      redirect: openstack.cloud.keystone_federation_protocol
-    keystone_federation_protocol_info:
-      redirect: openstack.cloud.keystone_federation_protocol_info
     network:
       redirect: openstack.cloud.network
     networks_info:
@@ -190,8 +164,14 @@ plugin_routing:
       redirect: openstack.cloud.subnets_info
     volume:
       redirect: openstack.cloud.volume
+    volume_backup:
+      redirect: openstack.cloud.volume_backup
+    volume_backup_info:
+      redirect: openstack.cloud.volume_backup_info
     volume_info:
       redirect: openstack.cloud.volume_info
     volume_snapshot:
       redirect: openstack.cloud.volume_snapshot
+    volume_snapshot_info:
+      redirect: openstack.cloud.volume_snapshot_info
 
