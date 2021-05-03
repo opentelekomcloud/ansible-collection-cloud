@@ -72,8 +72,6 @@ plugin_routing:
       redirect: openstack.cloud.catalog_endpoint
     catalog_service:
       redirect: openstack.cloud.catalog_service
-    coe_cluster:
-      redirect: openstack.cloud.coe_cluster
     compute_flavor:
       redirect: openstack.cloud.compute_flavor
     compute_flavor_info:
