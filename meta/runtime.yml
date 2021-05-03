@@ -84,8 +84,6 @@ plugin_routing:
       redirect: openstack.cloud.endpoint
     group_assignment:
       redirect: openstack.cloud.group_assignment
-    host_aggregate:
-      redirect: openstack.cloud.host_aggregate
     identity_domain:
       redirect: openstack.cloud.identity_domain
     identity_domain_info:
