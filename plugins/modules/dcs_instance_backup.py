@@ -122,24 +122,24 @@ class DcsInstanceModule(OTCModule):
                 # Restore Backup
                 if self.params['backup_id']:
                     attrs['backup_id'] = self.params['backup_id']
-                    if self.ansible.check_mode:
-                        self.exit(changed=True)
-                    dcs_instance = self.conn.dcs.restore_instance(instance.id, **attrs)
-                    self.exit(changed=True, dcs_instance=dcs_instance.to_dict())
+                    if not self.ansible.check_mode:
+                        dcs_instance = self.conn.dcs.restore_instance(instance.id, **attrs)
+                        self.exit(changed=True, dcs_instance=dcs_instance.to_dict())
+                    self.exit_json(True)
 
                 # Create Backup
                 else:
-                    if self.ansible.check_mode:
-                        self.exit(changed=True)
-                    dcs_instance = self.conn.dcs.backup_instance(instance.id, **attrs)
-                    self.exit(changed=True, dcs_instance=dcs_instance.to_dict())
+                    if not self.ansible.check_mode:
+                        dcs_instance = self.conn.dcs.backup_instance(instance.id, **attrs)
+                        self.exit(changed=True, dcs_instance=dcs_instance.to_dict())
+                    self.exit_json(True)                    
 
             elif self.params['state'] == 'absent':
                 if self.params['backup_id']:
-                    if self.ansible.check_mode:
-                        self.exit(changed=True)
-                    dcs_instance = self.conn.dcs.delete_instance_backup(self.params['backup_id'], instance.id)
-                    self.exit(changed=True, dcs_instance=dcs_instance)
+                    if not self.ansible.check_mode:
+                        dcs_instance = self.conn.dcs.delete_instance_backup(self.params['backup_id'], instance.id)
+                        self.exit(changed=True, dcs_instance=dcs_instance)
+                    self.exit_json(True)
                 else:
                     self.exit(
                         changed=False,
