@@ -63,8 +63,8 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class DcsInstancePasswordModule(OTCModule):
     argument_spec = dict(
         id=dict(required=True),
-        old_password=dict(required=True),
-        new_password=dict(required=True)
+        old_password=dict(required=True, no_log=True),
+        new_password=dict(required=True, no_log=True)
     )
     module_kwargs = dict(
         supports_check_mode=True
