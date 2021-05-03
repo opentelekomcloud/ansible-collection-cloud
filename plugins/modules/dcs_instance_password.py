@@ -78,20 +78,16 @@ class DcsInstancePasswordModule(OTCModule):
             ignore_missing=True
         )
         if instance:
-            if self.ansible.check_mode:
-                self.exit(changed=True)
-            dcs_instance = self.conn.dcs.change_instance_password(instance.id, self.params['old_password'], self.params['new_password'])
-            self.exit(changed=True, dcs_instance=dcs_instance.to_dict())
+            if not self.ansible.check_mode:
+                dcs_instance = self.conn.dcs.change_instance_password(instance.id, self.params['old_password'], self.params['new_password'])
+                self.exit(changed=True, dcs_instance=dcs_instance.to_dict())
+            self.exit(True)
         else:
             self.exit(
                 changed=False,
                 message=('No Instance with name or id %s found!', self.params['id']),
                 failed=True
             )
-
-        self.exit(
-            changed=changed
-        )
 
 
 def main():
