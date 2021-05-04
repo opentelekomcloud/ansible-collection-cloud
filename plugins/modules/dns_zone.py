@@ -55,12 +55,12 @@ options:
     default: public
   zone_type:
     description:
-       - Zone type: primary or secondary.
+       - Primary or secondary type.
        - This parameter is disabled, it only provides compatibility with openstack.cloud colection.
     choices: [primary, secondary]
     type: str
   masters:
-    description:  
+    description:
        - Master nameservers (only applies if zone_type is secondary).
        - This parameter is disabled, it only provides compatibility with openstack.cloud colection.
     type: list
@@ -149,7 +149,7 @@ class DNSZonesModule(OTCModule):
         query = {}
 
         if self.params['type'] == 'private':
-            query['type'] = self.params['type']
+            query['zone_type'] = self.params['type']
         query['name_or_id'] = self.params['name']
         query['ignore_missing'] = True
         zo = self.conn.dns.find_zone(**query)
@@ -206,7 +206,7 @@ class DNSZonesModule(OTCModule):
                             message=('No Router found with name or id: %s' %
                                      self.params['router'])
                         )
-                attrs['type'] = self.params['type']
+                attrs['zone_type'] = self.params['type']
                 if self.params['description']:
                     attrs['description'] = self.params['description']
                 if self.params['email']:
