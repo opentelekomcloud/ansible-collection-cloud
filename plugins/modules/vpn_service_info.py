@@ -134,6 +134,9 @@ class VpnServicesInfoModule(OTCModule):
         project_id=dict(type='str', required=False),
         vpn_service=dict(type='str', required=False)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         admin_state_up = self.params['admin_state_up']

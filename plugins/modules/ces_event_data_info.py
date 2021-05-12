@@ -104,6 +104,9 @@ class CesEventDataInfoModule(OTCModule):
         dim1=dict(required=False),
         dim2=dict(required=False),
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

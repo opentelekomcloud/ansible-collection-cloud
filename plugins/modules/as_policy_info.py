@@ -177,6 +177,9 @@ class ASPolicyInfoModule(OTCModule):
         start_number=dict(type='int', required=False, default=0),
         limit=dict(type='int', required=False, default=20)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         as_group = self.params['scaling_group']

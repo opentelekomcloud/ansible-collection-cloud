@@ -165,6 +165,9 @@ class CCENodePoolInfoModule(OTCModule):
         cce_cluster=dict(required=True),
         name=dict(required=False),
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     otce_min_version = '0.13.0'
 

@@ -127,6 +127,9 @@ class DNSZonesModule(OTCModule):
         ttl=dict(required=False, type='int'),
         zone_type=dict(type='str', choices=['public', 'private'], default='public')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         changed = False
@@ -155,6 +158,8 @@ class DNSZonesModule(OTCModule):
         if self.params['state'] == 'absent':
             changed = False
             # No check for zone_id necessary as we checked it
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
             self.conn.dns.delete_zone(
                 zone=zone_id
             )
@@ -162,7 +167,8 @@ class DNSZonesModule(OTCModule):
 
         if self.params['state'] == 'present':
             attrs = {}
-
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
             if zone_check is False:
                 # Check if VPC exists
                 if self.params['zone_type'] == 'private':

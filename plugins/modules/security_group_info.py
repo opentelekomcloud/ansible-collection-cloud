@@ -118,6 +118,9 @@ class SecurityGroupInfoModule(OTCModule):
         name=dict(required=False),
         project_id=dict(required=False)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

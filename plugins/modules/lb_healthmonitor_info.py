@@ -152,6 +152,9 @@ class LoadBalancerHealthMonitorInfoModule(OTCModule):
         http_method=dict(required=False, choices=['get', 'head', 'post', 'put', 'delete',
                                                   'trace', 'options', 'connect', 'patch'])
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         name_filter = self.params['name']

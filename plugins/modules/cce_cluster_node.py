@@ -347,7 +347,8 @@ class CceClusterNodeModule(OTCModule):
             ('state', 'present',
              ['availability_zone', 'cluster', 'flavor', 'keypair', 'data_volumes']),
             ('state', 'absent', ['cluster', 'name']),
-        ]
+        ],
+        supports_check_mode=True
     )
 
     otce_min__version = '0.12.1'
@@ -374,6 +375,8 @@ class CceClusterNodeModule(OTCModule):
 
         # Create CCE node
         if self.params['state'] == 'present':
+            if self.ansible.check_mode:
+                self.exit(changed=True)
             if not cluster_node:
                 self.params.pop('cluster')
                 cluster_node = self.conn.create_cce_cluster_node(
@@ -397,6 +400,8 @@ class CceClusterNodeModule(OTCModule):
 
             if cluster_node:
                 attrs = {}
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 if self.params['wait']:
                     attrs['wait'] = True
                 if self.params['timeout']:

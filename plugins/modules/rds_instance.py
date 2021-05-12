@@ -193,7 +193,8 @@ class RdsInstanceModule(OTCModule):
                 'network', 'router', 'security_group',
                 'password', 'region'
             ])
-        ]
+        ],
+        supports_check_mode=True
     )
 
     otce_min_version = '0.11.0'

@@ -1,7 +1,7 @@
 openstacksdk
 ansible-base
-pycodestyle
-flake8
+pycodestyle==2.6.0
+flake8==3.8.4
 pylint
 voluptuous
 yamllint
@@ -9,4 +9,3 @@ rstcheck
 ruamel.yaml
 tox
 otcextensions>=0.10.0
-importlib-metadata<2.0.0 ; python_version < '3.8'
