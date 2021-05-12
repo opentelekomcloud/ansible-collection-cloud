@@ -195,6 +195,25 @@
 
     - name: Get init list of ID of instances
       set_fact:
+        init_id_list: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
+
+    - name: Get init list of Names of instances
+      set_fact:
+        init_name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
+
+    - name: assert result
+      assert:
+        that:
+          - init_id_list|length == "{{ desire_instance_number }}"
+          - init_name_list|length == "{{ desire_instance_number }}"
+
+    - name: Get list of AS Instances
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_inst_list
+
+    - name: Get init list of ID of instances
+      set_fact:
         id_list: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
 
     - name: Get init list of Names of instances
