@@ -21,45 +21,44 @@ author: "Polina Gubina (@Polina-Gubina)"
 description:
   - Create/Remove AutoScaling group from the OTC.
 options:
-  scaling_group_name:
+  scaling_group:
     description:
-      - Name of the AS group.
-      - Mandatory for creating autoscaling group.
+      - Name or ID of the AS Group.
     type: str
-  scaling_group_id:
-    description:
-      - ID the AS group.
-    type: str
+    required: true
   scaling_configuration:
     description:
       - The AS configuration ID or name.
     type: str
   desire_instance_number:
     description:
-      - Specifies the expected number of instances. The default value is the minimum number of instances.
+      - Specifies the expected number of instances.
+      - The default value is the minimum number of instances.
     type: int
   min_instance_number:
     description:
-      - Specifies the minimum number of instances. The default value is 0.
-      - Default is 0.
+      - Specifies the minimum number of instances.
+      - The default value is 0.
     type: int
   max_instance_number:
     description:
-      - Specifies the maximum number of instances. The default value is 0.
-      - Default is 0.
+      - Specifies the maximum number of instances.
+      - The default value is 0.
     type: int
   cool_down_time:
     description:
-      - Specifies the cooldown period (in seconds). The value ranges from 0 to 86400 and is 300 by default.
-      - After a scaling action is triggered, the system starts the cooldown period. During the cooldown period,\
-       scaling actions triggered by alarms will be denied. Scheduled, periodic,\
-        and manual scaling actions are not affected.
-      - Default is 300.
+      - Specifies the cooldown period (in seconds). 
+      - The value ranges from 0 to 86400 and is 300 by default.
+      - After a scaling action is triggered, the system starts the cooldown
+      period. During the cooldown period, scaling actions triggered by alarms
+      will be denied. Scheduled, periodic, and manual scaling actions are not
+      affected.
     type: int
   lb_listener:
     description:
-      - Specifies ID or name of a classic load balancer listener. The system supports the binding of up\
-       to six load balancer listeners, the IDs of which are separated using a comma (,).
+      - Specifies ID or name of a classic load balancer listener. The system
+      supports the binding of up to six load balancer listeners, the IDs of
+      which are separated using a comma (,).
       - Mandatory when 'lbaas_listeners' is not specified.
     type: str
   lbaas_listeners:
@@ -72,126 +71,139 @@ options:
       pool_id:
         description:
           - Specifies the backend ECS group ID.
-          - Mandatory.
         type: str
         required: true
       protocol_port:
         description:
-          - Specifies the backend protocol ID, which is the port on which \
-           a backend ECS listens for traffic. The port ID ranges from 1 to 65535.
-          - Mandatory.
+          - Specifies the backend protocol ID, which is the port on which a
+           backend ECS listens for traffic. The port ID ranges from 1 to 65535.
         type: int
         required: true
       weight:
         description:
-          - Specifies the weight, which determines the portion\
-        of requests a backend ECS processes when being compared to other \
-        backend ECSs added to the same listener.
-          - Mandatory.
+          - Specifies the weight, which determines the portion
+          of requests a backend ECS processes when being compared to other 
+          backend ECSs added to the same listener.
         type: int
         required: true
   available_zones:
     description:
-      - Specifies the AZ information. The ECS associated with a scaling action will be created in a specified AZ.\
-       If you do not specify an AZ, the system automatically specifies one.
+      - Specifies the AZ information. The ECS associated with a scaling
+       action will be created in a specified AZ.If you do not specify an AZ,
+       the system automatically specifies one.
     type: list
     elements: str
   networks:
     description:
-      - Specifies network information. The system supports up to five subnets. The first subnet transferred\
-       serves as the primary NIC of the ECS by default.
-      - Mandatory for creation of autoscaling group.
+      - Specifies network information. The system supports up to five subnets.
+       The first subnet transferred serves as the primary NIC of the ECS by 
+       default.
+      - Mandatory for creation of AS group.
     type: list
     elements: dict
     suboptions:
       id:
         description:
           - Specifies the network ID.
-          - Mandatory.
         type: str
         required: true
   security_groups:
     description:
-      - Specifies the security group. If the security group is specified both in the AS configuration and AS group,\
-       the security group specified in the AS configuration prevails.
-      - If the security group is not specified in either of them, the default security group is used.
+      - Specifies the security group. If the security group is specified both
+      in the AS configuration and AS group, the security group specified in
+      the AS configuration prevails.
+      - If the security group is not specified in either of them, the default
+      security group is used.
     type: list
     elements: dict
     suboptions:
       id:
         description:
           - Specifies the security group ID.
-          - Mandatory.
         type: str
         required: true
   router:
     description:
       - The router ID or name.
-      - Mandatory for creating resource.
+      - Mandatory for creating AS group.
     type: str
   health_periodic_audit_method:
     description:
-      - Specifies the health check method for instances in the AS group. When load balancing is configured for \
-      an AS group, the default value is ELB_AUDIT. Otherwise, the default value is NOVA_AUDIT.
-      - ELB_AUDIT indicates the ELB health check, which takes effect in an AS group with a listener.
-      - NOVA_AUDIT indicates the ECS health check, which is the health check method delivered with AS.
+      - Specifies the health check method for instances in the AS group.
+      When load balancing is configured for an AS group, the default value
+      is ELB_AUDIT. Otherwise, the default value is NOVA_AUDIT.
+      - ELB_AUDIT indicates the ELB health check, which takes effect in an
+      AS group with a listener.
+      - NOVA_AUDIT indicates the ECS health check, which is the health check
+      method delivered with AS.
     choices: ['elb_audit', 'nova_audit']
     type: str
   health_periodic_audit_time:
     description:
-      -  Specifies the instance health check period.  The value can be 1, 5, 15, 60, or 180 in the unit of minutes.
+      - Specifies the instance health check period. 
+      - The value can be 1, 5, 15, 60, or 180 in the unit of minutes.
       - If this parameter is not specified, the default value is 5.
       - If the value is set to 0, health check is performed every 10 seconds.
-      - Default is 5.
     type: int
   health_periodic_audit_grace_period:
     description:
-      -  Specifies the grace period for instance health check. The unit is second and value range is 0-86400.\
-       The default value is 600. The health check grace period starts after an instance is added\
-        to an AS group and is enabled.\
-        The AS group will start checking the instance status only after the grace period ends.
-      -  This parameter is valid only when the instance health check method of the AS group is ELB_AUDIT.
-      - Default is 600.
+      - Specifies the grace period for instance health check.
+      - The unit is second and value range is 0-86400.
+      - The default value is 600.
+      - The health check grace period starts after
+      an instance is added to an AS group and is enabled.The AS group will
+      start checking the instance status only after the grace period ends.
+      - This parameter is valid only when the instance health check method
+      of the AS group is ELB_AUDIT.
     type: int
   instance_terminate_policy:
     description:
-      -  Specifies the instance removal policy.
-      -  OLD_CONFIG_OLD_INSTANCE (default). The earlier-created instances based on the earlier-created \
-      AS configurations are removed first.
-      -  OLD_CONFIG_NEW_INSTANCE. The later-created instances based on the earlier-created\
-       AS configurations are removed first.
-      -  OLD_INSTANCE. The earlier-created instances are removed first.
-      -  NEW_INSTANCE. The later-created instances are removed first.
-    choices: ['old_config_old_instance', 'old_config_new_instance', 'old_instance', 'new_instance']
+      - Specifies the instance removal policy.
+      - OLD_CONFIG_OLD_INSTANCE (default). The earlier-created instances
+      based on the earlier-created AS configurations are removed first.
+      - OLD_CONFIG_NEW_INSTANCE. The later-created instances based on the
+      earlier-created AS configurations are removed first.
+      - OLD_INSTANCE. The earlier-created instances are removed first.
+      - NEW_INSTANCE. The later-created instances are removed first.
+    choices: ['old_config_old_instance', 'old_config_new_instance',
+    'old_instance', 'new_instance']
     type: str
   notifications:
     description:
-      -  Specifies the notification mode.
+      - Specifies the notification mode.
     type: list
     elements: str
   delete_publicip:
     description:
-      -  Specifies whether to delete the EIP bound to the ECS when deleting the ECS.
+      - Specifies whether to delete the EIP bound to the ECS when
+      deleting the ECS.
+      - The default value is false.
     type: bool
   delete_volume:
     description:
-      - Specifies whether to delete the data disks attached to the ECS when deleting the ECS.
+      - Specifies whether to delete the data disks attached to the
+      ECS when deleting the ECS.
+      - The default value is false.
     type: bool
   enterprise_project_id:
     description:
-      - Specifies the enterprise project ID, which is used to specify the enterprise project\
-       to which the AS group belongs.
-      - If the value is 0 or left blank, the AS group belongs to the default enterprise project.
-      - If the value is a UUID, the AS group belongs to the enterprise project corresponding to the UUID.
+      - Specifies the enterprise project ID, which is used to specify
+      the enterprise project to which the AS group belongs.
+      - If the value is 0 or left blank, the AS group belongs to the default
+      enterprise project.
+      - If the value is a UUID, the AS group belongs to the enterprise project
+      corresponding to the UUID.
     type: str
   multi_az_priority_policy:
     description:
-      - Specifies the priority policy used to select target AZs when adjusting the number of instances in an AS group.
-      - EQUILIBRIUM_DISTRIBUTE (default). When adjusting the number of instances, ensure that instances in each AZ in\
-       the available_zones list is evenly distributed. If instances cannot be added in the target AZ, select another AZ\
-       based on the PICK_FIRST policy.
-      - PICK_FIRST. When adjusting the number of instances, target AZs are determined in the order\
-       in the available_zones list.
+      - Specifies the priority policy used to select target AZs when adjusting
+      the number of instances in an AS group.
+      - EQUILIBRIUM_DISTRIBUTE (default). When adjusting the number of
+      instances, ensure that instances in each AZ in the available_zones list
+      is evenly distributed. If instances cannot be added in the target AZ,
+      select another AZ based on the PICK_FIRST policy.
+      - PICK_FIRST. When adjusting the number of instances, target AZs are
+      determined in the order in the available_zones list.
     choices: ['equilibrium_distribute', 'pick_first']
     type: str
   state:
@@ -229,8 +241,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class ASGroupModule(OTCModule):
     argument_spec = dict(
-        scaling_group_name=dict(required=False),
-        scaling_group_id=dict(required=False),
+        scaling_group=dict(required=True, type='str'),
         scaling_configuration=dict(required=False),
         desire_instance_number=dict(required=False, type='int'),
         min_instance_number=dict(required=False, type='int'),
@@ -256,9 +267,6 @@ class ASGroupModule(OTCModule):
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
-        required_if=[
-            ('scaling_group_id', None, ['scaling_group_name'])
-        ],
         supports_check_mode=True
     )
 
@@ -291,51 +299,71 @@ class ASGroupModule(OTCModule):
 
     def run(self):
 
-        as_group = None
+        as_group = self.params['scaling_group']
+        as_configuration = self.params['scaling_configuration']
+        desire_instance_number = self.params['desire_instance_number']
+        min_instance_number = self.params['min_instance_number']
+        max_instance_number = self.params['max_instance_number']
+        cool_down_time = self.params['cool_down_time']
+        lb_listener = self.params['lb_listener']
+        lbaas_listeners = self.params['lbaas_listeners']
+        available_zones = self.params['available_zones']
+        networks = self.params['networks']
+        security_groups = self.params['security_groups']
+        router = self.params['router']
+        hp_audit_method = self.params['health_periodic_audit_method']
+        hp_audit_time = self.params['health_periodic_audit_time']
+        hp_audit_gr_period = self.params['health_periodic_audit_grace_period']
+        instance_terminate_policy = self.params['instance_terminate_policy']
+        notifications = self.params['notifications']
+        delete_publicip = self.params['delete_publicip']
+        delete_volume = self.params['delete_volume']
+        enterprise_project_id = self.params['enterprise_project_id']
+        multi_az_priority_policy = self.params['multi_az_priority_policy']
 
-        if self.params['scaling_group_id']:
-            as_group = self.conn.auto_scaling.find_group(self.params['scaling_group_id'], ignore_missing=True)
-        else:
-            as_group = self.conn.auto_scaling.find_group(self.params['scaling_group_name'], ignore_missing=True)
+        attrs = {}
+
+        changed = False
+
+        if as_group:
+            group = self.conn.auto_scaling.find_group(name_or_id=as_group)
 
         if self.params['state'] == 'present':
 
-            if as_group:
+            if group:
 
-                attrs = {}
+                if as_group and (group.name != as_group):
+                    attrs['scaling_group_name'] = group.name
 
-                if self.params['scaling_group_name'] and (as_group.name != self.params['scaling_group_name']):
-                    attrs['scaling_group_name'] = self.params['scaling_group_name']
-
-                if self.params['scaling_configuration']:
+                if as_configuration:
                     id_config = self._find_id_config()
                     if as_group.scaling_configuration_id != id_config:
                         attrs['scaling_configuration_id'] = id_config
 
-                if self.params['desire_instance_number'] and \
-                        (as_group.desire_instance_number != self.params['desire_instance_number']):
-                    attrs['desire_instance_number'] = self.params['desire_instance_number']
+                if (desire_instance_number and
+                        (group.desire_instance_number != desire_instance_number)):
+                    attrs['desire_instance_number'] = desire_instance_number
 
-                if self.params['min_instance_number'] \
-                        and (as_group.min_instance_number != self.params['min_instance_number']):
-                    attrs['min_instance_number'] = self.params['min_instance_number']
+                if (min_instance_number and
+                        (group.min_instance_number != min_instance_number)):
+                    attrs['min_instance_number'] = min_instance_number
 
-                if self.params['max_instance_number'] \
-                        and (as_group.max_instance_number != self.params['max_instance_number']):
-                    attrs['max_instance_number'] = self.params['max_instance_number']
+                if (max_instance_number and
+                        (group.max_instance_number != max_instance_number)):
+                    attrs['max_instance_number'] = max_instance_number
 
-                if self.params['cool_down_time'] and (as_group.cool_down_time != self.params['cool_down_time']):
-                    attrs['cool_down_time'] = self.params['cool_down_time']
+                if cool_down_time and (group.cool_down_time != cool_down_time):
+                    attrs['cool_down_time'] = cool_down_time
 
-                if self.params['lb_listener']:
+                if lb_listener:
                     lb_listener_id = self._find_listener_id()
-                    if as_group.lb_listener_id != lb_listener_id:
+                    if group.lb_listener_id != lb_listener_id:
                         attrs['lb_listener_id'] = lb_listener_id
 
-                if self.params['available_zones'] and (as_group.available_zones != self.params['available_zones']):
-                    attrs['available_zones'] = self.params['available_zones']
+                if available_zones and (group.available_zones != available_zones):
+                    attrs['available_zones'] = available_zones
 
-                if self.params['networks']:
+                if networks:
                     list_ids = []
                     list_new_ids = []
                     for n in as_group.networks:
@@ -344,35 +372,34 @@ class ASGroupModule(OTCModule):
                         list_new_ids.append(m['id'])
                     dif = set(list_ids) ^ set(list_new_ids)
                     if dif:
-                        attrs['networks'] = self.params['networks']
+                        attrs['networks'] = networks
 
-                if self.params['security_groups'] and (as_group.security_groups != self.params['security_groups']):
-                    attrs['available_zones'] = self.params['available_zones']
+                if security_groups and (group.security_groups != security_groups):
+                    attrs['available_zones'] = available_zones
 
-                if self.params['health_periodic_audit_method'] \
-                        and (as_group.health_periodic_audit_method != self.params['health_periodic_audit_method']):
+                if hp_audit_method and (group.health_periodic_audit_method != hp_audit_method):
 
-                    if not as_group.lb_listener_id and (self.params['health_periodic_audit_method'] == 'elb_audit'):
+                    if not group.lb_listener_id and hp_audit_method == 'elb_audit':
                         self.fail_json(msg="Without LB only 'nova_audit' is available")
 
-                    attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method']
+                    attrs['health_periodic_audit_method'] = hp_audit_method
 
-                if self.params['instance_terminate_policy']\
-                        and (as_group.instance_terminate_policy != self.params['instance_terminate_policy']):
-                    attrs['instance_terminate_policy'] = self.params['instance_terminate_policy']
+                if (instance_terminate_policy
+                        and group.instance_terminate_policy != instance_terminate_policy):
+                    attrs['instance_terminate_policy'] = instance_terminate_policy
 
-                if self.params['notifications'] and (as_group.notifications != self.params['notifications']):
-                    attrs['notifications'] = self.params['notifications']
+                if notifications and group.notifications != notifications:
+                    attrs['notifications'] = notifications
 
-                if self.params['delete_publicip'] and (as_group.delete_publicip != self.params['delete_publicip']):
-                    attrs['delete_publicip'] = self.params['delete_publicip']
+                if delete_publicip and group.delete_publicip != delete_publicip:
+                    attrs['delete_publicip'] = delete_publicip
 
-                if self.params['delete_volume'] and (as_group.delete_volume != self.params['delete_volume']):
-                    attrs['delete_volume'] = self.params['delete_volume']
+                if delete_volume and group.delete_volume != delete_volume:
+                    attrs['delete_volume'] = delete_volume
 
-                if self.params['enterprise_project_id'] \
-                        and (as_group.enterprise_project_id != self.params['enterprise_project_id']):
-                    attrs['enterprise_project_id'] = self.params['enterprise_project_id']
+                if (enterprise_project_id
+                        and group.enterprise_project_id != enterprise_project_id):
+                    attrs['enterprise_project_id'] = enterprise_project_id
 
                 changed = False
 
@@ -390,103 +417,102 @@ class ASGroupModule(OTCModule):
 
             else:
 
-                attrs = {}
-
-                if self.params['scaling_group_name']:
-                    attrs['scaling_group_name'] = self.params['scaling_group_name']
+                if as_group:
+                    attrs['scaling_group_name'] = as_group
                 else:
                     self.json(msg="Name is mandatory for creating.")
 
-                if self.params['networks']:
-                    attrs['networks'] = self.params['networks']
+                if networks:
+                    attrs['networks'] = networks
                 else:
                     self.fail_json(msg="'networks' is mandatory for creating an AS group.")
 
-                if self.params['router']:
+                if router:
                     attrs['vpc_id'] = self._find_id_router()
                 else:
                     self.fail_json(msg="'router' is mandatory for creating an AS group.")
 
-                if self.params['scaling_configuration']:
+                if as_configuration:
                     attrs['scaling_configuration_id'] = self._find_id_config()
 
-                if self.params['lb_listener'] and self.params['lbaas_listeners']:
-                    self.fail_json(msg="Either 'lb_listener' or 'lbaas_listener' can be specified")
+                if lb_listener and lbaas_listeners:
+                    self.fail_json(msg="Either 'lb_listener' or"
+                                       " 'lbaas_listener' can be specified")
 
-                if not self.params['health_periodic_audit_method']:
+                if not hp_audit_method:
                     # set default values  for 'health_periodic_audit_method'
-                    if self.params['lb_listener'] or self.params['lbaas_listeners']:
+                    if lb_listener or lbaas_listeners:
                         attrs['health_periodic_audit_method'] = "ELB_AUDIT"
                     else:
                         attrs['health_periodic_audit_method'] = "NOVA_AUDIT"
                 else:
-                    if not self.params['lb_listener'] and not self.params['lbaas_listeners']:
-                        if self.params['health_periodic_audit_method'] == 'elb_audit':
+                    if not lb_listener and not lbaas_listeners:
+                        if hp_audit_method == 'elb_audit':
                             self.fail_json("Without LB only 'nova_audit' is available")
                         else:
-                            attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method'].upper()
+                            attrs['health_periodic_audit_method'] = hp_audit_method.upper()
                     else:
-                        attrs['health_periodic_audit_method'] = self.params['health_periodic_audit_method'].upper()
+                        attrs['health_periodic_audit_method'] = hp_audit_method.upper()
 
-                if self.params['lb_listener']:
+                if lb_listener:
                     attrs['lb_listener_id'] = self._find_id_listener()
 
-                if self.params['lbaas_listeners']:
-                    attrs['lbaas_listeners'] = self.params['lbaas_listeners']
+                if lbaas_listeners:
+                    attrs['lbaas_listeners'] = lbaas_listeners
 
-                if self.params['min_instance_number']:
-                    attrs['min_instance_number'] = self.params['min_instance_number']
+                if min_instance_number:
+                    attrs['min_instance_number'] = min_instance_number
                 else:
                     attrs['min_instance_number'] = 0
 
-                if self.params['max_instance_number']:
-                    attrs['max_instance_number'] = self.params['max_instance_number']
+                if max_instance_number:
+                    attrs['max_instance_number'] = max_instance_number
                 else:
                     attrs['max_instance_number'] = 0
 
-                if self.params['health_periodic_audit_time']:
-                    attrs['health_periodic_audit_time'] = self.params['health_periodic_audit_time']
+                if hp_audit_time:
+                    attrs['health_periodic_audit_time'] = hp_audit_time
                 else:
                     attrs['health_periodic_audit_time'] = 5
 
-                if self.params['delete_publicip']:
-                    attrs['delete_publicip'] = self.params['delete_publicip']
+                if delete_publicip:
+                    attrs['delete_publicip'] = delete_publicip
                 else:
                     attrs['delete_publicip'] = False
 
-                if self.params['delete_volume']:
-                    attrs['delete_volume'] = self.params['delete_volume']
+                if delete_volume:
+                    attrs['delete_volume'] = delete_volume
                 else:
                     attrs['delete_volume'] = False
 
-                if self.params['cool_down_time']:
-                    attrs['cool_down_time'] = self.params['cool_down_time']
+                if cool_down_time:
+                    attrs['cool_down_time'] = cool_down_time
                 else:
                     attrs['cool_down_time'] = 300
 
-                if self.params['health_periodic_audit_grace_period']:
-                    attrs['health_periodic_audit_grace_period'] = self.params['health_periodic_audit_grace_period']
+                if hp_audit_gr_period:
+                    attrs['health_periodic_audit_grace_period'] = hp_audit_gr_period
                 else:
                     attrs['health_periodic_audit_grace_period'] = 600
 
-                if self.params['desire_instance_number']:
-                    attrs['desire_instance_number'] = self.params['desire_instance_number']
-                if self.params['available_zones']:
-                    attrs['available_zones'] = self.params['available_zones']
-                if self.params['security_groups']:
-                    attrs['security_groups'] = self.params['security_groups']
+                if desire_instance_number:
+                    attrs['desire_instance_number'] = desire_instance_number
+                if available_zones:
+                    attrs['available_zones'] = available_zones
+                if security_groups:
+                    attrs['security_groups'] = security_groups
 
-                if self.params['instance_terminate_policy']:
-                    attrs['instance_terminate_policy'] = self.params['instance_terminate_policy'].upper()
+                if instance_terminate_policy:
+                    attrs['instance_terminate_policy'] = instance_terminate_policy.upper()
                 else:
                     attrs['instance_terminate_policy'] = 'OLD_CONFIG_OLD_INSTANCE'
 
-                if self.params['notifications']:
-                    attrs['notifications'] = self.params['notifications']
-                if self.params['enterprise_project_id']:
-                    attrs['enterprise_project_id'] = self.params['enterprise_project_id']
-                if self.params['multi_az_priority_policy']:
-                    attrs['multi_az_priority_policy'] = self.params['multi_az_priority_policy'].upper()
+                if notifications:
+                    attrs['notifications'] = notifications
+                if enterprise_project_id:
+                    attrs['enterprise_project_id'] = enterprise_project_id
+                if multi_az_priority_policy:
+                    attrs['multi_az_priority_policy'] = multi_az_priority_policy.upper()
                 else:
                     attrs['multi_az_priority_policy'] = 'EQUILIBRIUM_DISTRIBUTE'
 
