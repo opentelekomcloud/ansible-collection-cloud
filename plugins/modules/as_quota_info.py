@@ -17,7 +17,7 @@ module: as_quota_info
 short_description: Get information about auto scaling quotas
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.8.1"
-author: "Yustina Kvrivishvili (@)"
+author: "Polina Gubina (@Polina-Gubina)"
 description:
   - This module is used to query the total quotas and used quotas of AS \
     groups, AS configurations, bandwidth scaling policies, AS policies, and \

@@ -1,0 +1,14 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.as_quota_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get Dedicated host info
+      opentelekomcloud.cloud.as_quota_info:
+      register: as_quotas
+
+    - name: assert result
+      assert:
+        that:
+          - as_quotas is success
+          - as_quotas is not changed
