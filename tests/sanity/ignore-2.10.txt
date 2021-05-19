@@ -26,6 +26,8 @@ plugins/modules/deh_host.py validate-modules:missing-gplv3-license
 plugins/modules/deh_host_info.py validate-modules:missing-gplv3-license
 plugins/modules/deh_host_type_info.py validate-modules:missing-gplv3-license
 plugins/modules/deh_server_info.py validate-modules:missing-gplv3-license
+plugins/modules/floating_ip.py validate-modules:missing-gplv3-license
+plugins/modules/floating_ip_info.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer_info.py validate-modules:missing-gplv3-license
 plugins/modules/nat_gateway.py validate-modules:missing-gplv3-license

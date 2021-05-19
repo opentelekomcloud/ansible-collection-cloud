@@ -17,7 +17,7 @@ module: floating_ip_info
 short_description: Get information about floating ips
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.8.1"
-author: "Yustina Kvrivishvili (@)"
+author: "Polina Gubina (@Polina-Gubina)"
 description:
   - Get a generator of floating ips info from the OTC.
 options:
@@ -33,21 +33,21 @@ options:
     description:
       -  The IP address of a floating IP.
     type: str
-  floating_network_id:
+  floating_network:
     description:
-      - The ID of the network associated with a floating IP.
+      - The name or id of the network associated with a floating IP.
     type: str
-  port_id:
+  port:
     description:
-      - The ID of the port to which a floating IP is associated.
+      - The name or id of the port to which a floating IP is associated.
     type: str
   project_id:
     description:
       - The ID of the project a floating IP is associated with.
     type: str
-  router_id:
+  vpc:
     description:
-      - The ID of an associated router.
+      - The name or id of an associated vpc.
     type: str
   status:
     description:
@@ -63,38 +63,84 @@ floating_ips:
   type: complex
   returned: On Success.
   contains:
-    id:
-      description: The VPC peering connection ID.
+    created_at:
+      description: Creation time of the floating ip.
       type: str
-      sample: "4dae5bac-0925-4d5b-add8-cb6667b8"
-    name:
-      description: The VPC peering connection name.
-      type: str
-      sample: "vpc-peering1"
-    status:
-      description: The VPC peering connection status.
-      type: str
-      sample: "ACTIVE"
-    request_vpc_info:
-      description: Information about the local VPC.
-      type: dict
-      sample: "{tenant_id: 76889f64a23945ab887012be95acf, vpc_id: 4dae5bac-0925-4d5b-add8-cb6667b8}"
-    accept_vpc_info:
-      description: Information about the peer VPC.
-      type: dict
-      sample: "{tenant_id: 968u64a23945ab887012be95acf, vpc_id: 7dau5bac-0925-4d5b-add8-cb6667b8}"
+      sample: "2020-09-30T09:59:01Z"
     description:
-      description: Provides supplementary information about the VPC peering connection.
+      description: The description of a floating IP.
+      type: str
+      sample: "The description"
+    dns_domain:
+      description: The DNS domain.
+      type: str
+      sample: str
+    dns_name:
+      description: The DNS name.
+      type: str
+      sample: "{tenant_id: 76889f64a23945ab887012be95acf, vpc_id: 4dae5bac-0925-4d5b-add8-cb6667b8}"
+    fixed_ip_address:
+      description: The fixed IP address associated with a floating IP address.
+      type: dict
+      sample: str
+    floating_ip_address:
+      description: The IP address of a floating IP.
       type: str
       sample: ""
-    created_at:
-      description: The time (UTC) when the VPC peering connection is created.
+    floating_network_id:
+      description: The id of the network associated with a floating IP.
+      type: str
+      sample: "76889f64a23945ab887012be95acf"
+    id:
+      description: Id of the floating ip.
+      type: str
+      sample: "99089f64a23945ab887012be95acf"
+    name:
+      description: Name of the floating ip.
+      type: str
+      sample: ""
+    port_details:
+      description: The details of the port that this floating IP associates \
+        with. Present if ``fip-port-details`` extension is loaded.
+      type: str
+      sample: ""
+    port_id:
+      description: The port ID.
+      type: str
+      sample: "76889f64a23945ab887012be95acf"
+    project_id:
+      description: The ID of the project this floating IP is associated with.
+      type: str
+      sample: "34289f64a23945ab887012be95acf"
+    qos_policy_id:
+      description: The ID of the QoS policy attached to the floating IP.
+      type: str
+      sample: "76889f64a23945ab887012be95acf"
+    revision_number:
+      description: Revision number.
+      type: str
+      sample: ""
+    router_id:
+      description: The id of an associated router.
+      type: str
+      sample: "76889f64a23945ab887012be95acf"
+    status:
+      description: The status of a floating IP, which can be ``ACTIVE``or ``DOWN``.\
+        Can be 'ACTIVE' and 'DOWN'.
+      type: str
+      sample: "ACTIVE"
+    subnet_id:
+      description: The id of the subnet the floating ip associated with.
+      type: str
+      sample: "76889f64a23945ab887012be95acf"
+    tags:
+      description: List of tags.
+      type: str
+      sample: 
+    updated_at:
+      description: Timestamp at which the floating IP was last updated.
       type: str
       sample: "2020-09-13T20:37:01"
-    updated_at:
-      description: Specifies the time (UTC) when the VPC peering connection is updated.
-      type: str
-      sample: "2020-09-13T20:38:02"
 '''
 
 EXAMPLES = '''
@@ -109,10 +155,10 @@ class FloatingIPInfoModule(OTCModule):
         description=dict(required=False),
         fixed_ip_address=dict(required=False),
         floating_ip_address=dict(required=False),
-        floating_network_id=dict(required=False),
-        port_id=dict(required=False),
+        floating_network=dict(required=False),
+        port=dict(required=False),
         project_id=dict(required=False),
-        router_id=dict(required=False),
+        vpc=dict(required=False),
         status=dict(required=False, choices=['ACTIVE', 'DOWN']),
     )
 
@@ -121,10 +167,10 @@ class FloatingIPInfoModule(OTCModule):
         description = self.params['description']
         fixed_ip_address = self.params['fixed_ip_address']
         floating_ip_address = self.params['floating_ip_address']
-        floating_network_id = self.params['floating_network_id']
-        port_id = self.params['port_id']
+        floating_network = self.params['floating_network']
+        port = self.params['port']
         project_id = self.params['project_id']
-        router_id = self.params['router_id']
+        vpc = self.params['vpc']
         status = self.params['status']
 
         data = []
@@ -135,16 +181,26 @@ class FloatingIPInfoModule(OTCModule):
             query['fixed_ip_address'] = fixed_ip_address
         if floating_ip_address:
             query['floating_ip_address'] = floating_ip_address
-        if floating_network_id:
-            floating_network_id = floating_network_id
-        if port_id:
-            query['port_id'] = port_id
+        if floating_network:
+            try:
+                query['floating_network_id'] = self.conn.network.find_network(name_or_id=floating_network,\
+                                                                              ignore_missing=False).id
+            except self.sdk.exceptions.ResourceNotFound:
+                self.fail_json(msg="floating_network not found")
+        if port:
+            try:
+                query['port_id'] = self.conn.network.find_port(name_or_id=port, ignore_missing=False).id
+            except self.sdk.exceptions.ResourceNotFound:
+                self.fail_json(msg="port not found")
         if project_id:
             query['project_id'] = project_id
-        if router_id:
-            query['router_id'] = router_id
+        if vpc:
+            try:
+                query['router_id'] = self.conn.network.find_router(name_or_id=vpc, ignore_missing=False).id
+            except self.sdk.exceptions.ResourceNotFound:
+                self.fail_json(msg="vpc not found")
         if status:
-            status = status
+            query['status'] = status
 
         for raw in self.conn.network.ips(**query):
             dt = raw.to_dict()
@@ -153,7 +209,7 @@ class FloatingIPInfoModule(OTCModule):
 
         self.exit_json(
             changed=False,
-            vpc_peerings=data
+            floating_ips=data
         )
 
 

@@ -1,0 +1,35 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.floating_ip:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.floating_ip_info:
+      cloud: "{{ test_cloud }}"
+
+  block:
+    - name: Allocate fip
+      opentelekomcloud.cloud.floating_ip:
+        cloud: "{{ test_cloud }}"
+        network: admin_external_net
+      register: fip
+
+    - name: Getting info about allocated ips
+      opentelekomcloud.cloud.floating_ip_info:
+      register: fips
+
+    - name: assert result
+      assert:
+        that:
+          - fips is success
+          - fips is not changed
+          - fips | length > 0
+
+  always:
+    - block:
+      # Cleanup
+        - name: Drop fip
+          opentelekomcloud.cloud.floating_ip:
+            cloud: "{{ test_cloud }}"
+            floating_ip_address: "{{ fip.floating_ip.floating_ip_address }}"
+            purge: true
+            state: absent
+          register: drop
