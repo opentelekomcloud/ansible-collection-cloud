@@ -3,7 +3,7 @@
     opentelekomcloud.cloud.as_quota_info:
       cloud: "{{ test_cloud }}"
   block:
-    - name: Get Dedicated host info
+    - name: Get as quota info
       opentelekomcloud.cloud.as_quota_info:
       register: as_quotas
 

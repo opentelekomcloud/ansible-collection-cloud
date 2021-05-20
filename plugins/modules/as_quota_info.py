@@ -24,7 +24,7 @@ description:
     instances for a specified tenant.
 options:
   scaling_group:
-    description: Name or id of an auto scaling group.
+    description: Name or id of an auto scaling group. If set, quota for this group will be outputed.
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -40,36 +40,36 @@ as_quotas:
       type: complex
       contains:
         type:
-            description:
-                - Specifies the quota type.
-                - Can be 'scaling_Group', 'scaling_Config', 'scaling_Policy'\
-                'scaling_Instance', 'bandwidth_scaling_policy'.
-            type: str
+          description:
+            - Specifies the quota type.
+            - Can be 'scaling_Group', 'scaling_Config', 'scaling_Policy' \
+            'sсaling_Instance', 'bandwidth_scaling_policy'.
+          type: str
         used:
-            description:
-                - Specifies the used amount of the quota.
-                - When type is set to scaling_Policy or scaling_Instance, \
-                this parameter is reserved, and the system returns -1 as the\
-                parameter value. You can query the used quota of AS policies\
-                and AS instances in a specified AS group.
-            type: int
+          description:
+            - Specifies the used amount of the quota.
+            - When type is set to scaling_Policy or scaling_Instance, \
+            this parameter is reserved, and the system returns -1 as the \
+            parameter value. You can query the used quota of AS policies \
+            and AS instances in a specified AS group.
+          type: int
         quota:
-            description:
-                - Specifies the total quota.
-            type: int
+          description:
+            - Specifies the total quota.
+          type: int
         max:
-            description:
-                - Specifies the quota upper limit.
-            type: int
+          description:
+            - Specifies the quota upper limit.
+          type: int
 '''
 
 EXAMPLES = '''
 # Get as quotas.
-- as_quota_info:
+- opentelekomcloud.cloud.as_quota_info:
   register: as_quotas
 
 # Get as quotas of a specified AS group.
-- as_quota_info:
+- opentelekomcloud.cloud.as_quota_info:
     scaling_group: "test-group"
   register: as_quotas
 '''
@@ -89,7 +89,8 @@ class ASQuotaInfoModule(OTCModule):
         scaling_group_id = None
         if self.params['scaling_group']:
             try:
-                scaling_group_id = self.conn.auto_scaling.find_group(self.params['scaling_group'], ignore_missing=False)
+                scaling_group_id = self.conn.auto_scaling.find_group(self.params['scaling_group'],
+                                                                     ignore_missing=False).id
             except self.sdk.exceptions.ResourceNotFound:
                 self.fail_json(msg="Auto scaling group not found")
 
