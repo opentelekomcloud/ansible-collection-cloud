@@ -239,6 +239,15 @@ register: as_group
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
+def is_value_changed(old: list, new: list):
+    """Compare lists"""
+    result = [x for x in old + new if x not in old or x not in new]
+    if result:
+        return True
+    else:
+        return False
+
+
 class ASGroupModule(OTCModule):
     argument_spec = dict(
         scaling_group=dict(required=True, type='str'),
@@ -252,7 +261,7 @@ class ASGroupModule(OTCModule):
         available_zones=dict(required=False, type='list', elements='str'),
         networks=dict(required=False, type='list', elements='dict'),
         security_groups=dict(required=False, type='list', elements='dict'),
-        router=dict(required=False),
+        router=dict(required=False, type='str'),
         health_periodic_audit_method=dict(required=False, type='str', choices=['elb_audit', 'nova_audit']),
         health_periodic_audit_time=dict(required=False, type='int'),
         health_periodic_audit_grace_period=dict(required=False, type='int'),
@@ -297,6 +306,83 @@ class ASGroupModule(OTCModule):
             self.fail_json(msg="Router not found")
         return router_id
 
+    def _get_attrs_for_as_group_create(self):
+        pass
+
+    def _get_attrs_for_as_group_update(self):
+        pass
+
+    def _needs_update(self, as_group, as_configuration, desire_instance_number,
+                      min_instance_number, max_instance_number, cool_down_time,
+                      lb_listner, lbaas_listeners, availability_zones,
+                      networks, security_groups, router, hp_audit_method,
+                      hp_audit_time, hp_audit_grace_period,
+                      instance_terminate_policy, notifications,
+                      delete_publicip, delete_volume, enterprise_project_id,
+                      multi_az_priority_policy, group):
+        if as_group and group.name != as_group and group.id != as_group:
+            return True
+        if (as_configuration and
+                group.scaling_configuration_id != as_configuration and
+                group.scaling_configuration_name != as_configuration):
+            return True
+        if (desire_instance_number and
+                group.desire_instance_number != desire_instance_number):
+            return True
+        if (min_instance_number and
+                group.min_instance_number != min_instance_number):
+            return True
+        if (max_instance_number and
+                group.max_instance_number != max_instance_number):
+            return True
+        if (cool_down_time and
+                group.cool_down_time != cool_down_time):
+            return True
+        if (lb_listner and
+                group.lb_listner_id != lb_listner):
+            return True
+        if (lbaas_listeners and
+                is_value_changed(group.lbaas_listeners, lbaas_listeners)):
+            return True
+        if (availability_zones and
+                is_value_changed(group.availability_zones,
+                                 availability_zones)):
+            return True
+        if (networks and
+                is_value_changed(group.networks, networks)):
+            return True
+        if (security_groups and is_value_changed(group.security_groups,
+                                                 security_groups)):
+            return True
+        if router and group.router_id != router.id:
+            return True
+        if (hp_audit_method and
+                group.health_periodic_audit_method != hp_audit_method):
+            return True
+        if (hp_audit_time and
+                group.health_periodic_audit_time != hp_audit_time):
+            return True
+        if (hp_audit_grace_period and
+                group.health_periodic_audit_grace_period !=
+                hp_audit_grace_period):
+            return True
+        if (instance_terminate_policy and group.instance_terminate_policy !=
+                instance_terminate_policy):
+            return True
+        if notifications and group.notifications != notifications:
+            return True
+        if delete_publicip and group.delete_publicip != delete_publicip:
+            return True
+        if delete_volume and group.delete_volume != delete_volume:
+            return True
+        if (enterprise_project_id and group.enterprise_project_id !=
+                enterprise_project_id):
+            return True
+        if (multi_az_priority_policy and group.multi_az_priority_policy !=
+                multi_az_priority_policy):
+            return True
+        return False
+
     def run(self):
 
         as_group = self.params['scaling_group']
@@ -325,8 +411,16 @@ class ASGroupModule(OTCModule):
 
         changed = False
 
-        if as_group:
-            group = self.conn.auto_scaling.find_group(name_or_id=as_group)
+        try:
+            group = self.conn.auto_scaling.find_group(
+                name_or_id=as_group,
+                ignore_missing=False
+            )
+        except self.sdk.exceptions.ResourceNotFound:
+            self.fail(
+                changed=changed,
+                msg='Scaling group {0} not found'.format(as_group)
+            )
 
         if self.params['state'] == 'present':
 
