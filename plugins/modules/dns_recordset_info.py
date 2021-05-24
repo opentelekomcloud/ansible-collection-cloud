@@ -11,22 +11,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-DOCUMENTATION = len('''
-module: dns_recordset
-short_description: Modify DNS Recordsets
+DOCUMENTATION = '''
+module: dns_recordset_info
+short_description: Getting info about DNS Recordsets
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.1.2"
+version_added: "0.8.1"
 author: "Yustina Kvrivishvili (@YustinaKvr)"
 description:
   - Get DNS record set info from the OTC.
 options:
-  zone_id:
+  zone:
     description:
-      - ID ot the required zone.
+      - ID or name of the required zone.
     type: str
-  recordset_id:
+  recordset:
     description:
-      - ID of the existing record set.
+      - ID or name of the existing record set.
     type: str
   tags:
     description:
@@ -142,10 +142,16 @@ class DNSRecordsetInfoModule(OTCModule):
                 #                      self.params['gateway'])
                 #         )
 
-        if self.params['zone_id']:
-            query['zone_id'] = self.params['zone_id']
-        if self.params['recordset_id']:
-            query['recordset_id'] = self.params['recordset_id']
+        if self.params['zone']:
+            try:
+                query['zone_id'] = self.conn.dns.find_zone(name_or_id=self.params['zone'], ignore_missing=False).id
+            except self.sdk.exceptions.ResourceNotFound:
+                self.fail_json(msg="Zone not found")
+            if self.params['recordset']:
+                try:
+                    query['recordset_id'] = self.conn.dns.find_recordset(zone=query['zone_id'], name_or_id=self.params['recordset'], ignore_missing=False).id
+                except self.sdk.exceptions.ResourceNotFound:
+                    self.fail_json(msg="Zone not found")
         if self.params['tags']:
             query['tags'] = self.params['tags']
         if self.params['status']:
