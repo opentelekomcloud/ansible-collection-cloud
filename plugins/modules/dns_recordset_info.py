@@ -109,9 +109,10 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 
 class DNSRecordsetInfoModule(OTCModule):
+
     argument_spec = dict(
-        zone_id=dict(required=False),
-        recordset_id=dict(required=False),
+        zone=dict(required=False),
+        recordset=dict(required=False),
         tags=dict(required=False),
         status=dict(required=False, choices=['ACTIVE', 'ERROR', 'DISABLE', 'FREEZE', 'PENDING_CREATE', 'PENDING_UPDATE', 'PENDING_DELETE']),
         type=dict(required=False, choices=['A', 'AAAA', 'MX', 'CNAME', 'TXT', 'NS']),
@@ -142,16 +143,16 @@ class DNSRecordsetInfoModule(OTCModule):
                 #                      self.params['gateway'])
                 #         )
 
-        if self.params['zone']:
-            try:
-                query['zone_id'] = self.conn.dns.find_zone(name_or_id=self.params['zone'], ignore_missing=False).id
-            except self.sdk.exceptions.ResourceNotFound:
-                self.fail_json(msg="Zone not found")
-            if self.params['recordset']:
-                try:
-                    query['recordset_id'] = self.conn.dns.find_recordset(zone=query['zone_id'], name_or_id=self.params['recordset'], ignore_missing=False).id
-                except self.sdk.exceptions.ResourceNotFound:
-                    self.fail_json(msg="Zone not found")
+        # if self.params['zone']:
+        #     try:
+        #         query['zone_id'] = self.conn.dns.find_zone(name_or_id=self.params['zone'], ignore_missing=False).id
+        #     except self.sdk.exceptions.ResourceNotFound:
+        #         self.fail_json(msg="Zone not found")
+        #     if self.params['recordset']:
+        #         try:
+        #             query['recordset_id'] = self.conn.dns.find_recordset(zone=query['zone_id'], name_or_id=self.params['recordset'], ignore_missing=False).id
+        #         except self.sdk.exceptions.ResourceNotFound:
+        #             self.fail_json(msg="Zone not found")
         if self.params['tags']:
             query['tags'] = self.params['tags']
         if self.params['status']:
