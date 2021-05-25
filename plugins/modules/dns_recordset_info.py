@@ -74,27 +74,54 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-cce_clusters:
-    description: List of dictionaries describing AS groups version.
+recordsets:
+    description: List of existing recordsets.
     type: complex
     returned: On Success.
     contains:
-        id:
-            description: Unique UUID.
+        created_at:
+            description: timestamp when recordset has been created.
             type: str
-            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-        metadata:
+            sample: "2021-05-24T15:27:19.335"
+        description:
             description: Cluster Metadata dictionary.
-            type: dict
-        name:
-            description: Cluster Name.
             type: str
-        spec:
-            description: Cluster specification dictionary.
-            type: dict
+            sample:
+        id:
+            description: IDs of record sets to be queried.
+            type: str
+            sample:
+        is_default:
+            description: o_O.
+            type: boolean
+            sample:
+        name:
+            description: Names of record sets to be queried.
+            type: str
+            sample:
+        project_id:
+            description: o_O.
+            type: str
+            sample:
+        records:
+            Value included in the values of record sets to be queried.
+            type: list
         status:
-            description: Cluster status dictionary.
+            description: Status of the record sets to be queried..
             type: dict
+        ttl:
+            description: Cluster status dictionary.
+            type: int
+        type:
+            description: Zone type of the record set to be queried.
+            type: str
+        updated_at:
+            description: Cluster status dictionary.
+            type: str
+        zone_name:
+            description: Cluster status dictionary.
+            type: str
+
 '''
 
 EXAMPLES = '''
@@ -143,16 +170,16 @@ class DNSRecordsetInfoModule(OTCModule):
                 #                      self.params['gateway'])
                 #         )
 
-        # if self.params['zone']:
-        #     try:
-        #         query['zone_id'] = self.conn.dns.find_zone(name_or_id=self.params['zone'], ignore_missing=False).id
-        #     except self.sdk.exceptions.ResourceNotFound:
-        #         self.fail_json(msg="Zone not found")
-        #     if self.params['recordset']:
-        #         try:
-        #             query['recordset_id'] = self.conn.dns.find_recordset(zone=query['zone_id'], name_or_id=self.params['recordset'], ignore_missing=False).id
-        #         except self.sdk.exceptions.ResourceNotFound:
-        #             self.fail_json(msg="Zone not found")
+        if self.params['zone']:
+            try:
+                query['zone'] = self.conn.dns.find_zone(name_or_id=self.params['zone'], ignore_missing=False).id
+            except self.sdk.exceptions.ResourceNotFound:
+                self.fail_json(msg="Zone not found")
+            if self.params['recordset']:
+                try:
+                    query['recordset'] = self.conn.dns.find_recordset(zone=query['zone_id'], name_or_id=self.params['recordset'], ignore_missing=False).id
+                except self.sdk.exceptions.ResourceNotFound:
+                    self.fail_json(msg="Zone not found")
         if self.params['tags']:
             query['tags'] = self.params['tags']
         if self.params['status']:
