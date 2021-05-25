@@ -183,9 +183,9 @@ class DNSRecordsetInfoModule(OTCModule):
         if self.params['tags']:
             query['tags'] = self.params['tags']
         if self.params['status']:
-            query['status'] = self.params['status']
+            query['status'] = self.params['status'].upper()
         if self.params['type']:
-            query['type'] = self.params['type']
+            query['type'] = self.params['type'].upper()
         if self.params['name']:
             query['name'] = self.params['name']
         if self.params['id']:
@@ -196,7 +196,7 @@ class DNSRecordsetInfoModule(OTCModule):
             query['soft_dir'] = self.params['soft_dir']
         if self.params['zone_type']:
             query['zone_type'] = self.params['zone_type']
-        if self.params['records']:
+        if self.params['soft_key']:
             query['soft_key'] = self.params['soft_key']
 
         for raw in self.conn.dns.recordsets(**query):
