@@ -141,8 +141,8 @@ class DNSRecordsetInfoModule(OTCModule):
         zone=dict(required=False),
         recordset=dict(required=False),
         tags=dict(required=False),
-        status=dict(required=False, choices=['ACTIVE', 'ERROR', 'DISABLE', 'FREEZE', 'PENDING_CREATE', 'PENDING_UPDATE', 'PENDING_DELETE']),
-        type=dict(required=False, choices=['A', 'AAAA', 'MX', 'CNAME', 'TXT', 'NS']),
+        status=dict(required=False, choices=['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update', 'pending_delete']),
+        type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname', 'txt', 'ns']),
         name=dict(required=False),
         id=dict(required=False),
         records=dict(required=False),
@@ -155,20 +155,6 @@ class DNSRecordsetInfoModule(OTCModule):
 
         data = []
         query = {}
-
-                # if self.params['gateway']:
-                #     gw = self.conn.nat.find_gateway(
-                #         name_or_id=self.params['gateway'],
-                #         ignore_missing=True)
-                #     if gw:
-                #         query['id'] = gw.id
-                #     else:
-                #         self.exit(
-                #             changed=False,
-                #             nat_gateways=[],
-                #             message=('No gateway found with name or id: %s' %
-                #                      self.params['gateway'])
-                #         )
 
         if self.params['zone']:
             try:
