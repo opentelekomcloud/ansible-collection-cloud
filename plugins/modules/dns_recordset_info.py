@@ -177,7 +177,7 @@ class DNSRecordsetInfoModule(OTCModule):
                 self.fail_json(msg="Zone not found")
             if self.params['recordset']:
                 try:
-                    query['recordset'] = self.conn.dns.find_recordset(zone=query['zone_id'], name_or_id=self.params['recordset'], ignore_missing=False).id
+                    query['recordset'] = self.conn.dns.find_recordset(zone=query['zone'], name_or_id=self.params['recordset'], ignore_missing=False).id
                 except self.sdk.exceptions.ResourceNotFound:
                     self.fail_json(msg="Zone not found")
         if self.params['tags']:
