@@ -21,6 +21,7 @@ plugins/modules/ces_quotas_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_node_info.py validate-modules:missing-gplv3-license
 plugins/modules/dns_floating_ip.py validate-modules:missing-gplv3-license
 plugins/modules/dns_recordset.py validate-modules:missing-gplv3-license
+plugins/modules/dns_recordset_info.py validate-modules:missing-gplv3-license
 plugins/modules/dns_zone.py validate-modules:missing-gplv3-license
 plugins/modules/deh_host.py validate-modules:missing-gplv3-license
 plugins/modules/deh_host_info.py validate-modules:missing-gplv3-license
