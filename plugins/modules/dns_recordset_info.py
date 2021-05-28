@@ -150,6 +150,12 @@ class DNSRecordsetInfoModule(OTCModule):
         soft_dir=dict(required=False, choices=['desc', 'asc']),
         zone_type=dict(required=False, choices=['public', 'private'])
     )
+    module_kwargs = dict(
+        required_if=[
+            ('recordset', not None,
+             ['zone'])
+        ]
+    )
 
     def run(self):
 
@@ -165,7 +171,7 @@ class DNSRecordsetInfoModule(OTCModule):
                 try:
                     query['recordset'] = self.conn.dns.find_recordset(zone=query['zone'], name_or_id=self.params['recordset'], ignore_missing=False).id
                 except self.sdk.exceptions.ResourceNotFound:
-                    self.fail_json(msg="Zone not found")
+                    self.fail_json(msg="Recordset not found")
         if self.params['tags']:
             query['tags'] = self.params['tags']
         if self.params['status']:
