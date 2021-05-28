@@ -35,12 +35,12 @@ options:
   status:
     description:
       - Status of the record sets to be queried.
-    choices: ['ACTIVE', 'ERROR', 'DISABLE', 'FREEZE', 'PENDING_CREATE', 'PENDING_UPDATE', 'PENDING_DELETE']
+    choices: ['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update', 'pending_delete']
     type: str
   type:
     description:
       - Type of the record sets to be queried.
-    choices: ['A', 'AAAA', 'MX', 'CNAME', 'TXT', 'NS']
+    choices: ['a', 'aaaa', 'mx', 'cname', 'txt', 'ns']
     type: str
   name:
     description:
