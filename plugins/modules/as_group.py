@@ -19,7 +19,7 @@ extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.2.0"
 author: "Polina Gubina (@Polina-Gubina)"
 description:
-  - Create/Remove AutoScaling group from the OTC.
+  - Create/Update/Remove AutoScaling group from the OTC.
 options:
   scaling_group:
     description:
@@ -86,7 +86,7 @@ options:
           backend ECSs added to the same listener.
         type: int
         required: true
-  available_zones:
+  availability_zones:
     description:
       - Specifies the AZ information. The ECS associated with a scaling
        action will be created in a specified AZ.If you do not specify an AZ,
@@ -109,6 +109,7 @@ options:
         required: true
   security_groups:
     description:
+      - A maximum of one security group can be selected.
       - Specifies the security group. If the security group is specified both
       in the AS configuration and AS group, the security group specified in
       the AS configuration prevails.
@@ -206,12 +207,27 @@ options:
       determined in the order in the available_zones list.
     choices: ['equilibrium_distribute', 'pick_first']
     type: str
+  action:
+    description:
+      - Specifies a flag for enabling or disabling an AS group.
+    type: str
+    choices: ['resume', 'pause']
   state:
     description:
       - Whether resource should be present or absent.
     choices: ['present', 'absent']
     type: str
     default: 'present'
+  wait:
+    description:
+      - If the module should wait for the AS Group to be created or deleted.
+    type: bool
+    default: 'yes'
+  timeout:
+    description:
+      - The duration in seconds that module should wait.
+    default: 180
+    type: int
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -253,73 +269,288 @@ class ASGroupModule(OTCModule):
         scaling_group=dict(required=True, type='str'),
         scaling_configuration=dict(required=False),
         desire_instance_number=dict(required=False, type='int'),
-        min_instance_number=dict(required=False, type='int'),
-        max_instance_number=dict(required=False, type='int'),
-        cool_down_time=dict(required=False, type='int'),
-        lb_listener=dict(required=False),
-        lbaas_listeners=dict(required=False, type='list', elements='dict'),
-        available_zones=dict(required=False, type='list', elements='str'),
-        networks=dict(required=False, type='list', elements='dict'),
-        security_groups=dict(required=False, type='list', elements='dict'),
+        min_instance_number=dict(required=False, type='int', default=0),
+        max_instance_number=dict(required=False, type='int', default=0),
+        cool_down_time=dict(required=False, type='int', default=300),
+        lb_listener=dict(required=False, type='str'),
+        lbaas_listeners=dict(required=False, type='list', elements='dict',
+                             options=dict(
+                                 pool_id=dict(required=True, type='str'),
+                                 protocol_port=dict(required=True, type='int'),
+                                 weight=dict(required=True, type='int')
+                             )
+                             ),
+        availability_zones=dict(required=False, type='list', elements='str'),
+        networks=dict(required=False, type='list', elements='dict',
+                      options=dict(
+                          id=dict(required=True, type='str')
+                      )),
+        security_groups=dict(required=False, type='list', elements='dict',
+                             options=dict(
+                                 id=dict(required=True, type='str')
+                             )),
         router=dict(required=False, type='str'),
-        health_periodic_audit_method=dict(required=False, type='str', choices=['elb_audit', 'nova_audit']),
-        health_periodic_audit_time=dict(required=False, type='int'),
-        health_periodic_audit_grace_period=dict(required=False, type='int'),
-        instance_terminate_policy=dict(required=False,
-                                       choices=['old_config_old_instance', 'old_config_new_instance',
-                                                'old_instance', 'new_instance']),
+        health_periodic_audit_method=dict(required=False, type='str',
+                                          choices=['elb_audit', 'nova_audit']),
+        health_periodic_audit_time=dict(required=False, type='int', default=5),
+        health_periodic_audit_grace_period=dict(
+            required=False, type='int', default=600
+        ),
+        instance_terminate_policy=dict(
+            required=False,
+            choices=['old_config_old_instance', 'old_config_new_instance',
+                     'old_instance', 'new_instance'],
+            default='old_config_old_instance'.upper()
+        ),
         notifications=dict(required=False, type='list', elements='str'),
-        delete_publicip=dict(required=False, type='bool'),
-        delete_volume=dict(required=False, type='bool'),
+        delete_publicip=dict(required=False, type='bool', default=False),
+        delete_volume=dict(required=False, type='bool', default=False),
         enterprise_project_id=dict(required=False),
-        multi_az_priority_policy=dict(required=False, choices=['equilibrium_distribute', 'pick_first']),
-        state=dict(type='str', choices=['present', 'absent'], default='present')
+        multi_az_priority_policy=dict(
+            required=False, choices=['equilibrium_distribute', 'pick_first'],
+            default='equilibrium_distribute'.upper()
+        ),
+        action=dict(required=False, type ='str', choices=['resume', 'pause']),
+        state=dict(
+            type='str', choices=['present', 'absent'], default='present'
+        ),
+        wait=dict(type='bool', default=True),
+        timeout=dict(type='int', default=200)
+
     )
     module_kwargs = dict(
         supports_check_mode=True
     )
 
-    def _find_id_config(self):
-        config = self.conn.auto_scaling.find_config(self.params['scaling_configuration'], ignore_missing=True)
-        config_id = None
+    def _attrs_id_config(self, attrs, as_config):
+        config = self.conn.auto_scaling.find_config(as_config)
         if config:
-            config_id = config.id
+            attrs['scaling_configuration_id'] = config.id
+            return attrs
         else:
-            self.fail_json(msg="Scaling configuration not found")
-        return config_id
+            self.fail(
+                changed=False,
+                msg="Scaling configuration {0} not found".format(as_config)
+            )
 
-    def _find_id_listener(self):
-        listener = self.conn.network.find_listener(self.params['scaling_configuration'], ignore_missing=True)
-        listener_id = None
-        if listener:
-            listener_id = listener.id
+    def _attrs_lb_listeners(self, attrs, lb_listener):
+        lb_listener_list = lb_listener.split(',')
+        if 0 < len(lb_listener_list) <= 6:
+            attrs['lb_listener_id'] = ','.join(lb_listener_list)
+            return attrs
         else:
-            self.fail_json(msg="Listener not found")
-        return listener_id
+            self.fail(
+                changed=False,
+                msg="More then 6 classical load balancers are specified"
+            )
 
-    def _find_id_router(self):
-        router = self.conn.network.find_router(self.params['router'], ignore_missing=True)
-        router_id = None
+    def _attrs_id_router(self, attrs, router):
+        rtr = self.conn.network.find_router(router)
+        if rtr:
+            attrs['router_id'] = rtr.id
+            return attrs
+        else:
+            self.fail(
+                changed=False,
+                msg="Router {0} not found".format(router)
+            )
+
+    def _attrs_lbaas_listeners(self, attrs, lbaas_listeners):
+        if 0 < len(lbaas_listeners) <= 6:
+            lb_listeners = []
+            lstnr = {}
+            for listener in lbaas_listeners:
+                pool = self.conn.network.find_pool(listener['pool_id'])
+                if pool:
+                    lstnr['pool_id'] = pool.id
+                else:
+                    self.fail(
+                        changed=False,
+                        msg="Pool {0} not found".format(listener['pool_id'])
+                    )
+                lstnr['protocol_port'] = listener['protocol_port']
+                lstnr['weight'] = listener['weight']
+                lb_listeners.append(lstnr)
+            attrs['lbaas_listeners'] = lb_listeners
+            return attrs
+        else:
+            self.fail(
+                changed=False,
+                msg="More then 6 enhanced load balancers are specified"
+            )
+
+    def _attrs_networks(self, attrs, networks):
+        if 0 < len(networks) <= 5:
+            netwrks = []
+            netwrk = {}
+            for network in networks:
+                net = self.conn.network.find_network(network.id)
+                if net:
+                    netwrk['id'] = net.id
+                    netwrks.append(netwrk)
+                else:
+                    self.fail(
+                        changed=False,
+                        msg="Network {0} not found".format(network.id)
+                    )
+            attrs['networks'] = netwrks
+            return attrs
+        else:
+            self.fail(
+                changed=False,
+                msg="More than 5 networks are specified"
+            )
+
+    def _attrs_security_groups(self, attrs, security_groups, as_config=None):
+        if as_config:
+            config = self.conn.auto_scaling.find_config(as_config)
+            if config and config.security_groups:
+                attrs['security_groups'] = config.security_groups
+        else:
+            if len(security_groups) == 1:
+                sec_groups = []
+                sec_group = {}
+                group = self.conn.network.find_security_group(
+                    name_or_id=security_groups.id
+                )
+                if group:
+                    sec_group['id'] = group.id
+                    sec_groups.append(sec_group)
+                attrs['security_groups'] = sec_groups
+                return attrs
+            else:
+                self.fail(
+                    changed=False,
+                    msg="The number of security groups in the AS group "
+                        "exceeds the upper limit."
+                )
+
+    def _attrs_for_as_group_create(
+            self, attrs, as_group, as_configuration, desire_instance_number,
+            min_instance_number, max_instance_number, cool_down_time,
+            lb_listener, lbaas_listeners, availability_zones, networks,
+            security_groups, router, hp_audit_method, hp_audit_time,
+            hp_audit_grace_period, instance_terminate_policy, notifications,
+            delete_publicip, delete_volume, enterprise_project_id,
+            multi_az_priority_policy
+    ):
+
+        attrs['scaling_group_name'] = as_group
+
+        if networks:
+            attrs = self._attrs_networks(attrs, networks)
+        else:
+            self.fail(
+                changed=False,
+                msg = "'networks' is mandatory for creating an AS group."
+            )
+
         if router:
-            router_id = router.id
+            attrs = self._attrs_id_router(attrs, router)
         else:
-            self.fail_json(msg="Router not found")
-        return router_id
+            self.fail(
+                changed=False,
+                msg = "'router' is mandatory for creating an AS group."
+            )
 
-    def _get_attrs_for_as_group_create(self):
+        if as_configuration:
+            attrs = self._attrs_id_config(attrs, as_configuration)
+
+        if desire_instance_number:
+            attrs['desire_instance_number'] = desire_instance_number
+
+        if min_instance_number:
+            attrs['min_instance_number'] = min_instance_number
+
+        if max_instance_number:
+            attrs['max_instance_number'] = max_instance_number
+
+        if cool_down_time:
+            attrs['cool_down_time'] = cool_down_time
+
+        if lb_listener and lbaas_listeners:
+            self.fail(
+                changed=False,
+                msg="Either 'lb_listener' or 'lbaas_listener' "
+                    "can be specified"
+            )
+
+        if not hp_audit_method:
+            # set default values  for 'health_periodic_audit_method'
+            if lb_listener or lbaas_listeners:
+                attrs['health_periodic_audit_method'] = "ELB_AUDIT"
+            else:
+                attrs['health_periodic_audit_method'] = "NOVA_AUDIT"
+        else:
+            if not lb_listener and not lbaas_listeners:
+                if hp_audit_method == 'elb_audit':
+                    self.fail("Without LB only 'nova_audit' is available")
+                else:
+                    attrs['health_periodic_audit_method'] = \
+                        hp_audit_method.upper()
+            else:
+                attrs['health_periodic_audit_method'] = \
+                    hp_audit_method.upper()
+
+        if lb_listener:
+            attrs = self._attrs_lb_listeners(attrs, lb_listener)
+
+        if lbaas_listeners:
+            attrs = self._attrs_lbaas_listeners(attrs, lbaas_listeners)
+
+        if availability_zones:
+            attrs['availability_zones'] = availability_zones
+
+        if security_groups:
+            attrs = self._attrs_security_groups(attrs, security_groups)
+
+        if hp_audit_time:
+            attrs['health_periodic_audit_time'] = hp_audit_time
+
+        if delete_publicip:
+            attrs['delete_publicip'] = delete_publicip
+
+        if delete_volume:
+            attrs['delete_volume'] = delete_volume
+
+        if hp_audit_grace_period:
+            attrs['health_periodic_audit_grace_period'] = \
+                hp_audit_grace_period
+
+        if instance_terminate_policy:
+            attrs['instance_terminate_policy'] = \
+                instance_terminate_policy.upper()
+
+        if notifications:
+            attrs['notifications'] = notifications
+
+        if enterprise_project_id:
+            attrs['enterprise_project_id'] = enterprise_project_id
+
+        if multi_az_priority_policy:
+            attrs['multi_az_priority_policy'] = \
+                multi_az_priority_policy.upper()
+
+    def _attrs_for_as_group_update(
+            self, attrs, as_group, as_configuration, desire_instance_number,
+            min_instance_number, max_instance_number, cool_down_time,
+            lb_listener, lbaas_listeners, availability_zones, networks,
+            security_groups, router, hp_audit_method, hp_audit_time,
+            hp_audit_grace_period, instance_terminate_policy, notifications,
+            delete_publicip, delete_volume, enterprise_project_id,
+            multi_az_priority_policy
+    ):
         pass
 
-    def _get_attrs_for_as_group_update(self):
-        pass
-
-    def _needs_update(self, as_group, as_configuration, desire_instance_number,
-                      min_instance_number, max_instance_number, cool_down_time,
-                      lb_listner, lbaas_listeners, availability_zones,
-                      networks, security_groups, router, hp_audit_method,
-                      hp_audit_time, hp_audit_grace_period,
-                      instance_terminate_policy, notifications,
-                      delete_publicip, delete_volume, enterprise_project_id,
-                      multi_az_priority_policy, group):
+    def _needs_update(
+            self, as_group, as_configuration, desire_instance_number,
+            min_instance_number, max_instance_number, cool_down_time,
+            lb_listener, lbaas_listeners, availability_zones, networks,
+            security_groups, router, hp_audit_method, hp_audit_time,
+            hp_audit_grace_period, instance_terminate_policy, notifications,
+            delete_publicip, delete_volume, enterprise_project_id,
+            multi_az_priority_policy, group
+    ):
         if as_group and group.name != as_group and group.id != as_group:
             return True
         if (as_configuration and
@@ -338,8 +569,8 @@ class ASGroupModule(OTCModule):
         if (cool_down_time and
                 group.cool_down_time != cool_down_time):
             return True
-        if (lb_listner and
-                group.lb_listner_id != lb_listner):
+        if (lb_listener and
+                group.lb_listner_id != lb_listener):
             return True
         if (lbaas_listeners and
                 is_value_changed(group.lbaas_listeners, lbaas_listeners)):
@@ -383,6 +614,33 @@ class ASGroupModule(OTCModule):
             return True
         return False
 
+    def _system_state_change(self, as_group, as_configuration,
+                             desire_instance_number, min_instance_number,
+                             max_instance_number, cool_down_time, lb_listner,
+                             lbaas_listeners, availability_zones, networks,
+                             security_groups, router, hp_audit_method,
+                             hp_audit_time, hp_audit_grace_period,
+                             instance_terminate_policy, notifications,
+                             delete_publicip, delete_volume,
+                             enterprise_project_id, multi_az_priority_policy,
+                             group):
+        state = self.params['state']
+        if state == 'present':
+            if not group:
+                return True
+            return self._needs_update(
+                as_group, as_configuration, desire_instance_number,
+                min_instance_number, max_instance_number, cool_down_time,
+                lb_listner, lbaas_listeners, availability_zones, networks,
+                security_groups, router, hp_audit_method, hp_audit_time,
+                hp_audit_grace_period, instance_terminate_policy,
+                notifications, delete_publicip, delete_volume,
+                enterprise_project_id, multi_az_priority_policy, group
+            )
+        elif state == 'absent' and group:
+            return True
+        return False
+
     def run(self):
 
         as_group = self.params['scaling_group']
@@ -406,6 +664,10 @@ class ASGroupModule(OTCModule):
         delete_volume = self.params['delete_volume']
         enterprise_project_id = self.params['enterprise_project_id']
         multi_az_priority_policy = self.params['multi_az_priority_policy']
+        action = self.params['action']
+        wait = self.params['wait']
+        timeout = self.params['timeout']
+        state = self.params['state']
 
         attrs = {}
 
