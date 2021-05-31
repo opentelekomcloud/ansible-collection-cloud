@@ -7,55 +7,54 @@
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.dns_zone:
       cloud: "{{ test_cloud }}"
-
-block:
-  - name: Set random prefix
-    set_fact:
-      prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
-
-  - name: Set initial facts
-    set_fact:
-      zone_name: "{{ ( prefix + 'test.zone') }}"
-      recordset_random_name: "{{ ( prefix + zone_name) }}"
-
-  - name: Creating a public DNS Zone
-    opentelekomcloud.cloud.dns_zone:
-      name: "{{ zone_name }}"
-      state: present
-    register: dns_zo
-
-  - name: Creating a DNS Recordset
-    opentelekomcloud.cloud.dns_recordset:
-      zone_id: "{{ dns_zo.zone.id }}"
-      recordset_name: "{{ recordset_random_name }}"
-      type: A
-      records:
-        - "1.1.1.1"
-        - "2.2.2.2"
-      state: present
-    register: dns_rs
-
-  - name: Getting info about all allocated recordsets
-    opentelekomcloud.cloud.dns_recordset_info:
-      zone: "{{ dns_zo.zone.id }}"
-    register: recordsets
-
-  - name: assert result
-    assert:
-      that:
-        - recordsets is success
-        - recordsets is not changed
-        - recordsets | length > 0
-
-always:
   block:
-    - name: Drop all created recordsets
-      opentelekomcloud.cloud.dns_recordset:
-        name: "{{ recordset_random_name }}"
-        state: absent
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
-    - name: Drop all created DNS zones
+    - name: Set initial facts
+      set_fact:
+        zone_name: "{{ ( prefix + 'test.zone') }}"
+        recordset_random_name: "{{ ( prefix + zone_name) }}"
+
+    - name: Creating a public DNS Zone
       opentelekomcloud.cloud.dns_zone:
         name: "{{ zone_name }}"
-        state: absent
-    ignore_errors: yes
+        state: present
+      register: dns_zo
+
+    - name: Creating a DNS Recordset
+      opentelekomcloud.cloud.dns_recordset:
+        zone_id: "{{ dns_zo.zone.id }}"
+        recordset_name: "{{ recordset_random_name }}"
+        type: A
+        records:
+          - "1.1.1.1"
+          - "2.2.2.2"
+        state: present
+      register: dns_rs
+
+    - name: Getting info about all allocated recordsets
+      opentelekomcloud.cloud.dns_recordset_info:
+        zone: "{{ dns_zo.zone.id }}"
+      register: recordsets
+
+    - name: assert result
+      assert:
+        that:
+          - recordsets is success
+          - recordsets is not changed
+          - recordsets | length > 0
+
+  always:
+    block:
+      - name: Drop all created recordsets
+        opentelekomcloud.cloud.dns_recordset:
+          name: "{{ recordset_random_name }}"
+          state: absent
+
+      - name: Drop all created DNS zones
+        opentelekomcloud.cloud.dns_zone:
+          name: "{{ zone_name }}"
+          state: absent
+      ignore_errors: yes
