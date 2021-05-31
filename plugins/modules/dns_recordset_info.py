@@ -104,7 +104,7 @@ recordsets:
             type: str
             sample:
         records:
-            Value included in the values of record sets to be queried.
+            description: Value included in the values of record sets to be queried.
             type: list
         status:
             description: Status of the record sets to be queried..
@@ -125,11 +125,7 @@ recordsets:
 '''
 
 EXAMPLES = '''
-# Get configs versions.
-- cce_cluster_info:
-    name: my_cluster
-    status: available
-  register: data
+
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

@@ -8,7 +8,7 @@
     opentelekomcloud.cloud.dns_zone:
       cloud: "{{ test_cloud }}"
 
-  block:
+  - block:
     - name: Set random prefix
       set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
@@ -47,15 +47,15 @@
           - recordsets is not changed
           - recordsets | length > 0
 
-always:
-  - block:
-      - name: Drop all created recordsets
-        opentelekomcloud.cloud.dns_recordset:
-          name: "{{ recordset_random_name }}"
-          state: absent
+    always:
+      - block:
+          - name: Drop all created recordsets
+            opentelekomcloud.cloud.dns_recordset:
+              name: "{{ recordset_random_name }}"
+              state: absent
 
-      - name: Drop all created DNS zones
-        opentelekomcloud.cloud.dns_zone:
-          name: "{{ zone_name }}"
-          state: absent
-      ignore_errors: yes
+          - name: Drop all created DNS zones
+            opentelekomcloud.cloud.dns_zone:
+              name: "{{ zone_name }}"
+              state: absent
+          ignore_errors: yes
