@@ -57,4 +57,4 @@
         opentelekomcloud.cloud.dns_zone:
           name: "{{ zone_name }}"
           state: absent
-      ignore_errors: yes
+        ignore_errors: yes
