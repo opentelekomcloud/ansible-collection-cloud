@@ -6,18 +6,16 @@
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.dns_zone:
       cloud: "{{ test_cloud }}"
+      
   block:
     - name: Set random prefix
       set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
-    - name: Set initial facts - zone name
+    - name: Set initial facts
       set_fact:
         zone_name: "{{ ( prefix + 'test.zone') }}"
-
-    - name: Set initial facts - recordset random name
-      set_fact:
-        recordset_random_name: "{{ ( prefix + zone_name ) }}"
+        recordset_random_name: "{{ ( prefix + 'recordset.' + 'test.zone') }}"
 
     - name: Creating a public DNS Zone
       opentelekomcloud.cloud.dns_zone:
@@ -49,14 +47,16 @@
           - recordsets | length > 0
 
   always:
-    block:
+    - block:
+      # Cleanup      
       - name: Drop all created recordsets
         opentelekomcloud.cloud.dns_recordset:
-          name: "{{ recordset_random_name }}"
+          recordset_name: "{{ recordset_random_name }}"
           state: absent
-
+            
       - name: Drop all created DNS zones
         opentelekomcloud.cloud.dns_zone:
           name: "{{ zone_name }}"
           state: absent
-        ignore_errors: yes
+      ignore_errors: yes
+ 
