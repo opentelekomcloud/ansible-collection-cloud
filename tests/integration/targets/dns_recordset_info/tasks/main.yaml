@@ -47,13 +47,13 @@
 
   always:
     - block:
-      - name: Drop all created recordsets
-        opentelekomcloud.cloud.dns_recordset:
-          name: "{{ recordset_random_name }}"
+        - name: Drop all created recordsets
+          opentelekomcloud.cloud.dns_recordset:
+            name: "{{ recordset_random_name }}"
           state: absent
 
-      - name: Drop all created DNS zones
-        opentelekomcloud.cloud.dns_zone:
-          name: "{{ zone_name }}"
-          state: absent
+        - name: Drop all created DNS zones
+          opentelekomcloud.cloud.dns_zone:
+            name: "{{ zone_name }}"
+            state: absent
         ignore_errors: yes
