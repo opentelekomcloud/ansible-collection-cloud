@@ -93,7 +93,7 @@ recordsets:
             sample:
         is_default:
             description: o_O.
-            type: boolean
+            type: bool
             sample:
         name:
             description: Names of record sets to be queried.
