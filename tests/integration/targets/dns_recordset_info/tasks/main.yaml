@@ -51,7 +51,7 @@
       # Cleanup      
       - name: Drop all created recordsets
         opentelekomcloud.cloud.dns_recordset:
-          name: "{{ recordset_random_name }}"
+          recordset_name: "{{ recordset_random_name }}"
           state: absent
             
       - name: Drop all created DNS zones
