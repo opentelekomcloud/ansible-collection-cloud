@@ -11,10 +11,13 @@
       set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
-    - name: Set initial facts
+    - name: Set initial facts - zone name
       set_fact:
         zone_name: "{{ ( prefix + 'test.zone') }}"
-        recordset_random_name: "{{ ( prefix + zone_name) }}"
+
+    - name: Set initial facts - recordset random name
+      set_fact:
+        recordset_random_name: "{{ ( prefix + zone_name ) }}"
 
     - name: Creating a public DNS Zone
       opentelekomcloud.cloud.dns_zone:
