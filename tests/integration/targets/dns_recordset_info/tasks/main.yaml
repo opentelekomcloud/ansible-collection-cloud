@@ -46,7 +46,7 @@
           - recordsets | length > 0
 
   always:
-    block:
+    - block:
       - name: Drop all created recordsets
         opentelekomcloud.cloud.dns_recordset:
           name: "{{ recordset_random_name }}"
