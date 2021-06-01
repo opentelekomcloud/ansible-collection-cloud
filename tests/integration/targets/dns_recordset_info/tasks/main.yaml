@@ -59,4 +59,3 @@
           name: "{{ zone_name }}"
           state: absent
       ignore_errors: yes
- 
