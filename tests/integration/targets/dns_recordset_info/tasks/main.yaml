@@ -15,7 +15,7 @@
     - name: Set initial facts
       set_fact:
         zone_name: "{{ ( prefix + 'test.zone') }}"
-        recordset_random_name: "{{ ( prefix + 'recordset.' + 'test.zone') }}"
+        recordset_random_name: "{{ ( prefix + 'recordset.' + prefix + 'test.zone') }}"
 
     - name: Creating a public DNS Zone
       opentelekomcloud.cloud.dns_zone:
