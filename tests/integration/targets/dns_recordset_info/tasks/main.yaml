@@ -6,6 +6,7 @@
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.dns_zone:
       cloud: "{{ test_cloud }}"
+      
   block:
     - name: Set random prefix
       set_fact:
@@ -47,13 +48,15 @@
 
   always:
     - block:
-        - name: Drop all created recordsets
-          opentelekomcloud.cloud.dns_recordset:
-            name: "{{ recordset_random_name }}"
+      # Cleanup      
+      - name: Drop all created recordsets
+        opentelekomcloud.cloud.dns_recordset:
+          name: "{{ recordset_random_name }}"
           state: absent
-
-        - name: Drop all created DNS zones
-          opentelekomcloud.cloud.dns_zone:
-            name: "{{ zone_name }}"
-            state: absent
-        ignore_errors: yes
+            
+      - name: Drop all created DNS zones
+        opentelekomcloud.cloud.dns_zone:
+          name: "{{ zone_name }}"
+          state: absent
+      ignore_errors: yes
+ 
