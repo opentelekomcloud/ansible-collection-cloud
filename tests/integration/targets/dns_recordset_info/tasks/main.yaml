@@ -1,5 +1,4 @@
 ---
-#  author: Yustina Kvrivishvili @YustinaKvr
 - module_defaults:
     opentelekomcloud.cloud.dns_recordset:
       cloud: "{{ test_cloud }}"
