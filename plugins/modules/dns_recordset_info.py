@@ -74,19 +74,24 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-"dns_recordset": [
-        {
-            "created_at": "2021-05-24T15:27:19.335",
-            "description": null,
-            "id": "ff80808275f5fb9c01799efcd1307062",
-            "is_default": false,
-            "name": "recordset.test.zone.",
-            "project_id": "5dd3c0b24cdc4d31952c49589182a89d",
-            "records": [
-                "2.2.2.2",
-                "1.1.1.1"
+dns_recordset:
+    description: List of dictionaries describing recordset and its metadata.
+    type: complex
+    returned: On Success.
+    sample: [
+      {
+        "created_at": "2021-05-24T15:27:19.335",
+        "description": null,
+        "id": "ff80808275f5fb9c01799efcd1307062",
+        "is_default": false,
+        "name": "recordset.test.zone.",
+        "project_id": "5dd3c0b24cdc4d31952c49589182a89d",
+        "records": [
+            "2.2.2.2",
+            "1.1.1.1"
             ]
-
+      }
+       
 '''
 
 EXAMPLES = '''
