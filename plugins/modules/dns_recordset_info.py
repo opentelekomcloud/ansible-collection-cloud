@@ -91,7 +91,7 @@ dns_recordset:
             "1.1.1.1"
             ]
       }
-    ]        
+    ]
 '''
 
 EXAMPLES = '''
