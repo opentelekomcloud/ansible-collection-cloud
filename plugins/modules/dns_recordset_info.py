@@ -74,58 +74,26 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-recordsets:
-    description: List of existing recordsets.
-    type: complex
-    returned: On Success.
-    contains:
-        created_at:
-            description: timestamp when recordset has been created.
-            type: str
-            sample: "2021-05-24T15:27:19.335"
-        description:
-            description: Cluster Metadata dictionary.
-            type: str
-            sample:
-        id:
-            description: IDs of record sets to be queried.
-            type: str
-            sample:
-        is_default:
-            description: o_O.
-            type: bool
-            sample:
-        name:
-            description: Names of record sets to be queried.
-            type: str
-            sample:
-        project_id:
-            description: o_O.
-            type: str
-            sample:
-        records:
-            description: Value included in the values of record sets to be queried.
-            type: list
-        status:
-            description: Status of the record sets to be queried..
-            type: dict
-        ttl:
-            description: Cluster status dictionary.
-            type: int
-        type:
-            description: Zone type of the record set to be queried.
-            type: str
-        updated_at:
-            description: Cluster status dictionary.
-            type: str
-        zone_name:
-            description: Cluster status dictionary.
-            type: str
+"dns_recordset": [
+        {
+            "created_at": "2021-05-24T15:27:19.335",
+            "description": null,
+            "id": "ff80808275f5fb9c01799efcd1307062",
+            "is_default": false,
+            "name": "recordset.test.zone.",
+            "project_id": "5dd3c0b24cdc4d31952c49589182a89d",
+            "records": [
+                "2.2.2.2",
+                "1.1.1.1"
+            ]
 
 '''
 
 EXAMPLES = '''
-
+#Get info about choosen DNS recordset.
+- opentelekomcloud.cloud.dns_recordset_info:
+    zone: "{{ dns_zo.zone.id }}"
+  register: recordsets
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
