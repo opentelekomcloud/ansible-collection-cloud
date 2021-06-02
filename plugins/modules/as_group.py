@@ -24,8 +24,19 @@ options:
   scaling_group:
     description:
       - Name or ID of the AS Group.
-    type: str
+    type: dict
     required: true
+    suboptions:
+      id:
+        description:
+          - Specifies the AS Group ID.
+          - Mandatory for updating and deleting AS Group.
+        type: str
+      name:
+        description:
+          - Specifies the AS Group name.
+          - Mandatory for creating AS Group.
+        type: str
   scaling_configuration:
     description:
       - The AS configuration ID or name.
@@ -258,15 +269,16 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 def is_value_changed(old: list, new: list):
     """Compare lists"""
     result = [x for x in old + new if x not in old or x not in new]
-    if result:
-        return True
-    else:
-        return False
+    return True if result else False
 
 
 class ASGroupModule(OTCModule):
     argument_spec = dict(
-        scaling_group=dict(required=True, type='str'),
+        scaling_group=dict(required=True, type='dict',
+                           options=dict(
+                               id=dict(type='str'),
+                               name=dict(type='str')
+                           )),
         scaling_configuration=dict(required=False),
         desire_instance_number=dict(required=False, type='int'),
         min_instance_number=dict(required=False, type='int', default=0),
@@ -425,6 +437,16 @@ class ASGroupModule(OTCModule):
                         "exceeds the upper limit."
                 )
 
+    def _find_as_group(self, as_group):
+        if as_group.get('id'):
+            return self.conn.auto_scaling(
+                name_or_id=as_group.get('id')
+            )
+        elif as_group.get('name'):
+            return self.conn.auto_scaling(
+                name_or_id=as_group.get('name')
+            )
+
     def _attrs_for_as_group_create(
             self, attrs, as_group, as_configuration, desire_instance_number,
             min_instance_number, max_instance_number, cool_down_time,
@@ -435,14 +457,20 @@ class ASGroupModule(OTCModule):
             multi_az_priority_policy
     ):
 
-        attrs['scaling_group_name'] = as_group
+        if as_group.get('name') and not as_group.get('id'):
+            attrs['scaling_group_name'] = as_group.get('name')
+        else:
+            self.fail(
+                changed=False,
+                msg="Name is mandatory for creating AS Group."
+            )
 
         if networks:
             attrs = self._attrs_networks(attrs, networks)
         else:
             self.fail(
                 changed=False,
-                msg = "'networks' is mandatory for creating an AS group."
+                msg="'networks' is mandatory for creating an AS Group."
             )
 
         if router:
@@ -450,7 +478,7 @@ class ASGroupModule(OTCModule):
         else:
             self.fail(
                 changed=False,
-                msg = "'router' is mandatory for creating an AS group."
+                msg="'router' is mandatory for creating an AS group."
             )
 
         if as_configuration:
@@ -475,6 +503,12 @@ class ASGroupModule(OTCModule):
                     "can be specified"
             )
 
+        if lb_listener:
+            attrs = self._attrs_lb_listeners(attrs, lb_listener)
+
+        if lbaas_listeners:
+            attrs = self._attrs_lbaas_listeners(attrs, lbaas_listeners)
+
         if not hp_audit_method:
             # set default values  for 'health_periodic_audit_method'
             if lb_listener or lbaas_listeners:
@@ -491,12 +525,6 @@ class ASGroupModule(OTCModule):
             else:
                 attrs['health_periodic_audit_method'] = \
                     hp_audit_method.upper()
-
-        if lb_listener:
-            attrs = self._attrs_lb_listeners(attrs, lb_listener)
-
-        if lbaas_listeners:
-            attrs = self._attrs_lbaas_listeners(attrs, lbaas_listeners)
 
         if availability_zones:
             attrs['availability_zones'] = availability_zones
@@ -535,83 +563,192 @@ class ASGroupModule(OTCModule):
             self, attrs, as_group, as_configuration, desire_instance_number,
             min_instance_number, max_instance_number, cool_down_time,
             lb_listener, lbaas_listeners, availability_zones, networks,
-            security_groups, router, hp_audit_method, hp_audit_time,
+            security_groups, hp_audit_method, hp_audit_time,
             hp_audit_grace_period, instance_terminate_policy, notifications,
             delete_publicip, delete_volume, enterprise_project_id,
-            multi_az_priority_policy
+            multi_az_priority_policy, group
     ):
-        pass
+
+        if as_group and (group.name != as_group.get('name')):
+            attrs['scaling_group_name'] = as_group
+
+        if (as_configuration and
+                as_configuration!=group.scaling_configuration_id and
+                as_configuration!=group.scaling_configuration_name):
+            attrs = self._attrs_id_config(attrs, as_configuration)
+
+        if (desire_instance_number and
+                (group.desire_instance_number != desire_instance_number)):
+            attrs['desire_instance_number'] = desire_instance_number
+
+        if (min_instance_number and
+                (group.min_instance_number != min_instance_number)):
+            attrs['min_instance_number'] = min_instance_number
+
+        if (max_instance_number and
+                (group.max_instance_number != max_instance_number)):
+            attrs['max_instance_number'] = max_instance_number
+
+        if cool_down_time and group.cool_down_time != cool_down_time:
+            attrs['cool_down_time'] = cool_down_time
+
+        if lb_listener and lbaas_listeners:
+            self.fail(
+                changed=False,
+                msg="Either 'lb_listener' or 'lbaas_listener' "
+                    "can be specified"
+            )
+
+        if lb_listener and group.lb_listner_id != lb_listener:
+            attrs = self._attrs_lb_listeners(attrs, lb_listener)
+
+        if (lbaas_listeners and
+                is_value_changed(group.lbaas_listeners, lbaas_listeners)):
+            attrs = self._attrs_lbaas_listeners(attrs, lbaas_listeners)
+
+        if (availability_zones and
+                is_value_changed(
+                    group.availability_zones, availability_zones
+                )):
+            attrs['availability_zones'] = availability_zones
+
+        if (networks and
+                is_value_changed(group.networks, networks)):
+            attrs = self._attrs_networks(attrs, networks)
+
+        if (security_groups and
+                is_value_changed(group.security_groups, security_groups)):
+            attrs = self._attrs_security_groups(attrs, security_groups)
+
+        if (hp_audit_method and
+                (group.health_periodic_audit_method != hp_audit_method)):
+
+            if (not group.lb_listener_id and
+                    not group.lbaas_listeners and
+                    hp_audit_method == 'elb_audit'):
+                self.fail_json(msg = "Without LB only 'nova_audit' is available")
+
+            attrs['health_periodic_audit_method'] = hp_audit_method
+
+        if (hp_audit_time and
+                group.health_periodic_audit_time != hp_audit_time):
+            attrs['health_periodic_audit_time'] = hp_audit_time
+
+        if (hp_audit_grace_period and
+                group.health_periodic_audit_grace_period !=
+                hp_audit_grace_period):
+            attrs['health_periodic_audit_grace_period'] = hp_audit_grace_period
+
+        if (instance_terminate_policy
+                and group.instance_terminate_policy !=
+                instance_terminate_policy):
+            attrs['instance_terminate_policy'] = instance_terminate_policy
+
+        if notifications and group.notifications != notifications:
+            attrs['notifications'] = notifications
+
+        if delete_publicip and group.delete_publicip != delete_publicip:
+            attrs['delete_publicip'] = delete_publicip
+
+        if delete_volume and group.delete_volume != delete_volume:
+            attrs['delete_volume'] = delete_volume
+
+        if (enterprise_project_id
+                and group.enterprise_project_id != enterprise_project_id):
+            attrs['enterprise_project_id'] = enterprise_project_id
+
+        if (multi_az_priority_policy and group.multi_az_priority_policy !=
+                multi_az_priority_policy):
+            attrs['multi_az_priority_policy'] = multi_az_priority_policy
 
     def _needs_update(
             self, as_group, as_configuration, desire_instance_number,
             min_instance_number, max_instance_number, cool_down_time,
             lb_listener, lbaas_listeners, availability_zones, networks,
-            security_groups, router, hp_audit_method, hp_audit_time,
+            security_groups, hp_audit_method, hp_audit_time,
             hp_audit_grace_period, instance_terminate_policy, notifications,
             delete_publicip, delete_volume, enterprise_project_id,
             multi_az_priority_policy, group
     ):
-        if as_group and group.name != as_group and group.id != as_group:
+        if as_group and group.name != as_group.get('name'):
             return True
+
         if (as_configuration and
                 group.scaling_configuration_id != as_configuration and
                 group.scaling_configuration_name != as_configuration):
             return True
+
         if (desire_instance_number and
                 group.desire_instance_number != desire_instance_number):
             return True
+
         if (min_instance_number and
                 group.min_instance_number != min_instance_number):
             return True
+
         if (max_instance_number and
                 group.max_instance_number != max_instance_number):
             return True
+
         if (cool_down_time and
                 group.cool_down_time != cool_down_time):
             return True
+
         if (lb_listener and
                 group.lb_listner_id != lb_listener):
             return True
+
         if (lbaas_listeners and
                 is_value_changed(group.lbaas_listeners, lbaas_listeners)):
             return True
+
         if (availability_zones and
                 is_value_changed(group.availability_zones,
                                  availability_zones)):
             return True
+
         if (networks and
                 is_value_changed(group.networks, networks)):
             return True
+
         if (security_groups and is_value_changed(group.security_groups,
                                                  security_groups)):
             return True
-        if router and group.router_id != router.id:
-            return True
+
         if (hp_audit_method and
                 group.health_periodic_audit_method != hp_audit_method):
             return True
+
         if (hp_audit_time and
                 group.health_periodic_audit_time != hp_audit_time):
             return True
+
         if (hp_audit_grace_period and
                 group.health_periodic_audit_grace_period !=
                 hp_audit_grace_period):
             return True
+
         if (instance_terminate_policy and group.instance_terminate_policy !=
                 instance_terminate_policy):
             return True
+
         if notifications and group.notifications != notifications:
             return True
+
         if delete_publicip and group.delete_publicip != delete_publicip:
             return True
+
         if delete_volume and group.delete_volume != delete_volume:
             return True
+
         if (enterprise_project_id and group.enterprise_project_id !=
                 enterprise_project_id):
             return True
+
         if (multi_az_priority_policy and group.multi_az_priority_policy !=
                 multi_az_priority_policy):
             return True
+
         return False
 
     def _system_state_change(self, as_group, as_configuration,
@@ -673,226 +810,56 @@ class ASGroupModule(OTCModule):
 
         changed = False
 
-        try:
-            group = self.conn.auto_scaling.find_group(
-                name_or_id=as_group,
-                ignore_missing=False
-            )
-        except self.sdk.exceptions.ResourceNotFound:
-            self.fail(
-                changed=changed,
-                msg='Scaling group {0} not found'.format(as_group)
-            )
+        if as_group:
+            group = self._find_as_group(as_group)
 
-        if self.params['state'] == 'present':
+            if state == 'present':
 
-            if group:
+                if group:
 
-                if as_group and (group.name != as_group):
-                    attrs['scaling_group_name'] = group.name
+                    changed = False
 
-                if as_configuration:
-                    id_config = self._find_id_config()
-                    if as_group.scaling_configuration_id != id_config:
-                        attrs['scaling_configuration_id'] = id_config
+                    if attrs:
+                        changed = True
 
-                if (desire_instance_number and
-                        (group.desire_instance_number != desire_instance_number)):
-                    attrs['desire_instance_number'] = desire_instance_number
+                    if self.ansible.check_mode:
+                        self.exit(changed = changed, as_group = as_group)
+                    as_group = self.conn.auto_scaling.update_group(as_group, **attrs)
 
-                if (min_instance_number and
-                        (group.min_instance_number != min_instance_number)):
-                    attrs['min_instance_number'] = min_instance_number
+                    self.exit_json(
+                        changed = changed,
+                        as_group = as_group
+                    )
 
-                if (max_instance_number and
-                        (group.max_instance_number != max_instance_number)):
-                    attrs['max_instance_number'] = max_instance_number
+                else:
 
-                if cool_down_time and (group.cool_down_time != cool_down_time):
-                    attrs['cool_down_time'] = cool_down_time
+                    if self.ansible.check_mode:
+                        self.exit(changed = True)
 
-                if lb_listener:
-                    lb_listener_id = self._find_listener_id()
-                    if group.lb_listener_id != lb_listener_id:
-                        attrs['lb_listener_id'] = lb_listener_id
-
-                if available_zones and (group.available_zones != available_zones):
-                    attrs['available_zones'] = available_zones
-
-                if networks:
-                    list_ids = []
-                    list_new_ids = []
-                    for n in as_group.networks:
-                        list_ids.append(n['id'])
-                    for m in self.params['networks']:
-                        list_new_ids.append(m['id'])
-                    dif = set(list_ids) ^ set(list_new_ids)
-                    if dif:
-                        attrs['networks'] = networks
-
-                if security_groups and (group.security_groups != security_groups):
-                    attrs['available_zones'] = available_zones
-
-                if hp_audit_method and (group.health_periodic_audit_method != hp_audit_method):
-
-                    if not group.lb_listener_id and hp_audit_method == 'elb_audit':
-                        self.fail_json(msg="Without LB only 'nova_audit' is available")
-
-                    attrs['health_periodic_audit_method'] = hp_audit_method
-
-                if (instance_terminate_policy
-                        and group.instance_terminate_policy != instance_terminate_policy):
-                    attrs['instance_terminate_policy'] = instance_terminate_policy
-
-                if notifications and group.notifications != notifications:
-                    attrs['notifications'] = notifications
-
-                if delete_publicip and group.delete_publicip != delete_publicip:
-                    attrs['delete_publicip'] = delete_publicip
-
-                if delete_volume and group.delete_volume != delete_volume:
-                    attrs['delete_volume'] = delete_volume
-
-                if (enterprise_project_id
-                        and group.enterprise_project_id != enterprise_project_id):
-                    attrs['enterprise_project_id'] = enterprise_project_id
-
-                changed = False
-
-                if attrs:
+                    as_group = self.conn.auto_scaling.create_group(**attrs)
                     changed = True
 
-                if self.ansible.check_mode:
-                    self.exit(changed=changed, as_group=as_group)
-                as_group = self.conn.auto_scaling.update_group(as_group, **attrs)
+                    self.exit_json(
+                        changed = changed,
+                        as_group = as_group
+                    )
 
-                self.exit_json(
-                    changed=changed,
-                    as_group=as_group
-                )
-
-            else:
-
+            elif self.params['state'] == 'absent':
                 if as_group:
-                    attrs['scaling_group_name'] = as_group
+                    if self.ansible.check_mode:
+                        self.exit(changed = True)
+                    self.conn.auto_scaling.delete_group(as_group)
+                    self.exit(changed = True, msg = "Resource was deleted")
                 else:
-                    self.json(msg="Name is mandatory for creating.")
+                    if self.ansible.check_mode:
+                        self.exit(changed = False)
+                    self.fail_json("The group doesn't exist")
 
-                if networks:
-                    attrs['networks'] = networks
-                else:
-                    self.fail_json(msg="'networks' is mandatory for creating an AS group.")
-
-                if router:
-                    attrs['vpc_id'] = self._find_id_router()
-                else:
-                    self.fail_json(msg="'router' is mandatory for creating an AS group.")
-
-                if as_configuration:
-                    attrs['scaling_configuration_id'] = self._find_id_config()
-
-                if lb_listener and lbaas_listeners:
-                    self.fail_json(msg="Either 'lb_listener' or"
-                                       " 'lbaas_listener' can be specified")
-
-                if not hp_audit_method:
-                    # set default values  for 'health_periodic_audit_method'
-                    if lb_listener or lbaas_listeners:
-                        attrs['health_periodic_audit_method'] = "ELB_AUDIT"
-                    else:
-                        attrs['health_periodic_audit_method'] = "NOVA_AUDIT"
-                else:
-                    if not lb_listener and not lbaas_listeners:
-                        if hp_audit_method == 'elb_audit':
-                            self.fail_json("Without LB only 'nova_audit' is available")
-                        else:
-                            attrs['health_periodic_audit_method'] = hp_audit_method.upper()
-                    else:
-                        attrs['health_periodic_audit_method'] = hp_audit_method.upper()
-
-                if lb_listener:
-                    attrs['lb_listener_id'] = self._find_id_listener()
-
-                if lbaas_listeners:
-                    attrs['lbaas_listeners'] = lbaas_listeners
-
-                if min_instance_number:
-                    attrs['min_instance_number'] = min_instance_number
-                else:
-                    attrs['min_instance_number'] = 0
-
-                if max_instance_number:
-                    attrs['max_instance_number'] = max_instance_number
-                else:
-                    attrs['max_instance_number'] = 0
-
-                if hp_audit_time:
-                    attrs['health_periodic_audit_time'] = hp_audit_time
-                else:
-                    attrs['health_periodic_audit_time'] = 5
-
-                if delete_publicip:
-                    attrs['delete_publicip'] = delete_publicip
-                else:
-                    attrs['delete_publicip'] = False
-
-                if delete_volume:
-                    attrs['delete_volume'] = delete_volume
-                else:
-                    attrs['delete_volume'] = False
-
-                if cool_down_time:
-                    attrs['cool_down_time'] = cool_down_time
-                else:
-                    attrs['cool_down_time'] = 300
-
-                if hp_audit_gr_period:
-                    attrs['health_periodic_audit_grace_period'] = hp_audit_gr_period
-                else:
-                    attrs['health_periodic_audit_grace_period'] = 600
-
-                if desire_instance_number:
-                    attrs['desire_instance_number'] = desire_instance_number
-                if available_zones:
-                    attrs['available_zones'] = available_zones
-                if security_groups:
-                    attrs['security_groups'] = security_groups
-
-                if instance_terminate_policy:
-                    attrs['instance_terminate_policy'] = instance_terminate_policy.upper()
-                else:
-                    attrs['instance_terminate_policy'] = 'OLD_CONFIG_OLD_INSTANCE'
-
-                if notifications:
-                    attrs['notifications'] = notifications
-                if enterprise_project_id:
-                    attrs['enterprise_project_id'] = enterprise_project_id
-                if multi_az_priority_policy:
-                    attrs['multi_az_priority_policy'] = multi_az_priority_policy.upper()
-                else:
-                    attrs['multi_az_priority_policy'] = 'EQUILIBRIUM_DISTRIBUTE'
-
-                if self.ansible.check_mode:
-                    self.exit(changed=True)
-
-                as_group = self.conn.auto_scaling.create_group(**attrs)
-                changed = True
-
-                self.exit_json(
-                    changed=changed,
-                    as_group=as_group
-                )
-
-        elif self.params['state'] == 'absent':
-            if as_group:
-                if self.ansible.check_mode:
-                    self.exit(changed=True)
-                self.conn.auto_scaling.delete_group(as_group)
-                self.exit(changed=True, msg="Resource was deleted")
-            else:
-                if self.ansible.check_mode:
-                    self.exit(changed=False)
-                self.fail_json("The group doesn't exist")
+        else:
+            self.fail(
+                changed=changed,
+                msg="Name or/and ID should be specified"
+            )
 
 
 def main():
