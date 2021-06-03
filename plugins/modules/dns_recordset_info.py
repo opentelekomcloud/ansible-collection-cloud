@@ -75,38 +75,38 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 dns_recordset:
-    description: List of dictionaries describing recordset and its metadata.
-    type: complex
-    returned: On Success.
-    contains:
-        created_at:
-            description: timestamp when recordset had been created
-            type: str
-            sample: "2021-05-24T15:27:19.335"
-        description:
-            description: description of the recordset
-            type:
-            sample: "null"
-        id:
-            description: IDs of record sets to be queried.
-            type: str
-            sample: "ff80808275f5fb9c01799efcd1307062"
-        is_default:
-            description:
-            type: bool
-            sample: "false"
-        name:
-            description:
-            type: str
-            sample: "recordset.test.zone."
-        project_id:
-            description:
-            type: str
-            sample: "5dd3c0b24cdc4d31952c49589182a89d"
-        records:
-            description:
-            type: dict
-            sample: "'2.2.2.2', '1.1.1.1'"
+  description: List of dictionaries describing recordset and its metadata.
+  type: complex
+  returned: On Success.
+  contains:
+    created_at:
+      description: timestamp when recordset had been created
+      type: str
+      sample: "2021-05-24T15:27:19.335"
+    description:
+      description: description of the recordset
+      type:
+      sample: "null"
+    id:
+      description: IDs of record sets to be queried.
+      type: str
+      sample: "ff80808275f5fb9c01799efcd1307062"
+    is_default:
+      description:
+      type: bool
+      sample: "false"
+    name:
+      description:
+      type: str
+      sample: "recordset.test.zone."
+    project_id:
+      description:
+      type: str
+      sample: "5dd3c0b24cdc4d31952c49589182a89d"
+    records:
+      description:
+      type: dict
+      sample: "'2.2.2.2', '1.1.1.1'"
 '''
 
 EXAMPLES = '''
