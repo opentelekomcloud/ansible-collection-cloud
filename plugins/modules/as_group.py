@@ -559,6 +559,8 @@ class ASGroupModule(OTCModule):
             attrs['multi_az_priority_policy'] = \
                 multi_az_priority_policy.upper()
 
+        return attrs
+
     def _attrs_for_as_group_update(
             self, attrs, as_group, as_configuration, desire_instance_number,
             min_instance_number, max_instance_number, cool_down_time,
@@ -661,6 +663,8 @@ class ASGroupModule(OTCModule):
                 multi_az_priority_policy):
             attrs['multi_az_priority_policy'] = multi_az_priority_policy
 
+        return attrs
+
     def _needs_update(
             self, as_group, as_configuration, desire_instance_number,
             min_instance_number, max_instance_number, cool_down_time,
@@ -753,9 +757,9 @@ class ASGroupModule(OTCModule):
 
     def _system_state_change(self, as_group, as_configuration,
                              desire_instance_number, min_instance_number,
-                             max_instance_number, cool_down_time, lb_listner,
+                             max_instance_number, cool_down_time, lb_listener,
                              lbaas_listeners, availability_zones, networks,
-                             security_groups, router, hp_audit_method,
+                             security_groups, hp_audit_method,
                              hp_audit_time, hp_audit_grace_period,
                              instance_terminate_policy, notifications,
                              delete_publicip, delete_volume,
@@ -768,8 +772,8 @@ class ASGroupModule(OTCModule):
             return self._needs_update(
                 as_group, as_configuration, desire_instance_number,
                 min_instance_number, max_instance_number, cool_down_time,
-                lb_listner, lbaas_listeners, availability_zones, networks,
-                security_groups, router, hp_audit_method, hp_audit_time,
+                lb_listener, lbaas_listeners, availability_zones, networks,
+                security_groups, hp_audit_method, hp_audit_time,
                 hp_audit_grace_period, instance_terminate_policy,
                 notifications, delete_publicip, delete_volume,
                 enterprise_project_id, multi_az_priority_policy, group
@@ -788,7 +792,7 @@ class ASGroupModule(OTCModule):
         cool_down_time = self.params['cool_down_time']
         lb_listener = self.params['lb_listener']
         lbaas_listeners = self.params['lbaas_listeners']
-        available_zones = self.params['available_zones']
+        availability_zones = self.params['availability_zones']
         networks = self.params['networks']
         security_groups = self.params['security_groups']
         router = self.params['router']
@@ -813,47 +817,94 @@ class ASGroupModule(OTCModule):
         if as_group:
             group = self._find_as_group(as_group)
 
-            if state == 'present':
+            if self.ansible.check_mode:
+                self.exit(
+                    changed=self._system_state_change(
+                        as_group, as_configuration,
+                        desire_instance_number, min_instance_number,
+                        max_instance_number, cool_down_time,
+                        lb_listener, lbaas_listeners,
+                        availability_zones, networks, security_groups,
+                        hp_audit_method, hp_audit_time,
+                        hp_audit_gr_period, instance_terminate_policy,
+                        notifications, delete_publicip, delete_volume,
+                        enterprise_project_id,
+                        multi_az_priority_policy, group)
+                )
 
-                if group:
+            if group:
 
-                    changed = False
+                if state == 'present':
 
-                    if attrs:
+                    if self._needs_update(
+                            as_group, as_configuration, desire_instance_number,
+                            min_instance_number, max_instance_number,
+                            cool_down_time, lb_listener, lbaas_listeners,
+                            availability_zones, networks, security_groups,
+                            hp_audit_method, hp_audit_time, hp_audit_gr_period,
+                            instance_terminate_policy, notifications,
+                            delete_publicip, delete_volume,
+                            enterprise_project_id, multi_az_priority_policy,
+                            group
+                    ):
+                        attrs = self._attrs_for_as_group_update(
+                            as_group, as_configuration, desire_instance_number,
+                            min_instance_number, max_instance_number,
+                            cool_down_time, lb_listener, lbaas_listeners,
+                            availability_zones, networks, security_groups,
+                            hp_audit_method, hp_audit_time, hp_audit_gr_period,
+                            instance_terminate_policy, notifications,
+                            delete_publicip, delete_volume,
+                            enterprise_project_id, multi_az_priority_policy,
+                            group
+                        )
+                        group = self.conn.auto_scaling.update_group(**attrs)
                         changed = True
-
-                    if self.ansible.check_mode:
-                        self.exit(changed = changed, as_group = as_group)
-                    as_group = self.conn.auto_scaling.update_group(as_group, **attrs)
-
-                    self.exit_json(
-                        changed = changed,
-                        as_group = as_group
-                    )
+                        self.exit(
+                            changed=changed,
+                            as_group=group,
+                            msg="AS Group {0} was updated".format(as_group)
+                        )
+                    else:
+                        self.fail(
+                            changed=changed,
+                            msg="AS Group {0} exists".format(as_group)
+                        )
 
                 else:
-
-                    if self.ansible.check_mode:
-                        self.exit(changed = True)
-
-                    as_group = self.conn.auto_scaling.create_group(**attrs)
+                    self.conn.auto_scaling.delete_group(group)
                     changed = True
-
-                    self.exit_json(
-                        changed = changed,
-                        as_group = as_group
+                    self.exit(
+                        changed=changed,
+                        msg="AS Group {0} was deleted".format(as_group)
                     )
 
-            elif self.params['state'] == 'absent':
-                if as_group:
-                    if self.ansible.check_mode:
-                        self.exit(changed = True)
-                    self.conn.auto_scaling.delete_group(as_group)
-                    self.exit(changed = True, msg = "Resource was deleted")
+            else:
+
+                if state == 'present':
+                    attrs = self._attrs_for_as_group_create(
+                        attrs, as_group, as_configuration,
+                        desire_instance_number, min_instance_number,
+                        max_instance_number, cool_down_time, lb_listener,
+                        lbaas_listeners, availability_zones, networks,
+                        security_groups, router, hp_audit_method,
+                        hp_audit_time, hp_audit_gr_period,
+                        instance_terminate_policy, notifications,
+                        delete_publicip, delete_volume,
+                        enterprise_project_id, multi_az_priority_policy
+                    )
+                    group = self.conn.auto_scaling.create_group(**attrs)
+                    changed = True
+                    self.exit(
+                        changed=changed,
+                        as_group=group,
+                        msg="AS Group {0} was created".format(as_group)
+                    )
                 else:
-                    if self.ansible.check_mode:
-                        self.exit(changed = False)
-                    self.fail_json("The group doesn't exist")
+                    self.fail(
+                        changed=changed,
+                        msg="AS Group {0} not found".format(as_group)
+                    )
 
         else:
             self.fail(
