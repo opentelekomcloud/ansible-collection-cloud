@@ -92,7 +92,7 @@ dns_recordset:
             type: str
             sample: "ff80808275f5fb9c01799efcd1307062"
         is_default:
-            description: 
+            description:
             type: bool
             sample: "false"
         name:
@@ -106,7 +106,7 @@ dns_recordset:
         records:
             description:
             type: dict
-            sample: "2.2.2.2", "1.1.1.1"
+            sample: "'2.2.2.2', '1.1.1.1'"
 '''
 
 EXAMPLES = '''
