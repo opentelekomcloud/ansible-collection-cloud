@@ -82,31 +82,31 @@ dns_recordset:
     created_at:
       description: Timestamp when recordset had been created
       type: str
-      sample: "2021-05-24T15:27:19.335"
+      sample: 2021-05-24T15:27:19.335
     description:
       description: Description of the recordset.
       type: str
-      sample: "null"
+      sample: null
     id:
       description: IDs of record sets to be queried.
       type: str
-      sample: "ff80808275f5fb9c01799efcd1307062"
+      sample: ff80808275f5fb9c01799efcd1307062
     is_default:
       description: Whether the record set is created by default.
       type: bool
-      sample: "false"
+      sample: false
     name:
       description: Name of the recordset.
       type: str
-      sample: "recordset.test.zone."
+      sample: recordset.test.zone.
     project_id:
       description: Project ID of the record set.
       type: str
-      sample: "5dd3c0b24cdc4d31952c49589182a89d"
+      sample: 5dd3c0b24cdc4d31952c49589182a89d
     records:
       description: Record set value.
       type: dict
-      sample: "2.2.2.2"
+      sample: 2.2.2.2
 '''
 
 EXAMPLES = '''
