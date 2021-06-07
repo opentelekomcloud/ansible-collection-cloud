@@ -702,9 +702,6 @@ class ASGroupModule(OTCModule):
         elif action == 'pause':
             return self._pause_group(group, wait, timeout)
 
-    def _delete_group(self):
-        pass
-
     def _needs_update(
             self, as_group, as_configuration, desire_instance_number,
             min_instance_number, max_instance_number, cool_down_time,
@@ -794,6 +791,9 @@ class ASGroupModule(OTCModule):
             return True
 
         return False
+
+    def _is_group_can_be_deleted(self):
+        pass
 
     def _system_state_change(self, as_group, as_configuration,
                              desire_instance_number, min_instance_number,
