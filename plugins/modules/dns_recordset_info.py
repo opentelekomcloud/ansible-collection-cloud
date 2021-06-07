@@ -54,12 +54,12 @@ options:
     description:
       - Value included in the values of record sets to be queried.
     type: str
-  soft_key:
+  sort_key:
     description:
       - Sorting condition of the record set list.
     choices: ['name', 'type']
     type: str
-  soft_dir:
+  sort_dir:
     description:
       - Sorting order of the record set list.
     choices: ['desc', 'asc']
@@ -130,8 +130,8 @@ class DNSRecordsetInfoModule(OTCModule):
         name=dict(required=False),
         id=dict(required=False),
         records=dict(required=False),
-        soft_key=dict(required=False, choices=['name', 'type']),
-        soft_dir=dict(required=False, choices=['desc', 'asc']),
+        sort_key=dict(required=False, choices=['name', 'type']),
+        sort_dir=dict(required=False, choices=['desc', 'asc']),
         zone_type=dict(required=False, choices=['public', 'private'])
     )
     module_kwargs = dict(
@@ -168,12 +168,12 @@ class DNSRecordsetInfoModule(OTCModule):
             query['id'] = self.params['id']
         if self.params['records']:
             query['records'] = self.params['records']
-        if self.params['soft_dir']:
-            query['soft_dir'] = self.params['soft_dir']
+        if self.params['sort_dir']:
+            query['sort_dir'] = self.params['sort_dir']
         if self.params['zone_type']:
             query['zone_type'] = self.params['zone_type']
-        if self.params['soft_key']:
-            query['soft_key'] = self.params['soft_key']
+        if self.params['sort_key']:
+            query['sort_key'] = self.params['sort_key']
 
         for raw in self.conn.dns.recordsets(**query):
             dt = raw.to_dict()

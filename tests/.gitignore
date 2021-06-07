@@ -1,3 +1,2 @@
 output/
 integration/integration_config.yml
-collections/ansible_collections/opentelekomcloud/cloud/test.yml
