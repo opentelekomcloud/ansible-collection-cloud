@@ -665,6 +665,46 @@ class ASGroupModule(OTCModule):
 
         return attrs
 
+    def _resume_group(self, group, wait, timeout):
+        result_group = group
+        self.conn.auto_scaling.resume_group(group=group)
+        if wait:
+            try:
+                result_group = self.conn.auto_scaling.wait_for_group(
+                    group=group,
+                    wait=timeout
+                )
+            except self.sdk.exceptions.ResourceTimeout:
+                self.fail(
+                    msg="Timeout failure waiting for AS Group"
+                )
+        return result_group
+
+    def _pause_group(self, group, wait, timeout):
+        result_group = group
+        self.conn.auto_scaling.pause_group(group=group)
+        if wait:
+            try:
+                result_group = self.conn.auto_scaling.wait_for_group(
+                    group=group,
+                    status='PAUSED',
+                    wait=timeout
+                )
+            except self.sdk.exceptions.ResourceTimeout:
+                self.fail(
+                    msg="Timeout failure waiting for AS Group"
+                )
+        return result_group
+
+    def _action_group(self, action, group, wait, timeout):
+        if action == 'resume':
+            return self._resume_group(group, wait, timeout)
+        elif action == 'pause':
+            return self._pause_group(group, wait, timeout)
+
+    def _delete_group(self):
+        pass
+
     def _needs_update(
             self, as_group, as_configuration, desire_instance_number,
             min_instance_number, max_instance_number, cool_down_time,
@@ -860,10 +900,32 @@ class ASGroupModule(OTCModule):
                         )
                         group = self.conn.auto_scaling.update_group(**attrs)
                         changed = True
+                        if action:
+                            group = self._action_group(
+                                action=action,
+                                group=group,
+                                wait=wait,
+                                timeout=timeout
+                            )
                         self.exit(
                             changed=changed,
                             as_group=group,
                             msg="AS Group {0} was updated".format(as_group)
+                        )
+                    elif action:
+                        group = self._action_group(
+                            action=action,
+                            group=group,
+                            wait=wait,
+                            timeout=timeout
+                        )
+                        changed = True
+                        self.exit(
+                            changed=changed,
+                            as_group=group,
+                            msg="Action {0} for AS Group {1} was done".format(
+                                action, as_group
+                            )
                         )
                     else:
                         self.fail(
@@ -895,6 +957,13 @@ class ASGroupModule(OTCModule):
                     )
                     group = self.conn.auto_scaling.create_group(**attrs)
                     changed = True
+                    if action:
+                        group = self._action_group(
+                            action=action,
+                            group=group,
+                            wait=wait,
+                            timeout=timeout
+                        )
                     self.exit(
                         changed=changed,
                         as_group=group,
