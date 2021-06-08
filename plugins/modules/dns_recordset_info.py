@@ -104,7 +104,7 @@ class DNSRecordsetInfoModule(OTCModule):
     )
     module_kwargs = dict(
         required_if=[
-            ('recordset', not None,
+            ('name_or_id', not None,
              ['zone'])
         ]
     )
