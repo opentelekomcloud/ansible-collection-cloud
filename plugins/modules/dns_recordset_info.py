@@ -50,25 +50,6 @@ options:
     description:
       - IDs of record sets to be queried.
     type: str
-  records:
-    description:
-      - Value included in the values of record sets to be queried.
-    type: str
-  sort_key:
-    description:
-      - Sorting condition of the record set list.
-    choices: ['name', 'type']
-    type: str
-  sort_dir:
-    description:
-      - Sorting order of the record set list.
-    choices: ['desc', 'asc']
-    type: str
-  zone_type:
-    description:
-      - Zone type of the record set to be queried.
-    choices: ['public', 'private']
-    type: str
 
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -129,10 +110,6 @@ class DNSRecordsetInfoModule(OTCModule):
         type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname', 'txt', 'ns']),
         name=dict(required=False),
         id=dict(required=False),
-        records=dict(required=False),
-        sort_key=dict(required=False, choices=['name', 'type']),
-        sort_dir=dict(required=False, choices=['desc', 'asc']),
-        zone_type=dict(required=False, choices=['public', 'private'])
     )
     module_kwargs = dict(
         required_if=[
@@ -166,14 +143,6 @@ class DNSRecordsetInfoModule(OTCModule):
             query['name'] = self.params['name']
         if self.params['id']:
             query['id'] = self.params['id']
-        if self.params['records']:
-            query['records'] = self.params['records']
-        if self.params['sort_dir']:
-            query['sort_dir'] = self.params['sort_dir']
-        if self.params['zone_type']:
-            query['zone_type'] = self.params['zone_type']
-        if self.params['sort_key']:
-            query['sort_key'] = self.params['sort_key']
 
         for raw in self.conn.dns.recordsets(**query):
             dt = raw.to_dict()
