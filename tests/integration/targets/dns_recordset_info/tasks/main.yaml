@@ -34,7 +34,7 @@
         state: present
       register: dns_rs
 
-    - name: Getting info about all allocated recordsets
+    - name: Getting info about recordset in created zone
       opentelekomcloud.cloud.dns_recordset_info:
         zone: "{{ dns_zo.zone.id }}"
       register: recordsets
@@ -49,12 +49,12 @@
   always:
     - block:
       # Cleanup      
-      - name: Drop all created recordsets
+      - name: Drop created recordset
         opentelekomcloud.cloud.dns_recordset:
           recordset_name: "{{ recordset_random_name }}"
           state: absent
             
-      - name: Drop all created DNS zones
+      - name: Drop created DNS zone
         opentelekomcloud.cloud.dns_zone:
           name: "{{ zone_name }}"
           state: absent

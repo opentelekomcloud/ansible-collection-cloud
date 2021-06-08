@@ -24,9 +24,10 @@ options:
     description:
       - ID or name of the required zone.
     type: str
-  recordset:
+  name_or_id:
     description:
       - ID or name of the existing record set.
+      - Can be used only when zone is set.
     type: str
   tags:
     description:
@@ -78,14 +79,14 @@ dns_recordset:
       sample: "5dd3c0b24cdc4d31952c49589182a89d"
     records:
       description: Record set value.
-      type: dict
-      sample: 2.2.2.2
+      type: list
+      sample: ["2.2.2.2", "1.1.1.1"]
 '''
 
 EXAMPLES = '''
 #Get info about choosen DNS recordset.
 - opentelekomcloud.cloud.dns_recordset_info:
-    zone: "{{ dns_zo.zone.id }}"
+    zone: "test.zone."
   register: recordsets
 '''
 
@@ -96,7 +97,7 @@ class DNSRecordsetInfoModule(OTCModule):
 
     argument_spec = dict(
         zone=dict(required=False),
-        recordset=dict(required=False),
+        name_or_id=dict(required=False),
         tags=dict(required=False),
         status=dict(required=False, choices=['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update', 'pending_delete']),
         type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname', 'txt', 'ns']),
@@ -118,9 +119,9 @@ class DNSRecordsetInfoModule(OTCModule):
                 query['zone'] = self.conn.dns.find_zone(name_or_id=self.params['zone'], ignore_missing=False).id
             except self.sdk.exceptions.ResourceNotFound:
                 self.fail_json(msg="Zone not found")
-            if self.params['recordset']:
+            if self.params['name_or_id']:
                 try:
-                    query['recordset'] = self.conn.dns.find_recordset(zone=query['zone'], name_or_id=self.params['recordset'], ignore_missing=False).id
+                    query['name'] = self.conn.dns.find_recordset(zone=query['zone'], name_or_id=self.params['name_or_id'], ignore_missing=False).name
                 except self.sdk.exceptions.ResourceNotFound:
                     self.fail_json(msg="Recordset not found")
         if self.params['tags']:
