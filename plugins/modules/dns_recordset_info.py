@@ -99,7 +99,8 @@ class DNSRecordsetInfoModule(OTCModule):
         zone=dict(required=False),
         name_or_id=dict(required=False),
         tags=dict(required=False),
-        status=dict(required=False, choices=['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update', 'pending_delete']),
+        status=dict(required=False, choices=['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update',
+                                             'pending_delete']),
         type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname', 'txt', 'ns']),
     )
     module_kwargs = dict(
@@ -121,7 +122,9 @@ class DNSRecordsetInfoModule(OTCModule):
                 self.fail_json(msg="Zone not found")
             if self.params['name_or_id']:
                 try:
-                    query['name'] = self.conn.dns.find_recordset(zone=query['zone'], name_or_id=self.params['name_or_id'], ignore_missing=False).name
+                    query['name'] = self.conn.dns.find_recordset(zone=query['zone'],
+                                                                 name_or_id=self.params['name_or_id'],
+                                                                 ignore_missing=False).name
                 except self.sdk.exceptions.ResourceNotFound:
                     self.fail_json(msg="Recordset not found")
         if self.params['tags']:
