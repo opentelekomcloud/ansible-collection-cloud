@@ -42,14 +42,6 @@ options:
       - Type of the record sets to be queried.
     choices: ['a', 'aaaa', 'mx', 'cname', 'txt', 'ns']
     type: str
-  name:
-    description:
-      - Names of record sets to be queried.
-    type: str
-  id:
-    description:
-      - IDs of record sets to be queried.
-    type: str
 
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -108,8 +100,6 @@ class DNSRecordsetInfoModule(OTCModule):
         tags=dict(required=False),
         status=dict(required=False, choices=['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update', 'pending_delete']),
         type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname', 'txt', 'ns']),
-        name=dict(required=False),
-        id=dict(required=False),
     )
     module_kwargs = dict(
         required_if=[
@@ -139,10 +129,6 @@ class DNSRecordsetInfoModule(OTCModule):
             query['status'] = self.params['status'].upper()
         if self.params['type']:
             query['type'] = self.params['type'].upper()
-        if self.params['name']:
-            query['name'] = self.params['name']
-        if self.params['id']:
-            query['id'] = self.params['id']
 
         for raw in self.conn.dns.recordsets(**query):
             dt = raw.to_dict()
