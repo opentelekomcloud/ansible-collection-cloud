@@ -1,32 +1,24 @@
 ---
-# author: Tino Schreiber (@tischrei)
 - module_defaults:
     opentelekomcloud.cloud.cce_cluster:
       cloud: "{{ test_cloud }}"
-    opentelekomcloud.cloud.cce_cluster_node:
-      cloud: "{{ test_cloud }}"
-    openstack.cloud.keypair:
-      cloud: "{{ test_cloud }}"
-    opentelekomcloud.cloud.cce_cluster_node_info:
-      cloud: "{{ test_cloud }}"
-
+  vars:
+    prefix: scenario00a-
   block:
     - name: Set random prefix
       set_fact:
-        prefix: "{{ (99999999 | random | to_uuid | hash('md5')) }}"
+        prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
 
     - name: Set initial facts
       set_fact:
-        network_name: "{{ ( prefix + '-cce-network') }}"
-        subnet_name: "{{ ( prefix + '-ccc-subnet') }}"
-        router_name: "{{ ( prefix + '-cce-router') }}"
-        cce_cluster_name: "{{ ( 'z-' + prefix + '-cce-test') }}"
-        cce_node_name: "{{ ( 'z-' + prefix + '-cce-node') }}"
-        cce_node_name2: "{{ ( 'z-' + prefix + '-cce-node2') }}"
-        keypair_name: "{{ ( prefix + '-cce-keypair' ) }}"
-        cce_node_flavor: "s2.large.2"
+        keypair_name: "{{ ( prefix + '-key') }}"
+        network_name: "{{ ( prefix + '-test-network') }}"
+        subnet_name: "{{ ( prefix + '-test-subnet') }}"
+        router_name: "{{ ( prefix + '-test-router') }}"
+        cce_cluster_name: "{{ ( 'z-' + prefix + '-acc-test') }}"
         cce_flavor: "cce.s1.small"
         container_network_mode: "overlay_l2"
+        cce_node_name: "{{ ( 'z-' + prefix + '-node') }}"
 
     - name: Create network for test
       openstack.cloud.network:
@@ -51,7 +43,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: true
+        enable_snat: True
         interfaces:
           - net: "{{ test_network.network.name }}"
             subnet: "{{ test_subnet.subnet.name }}"
@@ -65,6 +57,7 @@
         router: "{{ router_name }}"
         network: "{{ network_name }}"
         container_network_mode: "{{ container_network_mode }}"
+        wait: true
       register: cluster
 
     - name: assert result
@@ -72,29 +65,18 @@
         that:
           - cluster is success
           - cluster is changed
-          - cluster.id is defined
-
-    - name: Get CCE Cluster info
-      opentelekomcloud.cloud.cce_cluster_info:
-      register: cluster_info
-
-    - name: assert result
-      assert:
-        that:
-          - cluster_info is success
-          - cluster_info.cce_clusters is defined
-
-    - name: Create Keypair for CCE node
+      
+    - name: Keypair creation
       openstack.cloud.keypair:
         state: present
         name: "{{ keypair_name }}"
-      register: keypair
-
+      register: ssh_key
+    
     - name: assert result
       assert:
         that:
-          - keypair is success
-          - keypair.key.private_key is defined
+          - ssh_key is success
+          - ssh_key is changed
 
     - name: Create CCE Cluster Node
       opentelekomcloud.cloud.cce_cluster_node:
@@ -110,7 +92,7 @@
             cmk_id: ''
           - volumetype: 'SAS'
             size: 120
-        flavor: "{{ cce_node_flavor }}"
+        flavor: 's2.large.2'
         k8s_tags:
           testtag: 'value'
         ssh_key: "{{ keypair_name }}"
@@ -118,7 +100,8 @@
           mein: 'label'
         max_pods: 16
         name: "{{ cce_node_name }}"
-        network: "{{ network_name }}"
+        network: "{{ test_network.network.name }}"
+        os: 'CentOS 7.7'
         root_volume_size: 40
         root_volume_type: SATA
         tags:
@@ -136,65 +119,24 @@
           - node is success
           - node is changed
 
-    - name: assert result
-      assert:
-        that:
-          - node is success
-          - node.cce_cluster_node.id is defined
-
-    - name: Create CCE cluster node 2, reserved for node deletion
-      opentelekomcloud.cloud.cce_cluster_node:
-        availability_zone: 'eu-de-02'
-        cluster: "{{ cce_cluster_name }}"
-        flavor: "{{ cce_node_flavor }}"
-        keypair: "{{ keypair_name }}"
-        name: "{{ cce_node_name2 }}"
-        root_volume_size: 40
-        root_volume_type: SATA
-        data_volumes:
-          - SATA: 150
-          - SAS: 100
-        wait: true
-      register: node2
-
-    - name: assert result
-      assert:
-        that:
-          - node2 is success
-          - node2.cce_cluster_node.id is defined
-
-    - name: Get CCE Cluster node info
-      opentelekomcloud.cloud.cce_cluster_node_info:
-        cce_cluster: "{{ cce_cluster_name }}"
-      register: node_info
-
-    - name: assert result
-      assert:
-        that:
-          - node_info is success
-          - node_info.cce_cluster_nodes is defined
-
   always:
     - block:
       # Cleanup
-      - name: Drop node 2
+      - name: Drop CCE cluster node
         opentelekomcloud.cloud.cce_cluster_node:
           cluster: "{{ cce_cluster_name }}"
-          name: "{{ cce_node_name2 }}"
-          state: absent
-          wait: true
-        register: node2
+          name: "{{ cce_node_name }}""
+          state: "absent"
+      
+      - name: Drop keypair
+        openstack.cloud.keypair:
+          name: "{{ keypair_name }}""
+          state: "absent"
 
       - name: Drop cluster
         opentelekomcloud.cloud.cce_cluster:
           name: "{{ cce_cluster_name }}"
-          timeout: 3000
           state: "absent"
-
-      - name: Drop Keypair
-        openstack.cloud.keypair:
-          state: "absent"
-          name: "{{ keypair_name }}"
 
       - name: Drop router
         openstack.cloud.router:
