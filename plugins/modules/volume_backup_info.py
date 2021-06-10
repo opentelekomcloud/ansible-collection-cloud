@@ -65,6 +65,9 @@ class VolumeBackupInfoModule(OTCModule):
         name=dict(required=False),
         volume=dict(required=False)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         name_filter = self.params['name']

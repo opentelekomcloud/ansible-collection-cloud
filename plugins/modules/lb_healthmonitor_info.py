@@ -130,7 +130,6 @@ healthmonitors:
 EXAMPLES = '''
 # Get a lb health monitor info.
 - lb_healthmonitor_info:
-    state: present
     name: hm-test
   register: healthmonitor
 '''
@@ -152,6 +151,9 @@ class LoadBalancerHealthMonitorInfoModule(OTCModule):
         url_path=dict(required=False, type='str'),
         http_method=dict(required=False, choices=['get', 'head', 'post', 'put', 'delete',
                                                   'trace', 'options', 'connect', 'patch'])
+    )
+    module_kwargs = dict(
+        supports_check_mode=True
     )
 
     def run(self):

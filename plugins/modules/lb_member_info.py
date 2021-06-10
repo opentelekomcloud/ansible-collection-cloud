@@ -97,7 +97,6 @@ members:
 EXAMPLES = '''
 # Get a lb member info.
 - lb_member_info:
-    state: present
     name: member-test
   register: lb_mmbr_info
 '''
@@ -115,6 +114,9 @@ class LoadBalancerMemberInfoModule(OTCModule):
         subnet=dict(required=False, type='str'),
         admin_state_up=dict(required=False, type='bool'),
         weight=dict(required=False, type='int')
+    )
+    module_kwargs = dict(
+        supports_check_mode=True
     )
 
     def run(self):

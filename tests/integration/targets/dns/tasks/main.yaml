@@ -49,6 +49,20 @@
             subnet: "{{ zone_subnet.subnet.name }}"
       register: zone_router
 
+    - name: Creating a dns_floating_ip entry - check mode
+      opentelekomcloud.cloud.dns_floating_ip:
+        floating_ip: "{{ fl_ip }}"
+        ptrdname: "{{ ptrdname }}"
+        state: present
+      check_mode: true
+      register: dns_fl_ch
+
+    - name: assert result
+      assert:
+        that:
+          - dns_fl_ch is success
+          - dns_fl_ch is changed
+
     - name: Creating a dns_floating_ip entry
       opentelekomcloud.cloud.dns_floating_ip:
         floating_ip: "{{ fl_ip }}"
@@ -66,6 +80,21 @@
           - dns_fl is success
           - dns_fl.ptr is defined
 
+    - name: Updating a dns_floating_ip entry - check mode
+      opentelekomcloud.cloud.dns_floating_ip:
+        floating_ip: "{{ fl_ip }}"
+        ptrdname: "{{ ptrdname }}"
+        description: "{{ description }}"
+        state: present
+      check_mode: true
+      register: dns_fl_ch
+
+    - name: assert result
+      assert:
+        that:
+          - dns_fl_ch is success
+          - dns_fl_ch is changed
+  
     - name: Updating a dns_floating_ip entry
       opentelekomcloud.cloud.dns_floating_ip:
         floating_ip: "{{ fl_ip }}"
@@ -92,12 +121,22 @@
       debug:
         var: ptr.ptr_records
 
+    - name: Creating a public DNS Zone - check mode
+      opentelekomcloud.cloud.dns_zones:
+        name: "{{ zone_public_name }}"
+        state: present
+      check_mode: true
+      register: dns_zo_ch
+
     - name: assert result
       assert:
         that:
+
           - ptr is success
           - ptr is not changed
           - ptr.ptr_records is defined
+          - dns_zo_ch is success
+          - dns_zo_ch is changed
 
     - name: Creating a public DNS Zone
       opentelekomcloud.cloud.dns_zones:
@@ -114,6 +153,20 @@
         that:
           - dns_zo is success
           - dns_zo.zone is defined
+
+    - name: Updating a public DNS Zone - check mode
+      opentelekomcloud.cloud.dns_zones:
+        name: "{{ zone_public_name }}"
+        state: present
+        description: "{{ description }}"
+      check_mode: true
+      register: dns_zo_ch
+
+    - name: assert result
+      assert:
+        that:
+          - dns_zo_ch is success
+          - dns_zo_ch is changed
 
     - name: Updating a public DNS Zone
       opentelekomcloud.cloud.dns_zones:
@@ -132,38 +185,20 @@
           - dns_zo is success
           - dns_zo.zone.description is defined
 
-    - name: Get DNS Nameserver Info
-      dns_nameserver_info:
-        zone: "{{ zone_public_name }}"
-      register: nms
-
-    - name: debug configs
-      debug:
-        var: nms.dns_nameservers
-
-    - name: assert result
-      assert:
-        that:
-          - nms is success
-          - nms is not changed
-          - nms.dns_nameservers is defined
-
-    - name: Get DNS Zone Info
-      dns_zone_info:
-        zone_type: private
-        name: "{{ zone_public_name }}"
-      register: zone
-
-    - name: debug configs
-      debug:
-        var: zone.dns_zones
+    - name: Creating a DNS private Zone - check mode
+      opentelekomcloud.cloud.dns_zones:
+        name: "{{ zone_private_name }}"
+        router: "{{ router_name }}"
+        zone_type: "private"
+        state: present
+      check_mode: true
+      register: dns_zo_pr_ch
 
     - name: assert result
       assert:
         that:
-          - zone is success
-          - zone is not changed
-          - zone.dns_zones is defined
+          - dns_zo_pr_ch is success
+          - dns_zo_pr_ch is changed
 
     - name: Creating a DNS private Zone
       opentelekomcloud.cloud.dns_zones:
@@ -183,6 +218,20 @@
           - dns_zo_pr is success
           - dns_zo_pr.zone is defined
 
+    - name: Updating a private DNS Zone - check mode
+      opentelekomcloud.cloud.dns_zones:
+        name: "{{ zone_private_name }}"
+        state: present
+        description: "{{ description }}"
+      check_mode: true
+      register: dns_zo_pr_ch
+
+    - name: assert result
+      assert:
+        that:
+          - dns_zo_pr_ch is success
+          - dns_zo_pr_ch is changed
+
     - name: Updating a private DNS Zone
       opentelekomcloud.cloud.dns_zones:
         name: "{{ zone_private_name }}"
@@ -199,6 +248,24 @@
         that:
           - dns_zo_pr is success
           - dns_zo_pr.zone.description is defined
+
+    - name: Creating a DNS Recordset - check mode
+      opentelekomcloud.cloud.dns_recordset:
+        zone_id: "{{ dns_zo.zone.id }}"
+        recordset_name: "{{ rs_name }}"
+        type: A
+        records:
+          - "1.1.1.1"
+          - "2.2.2.2"
+        state: present
+      check_mode: true
+      register: dns_rs_ch
+
+    - name: assert result
+      assert:
+        that:
+          - dns_rs_ch is success
+          - dns_rs_ch is changed
 
     - name: Creating a DNS Recordset
       opentelekomcloud.cloud.dns_recordset:
@@ -220,6 +287,25 @@
         that:
           - dns_rs is success
           - dns_rs.recordset is defined
+
+    - name: Updating a DNS Recordset - check mode
+      opentelekomcloud.cloud.dns_recordset:
+        zone_id: "{{ dns_zo.zone.id }}"
+        recordset_name: "{{ rs_name }}"
+        type: A
+        description: "{{ description }}"
+        records:
+          - "1.1.1.1"
+          - "2.2.2.2"
+        state: present
+      check_mode: true
+      register: dns_rs_ch
+
+    - name: assert result
+      assert:
+        that:
+          - dns_rs_ch is success
+          - dns_rs_ch is changed
 
     - name: Updating a DNS Recordset
       opentelekomcloud.cloud.dns_recordset:

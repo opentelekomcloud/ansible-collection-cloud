@@ -94,7 +94,6 @@ EXAMPLES = '''
       username: admin
       password: passme
       project_name: admin
-    state: present
     name: my_lb
   register: lb_info
 '''
@@ -105,6 +104,9 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class LoadBalancerInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False)
+    )
+    module_kwargs = dict(
+        supports_check_mode=True
     )
 
     def run(self):

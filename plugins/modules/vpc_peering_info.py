@@ -101,6 +101,9 @@ class VPCPeeringInfoModule(OTCModule):
         project_id=dict(required=False),
         router=dict(required=False),
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

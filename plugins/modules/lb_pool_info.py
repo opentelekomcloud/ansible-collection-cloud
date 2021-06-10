@@ -76,7 +76,6 @@ lb_pool_info:
 EXAMPLES = '''
 # Get a lb pool info.
 - lb_pool_info:
-    state: present
     name: pool-test
   register: lb_pool_info
 '''
@@ -87,6 +86,9 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class LoadBalancerPoolInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False)
+    )
+    module_kwargs = dict(
+        supports_check_mode=True
     )
 
     def run(self):

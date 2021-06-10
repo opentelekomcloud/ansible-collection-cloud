@@ -70,7 +70,6 @@ elb_certificates:
 EXAMPLES = '''
 # Get a lb certificate info.
 - lb_certificate_info:
-    state: present
     name: certificate-test
   register: lb_cert
 '''
@@ -81,6 +80,9 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class LoadBalancerCertificateInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False)
+    )
+    module_kwargs = dict(
+        supports_check_mode=True
     )
 
     otce_min_version = '0.10.0'

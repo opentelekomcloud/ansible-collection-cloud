@@ -122,6 +122,9 @@ class DehServerInfoModule(OTCModule):
     argument_spec = dict(
         dedicated_host=dict(required=True)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 
