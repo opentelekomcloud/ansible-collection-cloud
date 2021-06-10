@@ -125,12 +125,12 @@
       - name: Drop CCE cluster node
         opentelekomcloud.cloud.cce_cluster_node:
           cluster: "{{ cce_cluster_name }}"
-          name: "{{ cce_node_name }}""
+          name: "{{ cce_node_name }}"
           state: "absent"
       
       - name: Drop keypair
         openstack.cloud.keypair:
-          name: "{{ keypair_name }}""
+          name: "{{ keypair_name }}"
           state: "absent"
 
       - name: Drop cluster
