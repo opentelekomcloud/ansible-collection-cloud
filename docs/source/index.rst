@@ -10,7 +10,7 @@ Welcome to Open Telekom Cloud Ansible Modules Documentation's documentation!
    :maxdepth: 1
    :glob:
 
-   modules2/*
+   modules/*
 
 
 Indices and tables
