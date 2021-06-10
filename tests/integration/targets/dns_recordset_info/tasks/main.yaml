@@ -53,7 +53,8 @@
         opentelekomcloud.cloud.dns_recordset:
           recordset_name: "{{ recordset_random_name }}"
           state: absent
-            
+          zone_id: "{{ dns_zo.zone.id }}"
+
       - name: Drop created DNS zone
         opentelekomcloud.cloud.dns_zone:
           name: "{{ zone_name }}"
