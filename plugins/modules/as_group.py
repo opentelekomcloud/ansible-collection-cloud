@@ -456,8 +456,8 @@ class ASGroupModule(OTCModule):
 
                 if self.params['delete_volume']:
                     attrs['delete_volume'] = self.params['delete_volume']
-                else:
-                    attrs['delete_volume'] = False
+#                else:
+#                    attrs['delete_volume'] = False
 
                 if self.params['cool_down_time']:
                     attrs['cool_down_time'] = self.params['cool_down_time']
