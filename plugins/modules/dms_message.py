@@ -78,24 +78,12 @@ message:
             {
                 "attributes": {},
                 "body": "test2",
-                "error": null,
-                "error_code": null,
-                "handler": null,
                 "id": "eyJ0b3BpYyI6InEtMTZkNTNhODRhMTNiNDk1MjlkMmUyYzM2N....",
-                "location": null,
-                "name": null,
-                "state": null
             },
             {
                 "attributes": {},
                 "body": "test1",
-                "error": null,
-                "error_code": null,
-                "handler": null,
                 "id": "eyJ0b3BpYyI6InEtMTZkNTNhODRhMTNiNDk1MjlkMmUyYzM2N...",
-                "location": null,
-                "name": null,
-                "state": null
             }
         ]
     }

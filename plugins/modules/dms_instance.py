@@ -129,59 +129,20 @@ instance:
     type: dict
     sample: {
         "instance": {
-            "access_user": null,
             "availability_zones": [
                 "eu-de-03"
             ],
-            "charging_mode": null,
-            "connect_address": null,
-            "created_at": null,
-            "description": null,
             "engine_name": "kafka",
             "engine_version": "2.3.0",
             "id": "12345678-e7c4-4ba1-8aa2-f2c4eb507c43",
             "instance_id": "12345678-e7c4-4ba1-8aa2-f2c4eb507c43",
-            "is_public": null,
-            "is_ssl": null,
-            "kafka_public_status": null,
-            "location": {
-                "cloud": "otc",
-                "project": {
-                    "domain_id": null,
-                    "domain_name": null,
-                    "id": "1234",
-                    "name": "eu-de"
-                },
-                "region_name": "eu-de",
-                "zone": null
-            },
-            "maintenance_end": null,
-            "maintenance_start": null,
-            "max_partitions": null,
             "name": "aed93756fa3c04e4083c5b48ad6ba6258-instance",
             "network_id": "12345678-ca80-4b49-bbbb-85ea9b96f8b3",
-            "password": null,
-            "port": null,
             "product_id": "00300-30308-0--0",
-            "public_bandwidth": null,
-            "retention_policy": null,
             "router_id": "12345678-dc40-4e3a-95b1-5a0756441e12",
-            "router_name": null,
             "security_group_id": "12345678-9b1f-4af8-9b53-527ff05c5e12",
-            "security_group_name": null,
-            "service_type": null,
-            "spec": null,
-            "spec_code": null,
-            "status": null,
             "storage": 600,
-            "storage_resource_id": null,
-            "storage_spec_code": "dms.physical.storage.ultra",
-            "storage_type": null,
-            "total_storage": null,
-            "type": null,
-            "used_storage": null,
-            "user_id": null,
-            "user_name": null
+            "storage_spec_code": "dms.physical.storage.ultra"
         }
     }
 '''

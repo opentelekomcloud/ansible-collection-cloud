@@ -82,20 +82,14 @@ instance:
     sample: {
         "topic": {
             "id": "test2",
-            "is_sync_flush": null,
-            "is_sync_replication": null,
             "location": {
                 "cloud": "otc",
                 "project": {
-                    "domain_id": null,
-                    "domain_name": null,
                     "id": "12345678",
                     "name": "eu-de"
                 },
                 "region_name": "eu-de",
-                "zone": null
             },
-            "name": null,
             "partition": 3,
             "replication": 3,
             "retention_time": 72
