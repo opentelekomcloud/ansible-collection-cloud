@@ -112,6 +112,10 @@ class DNSRecordsetInfoModule(OTCModule):
         ]
     )
 
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
+
     def run(self):
 
         data = []
