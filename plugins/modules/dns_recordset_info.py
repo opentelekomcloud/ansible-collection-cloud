@@ -42,7 +42,7 @@ options:
   type:
     description:
       - Type of the record sets to be queried.
-    choices: ['a', 'aaaa', 'mx', 'cname', 'txt', 'ns']
+    choices: ['a', 'aaaa', 'mx', 'cname', 'txt', 'ns', 'srv', 'caa', 'ptr']
     type: str
 
 requirements: ["openstacksdk", "otcextensions"]
@@ -102,7 +102,7 @@ class DNSRecordsetInfoModule(OTCModule):
         tags=dict(required=False),
         status=dict(required=False, choices=['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update',
                                              'pending_delete']),
-        type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname', 'txt', 'ns']),
+        type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname', 'txt', 'ns', 'srv', 'caa', 'ptr']),
     )
     module_kwargs = dict(
         required_if=[
