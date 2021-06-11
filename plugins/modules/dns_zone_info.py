@@ -40,10 +40,6 @@ options:
     description:
       - Project ID of the zone
     type: str
-  record_num:
-    description:
-      - Number of record sets in the zone
-    type: int
   serial:
     description:
       - Serial number in the SOA record set in a zone
@@ -95,10 +91,6 @@ dns_zones:
       description: Project ID of the zone
       type: str
       sample: "19f43a84a13b49529d2e2c3646693458"
-    record_num:
-      description: Number of record sets in the zone
-      type: int
-      sample: 3
     serial:
       description: Serial number in the SOA record set in a zone
       type: int
@@ -131,11 +123,11 @@ dns_zones:
 '''
 
 EXAMPLES = '''
-# Get list of private zones with 3 records
+# Get list of private zones and filter by name
 - name: Listing
   opentelekomcloud.cloud.dns_zone_info:
-    record_num: "3"
     zone_type: "private"
+    name: "test_zone"
 
 '''
 
@@ -149,7 +141,6 @@ class DNSZoneInfoModule(OTCModule):
         name=dict(required=False),
         pool_id=dict(required=False),
         project_id=dict(required=False),
-        record_num=dict(required=False, type='int'),
         serial=dict(required=False, type='int'),
         status=dict(required=False),
         ttl=dict(required=False, type='int'),
@@ -175,11 +166,6 @@ class DNSZoneInfoModule(OTCModule):
         while i < len(data):
             if self.params['status']:
                 if data[i]['status'] != self.params['status']:
-                    del data[i]
-                    i = 0
-                    continue
-            if self.params['record_num']:
-                if data[i]['record_num'] != self.params['record_num']:
                     del data[i]
                     i = 0
                     continue
