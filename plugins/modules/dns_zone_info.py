@@ -103,7 +103,7 @@ dns_zones:
       description: TTL value of the SOA record set in the zone
       type: int
       sample: 300
-    zone_type:
+    type:
       description: DNS Zone type
       type: str
       sample: "private"
@@ -144,7 +144,7 @@ class DNSZoneInfoModule(OTCModule):
         serial=dict(required=False, type='int'),
         status=dict(required=False),
         ttl=dict(required=False, type='int'),
-        zone_type=dict(required=True),
+        type=dict(required=True),
         zone_id=dict(required=False)
     )
 
@@ -153,8 +153,8 @@ class DNSZoneInfoModule(OTCModule):
         data = []
         query = {}
 
-        if self.params['zone_type']:
-            query['zone_type'] = self.params['zone_type']
+        if self.params['type']:
+            query['zone_type'] = self.params['type']
 
         for raw in self.conn.dns.zones(**query):
             dt = raw.to_dict()

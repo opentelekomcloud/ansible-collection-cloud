@@ -266,7 +266,7 @@
     
     - name: Getting Zone Info on Private Zone
       opentelekomcloud.cloud.dns_zone_info:
-        zone_type: "private"
+        type: "private"
         name: "{{ zone_private_name }}"
       register: dns_zo_zo_info
 
