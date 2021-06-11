@@ -85,6 +85,9 @@ class DNSNameserverInfoModule(OTCModule):
         priority=dict(required=False),
         zone=dict(required=True)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

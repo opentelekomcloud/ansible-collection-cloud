@@ -52,7 +52,7 @@ options:
     description:
       - TTL value of the SOA record set in the zone
     type: int
-  zone_type:
+  type:
     description:
       - DNS Zone type
     type: str
@@ -146,6 +146,9 @@ class DNSZoneInfoModule(OTCModule):
         ttl=dict(required=False, type='int'),
         type=dict(required=True),
         zone_id=dict(required=False)
+    )
+    module_kwargs = dict(
+        supports_check_mode=True
     )
 
     def run(self):

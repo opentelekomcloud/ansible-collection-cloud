@@ -102,6 +102,9 @@ class DNSFloatingIpInfoModule(OTCModule):
         status=dict(required=False),
         ttl=dict(required=False, type='int')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 
