@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Open Telekom Cloud Ansible Modules Documentation's documentation!
-============================================================================
+Welcome to Open Telekom Cloud Ansible Modules documentation!
+============================================================
 
 .. toctree::
    :maxdepth: 1
