@@ -132,7 +132,7 @@ class DcsInstanceModule(OTCModule):
                     if not self.ansible.check_mode:
                         dcs_instance = self.conn.dcs.backup_instance(instance.id, **attrs)
                         self.exit(changed=True, dcs_instance=dcs_instance.to_dict())
-                    self.exit_json(True)                    
+                    self.exit_json(True)
 
             elif self.params['state'] == 'absent':
                 if self.params['backup_id']:
