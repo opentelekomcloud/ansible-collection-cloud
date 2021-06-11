@@ -62,6 +62,9 @@ class WafCertificateInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     otce_min_version = '0.8.0'
 

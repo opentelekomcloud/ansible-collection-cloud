@@ -80,6 +80,9 @@ class RdsFlavorModule(OTCModule):
         version=dict(required=True),
         instance_mode=dict(choices=['single', 'replica', 'ha'])
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         datastore = self.params['datastore']

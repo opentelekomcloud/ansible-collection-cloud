@@ -5,6 +5,7 @@ plugins/modules/as_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/as_instance_info.py validate-modules:missing-gplv3-license
 plugins/modules/as_policy.py validate-modules:missing-gplv3-license
 plugins/modules/as_policy_info.py validate-modules:missing-gplv3-license
+plugins/modules/as_quota_info.py validate-modules:missing-gplv3-license
 plugins/modules/availability_zone_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_node.py validate-modules:missing-gplv3-license
@@ -45,6 +46,7 @@ plugins/modules/waf_certificate.py validate-modules:missing-gplv3-license
 plugins/modules/waf_certificate_info.py validate-modules:missing-gplv3-license
 plugins/modules/vpc_peering.py validate-modules:missing-gplv3-license
 plugins/modules/vpc_peering_info.py validate-modules:missing-gplv3-license
+plugins/modules/vpc_peering_mode.py validate-modules:missing-gplv3-license
 plugins/modules/vpc_route_info.py validate-modules:missing-gplv3-license
 plugins/modules/vpc_route.py validate-modules:missing-gplv3-license
 plugins/modules/vpn_service_info.py validate-modules:missing-gplv3-license

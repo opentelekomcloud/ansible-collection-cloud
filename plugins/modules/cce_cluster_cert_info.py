@@ -62,6 +62,9 @@ class CceClusterCertInfoModule(OTCModule):
     argument_spec = dict(
         cluster=dict(required=True),
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         cluster = self.params['cluster']
