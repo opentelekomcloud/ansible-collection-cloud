@@ -105,6 +105,7 @@ class DNSRecordsetInfoModule(OTCModule):
         type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname', 'txt', 'ns', 'srv', 'caa', 'ptr']),
     )
     module_kwargs = dict(
+        supports_check_mode=True,
         required_if=[
             ('name_or_id', not None,
              ['zone'])
