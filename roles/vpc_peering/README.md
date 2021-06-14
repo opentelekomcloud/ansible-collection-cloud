@@ -1,10 +1,8 @@
-opentelekomcloud.cloud.vpc_peering
-==================================
+# opentelekomcloud.cloud.vpc_peering
 
 Configure VPC Peering between 2 routers.
 
-Requirements
-------------
+## Requirements
 
 Python packages:
   - openstacksdk
@@ -14,8 +12,7 @@ Ansible collections:
   - openstack.cloud
   - opentelekomcloud.cloud
 
-Role Variables
---------------
+## Role Variables
 
 cloud_a: Connection to cloud A
 local_router: Name or ID of the router on side A
@@ -27,13 +24,12 @@ remote_cidr: CIDR for the route
 
 A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
 
-Example Playbook
-----------------
+## Example Playbook
 
 Role is designed to work best looping over the structure of peering
 definitions:
-.. code-block:: yaml
 
+   # Inventory
    cloud_peerings:
      - cloud: "cloud_a"
        name: "peering_cloud_a_cloud_b"
@@ -45,8 +41,7 @@ definitions:
        remote_project: "project_b"
        remote_cidr: "192.168.2.0/24"
 
-.. code-block:: yaml
-
+   # playbook
    - hosts: localhost
      name: "Manage cloud VPC peerings"
      tasks:
@@ -57,7 +52,6 @@ definitions:
          loop_control:
            loop_var: vpcp
 
-License
--------
+## License
 
 Apache-2.0
