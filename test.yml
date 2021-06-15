@@ -1,0 +1,63 @@
+---
+# Get all recordsets
+- name: Test
+  hosts: localhost
+  tasks:
+    - name: Creating a public DNS Zone
+      opentelekomcloud.cloud.dns_zone:
+        name: "test.zone."
+        state: present
+      register: dns_zo
+
+    - name: Creating a DNS Recordset
+      opentelekomcloud.cloud.dns_recordset:
+        zone_id: "{{ dns_zo.zone.id }}"
+        recordset_name: "{{ recordset_random_name }}"
+        type: A
+        records:
+          - "1.1.1.1"
+          - "2.2.2.2"
+        state: present
+      register: dns_rs
+
+    - name: Getting info about recordset in created zone
+      opentelekomcloud.cloud.dns_recordset_info:
+        zone: "{{ dns_zo.zone.id }}"
+      register: recordsets
+
+    - name: assert result
+      assert:
+        that:
+          - recordsets is success
+          - recordsets is not changed
+          - recordsets | length > 0
+
+    - name: Get info about created recordset
+      opentelekomcloud.cloud.dns_recordset_info:
+        zone: "{{ dns_zo.zone.id }}"
+        name: "{{ recordset_random_name }}"
+      register: rs
+    - debug:
+        var: rs
+
+    - name: assert result
+      assert:
+       that:
+          - rs.dns_recordset[0].name == recordset_random_name
+          - rs is success
+          - rs is not changed
+          - rs | length > 0
+
+    - name: Get info about created recordset
+      opentelekomcloud.cloud.dns_recordset_info:
+        name: "{{ recordset_random_name }}"
+      register: rsn
+    - debug:
+        var: rsn
+
+    - name: assert result
+      assert:
+       that:
+          - rsn is success
+          - rsn is not changed
+          - rsn | length > 0

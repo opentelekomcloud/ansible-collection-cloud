@@ -46,6 +46,19 @@
           - recordsets is not changed
           - recordsets | length > 0
 
+    - name: Get info about created recordset
+      opentelekomcloud.cloud.dns_recordset_info:
+        zone: "{{ dns_zo.zone.id }}"
+        name: "{{ recordset_random_name }}"
+      register: rs
+
+    - name: assert result
+        assert:
+          that:
+            - rs is success
+            - rs is not changed
+            - rs | length > 0
+
   always:
     - block:
       # Cleanup      
