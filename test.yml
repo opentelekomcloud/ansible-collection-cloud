@@ -3,6 +3,10 @@
 - name: Test
   hosts: localhost
   tasks:
+    - name: Set variables
+      set_fact:
+        recordset_name: "randomrs.test.zone."
+
     - name: Creating a public DNS Zone
       opentelekomcloud.cloud.dns_zone:
         name: "test.zone."
@@ -12,7 +16,7 @@
     - name: Creating a DNS Recordset
       opentelekomcloud.cloud.dns_recordset:
         zone_id: "{{ dns_zo.zone.id }}"
-        recordset_name: "{{ recordset_random_name }}"
+        recordset_name: "{{ recordset_name }}"
         type: A
         records:
           - "1.1.1.1"
