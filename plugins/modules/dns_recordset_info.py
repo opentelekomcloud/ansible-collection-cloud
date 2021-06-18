@@ -28,7 +28,7 @@ options:
   name:
     description:
       - ID or name of the existing record set.
-      - if zone is set we try to search recordsets in this zone, otherwise we list all recordsets and filter them by 
+      - if zone is set we try to search recordsets in this zone, otherwise we list all recordsets and filter them by
       name.
     type: str
   tags:
@@ -131,8 +131,8 @@ class DNSRecordsetInfoModule(OTCModule):
             if self.params['name']:
                 try:
                     recordset = self.conn.dns.find_recordset(zone=query['zone'],
-                                                                 name_or_id=self.params['name'],
-                                                                 ignore_missing=False)
+                                                             name_or_id=self.params['name'],
+                                                             ignore_missing=False)
                     dt = recordset.to_dict()
                     dt.pop('location')
                     data.append(dt)
