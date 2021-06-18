@@ -53,11 +53,11 @@
       register: rs
 
     - name: assert result
-        assert:
-          that:
-            - rs is success
-            - rs is not changed
-            - rs | length > 0
+      assert:
+        that:
+          - rs is success
+          - rs is not changed
+          - rs | length > 0
 
   always:
     - block:
