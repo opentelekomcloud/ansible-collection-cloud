@@ -22,14 +22,15 @@ description:
 options:
   zone:
     description:
-      - ID or name of the required zone. If name had been provided, only public zone could be returned. If private\n 
-      zone is required, only ID should be passed.
+      - ID or name of the required zone. If name had been provided,
+      only public zone could be returned. If private zone is required,
+      only ID should be passed.
     type: str
   name:
     description:
       - ID or name of the existing record set.
-      - if zone is set we try to search recordsets in this zone, otherwise we list all recordsets and filter them\n by 
-      name.
+      - if zone is set we try to search recordsets in this zone, otherwise
+      we list all recordsets and filter them by name.
     type: str
   tags:
     description:
@@ -38,7 +39,8 @@ options:
   status:
     description:
       - Status of the record sets to be queried.
-    choices: ['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update', 'pending_delete']
+    choices: ['active', 'error', 'disable', 'freeze', 'pending_create',
+    'pending_update', 'pending_delete']
     type: str
   type:
     description:
@@ -101,20 +103,12 @@ class DNSRecordsetInfoModule(OTCModule):
         zone=dict(required=False),
         name=dict(required=False),
         tags=dict(required=False),
-        status=dict(required=False, choices=['active', 'error', 'disable', 'freeze', 'pending_create',
-                                             'pending_update',\n 'pending_delete']),
-        type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname', 'txt', 'ns', 'srv', 'caa', 'ptr']),
+        status=dict(required=False, choices=['active', 'error', 'disable','freeze', 'pending_create','pending_update','pending_delete']),
+        type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname','txt','ns', 'srv', 'caa', 'ptr'])
     )
     module_kwargs = dict(
         supports_check_mode=True,
-        required_if=[
-            ('name', not None,
-             ['zone'])
-        ]
-    )
-
-    module_kwargs = dict(
-        supports_check_mode=True
+        required_if=[('name', not None,['zone'])]
     )
 
     def run(self):
@@ -125,13 +119,15 @@ class DNSRecordsetInfoModule(OTCModule):
 
         if self.params['zone']:
             try:
-                query['zone'] = self.conn.dns.find_zone(name_or_id=self.params['zone'], ignore_missing=False).id
+                query['zone'] = self.conn.dns.find_zone(
+                    name_or_id=self.params['zone'], ignore_missing=False).id
             except self.sdk.exceptions.ResourceNotFound:
                 self.fail_json(msg="Zone not found")
             if self.params['name']:
                 try:
                     recordset = self.conn.dns.find_recordset(
-                        zone=query['zone'], name_or_id=self.params['name'], ignore_missing=False)
+                        zone=query['zone'], name_or_id=self.params['name'],
+                        ignore_missing=False)
                     dt = recordset.to_dict()
                     dt.pop('location')
                     data.append(dt)
