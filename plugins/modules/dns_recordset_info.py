@@ -26,14 +26,15 @@ options:
     type: str
   name:
     description:
-      - ID or name of the existing record set. if zone is set we try to search recordsets in this zone, otherwise we list all recordsets and filter them by name.
+      - ID or name of the existing record set. if zone is set we try to search recordsets in this
+      zone, otherwise we list all recordsets and filter them by name.
     type: str
   tags:
     description:
       - Resource tag.
     type: str
   status:
-    decription:
+    description:
       - Status of the recordsets to be queried.
     choices: ['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update', 'pending_delete']
     type: str
