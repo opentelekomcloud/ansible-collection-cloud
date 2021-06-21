@@ -105,12 +105,12 @@ class DNSRecordsetInfoModule(OTCModule):
         tags=dict(required=False),
         status=dict(required=False, choices=['active', 'error', 'disable', 'freeze',
                                              'pending_create', 'pending_update', 'pending_delete']),
-        type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname','txt', 'ns', 'srv', 'caa',
+        type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname', 'txt', 'ns', 'srv', 'caa',
                                            'ptr'])
     )
     module_kwargs = dict(
         supports_check_mode=True,
-        required_if=[('name', not None,['zone'])]
+        required_if=[('name', not None, ['zone'])]
     )
 
     def run(self):
