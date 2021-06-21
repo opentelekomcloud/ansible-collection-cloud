@@ -45,7 +45,6 @@ options:
       - Type of the record sets to be queried.
     choices: ['a', 'aaaa', 'mx', 'cname', 'txt', 'ns', 'srv', 'caa', 'ptr']
     type: str
-
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
