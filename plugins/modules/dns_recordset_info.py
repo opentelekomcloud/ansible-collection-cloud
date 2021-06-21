@@ -13,17 +13,16 @@
 
 DOCUMENTATION = '''
 module: dns_recordset_info
-short_description: Getting info about DNS Recordsets
+short_description: Get info about DNS recordsets.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.8.1"
 author: "Yustina Kvrivishvili (@YustinaKvr)"
 description:
-  - Get DNS record set info from the OTC.
+  - Get DNS recordset info from the OTC.
 options:
   zone:
     description:
-      - ID or name of the required zone. If name had been provided, only public zone could be 
-      returned. If private zone is required, only ID should be passed.
+      - ID or name of the required zone. If name had been provided, only public zone could be returned. If private zone is required, only ID shoul be passed.
     type: str
   name:
     description:
@@ -34,19 +33,17 @@ options:
       - Resource tag.
     type: str
   status:
-    description:
-      - Status of the record sets to be queried.
-    choices: ['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update',
-    'pending_delete']
+    decription:
+      - Status of the recordsets to be queried.
+    choices: ['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update', 'pending_delete']
     type: str
   type:
     description:
-      - Type of the record sets to be queried.
+      - Type of the recordsets to be queried.
     choices: ['a', 'aaaa', 'mx', 'cname', 'txt', 'ns', 'srv', 'caa', 'ptr']
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
-
 RETURN = '''
 dns_recordset:
   description: List of dictionaries describing recordset and its metadata.
