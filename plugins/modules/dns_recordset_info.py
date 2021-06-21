@@ -22,13 +22,13 @@ description:
 options:
   zone:
     description:
-      - ID or name of the required zone. If name had been provided, only public zone could be returned. If private
-        zone is required, only ID should be passed.
+      - ID or name of the required zone. If name had been provided, only public zone could be returned. If private\n 
+      zone is required, only ID should be passed.
     type: str
   name:
     description:
       - ID or name of the existing record set.
-      - if zone is set we try to search recordsets in this zone, otherwise we list all recordsets and filter them by
+      - if zone is set we try to search recordsets in this zone, otherwise we list all recordsets and filter them\n by 
       name.
     type: str
   tags:
@@ -101,8 +101,8 @@ class DNSRecordsetInfoModule(OTCModule):
         zone=dict(required=False),
         name=dict(required=False),
         tags=dict(required=False),
-        status=dict(required=False, choices=['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update',
-                                             'pending_delete']),
+        status=dict(required=False, choices=['active', 'error', 'disable', 'freeze', 'pending_create',
+                                             'pending_update',\n 'pending_delete']),
         type=dict(required=False, choices=['a', 'aaaa', 'mx', 'cname', 'txt', 'ns', 'srv', 'caa', 'ptr']),
     )
     module_kwargs = dict(
@@ -130,9 +130,8 @@ class DNSRecordsetInfoModule(OTCModule):
                 self.fail_json(msg="Zone not found")
             if self.params['name']:
                 try:
-                    recordset = self.conn.dns.find_recordset(zone=query['zone'],
-                                                             name_or_id=self.params['name'],
-                                                             ignore_missing=False)
+                    recordset = self.conn.dns.find_recordset(
+                        zone=query['zone'], name_or_id=self.params['name'], ignore_missing=False)
                     dt = recordset.to_dict()
                     dt.pop('location')
                     data.append(dt)
