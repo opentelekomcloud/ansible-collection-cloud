@@ -22,15 +22,13 @@ description:
 options:
   zone:
     description:
-      - ID or name of the required zone. If name had been provided,
-      only public zone could be returned. If private zone is required,
-      only ID should be passed.
+      - ID or name of the required zone. If name had been provided, only public zone could be 
+      returned. If private zone is required, only ID should be passed.
     type: str
   name:
     description:
       - ID or name of the existing record set.
-      - if zone is set we try to search recordsets in this zone, otherwise
-      we list all recordsets and filter them by name.
+      - if zone is set we try to search recordsets in this zone, otherwise we list all recordsets and filter them by name.
     type: str
   tags:
     description:
@@ -39,8 +37,8 @@ options:
   status:
     description:
       - Status of the record sets to be queried.
-    choices: ['active', 'error', 'disable', 'freeze', 'pending_create',
-    'pending_update', 'pending_delete']
+    choices: ['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update', 
+    'pending_delete']
     type: str
   type:
     description:
