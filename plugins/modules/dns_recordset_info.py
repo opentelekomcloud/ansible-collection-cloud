@@ -22,13 +22,12 @@ description:
 options:
   zone:
     description:
-      - ID or name of the required zone. If name had been provided, only public zone could be
+      - ID or name of the required zone. If name had been provided, only public zone could be 
       returned. If private zone is required, only ID should be passed.
     type: str
   name:
     description:
-      - ID or name of the existing record set.
-      - if zone is set we try to search recordsets in this zone, otherwise we list all recordsets and filter them by name.
+      - ID or name of the existing record set. if zone is set we try to search recordsets in this zone, otherwise we list all recordsets and filter them by name.
     type: str
   tags:
     description:
