@@ -22,7 +22,8 @@ description:
 options:
   zone:
     description:
-      - ID or name of the required zone. If name had been provided, only public zone could be returned. If private zone is required, only ID shoul be passed.
+      - ID or name of the required zone. If name had been provided, only public zone could be 
+      returned. If private zone is required, only ID should be passed.
     type: str
   name:
     description:
