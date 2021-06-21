@@ -44,6 +44,7 @@ options:
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
+
 RETURN = '''
 dns_recordset:
   description: List of dictionaries describing recordset and its metadata.
