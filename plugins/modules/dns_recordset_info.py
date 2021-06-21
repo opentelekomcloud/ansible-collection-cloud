@@ -22,7 +22,7 @@ description:
 options:
   zone:
     description:
-      - ID or name of the required zone. If name had been provided, only public zone could be 
+      - ID or name of the required zone. If name had been provided, only public zone could be
       returned. If private zone is required, only ID should be passed.
     type: str
   name:
@@ -37,7 +37,7 @@ options:
   status:
     description:
       - Status of the record sets to be queried.
-    choices: ['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update', 
+    choices: ['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update',
     'pending_delete']
     type: str
   type:
