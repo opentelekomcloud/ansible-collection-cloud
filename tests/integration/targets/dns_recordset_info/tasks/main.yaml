@@ -49,7 +49,7 @@
     - name: Get info about created recordset
       opentelekomcloud.cloud.dns_recordset_info:
         zone: "{{ dns_zo.zone.id }}"
-        name: "{{ recordset_random_name }}"
+        name: "{{ dns_rs.recordset.name }}"
       register: rs
 
     - name: assert result
@@ -58,6 +58,7 @@
           - rs is success
           - rs is not changed
           - rs | length > 0
+
 
   always:
     - block:
@@ -70,6 +71,6 @@
 
       - name: Drop created DNS zone
         opentelekomcloud.cloud.dns_zone:
-          name: "{{ zone_name }}"
+          name: "{{ dns_zo.zone.name }}"
           state: absent
       ignore_errors: yes
