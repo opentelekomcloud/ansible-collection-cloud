@@ -171,4 +171,3 @@ plugin_routing:
       redirect: openstack.cloud.volume_snapshot
     volume_snapshot_info:
       redirect: openstack.cloud.volume_snapshot_info
-
