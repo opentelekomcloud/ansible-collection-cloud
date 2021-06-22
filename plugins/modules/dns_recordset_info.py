@@ -22,13 +22,13 @@ description:
 options:
   zone:
     description:
-      - ID or name of the required zone. If name had been provided, only public zone could be
-      returned. If private zone is required, only ID should be passed.
+      - ID or name of the required zone. If name had been provided, only public zone could be\
+        returned. If private zone is required, only ID should be passed.
     type: str
   name:
     description:
-      - ID or name of the existing record set. if zone is set we try to search recordsets in this
-      zone, otherwise we list all recordsets and filter them by name.
+      - ID or name of the existing record set. if zone is set we try to search recordsets in this\
+        zone, otherwise we list all recordsets and filter them by name.
     type: str
   tags:
     description:
@@ -37,12 +37,12 @@ options:
   status:
     description:
       - Status of the recordsets to be queried.
-    choices: ['active', 'error', 'disable', 'freeze', 'pending_create', 'pending_update', 'pending_delete']
+    choices: [active, error, disable, freeze, pending_create, pending_update, pending_delete]
     type: str
   type:
     description:
       - Type of the recordsets to be queried.
-    choices: ['a', 'aaaa', 'mx', 'cname', 'txt', 'ns', 'srv', 'caa', 'ptr']
+    choices: [a, aaaa, mx, cname, txt, ns, srv, caa, ptr]
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
