@@ -146,6 +146,9 @@ class DehHostModule(OTCModule):
         tags=dict(required=False, type='list', elements='dict'),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def _system_state_change(self, obj):
         state = self.params['state']
@@ -179,14 +182,12 @@ class DehHostModule(OTCModule):
             if hosts and (self.params['name'] == hosts[0].name):
                 host = self.conn.deh.get_host(host=hosts[0].id)
 
-        if self.ansible.check_mode:
-            self.exit(changed=self._system_state_change(host))
-
         # Host deletion
         if self.params['state'] == 'absent':
             changed = False
-
             if host:
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 self.conn.deh.delete_host(host)
                 changed = True
 
@@ -197,6 +198,8 @@ class DehHostModule(OTCModule):
 
             if host:
                 # DeH host modification
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 if self.params['auto_placement'] and (self.params['auto_placement'] != host.auto_placement):
                     attrs['auto_placement'] = self.params['auto_placement']
                 if self.params['name'] and (self.params['name'] != host.name):
@@ -216,6 +219,8 @@ class DehHostModule(OTCModule):
                                  'availability_zone or host_type '
                                  'is missing for DeH allocation.')
                     )
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 attrs['name'] = self.params['name']
                 if self.params['auto_placement']:
                     attrs['auto_placement'] = self.params['auto_placement']

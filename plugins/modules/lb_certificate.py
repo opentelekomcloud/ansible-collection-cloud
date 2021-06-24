@@ -126,6 +126,9 @@ class LoadBalancerCertificateModule(OTCModule):
         state=dict(type='str', choices=['present', 'absent'],
                    default='present')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     otce_min_version = '0.10.1'
 

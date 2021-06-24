@@ -146,6 +146,9 @@ class NATGatewayInfoModule(OTCModule):
         spec=dict(required=False, choices=["1", "2", "3", "4"]),
         status=dict(required=False)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

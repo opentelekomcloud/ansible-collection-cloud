@@ -1,0 +1,162 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.cce_cluster:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.network:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.subnet:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.router:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.keypair:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.cce_cluster_node:
+      cloud: "{{ test_cloud }}"
+  vars:
+    prefix: scenario00a-
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
+
+    - name: Set initial facts
+      set_fact:
+        keypair_name: "{{ ( prefix + '-key') }}"
+        network_name: "{{ ( prefix + '-test-network') }}"
+        subnet_name: "{{ ( prefix + '-test-subnet') }}"
+        router_name: "{{ ( prefix + '-test-router') }}"
+        cce_cluster_name: "{{ ( 'z-' + prefix + '-acc-test') }}"
+        cce_flavor: "cce.s1.small"
+        container_network_mode: "overlay_l2"
+        cce_node_name: "{{ ( 'z-' + prefix + '-node') }}"
+
+    - name: Create network for test
+      openstack.cloud.network:
+        name: "{{ network_name }}"
+        state: present
+      register: test_network
+
+    - name: Create subnet for test
+      openstack.cloud.subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ test_network.network.name }}"
+        cidr: "192.168.0.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: test_subnet
+
+    - name: Create router for test
+      openstack.cloud.router:
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: true
+        interfaces:
+          - net: "{{ test_network.network.name }}"
+            subnet: "{{ test_subnet.subnet.name }}"
+      register: test_router
+
+    - name: Create CCE Cluster
+      opentelekomcloud.cloud.cce_cluster:
+        name: "{{ cce_cluster_name }}"
+        flavor: "{{ cce_flavor }}"
+        description: "Ansible collection test"
+        router: "{{ router_name }}"
+        network: "{{ network_name }}"
+        container_network_mode: "{{ container_network_mode }}"
+        wait: true
+      register: cluster
+
+    - name: assert result
+      assert:
+        that:
+          - cluster is success
+          - cluster is changed
+
+    - name: Keypair creation
+      openstack.cloud.keypair:
+        state: present
+        name: "{{ keypair_name }}"
+      register: ssh_key
+
+    - name: assert result
+      assert:
+        that:
+          - ssh_key is success
+          - ssh_key is changed
+
+    - name: Create CCE Cluster Node
+      opentelekomcloud.cloud.cce_cluster_node:
+        annotations:
+          annotation1: 'abc'
+        availability_zone: 'eu-de-01'
+        cluster: "{{ cce_cluster_name }}"
+        count: 1
+        data_volumes:
+          - volumetype: 'SATA'
+            size: 100
+            encrypted: false
+            cmk_id: ''
+          - volumetype: 'SAS'
+            size: 120
+        flavor: 's2.large.2'
+        k8s_tags:
+          testtag: 'value'
+        ssh_key: "{{ keypair_name }}"
+        labels:
+          mein: 'label'
+        max_pods: 16
+        name: "{{ cce_node_name }}"
+        network: "{{ test_network.network.name }}"
+        os: 'CentOS 7.7'
+        root_volume_size: 40
+        root_volume_type: SATA
+        tags:
+          - key: 'key1'
+            value: 'value1'
+          - key: 'key2'
+            value: 'value2'
+        wait: true
+        state: present
+      register: node
+
+    - name: assert result
+      assert:
+        that:
+          - node is success
+          - node is changed
+
+  always:
+    - block:
+        # Cleanup
+        - name: Drop CCE cluster node
+          opentelekomcloud.cloud.cce_cluster_node:
+            cluster: "{{ cce_cluster_name }}"
+            name: "{{ cce_node_name }}"
+            state: "absent"
+
+        - name: Drop keypair
+          openstack.cloud.keypair:
+            name: "{{ keypair_name }}"
+            state: "absent"
+
+        - name: Drop cluster
+          opentelekomcloud.cloud.cce_cluster:
+            name: "{{ cce_cluster_name }}"
+            state: "absent"
+
+        - name: Drop router
+          openstack.cloud.router:
+            name: "{{ router_name }}"
+            state: absent
+
+        - name: Drop subnet
+          openstack.cloud.subnet:
+            name: "{{ subnet_name }}"
+            state: absent
+
+        - name: Drop network
+          openstack.cloud.network:
+            name: "{{ network_name }}"
+            state: absent
+      ignore_errors: yes

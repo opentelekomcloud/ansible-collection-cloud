@@ -119,6 +119,9 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class AntiDDoSOptionalPoliciesInfoModule(OTCModule):
     argument_spec = dict()
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

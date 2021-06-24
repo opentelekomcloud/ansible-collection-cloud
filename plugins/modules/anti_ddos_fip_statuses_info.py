@@ -79,6 +79,9 @@ class AntiDDoSFIPStatusesInfoModule(OTCModule):
                              'packetcleaning', 'packetdropping'],
                     required=False)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

@@ -66,6 +66,9 @@ class RdsDatastoreInfoModule(OTCModule):
         datastore=dict(choices=['mysql', 'postgresql', 'sqlserver'],
                        default='postgresql'),
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
         datastore = self.params['datastore']

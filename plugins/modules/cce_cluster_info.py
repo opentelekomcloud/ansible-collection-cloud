@@ -74,6 +74,9 @@ class CceClusterInfoModule(OTCModule):
         status=dict(required=False, choices=['available', 'creating',
                                              'deleting'])
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

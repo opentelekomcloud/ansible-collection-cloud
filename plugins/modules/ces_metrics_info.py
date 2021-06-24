@@ -118,6 +118,9 @@ class CesMetricsInfoModule(OTCModule):
         order=dict(required=False, type='str', choices=['desc', 'asc'], default='desc'),
         # No dim query as it isn't supported by the API
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 
