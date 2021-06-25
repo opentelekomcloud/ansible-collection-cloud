@@ -67,10 +67,3 @@ dns_recordset:
       type: obj
       sample: "CREATE"
 '''
-
-EXAMPLES = '''
-#Get info about choosen DNS recordset.
-- opentelekomcloud.cloud.dns_recordset_info:
-    zone: "test.zone."
-  register: recordsets
-'''
