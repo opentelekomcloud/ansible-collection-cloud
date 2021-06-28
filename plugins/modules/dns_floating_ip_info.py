@@ -23,6 +23,24 @@ options:
   region:
     description:
       - Region of the tenant.
+    required: true
+    type: str
+  floatingip_id:
+    description:
+      - EIP ID.
+    required: true
+    type: str
+  enterprise_project_id:
+    description:
+      - Specifies the ID of the enterprise project associated with the PTR record.
+    type: str
+  tags:
+    description:
+      - Resource tag. The format is as follows: key1,value1|key2,value2.
+    type: str
+  status:
+    description:
+      - Resource status.
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -67,3 +85,73 @@ dns_recordset:
       type: obj
       sample: "CREATE"
 '''
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
+
+
+class DNSRecordsetInfoModule(OTCModule):
+
+    argument_spec = dict(
+        region=dict(required=True),
+        floatingip_id=dict(required=True),
+        enterprise_project_id=dict(required=False),
+        tags=dict(required=False),
+        status=dict(required=False)
+    )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
+
+    def run(self):
+
+        data = []
+        query = {}
+        recordset = None
+
+        if self.params['zone']:
+            try:
+                query['zone'] = self.conn.dns.find_zone(
+                    name_or_id=self.params['zone'], ignore_missing=False).id
+            except self.sdk.exceptions.ResourceNotFound:
+                self.fail_json(msg="Zone not found")
+            if self.params['name']:
+                try:
+                    recordset = self.conn.dns.find_recordset(
+                        zone=query['zone'], name_or_id=self.params['name'],
+                        ignore_missing=False)
+                    dt = recordset.to_dict()
+                    dt.pop('location')
+                    data.append(dt)
+
+                    self.exit(
+                        changed=False,
+                        dns_recordset=data
+                    )
+                except self.sdk.exceptions.ResourceNotFound:
+                    self.fail_json(msg="Recordset not found")
+        if self.params['name']:
+            query['name'] = self.params['name']
+        if self.params['tags']:
+            query['tags'] = self.params['tags']
+        if self.params['status']:
+            query['status'] = self.params['status'].upper()
+        if self.params['type']:
+            query['type'] = self.params['type'].upper()
+
+        for raw in self.conn.dns.recordsets(**query):
+            dt = raw.to_dict()
+            dt.pop('location')
+            data.append(dt)
+
+        self.exit(
+            changed=False,
+            dns_recordset=data
+        )
+
+
+def main():
+    module = DNSRecordsetInfoModule()
+    module()
+
+
+if __name__ == '__main__':
+    main()
