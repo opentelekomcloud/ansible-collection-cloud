@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: dcs_instance
 short_description: Manage DCS Instances on Open Telekom Cloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.8.0"
+version_added: "0.8.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Manage DCS Instances on Open Telekom Cloud

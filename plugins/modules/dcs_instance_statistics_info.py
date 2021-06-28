@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: dcs_instance_statistics_info
 short_description: Get Instance Statistics
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.3.0"
+version_added: "0.8.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get Instance Statistics

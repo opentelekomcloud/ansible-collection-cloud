@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: dcs_instance_password
 short_description: Manage DCS Instance Passwords on Open Telekom Cloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.8.0"
+version_added: "0.8.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Manage DCS Instance Passwords on Open Telekom Cloud
@@ -30,7 +30,7 @@ options:
       - Old Password of the instance
     type: str
     required: true
-  id:
+  instance:
     description:
       - ID or name of the instance
     type: str
@@ -62,7 +62,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DcsInstancePasswordModule(OTCModule):
     argument_spec = dict(
-        id=dict(required=True),
+        instance=dict(required=True),
         old_password=dict(required=True, no_log=True),
         new_password=dict(required=True, no_log=True)
     )
@@ -72,7 +72,7 @@ class DcsInstancePasswordModule(OTCModule):
 
     def run(self):
         instance = self.conn.dcs.find_instance(
-            name_or_id=self.params['id'],
+            name_or_id=self.params['instance'],
             ignore_missing=True
         )
         if instance:

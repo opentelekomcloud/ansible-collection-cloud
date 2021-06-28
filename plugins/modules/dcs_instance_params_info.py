@@ -15,15 +15,15 @@ DOCUMENTATION = '''
 module: dcs_instance_params_info
 short_description: Get Instance Params
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.3.0"
+version_added: "0.8.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get Instance Statistics
 requirements: ["openstacksdk", "otcextensions"]
 options:
-  id:
+  instance:
     description:
-      - Instance ID of the chosen DCS Instance
+      - Instance ID or name of the chosen DCS Instance
     type: str
     required: true
 '''
@@ -164,7 +164,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DcsInstanceParamsInfoModule(OTCModule):
     argument_spec = dict(
-        id=dict(required=True)
+        instance=dict(required=True)
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -172,16 +172,28 @@ class DcsInstanceParamsInfoModule(OTCModule):
 
     def run(self):
         data = []
-
-        for raw in self.conn.dcs.instance_params(self.params['id']):
-            dt = raw.to_dict()
-            dt.pop('location')
-            data.append(dt)
-
-        self.exit(
-            changed=False,
-            instances=data
+        instance = self.conn.dcs.find_instance(
+            name_or_id=self.params['instance'],
+            ignore_missing=True
         )
+
+        if instance:
+            for raw in self.conn.dcs.instance_params(instance.id):
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
+
+            self.exit(
+                changed=False,
+                instances=data
+            )
+
+        else:
+            self.exit(
+                changed=False,
+                message=('No Instance with name or id %s found!', self.params['instance']),
+                failed=True
+            )
 
 
 def main():

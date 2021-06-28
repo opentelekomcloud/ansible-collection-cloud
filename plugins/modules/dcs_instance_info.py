@@ -15,26 +15,10 @@ DOCUMENTATION = '''
 module: dcs_instance_info
 short_description: Get Instance Informations
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.3.0"
+version_added: "0.8.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get Instance Informations
-options:
-  id:
-    description:
-      - Instance ID of the chosen DCS Instance
-    type: str
-    required: false
-  status:
-    description:
-      - Status of the chosen DCS Instance
-    type: str
-    required: false
-  name:
-    description:
-      - Name of the chosen DCS Instance
-    type: str
-    required: false
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -101,9 +85,6 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DcsInstanceInfoModule(OTCModule):
     argument_spec = dict(
-        id=dict(required=False),
-        name=dict(required=False),
-        status=dict(required=False),
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -118,27 +99,6 @@ class DcsInstanceInfoModule(OTCModule):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
-
-        # The API doesn't support queries, but we want to be able to not only list but also look for params of a specific instance
-        # This part removes other instances from the data result so that only the one with the given params will be shown
-        i = 0
-        while i < len(data):
-            if self.params['id']:
-                if data[i]['id'] != self.params['id']:
-                    del data[i]
-                    i = 0
-                    continue
-            if self.params['name']:
-                if data[i]['name'] != self.params['name']:
-                    del data[i]
-                    i = 0
-                    continue
-            if self.params['status']:
-                if data[i]['status'] != self.params['status']:
-                    del data[i]
-                    i = 0
-                    continue
-            i = i + 1
 
         self.exit(
             changed=False,

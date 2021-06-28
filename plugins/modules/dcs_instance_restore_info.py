@@ -15,13 +15,13 @@ DOCUMENTATION = '''
 module: dcs_instance_restore_info
 short_description: Get Instance Restore infos
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.3.0"
+version_added: "0.8.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get Instance Restore infos
 requirements: ["openstacksdk", "otcextensions"]
 options:
-  id:
+  instance:
     description:
       - Instance ID of the chosen DCS Instance
     type: str
@@ -74,7 +74,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DcsInstanceRestoreInfoModule(OTCModule):
     argument_spec = dict(
-        id=dict(required=True),
+        instance=dict(required=True),
         beginTime=dict(required=False),
         endTime=dict(required=False)
     )
@@ -86,21 +86,34 @@ class DcsInstanceRestoreInfoModule(OTCModule):
         data = []
         query = {}
 
-        query['instance'] = self.params['id']
-        if self.params['beginTime']:
-            query['beginTime'] = self.params['beginTime']
-        if self.params['endTime']:
-            query['endTime'] = self.params['endTime']
-
-        for raw in self.conn.dcs.restore_records(**query):
-            dt = raw.to_dict()
-            dt.pop('location')
-            data.append(dt)
-
-        self.exit(
-            changed=False,
-            instances=data
+        instance = self.conn.dcs.find_instance(
+            name_or_id=self.params['instance'],
+            ignore_missing=True
         )
+
+        if instance:
+            query['instance'] = instance.id
+            if self.params['beginTime']:
+                query['beginTime'] = self.params['beginTime']
+            if self.params['endTime']:
+                query['endTime'] = self.params['endTime']
+
+            for raw in self.conn.dcs.restore_records(**query):
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
+
+            self.exit(
+                changed=False,
+                instances=data
+            )
+
+        else:
+            self.exit(
+                changed=False,
+                message=('No Instance with name or id %s found!', self.params['instance']),
+                failed=True
+            )
 
 
 def main():
