@@ -88,6 +88,9 @@ class DehHostTypeInfoModule(OTCModule):
     argument_spec = dict(
         az=dict(required=True)
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

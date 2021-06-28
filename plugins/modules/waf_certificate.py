@@ -83,7 +83,8 @@ class WafCertificateModule(OTCModule):
     module_kwargs = dict(
         required_if=[
             ('state', 'present', ['content', 'private_key']),
-        ]
+        ],
+        supports_check_mode=True
     )
 
     otce_min_version = '0.8.0'

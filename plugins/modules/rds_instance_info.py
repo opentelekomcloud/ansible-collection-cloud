@@ -77,6 +77,9 @@ class RdsInstanceInfoModule(OTCModule):
         router=dict(type='str'),
         instance_type=dict(type='str', choices=['single', 'ha', 'replica'])
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def run(self):
 

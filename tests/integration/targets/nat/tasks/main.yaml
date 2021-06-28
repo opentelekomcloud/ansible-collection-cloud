@@ -49,6 +49,20 @@
             subnet: "{{ nat_subnet.subnet.name }}"
       register: nat_router
 
+    - name: Create NAT gateway - check mode
+      nat_gateway:
+        name: "{{ nat_gateway_name }}"
+        internal_network: "{{ network_name }}"
+        router: "{{ router_name }}"
+      check_mode: true
+      register: nat_gw_ch
+    
+    - name: assert result
+      assert:
+        that:
+          - nat_gw_ch is success
+          - nat_gw_ch is changed
+
     - name: Create NAT gateway
       nat_gateway:
         name: "{{ nat_gateway_name }}"
@@ -61,6 +75,19 @@
         that:
           - nat_gw is success
           - nat_gw.gateway.id is defined
+    
+    - name: Add NAT gateway description - check mode
+      nat_gateway:
+        name: "{{ nat_gw.gateway.name }}"
+        description: test-description
+      check_mode: true
+      register: nat_gw_ch
+
+    - name: assert result
+      assert:
+        that:
+          - nat_gw_ch is success
+          - nat_gw_ch is changed
     
     - name: Add NAT gateway description
       nat_gateway:
@@ -84,6 +111,20 @@
         that:
           - fip is success
           - fip.floating_ip.floating_ip_address is defined
+
+    - name: Add SNAT rule - check mode
+      nat_snat_rule:
+        nat_gateway: "{{ nat_gw.gateway.name }}"
+        network: "{{ network_name }}"
+        floating_ip: "{{ fip.floating_ip.floating_ip_address }}"
+      check_mode: true
+      register: snat_ch
+
+    - name: assert result
+      assert:
+        that:
+          - snat_ch is success
+          - snat_ch is changed
 
     - name: Add SNAT rule
       nat_snat_rule:
@@ -123,6 +164,23 @@
         that:
           - fip2 is success
           - fip2.floating_ip.floating_ip_address is defined
+
+    - name: Add DNAT rule - check mode
+      nat_dnat_rule:
+        nat_gateway: "{{ nat_gw.gateway.name }}"
+        floating_ip: "{{ fip2.floating_ip.floating_ip_address }}"
+        internal_service_port: 80
+        external_service_port: 80
+        protocol: tcp
+        private_ip: "{{ server.server.private_v4 }}"
+      check_mode: true
+      register: dnat_ch
+
+    - name: assert result
+      assert:
+        that:
+          - dnat_ch is success
+          - dnat_ch is changed
 
     - name: Add DNAT rule
       nat_dnat_rule:

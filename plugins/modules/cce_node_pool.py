@@ -67,7 +67,7 @@ options:
       - Name of the CCE Node Pool
     required: true
     type: str
-  network_id:
+  network:
     description:
       - ID of the network to which the CCE node pool belongs to.
     type: str
@@ -248,7 +248,7 @@ EXAMPLES = '''
     flavor: s2.large.2
     os: 'CentOS 7.7'
     name: my-nodepool
-    network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
+    network: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
     ssh_key: 'ssh-pub'
     state: present
   register: pool
@@ -274,7 +274,7 @@ EXAMPLES = '''
     min_node_count: 1
     max_node_count: 3
     name: test-ansible2
-    network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
+    network: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
     priority: 2
     os: 'CentOS 7.7'
     scale_down_cooldown_time: 5
@@ -329,7 +329,7 @@ class CceNodePoolModule(OTCModule):
         max_node_count=dict(required=False, type='int'),
         max_pods=dict(required=False, type='int'),
         name=dict(required=True),
-        network_id=dict(required=False),
+        network=dict(required=False),
         node_image_id=dict(required=False),
         os=dict(required=False),
         postinstall_script=dict(required=False),
@@ -348,6 +348,7 @@ class CceNodePoolModule(OTCModule):
         taints=dict(required=False, type='list', elements='dict'),
     )
     module_kwargs = dict(
+        supports_check_mode=True,
         required_if=[
             ('state', 'present',
                 [
@@ -355,7 +356,7 @@ class CceNodePoolModule(OTCModule):
                     'flavor',
                     'os',
                     'name',
-                    'network_id',
+                    'network',
                     'ssh_key'
                 ]),
             ('state', 'absent', ['cluster', 'name']),
@@ -386,6 +387,8 @@ class CceNodePoolModule(OTCModule):
         # Create CCE node pool
         if self.params['state'] == 'present':
             if not node_pool:
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 self.params.pop('cluster')
                 node_pool = self.conn.create_cce_node_pool(
                     cluster=cluster.id,
@@ -394,6 +397,8 @@ class CceNodePoolModule(OTCModule):
                 changed = True
             else:
                 # Modify CCE node pool not available right now
+                if self.ansible.check_mode:
+                    self.exit(changed=False)
                 pass
 
             self.exit_json(
@@ -408,6 +413,8 @@ class CceNodePoolModule(OTCModule):
 
             if node_pool:
                 changed = True
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 self.conn.cce.delete_node_pool(
                     cluster=cluster.id,
                     node_pool=node_pool.id,

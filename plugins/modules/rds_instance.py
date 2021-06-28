@@ -193,7 +193,8 @@ class RdsInstanceModule(OTCModule):
                 'network', 'router', 'security_group',
                 'password', 'region'
             ])
-        ]
+        ],
+        supports_check_mode=True
     )
 
     otce_min_version = '0.11.0'
@@ -208,7 +209,10 @@ class RdsInstanceModule(OTCModule):
         return False
 
     def run(self):
-        self.params['wait_timeout'] = self.params.pop('timeout')
+        if self.params['wait']:
+            self.params['wait_timeout'] = self.params.pop('timeout')
+        else:
+            self.params.pop('timeout')
         name = self.params['name']
 
         changed = False

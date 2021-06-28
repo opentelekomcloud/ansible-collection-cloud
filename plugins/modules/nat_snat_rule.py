@@ -152,6 +152,9 @@ class NatSnatModule(OTCModule):
         source_type=dict(required=False, type='int', choices=[0, 1]),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
 
     def _system_state_change(self, obj):
         state = self.params['state']
@@ -206,9 +209,6 @@ class NatSnatModule(OTCModule):
                 )
             attrs['floating_ip_id'] = ip.id
 
-        # if self.ansible.check_mode:
-        #    self.exit(changed=self._system_state_change(gateway))
-
         # SNAT rule deletion
         if self.params['state'] == 'absent':
             changed = False
@@ -216,6 +216,8 @@ class NatSnatModule(OTCModule):
             if self.params['id']:
                 snat_rule = self.conn.nat.get_snat_rule(self.params['id'])
                 if snat_rule:
+                    if self.ansible.check_mode:
+                        self.exit_json(changed=True)
                     self.conn.nat.delete_snat_rule(snat_rule.id)
                     self.exit(changed=True)
                 else:
@@ -226,6 +228,8 @@ class NatSnatModule(OTCModule):
                     )
 
             for rule in self.conn.nat.snat_rules(**attrs):
+                if self.ansible.check_mode:
+                    self.exit_json(changed=True)
                 if rule.id:
                     self.conn.nat.delete_snat_rule(rule.id)
                     changed = True
@@ -245,7 +249,8 @@ class NatSnatModule(OTCModule):
                     failed=True
                 )
             attrs['nat_gateway_id'] = gateway.id
-
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
             if self.params['source_type']:
                 attrs['source_type'] = self.params['source_type']
 
