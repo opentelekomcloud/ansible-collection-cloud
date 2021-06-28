@@ -7,10 +7,10 @@
 
     - name: Set facts
       set_fact:
-        network_name: "{{ prefix + '-dcs-network' }}"
-        subnet_name: "{{ prefix + '-dcs-subnet' }}"
-        router_name: "{{ prefix + '-dcs-router' }}"
-        sg_name: "{{ prefix + '-dcs-sg' }}"
+        network_name: "{{ prefix + 'test-dcs-network' }}"
+        subnet_name: "{{ prefix + 'test-dcs-subnet' }}"
+        router_name: "{{ prefix + 'test-dcs-router' }}"
+        sg_name: "{{ prefix + 'test-dcs-sg' }}"
         dcs_name: "{{ ( 'dcs' + prefix + '-dcs-name' ) }}"
         dcs_password: "ThisIsas4f3p4a77w0rd"
         dcs_password_new: "ThisIsnotans4f3password"
@@ -82,14 +82,13 @@
 
     - name: Getting Instance Informations
       opentelekomcloud.cloud.dcs_instance_info:
-        name: "{{ dcs_name }}"
 
     - name: Getting Statistics
       opentelekomcloud.cloud.dcs_instance_statistics_info:
     
     - name: Getting Params
       opentelekomcloud.cloud.dcs_instance_params_info:
-        id: "{{ dcs_ins.dcs_instance.id }}"
+        instance: "{{ dcs_ins.dcs_instance.id }}"
     
     - name: Getting Backups
       opentelekomcloud.cloud.dcs_instance_backup_info:
@@ -99,15 +98,15 @@
       opentelekomcloud.cloud.dcs_instance_restore_info:
         id: "{{ dcs_ins.dcs_instance.id }}"
     
-    # - name: Updating DCS Instance params
-    #   opentelekomcloud.cloud.dcs_instance:
-    #     name: "{{ dcs_name }}"
-    #     redis_config:
-    #       param_id: "1"
-    #       param_name: "timeout"
-    #       param_value: "100"
-    #   register: dcs_ins_up_par
-    #   check_mode: false
+    - name: Updating DCS Instance params
+      opentelekomcloud.cloud.dcs_instance:
+        name: "{{ dcs_name }}"
+        redis_config:
+          param_id: "1"
+          param_name: "timeout"
+          param_value: "100"
+      register: dcs_ins_up_par
+      check_mode: false
 
     - name: Restart Instance
       opentelekomcloud.cloud.dcs_instance:
@@ -116,17 +115,17 @@
       register: dcs_ins_up_par
       check_mode: true
 
-    # - name: Change Password
-    #   opentelekomcloud.cloud.dcs_instance_password:
-    #     id: "{{ dcs_name }}"
-    #     old_password: "{{ dcs_password }}"
-    #     new_password: "{{ dcs_password_new}}"
-    #   register: dcs_ins_up_par
-    #   check_mode: false
+    - name: Change Password
+      opentelekomcloud.cloud.dcs_instance_password:
+        id: "{{ dcs_name }}"
+        old_password: "{{ dcs_password }}"
+        new_password: "{{ dcs_password_new}}"
+      register: dcs_ins_up_par
+      check_mode: false
 
     - name: Backup Instance
       opentelekomcloud.cloud.dcs_instance_backup:
-        instance_id: "{{ dcs_ins.dcs_instance.id }}"
+        instance: "{{ dcs_ins.dcs_instance.id }}"
       register: dcs_ins_back
       check_mode: false
         
