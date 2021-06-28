@@ -20,7 +20,6 @@ plugins/modules/cce_cluster_node.py validate-modules:missing-gplv3-license
 plugins/modules/dcs_instance_backup_info.py validate-modules:missing-gplv3-license
 plugins/modules/dcs_instance_backup.py validate-modules:missing-gplv3-license
 plugins/modules/dcs_instance_info.py validate-modules:missing-gplv3-license
-plugins/modules/dcs_instance_maintain_info.py validate-modules:missing-gplv3-license
 plugins/modules/dcs_instance_params_info.py validate-modules:missing-gplv3-license
 plugins/modules/dcs_instance_password.py validate-modules:missing-gplv3-license
 plugins/modules/dcs_instance_restore_info.py validate-modules:missing-gplv3-license

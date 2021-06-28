@@ -20,7 +20,7 @@ author: "Sebastian Gode (@SebastianGode)"
 description:
   - Manage DCS Instance-Backups on Open Telekom Cloud
 options:
-  instance_id:
+  instance:
     description:
       - Specifies the name or ID of the instance
     type: str
@@ -78,17 +78,17 @@ dcs_instance:
 EXAMPLES = '''
 # Create a Backup
 - opentelekomcloud.cloud.dcs_instance_backup:
-    instance_id: 12345678-20fb-441b-a0cd-46369a9f7db0
+    instance: 12345678-20fb-441b-a0cd-46369a9f7db0
     description: "This is a test"
 
 # Restore a backup
 - opentelekomcloud.cloud.dcs_instance_backup:
-    instance_id: 12345678-20fb-441b-a0cd-46369a9f7db0
+    instance: 12345678-20fb-441b-a0cd-46369a9f7db0
     backup_id: 12345678-f021-417f-b019-dc02182926a9
 
 # Delete a backup
 - opentelekomcloud.cloud.dcs_instance_backup:
-    instance_id: 12345678-20fb-441b-a0cd-46369a9f7db0
+    instance: 12345678-20fb-441b-a0cd-46369a9f7db0
     backup_id: 12345678-f021-417f-b019-dc02182926a9
     state: absent
 '''
@@ -98,13 +98,17 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DcsInstanceModule(OTCModule):
     argument_spec = dict(
-        instance_id=dict(required=True),
+        instance=dict(required=True),
         description=dict(required=False),
         backup_id=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
-        supports_check_mode=True
+        supports_check_mode=True,
+        required_if=[
+            ('state', 'absent',
+             ['backup_id'])
+        ]
     )
 
     def run(self):
@@ -112,7 +116,7 @@ class DcsInstanceModule(OTCModule):
         attrs = {}
 
         instance = self.conn.dcs.find_instance(
-            name_or_id=self.params['instance_id'],
+            name_or_id=self.params['instance'],
             ignore_missing=True
         )
         if instance:
@@ -135,22 +139,15 @@ class DcsInstanceModule(OTCModule):
                     self.exit_json(True)
 
             elif self.params['state'] == 'absent':
-                if self.params['backup_id']:
-                    if not self.ansible.check_mode:
-                        dcs_instance = self.conn.dcs.delete_instance_backup(self.params['backup_id'], instance.id)
-                        self.exit(changed=True, dcs_instance=dcs_instance)
-                    self.exit_json(True)
-                else:
-                    self.exit(
-                        changed=False,
-                        message=('No backup_id %s provided but required for deletion!'),
-                        failed=True
-                    )
+                if not self.ansible.check_mode:
+                    dcs_instance = self.conn.dcs.delete_instance_backup(self.params['backup_id'], instance.id)
+                    self.exit(changed=True, dcs_instance=dcs_instance)
+                self.exit_json(True)
 
         else:
             self.exit(
                 changed=False,
-                message=('No Instance with name or id %s found!', self.params['id']),
+                message=('No Instance with name or id %s found!', self.params['instance']),
                 failed=True
             )
 
