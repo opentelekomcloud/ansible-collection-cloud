@@ -19,6 +19,12 @@ version_added: "0.8.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get Instance Statistics
+options:
+  instance_id:
+    description:
+      - Instance ID to filter results for that instance
+    type: str
+    required: false
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -47,8 +53,12 @@ instances:
 '''
 
 EXAMPLES = '''
-# Query statistics
+# Query statistics about all instances
 - opentelekomcloud.cloud.dcs_instance_statistics_info:
+
+# Query statistics about a specific instance
+- opentelekomcloud.cloud.dcs_instance_statistics_info:
+        instance_id: "12345678-b17b-434d-b6a1-4cc5abb1f2ca"
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -56,6 +66,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DcsInstanceStatisticsInfoModule(OTCModule):
     argument_spec = dict(
+        instance_id=dict(required=False)
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -63,15 +74,27 @@ class DcsInstanceStatisticsInfoModule(OTCModule):
 
     def run(self):
         data = []
+        final_data = []
 
         for raw in self.conn.dcs.statistics():
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
 
+        i = 0
+        while i < len(data):
+            if self.params['instance_id']:
+                if data[i]['instance_id'] == self.params['instance_id']:
+                    final_data = data[i]
+                    break
+            else:
+                final_data = data
+                break
+            i = i + 1
+
         self.exit(
             changed=False,
-            instances=data
+            instances=final_data
         )
 
 
