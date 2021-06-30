@@ -40,7 +40,7 @@ class DdsService(service_description.ServiceDescription):
     )
 
 def main():
-    module = DDSDatabaseVersionInfoModule()
+    module = DdsService()
     module()
 
 
