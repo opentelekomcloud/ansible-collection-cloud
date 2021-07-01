@@ -66,31 +66,24 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DcsInstanceStatisticsInfoModule(OTCModule):
     argument_spec = dict(
-        instance_id=dict(required=False)
+        instance_id=dict(required=False),
     )
     module_kwargs = dict(
         supports_check_mode=True
     )
 
     def run(self):
-        data = []
         final_data = []
 
         for raw in self.conn.dcs.statistics():
             dt = raw.to_dict()
             dt.pop('location')
-            data.append(dt)
-
-        i = 0
-        while i < len(data):
             if self.params['instance_id']:
-                if data[i]['instance_id'] == self.params['instance_id']:
-                    final_data = data[i]
+                if raw.instance_id == self.params['instance_id']:
+                    final_data = dt
                     break
             else:
-                final_data = data
-                break
-            i = i + 1
+                final_data.append(dt)
 
         self.exit(
             changed=False,
