@@ -31,6 +31,7 @@ options:
     description:
       - CCE cluster name or id which hosts the cce cluster node
     type: str
+    required: true
   count:
     description:
       - Cluster node count which will be created.
@@ -61,7 +62,7 @@ options:
   k8s_tags:
     description: Dictionary of Kubernetes tags.
     type: dict
-  keypair:
+  ssh_key:
     description: Name of the public key to login
     type: str
   labels:
@@ -77,6 +78,10 @@ options:
     description:
       - Name of the CCE cluster node.
     required: true
+    type: str
+  network:
+    description:
+      - Network ID of the CCE cluster node.
     type: str
   node_image_id:
     description: ID of a custom image used in a baremetall scenario.
@@ -274,8 +279,12 @@ EXAMPLES = '''
     cluster: "{{ cluster_name_or_id }}"
     count: 1
     data_volumes:
-      - SATA: 150
-      - SAS: 100
+      - volumetype: 'SATA'
+        size: 100
+        encrypted: False
+        cmk_id: ''
+      - volumetype: 'SAS'
+        size: 120
     flavor: 's2.large.2'
     k8s_tags:
       testtag: 'value'
@@ -284,6 +293,7 @@ EXAMPLES = '''
       mein: 'label'
     max_pods: 16
     name: "{{ cce_node_name }}"
+    network: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
     os: 'CentOS 7.7'
     root_volume_size: 40
     root_volume_type: SATA
@@ -309,7 +319,7 @@ class CceClusterNodeModule(OTCModule):
     argument_spec = dict(
         annotations=dict(required=False, type='dict'),
         availability_zone=dict(required=False),
-        cluster=dict(required=False),
+        cluster=dict(required=True),
         count=dict(required=False, type='int', default=1),
         data_volumes=dict(
             required=False,
@@ -322,11 +332,12 @@ class CceClusterNodeModule(OTCModule):
         flavor=dict(required=False),
         floating_ip=dict(required=False),
         k8s_tags=dict(required=False, type='dict'),
-        keypair=dict(required=False),
+        ssh_key=dict(required=False),
         labels=dict(required=False, type='dict'),
         lvm_config=dict(required=False),
         max_pods=dict(required=False, type='int'),
         name=dict(required=True),
+        network=dict(required=False),
         node_image_id=dict(required=False),
         offload_node=dict(required=False, type='bool'),
         os=dict(required=False),
@@ -345,7 +356,8 @@ class CceClusterNodeModule(OTCModule):
     module_kwargs = dict(
         required_if=[
             ('state', 'present',
-             ['availability_zone', 'cluster', 'flavor', 'keypair', 'data_volumes']),
+             ['availability_zone', 'cluster', 'flavor', 'ssh_key',
+              'data_volumes', 'network']),
             ('state', 'absent', ['cluster', 'name']),
         ],
         supports_check_mode=True
