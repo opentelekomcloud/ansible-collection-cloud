@@ -197,6 +197,13 @@ options:
       ECS when deleting the ECS.
       - The default value is false.
     type: bool
+  force_delete:
+    description:
+      - Specifies whether to forcibly delete an AS group, remove the ECS 
+      instances and release them when the AS group is running instances or 
+      performing scaling actions.
+    type: bool
+    default: 'no'
   enterprise_project_id:
     description:
       - Specifies the enterprise project ID, which is used to specify
@@ -317,6 +324,7 @@ class ASGroupModule(OTCModule):
         notifications=dict(required=False, type='list', elements='str'),
         delete_publicip=dict(required=False, type='bool', default=False),
         delete_volume=dict(required=False, type='bool', default=False),
+        force_delete=dict(required=False, type='bool', default=False),
         enterprise_project_id=dict(required=False),
         multi_az_priority_policy=dict(
             required=False, choices=['equilibrium_distribute', 'pick_first'],
@@ -792,8 +800,9 @@ class ASGroupModule(OTCModule):
 
         return False
 
-    def _is_group_can_be_deleted(self):
-        pass
+    def _is_group_can_be_deleted(self, as_group):
+        as_instances = list(self.conn.auto_scaling.instances(as_group))
+        return False if as_instances else True
 
     def _system_state_change(self, as_group, as_configuration,
                              desire_instance_number, min_instance_number,
@@ -843,6 +852,7 @@ class ASGroupModule(OTCModule):
         notifications = self.params['notifications']
         delete_publicip = self.params['delete_publicip']
         delete_volume = self.params['delete_volume']
+        force_delete = self.params['force_delete']
         enterprise_project_id = self.params['enterprise_project_id']
         multi_az_priority_policy = self.params['multi_az_priority_policy']
         action = self.params['action']
@@ -934,12 +944,23 @@ class ASGroupModule(OTCModule):
                         )
 
                 else:
-                    self.conn.auto_scaling.delete_group(group)
-                    changed = True
-                    self.exit(
-                        changed=changed,
-                        msg="AS Group {0} was deleted".format(as_group)
-                    )
+                    if force_delete or self._is_group_can_be_deleted(group):
+                        self.conn.auto_scaling.delete_group(
+                            as_group=group,
+                            force_delete=force_delete
+                        )
+                        changed = True
+                        self.exit(
+                            changed=changed,
+                            msg="AS Group {0} was deleted".format(as_group)
+                        )
+                    else:
+                        changed = False
+                        self.fail(
+                            changed=changed,
+                            msg="AS Group {0} can't be deleted due to "
+                                "AS Instances presence".format(as_group)
+                        )
 
             else:
 
