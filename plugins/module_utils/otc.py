@@ -40,6 +40,9 @@ def openstack_full_argument_spec(**kwargs):
         interface=dict(
             default='public', choices=['public', 'internal', 'admin'],
             aliases=['endpoint_type']),
+        sdk_log_path=dict(default=None, type='str'),
+        sdk_log_level=dict(
+            default='WARN', type='str', choices=['ERROR', 'WARN', 'INFO', 'DEBUG'])
     )
     spec.update(kwargs)
     return spec
@@ -95,6 +98,7 @@ class OTCModule:
         self.exit = self.exit_json = self.ansible.exit_json
         self.fail = self.fail_json = self.ansible.fail_json
         self.sdk, self.conn = self.openstack_cloud_from_module()
+        self.setup_sdk_logging()
 
     def log(self, msg):
         """Prints log message to system log.
@@ -113,6 +117,16 @@ class OTCModule:
         if self.ansible._debug or self.ansible._verbosity > 2:
             self.ansible.log(
                 " ".join(['[DEBUG]', msg]))
+
+    def setup_sdk_logging(self):
+        log_path = self.params.get('sdk_log_path')
+        if log_path is not None:
+            log_level = self.params.get('sdk_log_level')
+            sdk.enable_logging(
+                debug=True if log_level == 'DEBUG' else False,
+                http_debug=True if log_level == 'DEBUG' else False,
+                path=log_path
+            )
 
     def openstack_cloud_from_module(self, min_version='0.6.9'):
         if self.otce_min_version:
