@@ -13,6 +13,7 @@
     - name: Set facts
       set_fact:
         fl_ip: "{{ fl.floating_ip.floating_ip_address }}"
+
         ptrdname: "{{ ( prefix + 'dns.com.' ) }}"
         description: "{{ ( prefix + 'description-dns' ) }}"
         zone_public_name: "{{ ( prefix + '-dnszone.com.' ) }}"
@@ -112,6 +113,14 @@
           - dns_fl is success
           - dns_fl.ptr.description is defined
 
+    - name: Get DNS Floating IP Info
+      dns_floating_ip_info:
+      register: ptr
+
+    - name: debug configs
+      debug:
+        var: ptr.ptr_records
+
     - name: Creating a public DNS Zone - check mode
       opentelekomcloud.cloud.dns_zone:
         name: "{{ zone_public_name }}"
@@ -122,6 +131,10 @@
     - name: assert result
       assert:
         that:
+
+          - ptr is success
+          - ptr is not changed
+          - ptr.ptr_records is defined
           - dns_zo_ch is success
           - dns_zo_ch is changed
 
@@ -171,6 +184,21 @@
         that:
           - dns_zo is success
           - dns_zo.zone.description is defined
+    
+    - name: Getting Nameserver Info on Public Zone
+      opentelekomcloud.cloud.dns_nameserver_info:
+        zone: "{{ dns_zo.zone.id }}"
+      register: dns_zo_ns_info
+
+    - name: debug
+      debug:
+        var: dns_zo_ns_info
+
+    - name: assert result
+      assert:
+        that:
+          - dns_zo_ns_info is success
+          - dns_zo_ns_info.dns_nameservers is defined
 
     - name: Creating a DNS private Zone - check mode
       opentelekomcloud.cloud.dns_zone:
@@ -235,6 +263,22 @@
         that:
           - dns_zo_pr is success
           - dns_zo_pr.zone.description is defined
+    
+    - name: Getting Zone Info on Private Zone
+      opentelekomcloud.cloud.dns_zone_info:
+        type: "private"
+        name: "{{ zone_private_name }}"
+      register: dns_zo_zo_info
+
+    - name: debug
+      debug:
+        var: dns_zo_zo_info
+
+    - name: assert result
+      assert:
+        that:
+          - dns_zo_zo_info is success
+          - dns_zo_zo_info.dns_zones is defined
 
     - name: Creating a DNS Recordset - check mode
       opentelekomcloud.cloud.dns_recordset:
@@ -305,6 +349,22 @@
           - "2.2.2.2"
         state: present
       register: dns_rs
+
+    - name: Get DNS Recordset Info
+      dns_recordset_info:
+        zone_id: "{{ dns_zo.zone.id }}"
+      register: rs
+
+    - name: debug configs
+      debug:
+        var: rs.recordsets
+
+    - name: assert result
+      assert:
+        that:
+          - rs is success
+          - rs is not changed
+          - rs.recordsets is defined
 
     - name: debug
       debug:
