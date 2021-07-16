@@ -12,6 +12,7 @@
         as_group_name: "{{ ( prefix + '_as_group') }}"
         new_name: "{{ ( prefix + 'new_name') }}"
         key_name: "{{ ( prefix + '_key') }}"
+        config_name: "{{ ( prefix + '_as_conf' ) }}"
         network_name: "{{ ( prefix + '_network') }}"
         subnet_name: "{{ ( prefix + '_subnet') }}"
         router_name:  "{{ ( prefix + '_router') }}"
@@ -46,9 +47,22 @@
             subnet: "{{ subnet.subnet.name }}"
       register: router
 
+- name: Create as config
+      opentelekomcloud.cloud.as_config:
+        scaling_configuration: "{{ config_name }}"
+        key_name: "{{ key_name }}"
+        image: "Standard_Debian_9_latest"
+        flavor: "c4.2xlarge.2"
+        disk:
+          - size: 10
+            volume_type: 'SAS'
+            disk_type: 'SYS'
+      register: as_config
+
     - name: Create as group - check_mode
       opentelekomcloud.cloud.as_group:
-        scaling_group_name: "{{ as_group_name }}"
+        scaling_group:
+          name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
       check_mode: yes
@@ -58,10 +72,11 @@
       assert:
         that:
           - as_group_check is changed
-          -
+
     - name: Create as group
       opentelekomcloud.cloud.as_group:
-        scaling_group_name: "{{ as_group_name }}"
+        scaling_group:
+          name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
       register: as_group
@@ -74,7 +89,8 @@
 
     - name: Update as group
       opentelekomcloud.cloud.as_group:
-        scaling_group_id: "{{ as_group.as_group.id }}"
+        scaling_group:
+          id: "{{ as_group.as_group.id }}"
         scaling_group_name: "{{ new_name }}"
         max_instance_number: 10
       register: as_group
@@ -85,13 +101,65 @@
           - as_group is success
           - as_group is changed
 
+    - name: Delete AS Group - check_mode
+      opentelekomcloud.cloud.as_group:
+        scaling_group:
+          name: "{{ new_name }}"
+        state: absent
+      register: as_group
+      check_mode: yes
+
+    - name: assert result
+      assert:
+        that:
+          - as_group is changed
+
+    - name: Delete AS Group
+      opentelekomcloud.cloud.as_group:
+        scaling_group:
+          name: "{{ new_name }}"
+        state: absent
+      register: as_group
+
+    - name: assert result
+      assert:
+        that:
+          - as_group is success
+          - as_group is changed
+
+    - name: Create as group
+      opentelekomcloud.cloud.as_group:
+        scaling_group:
+          name: "{{ as_group_name }}"
+        scaling_configuration: "{{ as_config }}"
+        networks: [{'id': "{{ network.network.id }}"}]
+        router: "{{ router.router.id }}"
+        desire_instance_number: 1
+        max_instance_number: 1
+        action: "resume"
+        state: "present"
+        wait: yes
+        timeout: 360
+      register: as_group
+
+    - name: assert result
+      assert:
+        that:
+          - as_group is success
+          - as_group is changed
+
+
   always:
     - block:
       # Cleanup
       - name: Delete as group
         opentelekomcloud.cloud.as_group:
-          scaling_group_name: "{{ new_name }}"
+          scaling_group:
+            name: "{{ new_name }}"
           state: absent
+          force_delete: yes
+          wait: yes
+          timeout: 360
         register: dropped_as_group
 
       - name: assert result
@@ -100,10 +168,23 @@
             - dropped_as_group is success
             - dropped_as_group is changed
 
+      - name: Delete as config
+        opentelekomcloud.cloud.as_config:
+          scaling_configuration: "{{ config_name }}"
+          state: absent
+        register: dropped_as_config
+        ignore_errors: true
+
+      - name: assert result
+        assert:
+          that:
+            - dropped_as_config is success
+            - dropped_as_config is changed
+
       - name: Delete keypair
         openstack.cloud.os_keypair:
-            name: "{{ key_name }}"
-            state: absent
+          name: "{{ key_name }}"
+          state: absent
 
       - name: Drop existing router
         openstack.cloud.os_router:

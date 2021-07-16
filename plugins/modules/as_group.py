@@ -204,15 +204,6 @@ options:
       performing scaling actions.
     type: bool
     default: 'no'
-  enterprise_project_id:
-    description:
-      - Specifies the enterprise project ID, which is used to specify
-      the enterprise project to which the AS group belongs.
-      - If the value is 0 or left blank, the AS group belongs to the default
-      enterprise project.
-      - If the value is a UUID, the AS group belongs to the enterprise project
-      corresponding to the UUID.
-    type: str
   multi_az_priority_policy:
     description:
       - Specifies the priority policy used to select target AZs when adjusting
@@ -310,24 +301,26 @@ class ASGroupModule(OTCModule):
                              )),
         router=dict(required=False, type='str'),
         health_periodic_audit_method=dict(required=False, type='str',
-                                          choices=['elb_audit', 'nova_audit']),
+                                          choices=['elb_audit'.upper(),
+                                                   'nova_audit'.upper()]),
         health_periodic_audit_time=dict(required=False, type='int', default=5),
         health_periodic_audit_grace_period=dict(
             required=False, type='int', default=600
         ),
         instance_terminate_policy=dict(
             required=False,
-            choices=['old_config_old_instance', 'old_config_new_instance',
-                     'old_instance', 'new_instance'],
+            choices=['old_config_old_instance'.upper(),
+                     'old_config_new_instance'.upper(),
+                     'old_instance', 'new_instance'.upper()],
             default='old_config_old_instance'.upper()
         ),
         notifications=dict(required=False, type='list', elements='str'),
         delete_publicip=dict(required=False, type='bool', default=False),
         delete_volume=dict(required=False, type='bool', default=False),
         force_delete=dict(required=False, type='bool', default=False),
-        enterprise_project_id=dict(required=False),
         multi_az_priority_policy=dict(
-            required=False, choices=['equilibrium_distribute', 'pick_first'],
+            required=False, choices=['equilibrium_distribute'.upper(),
+                                     'pick_first'.upper()],
             default='equilibrium_distribute'.upper()
         ),
         action=dict(required=False, type ='str', choices=['resume', 'pause']),
@@ -404,14 +397,14 @@ class ASGroupModule(OTCModule):
             netwrks = []
             netwrk = {}
             for network in networks:
-                net = self.conn.network.find_network(network.id)
+                net = self.conn.network.find_network(network['id'])
                 if net:
                     netwrk['id'] = net.id
                     netwrks.append(netwrk)
                 else:
                     self.fail(
                         changed=False,
-                        msg="Network {0} not found".format(network.id)
+                        msg="Network {0} not found".format(network['id'])
                     )
             attrs['networks'] = netwrks
             return attrs
@@ -447,11 +440,11 @@ class ASGroupModule(OTCModule):
 
     def _find_as_group(self, as_group):
         if as_group.get('id'):
-            return self.conn.auto_scaling(
+            return self.conn.auto_scaling.find_group(
                 name_or_id=as_group.get('id')
             )
         elif as_group.get('name'):
-            return self.conn.auto_scaling(
+            return self.conn.auto_scaling.find_group(
                 name_or_id=as_group.get('name')
             )
 
@@ -520,9 +513,9 @@ class ASGroupModule(OTCModule):
         if not hp_audit_method:
             # set default values  for 'health_periodic_audit_method'
             if lb_listener or lbaas_listeners:
-                attrs['health_periodic_audit_method'] = "ELB_AUDIT"
+                attrs['health_periodic_audit_method'] = "elb_audit".upper()
             else:
-                attrs['health_periodic_audit_method'] = "NOVA_AUDIT"
+                attrs['health_periodic_audit_method'] = "nova_audit".upper()
         else:
             if not lb_listener and not lbaas_listeners:
                 if hp_audit_method == 'elb_audit':
@@ -631,14 +624,17 @@ class ASGroupModule(OTCModule):
             attrs = self._attrs_security_groups(attrs, security_groups)
 
         if (hp_audit_method and
-                (group.health_periodic_audit_method != hp_audit_method)):
+                (group.health_periodic_audit_method !=
+                 hp_audit_method.upper())):
 
             if (not group.lb_listener_id and
                     not group.lbaas_listeners and
-                    hp_audit_method == 'elb_audit'):
-                self.fail_json(msg = "Without LB only 'nova_audit' is available")
+                    hp_audit_method == 'elb_audit'.upper()):
+                self.fail_json(
+                    msg = "Without LB only 'nova_audit' is available"
+                )
 
-            attrs['health_periodic_audit_method'] = hp_audit_method
+            attrs['health_periodic_audit_method'] = hp_audit_method.upper()
 
         if (hp_audit_time and
                 group.health_periodic_audit_time != hp_audit_time):
@@ -651,8 +647,9 @@ class ASGroupModule(OTCModule):
 
         if (instance_terminate_policy
                 and group.instance_terminate_policy !=
-                instance_terminate_policy):
-            attrs['instance_terminate_policy'] = instance_terminate_policy
+                instance_terminate_policy.upper()):
+            attrs['instance_terminate_policy'] = \
+                instance_terminate_policy.upper()
 
         if notifications and group.notifications != notifications:
             attrs['notifications'] = notifications
@@ -668,8 +665,8 @@ class ASGroupModule(OTCModule):
             attrs['enterprise_project_id'] = enterprise_project_id
 
         if (multi_az_priority_policy and group.multi_az_priority_policy !=
-                multi_az_priority_policy):
-            attrs['multi_az_priority_policy'] = multi_az_priority_policy
+                multi_az_priority_policy.upper()):
+            attrs['multi_az_priority_policy'] = multi_az_priority_policy.upper()
 
         return attrs
 
@@ -804,6 +801,15 @@ class ASGroupModule(OTCModule):
         as_instances = list(self.conn.auto_scaling.instances(as_group))
         return False if as_instances else True
 
+    def _create_as_group(self):
+        pass
+
+    def _update_as_group(self):
+        pass
+
+    def _delete_as_group(self):
+        pass
+
     def _system_state_change(self, as_group, as_configuration,
                              desire_instance_number, min_instance_number,
                              max_instance_number, cool_down_time, lb_listener,
@@ -920,7 +926,7 @@ class ASGroupModule(OTCModule):
                         self.exit(
                             changed=changed,
                             as_group=group,
-                            msg="AS Group {0} was updated".format(as_group)
+                            msg="AS Group {0} was updated".format(group.id)
                         )
                     elif action:
                         group = self._action_group(
@@ -934,25 +940,25 @@ class ASGroupModule(OTCModule):
                             changed=changed,
                             as_group=group,
                             msg="Action {0} for AS Group {1} was done".format(
-                                action, as_group
+                                action, group.id
                             )
                         )
                     else:
                         self.fail(
                             changed=changed,
-                            msg="AS Group {0} exists".format(as_group)
+                            msg="AS Group {0} exists".format(group.id)
                         )
 
                 else:
                     if force_delete or self._is_group_can_be_deleted(group):
                         self.conn.auto_scaling.delete_group(
-                            as_group=group,
+                            group=group,
                             force_delete=force_delete
                         )
                         changed = True
                         self.exit(
                             changed=changed,
-                            msg="AS Group {0} was deleted".format(as_group)
+                            msg="AS Group {0} was deleted".format(group.id)
                         )
                     else:
                         changed = False
@@ -978,7 +984,9 @@ class ASGroupModule(OTCModule):
                     )
                     group = self.conn.auto_scaling.create_group(**attrs)
                     changed = True
-                    if action:
+                    if (as_configuration and
+                            self.conn.auto_scaling.find_config(
+                            name_or_id=as_configuration) and action):
                         group = self._action_group(
                             action=action,
                             group=group,
@@ -988,12 +996,12 @@ class ASGroupModule(OTCModule):
                     self.exit(
                         changed=changed,
                         as_group=group,
-                        msg="AS Group {0} was created".format(as_group)
+                        msg="AS Group {0} was created".format(as_group.name)
                     )
                 else:
                     self.fail(
                         changed=changed,
-                        msg="AS Group {0} not found".format(as_group)
+                        msg="AS Group {0} not found".format(as_group.name)
                     )
 
         else:
