@@ -51,6 +51,7 @@ EXAMPLES = '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
+
 class DDSDatastoreInfo(OTCModule):
     argument_spec = dict(
         datastore_name=dict(required=True)
@@ -73,9 +74,11 @@ class DDSDatastoreInfo(OTCModule):
                 dns_recordset=data
             )
 
+
 def main():
     module = DDSDatastoreInfo()
     module()
+
 
 if __name__ == '__main__':
     main()
