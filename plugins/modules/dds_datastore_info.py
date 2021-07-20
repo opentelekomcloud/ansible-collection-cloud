@@ -1,4 +1,4 @@
-#
+#!/usr/bin/python
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -12,7 +12,7 @@ extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.3.0"
 author: "Yustina Kvrivishvili (@YustinaKvr)"
 description:
-  - Get Metric Data
+  - Get datastore info
 options:
   datastore_name:
     description:
