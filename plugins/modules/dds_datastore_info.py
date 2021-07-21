@@ -9,7 +9,7 @@ DOCUMENTATION = '''
 module: dds_datastore_info
 short_description: Obtain database version information about a specified type of a DB instance.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.3.0"
+version_added: "0.9.0"
 author: "Yustina Kvrivishvili (@YustinaKvr)"
 description:
   - Get datastore info
