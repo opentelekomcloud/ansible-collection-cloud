@@ -6,7 +6,7 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: dds_database_version_info
+module: dds_datastore_info
 short_description: Obtain database version information about a specified type of a DB instance.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.3.0"
@@ -45,8 +45,8 @@ datastores:
 EXAMPLES = '''
 # Get info about datastore
 - opentelekomcloud.cloud.dds_datastore_info:
-        datastore_name: "bla-bla"
-      register: result
+    datastore_name: "test_ds"
+  register: result
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
