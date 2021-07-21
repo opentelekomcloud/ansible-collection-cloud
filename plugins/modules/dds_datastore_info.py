@@ -24,7 +24,7 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 datastores:
-    description: Info about datastore
+    description: Info about datastore.
     returned: On Success
     type: complex
     contains:
