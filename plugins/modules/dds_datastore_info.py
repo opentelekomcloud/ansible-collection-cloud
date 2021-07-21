@@ -43,7 +43,7 @@ datastores:
 '''
 
 EXAMPLES = '''
-#Get info about datastore
+# Get info about datastore
 - opentelekomcloud.cloud.dds_datastore_info:
         datastore_name: "bla-bla"
       register: result
