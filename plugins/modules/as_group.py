@@ -17,7 +17,7 @@ module: as_group
 short_description: Create/Update/Remove AutoScaling group from the OTC
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.2.0"
-author: 
+author:
   - "Polina Gubina (@Polina-Gubina)"
   - "Irina Pereiaslavskaia (@irina-pereiaslavskaia)"
 description:
@@ -27,7 +27,6 @@ options:
     description:
       - Name or ID of the AS Group.
     type: dict
-    required: true
     suboptions:
       id:
         description:
@@ -60,7 +59,7 @@ options:
     type: int
   cool_down_time:
     description:
-      - Specifies the cooldown period (in seconds). 
+      - Specifies the cooldown period (in seconds).
       - The value ranges from 0 to 86400 and is 300 by default.
       - After a scaling action is triggered, the system starts the cooldown
       period. During the cooldown period, scaling actions triggered by alarms
@@ -95,7 +94,7 @@ options:
       weight:
         description:
           - Specifies the weight, which determines the portion
-          of requests a backend ECS processes when being compared to other 
+          of requests a backend ECS processes when being compared to other
           backend ECSs added to the same listener.
         type: int
         required: true
@@ -109,7 +108,7 @@ options:
   networks:
     description:
       - Specifies network information. The system supports up to five subnets.
-       The first subnet transferred serves as the primary NIC of the ECS by 
+       The first subnet transferred serves as the primary NIC of the ECS by
        default.
       - Mandatory for creation of AS group.
     type: list
@@ -154,7 +153,7 @@ options:
     type: str
   health_periodic_audit_time:
     description:
-      - Specifies the instance health check period. 
+      - Specifies the instance health check period.
       - The value can be 1, 5, 15, 60, or 180 in the unit of minutes.
       - If this parameter is not specified, the default value is 5.
       - If the value is set to 0, health check is performed every 10 seconds.
@@ -201,8 +200,8 @@ options:
     type: bool
   force_delete:
     description:
-      - Specifies whether to forcibly delete an AS group, remove the ECS 
-      instances and release them when the AS group is running instances or 
+      - Specifies whether to forcibly delete an AS group, remove the ECS
+      instances and release them when the AS group is running instances or
       performing scaling actions.
     type: bool
     default: 'no'
@@ -259,7 +258,7 @@ EXAMPLES = '''
  - opentelekomcloud.cloud.as_group:
      scaling_group:
        name: "as_group_test"
-     networks: 
+     networks:
        - id: "a64b4561-af18-4440-9976-b2398ed39ce5"
      router: "5d1ac1f4-bec6-4b8c-aae0-7c4345c68f5d"
      scaling_configuration: "as_config_test"
@@ -748,11 +747,13 @@ class ASGroupModule(OTCModule):
             return self._pause_group(group, wait, timeout)
 
     def _needs_update(self, as_group, as_configuration, desire_instance_number,
-            min_instance_number, max_instance_number, cool_down_time,
-            lb_listener, lbaas_listeners, availability_zones, networks,
-            security_groups, hp_audit_method, hp_audit_time,
-            hp_audit_grace_period, instance_terminate_policy, notifications,
-            delete_publicip, delete_volume, multi_az_priority_policy, group):
+                      min_instance_number, max_instance_number, cool_down_time,
+                      lb_listener, lbaas_listeners, availability_zones,
+                      networks, security_groups, hp_audit_method,
+                      hp_audit_time, hp_audit_grace_period,
+                      instance_terminate_policy, notifications,
+                      delete_publicip, delete_volume, multi_az_priority_policy,
+                      group):
         if as_group and group.name != as_group.get('name'):
             return True
 
