@@ -14,10 +14,12 @@
 DOCUMENTATION = '''
 ---
 module: as_group
-short_description: Create/Remove AutoScaling group from the OTC
+short_description: Create/Update/Remove AutoScaling group from the OTC
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.2.0"
-author: "Polina Gubina (@Polina-Gubina)"
+author: 
+  - "Polina Gubina (@Polina-Gubina)"
+  - "Irina Pereiaslavskaia (@irina-pereiaslavskaia)"
 description:
   - Create/Update/Remove AutoScaling group from the OTC.
 options:
@@ -253,12 +255,32 @@ as_group:
 '''
 
 EXAMPLES = '''
-opentelekomcloud.cloud.as_group:
-  scaling_group_name: "scaling-group-test"
-  networks:
-    - id: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-  router: "65707a7e-ee4f-4d13-8283-b4da2e037c69"
-register: as_group
+#Create AS Group
+ - opentelekomcloud.cloud.as_group:
+     scaling_group:
+       name: "as_group_test"
+     networks: 
+       - id: "a64b4561-af18-4440-9976-b2398ed39ce5"
+     router: "5d1ac1f4-bec6-4b8c-aae0-7c4345c68f5d"
+     scaling_configuration: "as_config_test"
+     desire_instance_number: 1
+     max_instance_number: 1
+     action: "resume"
+     state: "present"
+     wait: yes
+     timeout: 360
+   register: result
+
+#Delete AS Group
+ - opentelekomcloud.cloud.as_group:
+     scaling_group:
+       name: "as_group_test"
+     state: "absent"
+     force_delete: yes
+     wait: yes
+     timeout: 360
+   register: result
+
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -323,7 +345,7 @@ class ASGroupModule(OTCModule):
                                      'pick_first'.upper()],
             default='equilibrium_distribute'.upper()
         ),
-        action=dict(required=False, type ='str', choices=['resume', 'pause']),
+        action=dict(required=False, type='str', choices=['resume', 'pause']),
         state=dict(
             type='str', choices=['present', 'absent'], default='present'
         ),
@@ -335,8 +357,11 @@ class ASGroupModule(OTCModule):
         supports_check_mode=True
     )
 
+    def _is_as_config_find(self, as_config):
+        return self.conn.auto_scaling.find_config(as_config)
+
     def _attrs_id_config(self, attrs, as_config):
-        config = self.conn.auto_scaling.find_config(as_config)
+        config = self._is_as_config_find(as_config)
         if config:
             attrs['scaling_configuration_id'] = config.id
             return attrs
@@ -416,7 +441,7 @@ class ASGroupModule(OTCModule):
 
     def _attrs_security_groups(self, attrs, security_groups, as_config=None):
         if as_config:
-            config = self.conn.auto_scaling.find_config(as_config)
+            config = self._is_as_config_find(as_config)
             if config and config.security_groups:
                 attrs['security_groups'] = config.security_groups
         else:
@@ -448,15 +473,16 @@ class ASGroupModule(OTCModule):
                 name_or_id=as_group.get('name')
             )
 
-    def _attrs_for_as_group_create(
-            self, attrs, as_group, as_configuration, desire_instance_number,
-            min_instance_number, max_instance_number, cool_down_time,
-            lb_listener, lbaas_listeners, availability_zones, networks,
-            security_groups, router, hp_audit_method, hp_audit_time,
-            hp_audit_grace_period, instance_terminate_policy, notifications,
-            delete_publicip, delete_volume, enterprise_project_id,
-            multi_az_priority_policy
-    ):
+    def _attrs_for_as_group_create(self, attrs, as_group, as_configuration,
+                                   desire_instance_number, min_instance_number,
+                                   max_instance_number, cool_down_time,
+                                   lb_listener, lbaas_listeners,
+                                   availability_zones, networks,
+                                   security_groups, router, hp_audit_method,
+                                   hp_audit_time, hp_audit_grace_period,
+                                   instance_terminate_policy, notifications,
+                                   delete_publicip, delete_volume,
+                                   multi_az_priority_policy):
 
         if as_group.get('name') and not as_group.get('id'):
             attrs['scaling_group_name'] = as_group.get('name')
@@ -553,31 +579,29 @@ class ASGroupModule(OTCModule):
         if notifications:
             attrs['notifications'] = notifications
 
-        if enterprise_project_id:
-            attrs['enterprise_project_id'] = enterprise_project_id
-
         if multi_az_priority_policy:
             attrs['multi_az_priority_policy'] = \
                 multi_az_priority_policy.upper()
 
         return attrs
 
-    def _attrs_for_as_group_update(
-            self, attrs, as_group, as_configuration, desire_instance_number,
-            min_instance_number, max_instance_number, cool_down_time,
-            lb_listener, lbaas_listeners, availability_zones, networks,
-            security_groups, hp_audit_method, hp_audit_time,
-            hp_audit_grace_period, instance_terminate_policy, notifications,
-            delete_publicip, delete_volume, enterprise_project_id,
-            multi_az_priority_policy, group
-    ):
+    def _attrs_for_as_group_update(self, attrs, as_group, as_configuration,
+                                   desire_instance_number, min_instance_number,
+                                   max_instance_number, cool_down_time,
+                                   lb_listener, lbaas_listeners,
+                                   availability_zones, networks,
+                                   security_groups, hp_audit_method,
+                                   hp_audit_time, hp_audit_grace_period,
+                                   instance_terminate_policy, notifications,
+                                   delete_publicip, delete_volume,
+                                   multi_az_priority_policy, group):
 
         if as_group and (group.name != as_group.get('name')):
             attrs['scaling_group_name'] = as_group
 
         if (as_configuration and
-                as_configuration!=group.scaling_configuration_id and
-                as_configuration!=group.scaling_configuration_name):
+                as_configuration != group.scaling_configuration_id and
+                as_configuration != group.scaling_configuration_name):
             attrs = self._attrs_id_config(attrs, as_configuration)
 
         if (desire_instance_number and
@@ -631,7 +655,7 @@ class ASGroupModule(OTCModule):
                     not group.lbaas_listeners and
                     hp_audit_method == 'elb_audit'.upper()):
                 self.fail_json(
-                    msg = "Without LB only 'nova_audit' is available"
+                    msg="Without LB only 'nova_audit' is available"
                 )
 
             attrs['health_periodic_audit_method'] = hp_audit_method.upper()
@@ -660,21 +684,37 @@ class ASGroupModule(OTCModule):
         if delete_volume and group.delete_volume != delete_volume:
             attrs['delete_volume'] = delete_volume
 
-        if (enterprise_project_id
-                and group.enterprise_project_id != enterprise_project_id):
-            attrs['enterprise_project_id'] = enterprise_project_id
-
         if (multi_az_priority_policy and group.multi_az_priority_policy !=
                 multi_az_priority_policy.upper()):
             attrs['multi_az_priority_policy'] = multi_az_priority_policy.upper()
 
         return attrs
 
-    def _resume_group(self, group, wait, timeout):
+    def _wait_for_instances(self, as_group, timeout, desire_instance_number=0):
+        for count in self.sdk.utils.Iterate_timeout(
+            timeout=timeout,
+            message="Timeout waiting for AS Instances"
+        ):
+            instances = list(self.conn.auto_scaling.instances(
+                group=as_group
+            ))
+            if (len(instances) == desire_instance_number
+                    and [instance.id for instance in instances
+                         if instance.id]):
+                for instance in instances:
+                    self.conn.auto_scaling.wait_for_instance(instance=instance)
+
+    def _resume_group(self, group, wait, timeout, desire_instance_number=0):
         result_group = group
         self.conn.auto_scaling.resume_group(group=group)
         if wait:
             try:
+                if desire_instance_number > 0:
+                    self.conn.auto_scaling.wait_for_instances(
+                        as_group=group,
+                        timeout=timeout,
+                        desire_instance_number=desire_instance_number
+                    )
                 result_group = self.conn.auto_scaling.wait_for_group(
                     group=group,
                     wait=timeout
@@ -707,15 +747,12 @@ class ASGroupModule(OTCModule):
         elif action == 'pause':
             return self._pause_group(group, wait, timeout)
 
-    def _needs_update(
-            self, as_group, as_configuration, desire_instance_number,
+    def _needs_update(self, as_group, as_configuration, desire_instance_number,
             min_instance_number, max_instance_number, cool_down_time,
             lb_listener, lbaas_listeners, availability_zones, networks,
             security_groups, hp_audit_method, hp_audit_time,
             hp_audit_grace_period, instance_terminate_policy, notifications,
-            delete_publicip, delete_volume, enterprise_project_id,
-            multi_az_priority_policy, group
-    ):
+            delete_publicip, delete_volume, multi_az_priority_policy, group):
         if as_group and group.name != as_group.get('name'):
             return True
 
@@ -787,10 +824,6 @@ class ASGroupModule(OTCModule):
         if delete_volume and group.delete_volume != delete_volume:
             return True
 
-        if (enterprise_project_id and group.enterprise_project_id !=
-                enterprise_project_id):
-            return True
-
         if (multi_az_priority_policy and group.multi_az_priority_policy !=
                 multi_az_priority_policy):
             return True
@@ -801,14 +834,21 @@ class ASGroupModule(OTCModule):
         as_instances = list(self.conn.auto_scaling.instances(as_group))
         return False if as_instances else True
 
-    def _create_as_group(self):
-        pass
-
-    def _update_as_group(self):
-        pass
-
-    def _delete_as_group(self):
-        pass
+    def _delete_as_group(self, as_group, force_delete, wait, timeout):
+        self.conn.auto_scaling.delete_group(
+            group=as_group,
+            force_delete=force_delete
+        )
+        if wait:
+            try:
+                self.conn.auto_scaling.wait_for_delete_group(
+                    group=as_group,
+                    wait=timeout
+                )
+            except self.sdk.exceptions.ResourceTimeout:
+                self.fail(
+                    msg="Timeout failure waiting for delete AS Group"
+                )
 
     def _system_state_change(self, as_group, as_configuration,
                              desire_instance_number, min_instance_number,
@@ -818,8 +858,7 @@ class ASGroupModule(OTCModule):
                              hp_audit_time, hp_audit_grace_period,
                              instance_terminate_policy, notifications,
                              delete_publicip, delete_volume,
-                             enterprise_project_id, multi_az_priority_policy,
-                             group):
+                             multi_az_priority_policy, group):
         state = self.params['state']
         if state == 'present':
             if not group:
@@ -831,7 +870,7 @@ class ASGroupModule(OTCModule):
                 security_groups, hp_audit_method, hp_audit_time,
                 hp_audit_grace_period, instance_terminate_policy,
                 notifications, delete_publicip, delete_volume,
-                enterprise_project_id, multi_az_priority_policy, group
+                multi_az_priority_policy, group
             )
         elif state == 'absent' and group:
             return True
@@ -859,7 +898,6 @@ class ASGroupModule(OTCModule):
         delete_publicip = self.params['delete_publicip']
         delete_volume = self.params['delete_volume']
         force_delete = self.params['force_delete']
-        enterprise_project_id = self.params['enterprise_project_id']
         multi_az_priority_policy = self.params['multi_az_priority_policy']
         action = self.params['action']
         wait = self.params['wait']
@@ -884,7 +922,6 @@ class ASGroupModule(OTCModule):
                         hp_audit_method, hp_audit_time,
                         hp_audit_gr_period, instance_terminate_policy,
                         notifications, delete_publicip, delete_volume,
-                        enterprise_project_id,
                         multi_az_priority_policy, group)
                 )
 
@@ -900,8 +937,7 @@ class ASGroupModule(OTCModule):
                             hp_audit_method, hp_audit_time, hp_audit_gr_period,
                             instance_terminate_policy, notifications,
                             delete_publicip, delete_volume,
-                            enterprise_project_id, multi_az_priority_policy,
-                            group
+                            multi_az_priority_policy, group
                     ):
                         attrs = self._attrs_for_as_group_update(
                             as_group, as_configuration, desire_instance_number,
@@ -911,8 +947,7 @@ class ASGroupModule(OTCModule):
                             hp_audit_method, hp_audit_time, hp_audit_gr_period,
                             instance_terminate_policy, notifications,
                             delete_publicip, delete_volume,
-                            enterprise_project_id, multi_az_priority_policy,
-                            group
+                            multi_az_priority_policy, group
                         )
                         group = self.conn.auto_scaling.update_group(**attrs)
                         changed = True
@@ -925,7 +960,7 @@ class ASGroupModule(OTCModule):
                             )
                         self.exit(
                             changed=changed,
-                            as_group=group,
+                            scaling_group_id=group.id,
                             msg="AS Group {0} was updated".format(group.id)
                         )
                     elif action:
@@ -938,7 +973,7 @@ class ASGroupModule(OTCModule):
                         changed = True
                         self.exit(
                             changed=changed,
-                            as_group=group,
+                            scaling_group_id=group.id,
                             msg="Action {0} for AS Group {1} was done".format(
                                 action, group.id
                             )
@@ -951,10 +986,8 @@ class ASGroupModule(OTCModule):
 
                 else:
                     if force_delete or self._is_group_can_be_deleted(group):
-                        self.conn.auto_scaling.delete_group(
-                            group=group,
-                            force_delete=force_delete
-                        )
+                        self._delete_as_group(group, force_delete, wait,
+                                              timeout)
                         changed = True
                         self.exit(
                             changed=changed,
@@ -965,7 +998,7 @@ class ASGroupModule(OTCModule):
                         self.fail(
                             changed=changed,
                             msg="AS Group {0} can't be deleted due to "
-                                "AS Instances presence".format(as_group)
+                                "AS Instances presence".format(group.id)
                         )
 
             else:
@@ -980,7 +1013,7 @@ class ASGroupModule(OTCModule):
                         hp_audit_time, hp_audit_gr_period,
                         instance_terminate_policy, notifications,
                         delete_publicip, delete_volume,
-                        enterprise_project_id, multi_az_priority_policy
+                        multi_az_priority_policy
                     )
                     group = self.conn.auto_scaling.create_group(**attrs)
                     changed = True
@@ -995,13 +1028,15 @@ class ASGroupModule(OTCModule):
                         )
                     self.exit(
                         changed=changed,
-                        as_group=group,
-                        msg="AS Group {0} was created".format(as_group.name)
+                        scaling_group_id=group.id,
+                        msg="AS Group {0} was created".format(as_group.get(
+                            "name"))
                     )
                 else:
                     self.fail(
                         changed=changed,
-                        msg="AS Group {0} not found".format(as_group.name)
+                        msg="AS Group {0} not found".format(as_group.get(
+                            "name"))
                     )
 
         else:
