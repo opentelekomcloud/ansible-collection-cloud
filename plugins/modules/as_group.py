@@ -26,6 +26,7 @@ options:
   scaling_group:
     description:
       - Name or ID of the AS Group.
+    required: true
     type: dict
     suboptions:
       id:
@@ -61,15 +62,15 @@ options:
     description:
       - Specifies the cooldown period (in seconds).
       - The value ranges from 0 to 86400 and is 300 by default.
-      - After a scaling action is triggered, the system starts the cooldown
-      period. During the cooldown period, scaling actions triggered by alarms
-      will be denied. Scheduled, periodic, and manual scaling actions are not
+      - After a scaling action is triggered, the system starts the cooldown \
+      period. During the cooldown period, scaling actions triggered by alarms \
+      will be denied. Scheduled, periodic, and manual scaling actions are not \
       affected.
     type: int
   lb_listener:
     description:
-      - Specifies ID or name of a classic load balancer listener. The system
-      supports the binding of up to six load balancer listeners, the IDs of
+      - Specifies ID or name of a classic load balancer listener. The system \
+      supports the binding of up to six load balancer listeners, the IDs of \
       which are separated using a comma (,).
       - Mandatory when 'lbaas_listeners' is not specified.
     type: str
@@ -87,28 +88,28 @@ options:
         required: true
       protocol_port:
         description:
-          - Specifies the backend protocol ID, which is the port on which a
-           backend ECS listens for traffic. The port ID ranges from 1 to 65535.
+          - Specifies the backend protocol ID, which is the port on which a \
+          backend ECS listens for traffic. The port ID ranges from 1 to 65535.
         type: int
         required: true
       weight:
         description:
-          - Specifies the weight, which determines the portion
-          of requests a backend ECS processes when being compared to other
-          backend ECSs added to the same listener.
+          - Specifies the weight, which determines the portion of requests a \
+          backend ECS processes when being compared to other backend ECSs \
+          added to the same listener.
         type: int
         required: true
   availability_zones:
     description:
-      - Specifies the AZ information. The ECS associated with a scaling
-       action will be created in a specified AZ.If you do not specify an AZ,
-       the system automatically specifies one.
+      - Specifies the AZ information. The ECS associated with a scaling \
+      action will be created in a specified AZ.If you do not specify an AZ, \
+      the system automatically specifies one.
     type: list
     elements: str
   networks:
     description:
-      - Specifies network information. The system supports up to five subnets.
-       The first subnet transferred serves as the primary NIC of the ECS by
+      - Specifies network information. The system supports up to five subnets.\
+       The first subnet transferred serves as the primary NIC of the ECS by \
        default.
       - Mandatory for creation of AS group.
     type: list
@@ -122,10 +123,10 @@ options:
   security_groups:
     description:
       - A maximum of one security group can be selected.
-      - Specifies the security group. If the security group is specified both
-      in the AS configuration and AS group, the security group specified in
+      - Specifies the security group. If the security group is specified both \
+      in the AS configuration and AS group, the security group specified in \
       the AS configuration prevails.
-      - If the security group is not specified in either of them, the default
+      - If the security group is not specified in either of them, the default \
       security group is used.
     type: list
     elements: dict
@@ -142,14 +143,14 @@ options:
     type: str
   health_periodic_audit_method:
     description:
-      - Specifies the health check method for instances in the AS group.
-      When load balancing is configured for an AS group, the default value
+      - Specifies the health check method for instances in the AS group.\
+      When load balancing is configured for an AS group, the default value \
       is ELB_AUDIT. Otherwise, the default value is NOVA_AUDIT.
-      - ELB_AUDIT indicates the ELB health check, which takes effect in an
+      - ELB_AUDIT indicates the ELB health check, which takes effect in an \
       AS group with a listener.
-      - NOVA_AUDIT indicates the ECS health check, which is the health check
+      - NOVA_AUDIT indicates the ECS health check, which is the health check \
       method delivered with AS.
-    choices: ['elb_audit', 'nova_audit']
+    choices: [elb_audit, nova_audit]
     type: str
   health_periodic_audit_time:
     description:
@@ -163,23 +164,23 @@ options:
       - Specifies the grace period for instance health check.
       - The unit is second and value range is 0-86400.
       - The default value is 600.
-      - The health check grace period starts after
-      an instance is added to an AS group and is enabled.The AS group will
-      start checking the instance status only after the grace period ends.
-      - This parameter is valid only when the instance health check method
+      - The health check grace period starts after an instance is added to an \
+      AS group and is enabled.The AS group will start checking the instance \
+      status only after the grace period ends.
+      - This parameter is valid only when the instance health check method \
       of the AS group is ELB_AUDIT.
     type: int
   instance_terminate_policy:
     description:
       - Specifies the instance removal policy.
-      - OLD_CONFIG_OLD_INSTANCE (default). The earlier-created instances
+      - OLD_CONFIG_OLD_INSTANCE (default). The earlier-created instances \
       based on the earlier-created AS configurations are removed first.
-      - OLD_CONFIG_NEW_INSTANCE. The later-created instances based on the
+      - OLD_CONFIG_NEW_INSTANCE. The later-created instances based on the \
       earlier-created AS configurations are removed first.
       - OLD_INSTANCE. The earlier-created instances are removed first.
       - NEW_INSTANCE. The later-created instances are removed first.
-    choices: ['old_config_old_instance', 'old_config_new_instance',
-    'old_instance', 'new_instance']
+    choices: [old_config_old_instance, old_config_new_instance,
+    old_instance, new_instance]
     type: str
   notifications:
     description:
@@ -188,44 +189,44 @@ options:
     elements: str
   delete_publicip:
     description:
-      - Specifies whether to delete the EIP bound to the ECS when
+      - Specifies whether to delete the EIP bound to the ECS when \
       deleting the ECS.
       - The default value is false.
     type: bool
   delete_volume:
     description:
-      - Specifies whether to delete the data disks attached to the
+      - Specifies whether to delete the data disks attached to the \
       ECS when deleting the ECS.
       - The default value is false.
     type: bool
   force_delete:
     description:
-      - Specifies whether to forcibly delete an AS group, remove the ECS
-      instances and release them when the AS group is running instances or
+      - Specifies whether to forcibly delete an AS group, remove the ECS \
+      instances and release them when the AS group is running instances or \
       performing scaling actions.
     type: bool
     default: 'no'
   multi_az_priority_policy:
     description:
-      - Specifies the priority policy used to select target AZs when adjusting
-      the number of instances in an AS group.
-      - EQUILIBRIUM_DISTRIBUTE (default). When adjusting the number of
-      instances, ensure that instances in each AZ in the available_zones list
-      is evenly distributed. If instances cannot be added in the target AZ,
+      - Specifies the priority policy used to select target AZs when \
+      adjusting the number of instances in an AS group.
+      - EQUILIBRIUM_DISTRIBUTE (default). When adjusting the number of \
+      instances, ensure that instances in each AZ in the available_zones list \
+      is evenly distributed. If instances cannot be added in the target AZ, \
       select another AZ based on the PICK_FIRST policy.
-      - PICK_FIRST. When adjusting the number of instances, target AZs are
+      - PICK_FIRST. When adjusting the number of instances, target AZs are \
       determined in the order in the available_zones list.
-    choices: ['equilibrium_distribute', 'pick_first']
+    choices: [equilibrium_distribute, pick_first]
     type: str
   action:
     description:
       - Specifies a flag for enabling or disabling an AS group.
     type: str
-    choices: ['resume', 'pause']
+    choices: [resume, pause]
   state:
     description:
       - Whether resource should be present or absent.
-    choices: ['present', 'absent']
+    choices: [present, absent]
     type: str
     default: 'present'
   wait:
