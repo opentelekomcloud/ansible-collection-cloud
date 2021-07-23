@@ -67,6 +67,7 @@ options:
       will be denied. Scheduled, periodic, and manual scaling actions are not \
       affected.
     type: int
+    default: 300
   lb_listener:
     description:
       - Specifies ID or name of a classic load balancer listener. The system \
@@ -159,6 +160,7 @@ options:
       - If this parameter is not specified, the default value is 5.
       - If the value is set to 0, health check is performed every 10 seconds.
     type: int
+    default: 5
   health_periodic_audit_grace_period:
     description:
       - Specifies the grace period for instance health check.
@@ -170,6 +172,7 @@ options:
       - This parameter is valid only when the instance health check method \
       of the AS group is ELB_AUDIT.
     type: int
+    default: 600
   instance_terminate_policy:
     description:
       - Specifies the instance removal policy.
@@ -182,6 +185,7 @@ options:
     choices: [old_config_old_instance, old_config_new_instance,
     old_instance, new_instance]
     type: str
+    default: 'old_config_old_instance'
   notifications:
     description:
       - Specifies the notification mode.
@@ -193,12 +197,14 @@ options:
       deleting the ECS.
       - The default value is false.
     type: bool
+    default: 'no'
   delete_volume:
     description:
       - Specifies whether to delete the data disks attached to the \
       ECS when deleting the ECS.
       - The default value is false.
     type: bool
+    default: 'no'
   force_delete:
     description:
       - Specifies whether to forcibly delete an AS group, remove the ECS \
@@ -218,6 +224,7 @@ options:
       determined in the order in the available_zones list.
     choices: [equilibrium_distribute, pick_first]
     type: str
+    default: 'equilibrium_distribute'
   action:
     description:
       - Specifies a flag for enabling or disabling an AS group.
@@ -237,7 +244,7 @@ options:
   timeout:
     description:
       - The duration in seconds that module should wait.
-    default: 180
+    default: 200
     type: int
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -323,27 +330,23 @@ class ASGroupModule(OTCModule):
                              )),
         router=dict(required=False, type='str'),
         health_periodic_audit_method=dict(required=False, type='str',
-                                          choices=['elb_audit'.upper(),
-                                                   'nova_audit'.upper()]),
+                                          choices=['elb_audit', 'nova_audit']),
         health_periodic_audit_time=dict(required=False, type='int', default=5),
         health_periodic_audit_grace_period=dict(
             required=False, type='int', default=600
         ),
         instance_terminate_policy=dict(
             required=False,
-            choices=['old_config_old_instance'.upper(),
-                     'old_config_new_instance'.upper(),
-                     'old_instance', 'new_instance'.upper()],
-            default='old_config_old_instance'.upper()
-        ),
+            choices=['old_config_old_instance', 'old_config_new_instance',
+                     'old_instance', 'new_instance'],
+            default='old_config_old_instance'),
         notifications=dict(required=False, type='list', elements='str'),
         delete_publicip=dict(required=False, type='bool', default=False),
         delete_volume=dict(required=False, type='bool', default=False),
         force_delete=dict(required=False, type='bool', default=False),
         multi_az_priority_policy=dict(
-            required=False, choices=['equilibrium_distribute'.upper(),
-                                     'pick_first'.upper()],
-            default='equilibrium_distribute'.upper()
+            required=False, choices=['equilibrium_distribute', 'pick_first'],
+            default='equilibrium_distribute'
         ),
         action=dict(required=False, type='str', choices=['resume', 'pause']),
         state=dict(
@@ -801,7 +804,7 @@ class ASGroupModule(OTCModule):
             return True
 
         if (hp_audit_method and
-                group.health_periodic_audit_method != hp_audit_method):
+                group.health_periodic_audit_method != hp_audit_method.upper()):
             return True
 
         if (hp_audit_time and
@@ -814,7 +817,7 @@ class ASGroupModule(OTCModule):
             return True
 
         if (instance_terminate_policy and group.instance_terminate_policy !=
-                instance_terminate_policy):
+                instance_terminate_policy.upper()):
             return True
 
         if notifications and group.notifications != notifications:
@@ -827,7 +830,7 @@ class ASGroupModule(OTCModule):
             return True
 
         if (multi_az_priority_policy and group.multi_az_priority_policy !=
-                multi_az_priority_policy):
+                multi_az_priority_policy.upper()):
             return True
 
         return False
