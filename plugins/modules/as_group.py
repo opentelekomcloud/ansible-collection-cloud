@@ -255,7 +255,7 @@ as_group:
   type: complex
   returned: On Success.
   contains:
-    scaling_group_id:
+    id:
       description: Specifies the AS group ID.
       type: str
       sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
@@ -965,7 +965,7 @@ class ASGroupModule(OTCModule):
                             )
                         self.exit(
                             changed=changed,
-                            scaling_group_id=group.id,
+                            as_group=group,
                             msg="AS Group {0} was updated".format(group.id)
                         )
                     elif action:
@@ -978,7 +978,7 @@ class ASGroupModule(OTCModule):
                         changed = True
                         self.exit(
                             changed=changed,
-                            scaling_group_id=group.id,
+                            as_group=group,
                             msg="Action {0} for AS Group {1} was done".format(
                                 action, group.id
                             )
@@ -1033,7 +1033,7 @@ class ASGroupModule(OTCModule):
                         )
                     self.exit(
                         changed=changed,
-                        scaling_group_id=group.id,
+                        as_group=group,
                         msg="AS Group {0} was created".format(as_group.get(
                             "name"))
                     )

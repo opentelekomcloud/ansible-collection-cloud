@@ -50,7 +50,8 @@
 
     - name: Create as group
       opentelekomcloud.cloud.as_group:
-        scaling_group_name: "{{ as_group_name }}"
+        scaling_group:
+          name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
       register: as_group
@@ -110,6 +111,8 @@
         opentelekomcloud.cloud.as_group:
           scaling_group_name: "{{ as_group_name }}"
           state: absent
+          force_delete: yes
+          wait: yes
         register: dropped_as_group
 
       - name: Drop existing router

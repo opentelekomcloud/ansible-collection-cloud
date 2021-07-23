@@ -2,6 +2,16 @@
 - module_defaults:
     opentelekomcloud.cloud.as_group:
       cloud: "{{ test_cloud }}"
+    openstack.cloud.os_keypair:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_network:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_subnet:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_router:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.as_config:
+      cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
       set_fact:
@@ -47,7 +57,7 @@
             subnet: "{{ subnet.subnet.name }}"
       register: router
 
-- name: Create as config
+    - name: Create as config
       opentelekomcloud.cloud.as_config:
         scaling_configuration: "{{ config_name }}"
         key_name: "{{ key_name }}"
