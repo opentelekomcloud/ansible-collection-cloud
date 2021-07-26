@@ -1046,7 +1046,7 @@ class ASGroupModule(OTCModule):
                         changed = False
                         self.fail(
                             changed=changed,
-                            msg="AS Group {0} can't be deleted due to "
+                            msg="AS Group {0} can not be deleted due to "
                                 "AS Instances presence".format(group.id)
                         )
 
