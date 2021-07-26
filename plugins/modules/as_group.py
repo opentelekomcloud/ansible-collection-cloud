@@ -307,7 +307,7 @@ class ASGroupModule(OTCModule):
                                name=dict(type='str')
                            )),
         scaling_configuration=dict(required=False),
-        desire_instance_number=dict(required=False, type='int'),
+        desire_instance_number=dict(required=False, type='int', default=0),
         min_instance_number=dict(required=False, type='int', default=0),
         max_instance_number=dict(required=False, type='int', default=0),
         cool_down_time=dict(required=False, type='int', default=300),
@@ -599,8 +599,8 @@ class ASGroupModule(OTCModule):
                                    delete_publicip, delete_volume,
                                    multi_az_priority_policy, group):
 
-        if as_group and (group.name != as_group.get('name')):
-            attrs['scaling_group_name'] = as_group
+        if as_group.get('id') and (group.name != as_group.get('name')):
+            attrs['scaling_group_name'] = as_group.get('name')
 
         if (as_configuration and
                 as_configuration != group.scaling_configuration_id and
@@ -758,7 +758,7 @@ class ASGroupModule(OTCModule):
                       instance_terminate_policy, notifications,
                       delete_publicip, delete_volume, multi_az_priority_policy,
                       group):
-        if as_group and group.name != as_group.get('name'):
+        if as_group.get('id') and group.name != as_group.get('name'):
             return True
 
         if (as_configuration and
@@ -869,13 +869,21 @@ class ASGroupModule(OTCModule):
             if not group:
                 return True
             return self._needs_update(
-                as_group, as_configuration, desire_instance_number,
-                min_instance_number, max_instance_number, cool_down_time,
-                lb_listener, lbaas_listeners, availability_zones, networks,
-                security_groups, hp_audit_method, hp_audit_time,
-                hp_audit_grace_period, instance_terminate_policy,
-                notifications, delete_publicip, delete_volume,
-                multi_az_priority_policy, group
+                as_group=as_group, as_configuration=as_configuration,
+                desire_instance_number=desire_instance_number,
+                min_instance_number=min_instance_number,
+                max_instance_number=max_instance_number,
+                cool_down_time=cool_down_time,
+                lb_listener=lb_listener, lbaas_listeners=lbaas_listeners,
+                availability_zones=availability_zones, networks=networks,
+                security_groups=security_groups,
+                hp_audit_method=hp_audit_method,
+                hp_audit_time=hp_audit_time,
+                hp_audit_grace_period=hp_audit_grace_period,
+                instance_terminate_policy=instance_terminate_policy,
+                notifications=notifications, delete_publicip=delete_publicip,
+                delete_volume=delete_volume,
+                multi_az_priority_policy=multi_az_priority_policy, group=group
             )
         elif state == 'absent' and group:
             return True
@@ -919,15 +927,26 @@ class ASGroupModule(OTCModule):
             if self.ansible.check_mode:
                 self.exit(
                     changed=self._system_state_change(
-                        as_group, as_configuration,
-                        desire_instance_number, min_instance_number,
-                        max_instance_number, cool_down_time,
-                        lb_listener, lbaas_listeners,
-                        availability_zones, networks, security_groups,
-                        hp_audit_method, hp_audit_time,
-                        hp_audit_gr_period, instance_terminate_policy,
-                        notifications, delete_publicip, delete_volume,
-                        multi_az_priority_policy, group)
+                        as_group=as_group,
+                        as_configuration=as_configuration,
+                        desire_instance_number=desire_instance_number,
+                        min_instance_number=min_instance_number,
+                        max_instance_number=max_instance_number,
+                        cool_down_time=cool_down_time,
+                        lb_listener=lb_listener,
+                        lbaas_listeners=lbaas_listeners,
+                        availability_zones=availability_zones,
+                        networks=networks,
+                        security_groups=security_groups,
+                        hp_audit_method=hp_audit_method,
+                        hp_audit_time=hp_audit_time,
+                        hp_audit_grace_period=hp_audit_gr_period,
+                        instance_terminate_policy=instance_terminate_policy,
+                        notifications=notifications,
+                        delete_publicip=delete_publicip,
+                        delete_volume=delete_volume,
+                        multi_az_priority_policy=multi_az_priority_policy,
+                        group=group)
                 )
 
             if group:
@@ -935,26 +954,50 @@ class ASGroupModule(OTCModule):
                 if state == 'present':
 
                     if self._needs_update(
-                            as_group, as_configuration, desire_instance_number,
-                            min_instance_number, max_instance_number,
-                            cool_down_time, lb_listener, lbaas_listeners,
-                            availability_zones, networks, security_groups,
-                            hp_audit_method, hp_audit_time, hp_audit_gr_period,
-                            instance_terminate_policy, notifications,
-                            delete_publicip, delete_volume,
-                            multi_az_priority_policy, group
+                            as_group=as_group,
+                            as_configuration=as_configuration,
+                            desire_instance_number=desire_instance_number,
+                            min_instance_number=min_instance_number,
+                            max_instance_number=max_instance_number,
+                            cool_down_time=cool_down_time,
+                            lb_listener=lb_listener,
+                            lbaas_listeners=lbaas_listeners,
+                            availability_zones=availability_zones,
+                            networks=networks,
+                            security_groups=security_groups,
+                            hp_audit_method=hp_audit_method,
+                            hp_audit_time=hp_audit_time,
+                            hp_audit_grace_period=hp_audit_gr_period,
+                            instance_terminate_policy=instance_terminate_policy,
+                            notifications=notifications,
+                            delete_publicip=delete_publicip,
+                            delete_volume=delete_volume,
+                            multi_az_priority_policy=multi_az_priority_policy,
+                            group=group
                     ):
                         attrs = self._attrs_for_as_group_update(
-                            as_group, as_configuration, desire_instance_number,
-                            min_instance_number, max_instance_number,
-                            cool_down_time, lb_listener, lbaas_listeners,
-                            availability_zones, networks, security_groups,
-                            hp_audit_method, hp_audit_time, hp_audit_gr_period,
-                            instance_terminate_policy, notifications,
-                            delete_publicip, delete_volume,
-                            multi_az_priority_policy, group
+                            attrs=attrs, as_group=as_group,
+                            as_configuration=as_configuration,
+                            desire_instance_number=desire_instance_number,
+                            min_instance_number=min_instance_number,
+                            max_instance_number=max_instance_number,
+                            cool_down_time=cool_down_time,
+                            lb_listener=lb_listener,
+                            lbaas_listeners=lbaas_listeners,
+                            availability_zones=availability_zones,
+                            networks=networks, security_groups=security_groups,
+                            hp_audit_method=hp_audit_method,
+                            hp_audit_time=hp_audit_time,
+                            hp_audit_grace_period=hp_audit_gr_period,
+                            instance_terminate_policy=instance_terminate_policy,
+                            notifications=notifications,
+                            delete_publicip=delete_publicip,
+                            delete_volume=delete_volume,
+                            multi_az_priority_policy=multi_az_priority_policy,
+                            group=group
                         )
-                        group = self.conn.auto_scaling.update_group(**attrs)
+                        group = self.conn.auto_scaling.update_group(
+                            group=group, **attrs)
                         changed = True
                         if action:
                             group = self._action_group(
@@ -991,8 +1034,9 @@ class ASGroupModule(OTCModule):
 
                 else:
                     if force_delete or self._is_group_can_be_deleted(group):
-                        self._delete_as_group(group, force_delete, wait,
-                                              timeout)
+                        self._delete_as_group(as_group=group,
+                                              force_delete=force_delete,
+                                              wait=wait, timeout=timeout)
                         changed = True
                         self.exit(
                             changed=changed,
@@ -1010,21 +1054,29 @@ class ASGroupModule(OTCModule):
 
                 if state == 'present':
                     attrs = self._attrs_for_as_group_create(
-                        attrs, as_group, as_configuration,
-                        desire_instance_number, min_instance_number,
-                        max_instance_number, cool_down_time, lb_listener,
-                        lbaas_listeners, availability_zones, networks,
-                        security_groups, router, hp_audit_method,
-                        hp_audit_time, hp_audit_gr_period,
-                        instance_terminate_policy, notifications,
-                        delete_publicip, delete_volume,
-                        multi_az_priority_policy
+                        attrs=attrs, as_group=as_group,
+                        as_configuration=as_configuration,
+                        desire_instance_number=desire_instance_number,
+                        min_instance_number=min_instance_number,
+                        max_instance_number=max_instance_number,
+                        cool_down_time=cool_down_time,
+                        lb_listener=lb_listener,
+                        lbaas_listeners=lbaas_listeners,
+                        availability_zones=availability_zones,
+                        networks=networks, security_groups=security_groups,
+                        router=router, hp_audit_method=hp_audit_method,
+                        hp_audit_time=hp_audit_time,
+                        hp_audit_grace_period=hp_audit_gr_period,
+                        instance_terminate_policy=instance_terminate_policy,
+                        notifications=notifications,
+                        delete_publicip=delete_publicip,
+                        delete_volume=delete_volume,
+                        multi_az_priority_policy=multi_az_priority_policy
                     )
                     group = self.conn.auto_scaling.create_group(**attrs)
                     changed = True
-                    if (as_configuration and
-                            self.conn.auto_scaling.find_config(
-                            name_or_id=as_configuration) and action):
+                    if (as_configuration and self._is_as_config_find(
+                            as_configuration) and action):
                         group = self._action_group(
                             action=action,
                             group=group,

@@ -101,7 +101,7 @@
       opentelekomcloud.cloud.as_group:
         scaling_group:
           id: "{{ as_group.as_group.id }}"
-        scaling_group_name: "{{ new_name }}"
+          name: "{{ new_name }}"
         max_instance_number: 10
       register: as_group
 
@@ -114,7 +114,7 @@
     - name: Delete AS Group - check_mode
       opentelekomcloud.cloud.as_group:
         scaling_group:
-          name: "{{ new_name }}"
+          id: "{{ as_group.as_group.id }}"
         state: absent
       register: as_group
       check_mode: yes
@@ -127,8 +127,10 @@
     - name: Delete AS Group
       opentelekomcloud.cloud.as_group:
         scaling_group:
-          name: "{{ new_name }}"
+          id: "{{ as_group.as_group.id }}"
         state: absent
+        wait: yes
+        timeout: 360
       register: as_group
 
     - name: assert result
@@ -165,7 +167,7 @@
       - name: Delete as group
         opentelekomcloud.cloud.as_group:
           scaling_group:
-            name: "{{ new_name }}"
+            id: "{{ as_group.as_group.id }}"
           state: absent
           force_delete: yes
           wait: yes

@@ -109,7 +109,8 @@
       # Cleanup
       - name: Delete as group
         opentelekomcloud.cloud.as_group:
-          scaling_group_name: "{{ as_group_name }}"
+          scaling_group:
+            name: "{{ as_group_name }}"
           state: absent
           force_delete: yes
           wait: yes
