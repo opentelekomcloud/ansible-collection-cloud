@@ -1,0 +1,9 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.object_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get info about datastore
+      opentelekomcloud.cloud.dds_datastore_info:
+        datastore_name: "DDS-Community"
+      register: result
