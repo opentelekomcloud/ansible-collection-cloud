@@ -2,6 +2,8 @@
 - module_defaults:
     opentelekomcloud.cloud.as_group:
       cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.as_instance_info:
+      cloud: "{{ test_cloud }}"
     openstack.cloud.os_keypair:
       cloud: "{{ test_cloud }}"
     openstack.cloud.os_network:
@@ -104,15 +106,15 @@
           name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
-      register: as_group
+      register: as_group_err
       ignore_errors: yes
 
     - name: assert result
       assert:
         that:
-          - as_group is not success
-          - as_group is not changed
-          - 'as_group.msg == "AS Group {{ as_group_name }} exists"'
+          - as_group_err is not success
+          - as_group_err is not changed
+          - 'as_group_err.msg == "AS Group {{ as_group.as_group.id }} exists"'
 
     - name: Update as group - check mode
       opentelekomcloud.cloud.as_group:
@@ -165,14 +167,14 @@
         state: absent
         wait: yes
         timeout: 360
-      register: as_group
+      register: as_gr_del
 
     - name: assert result
       assert:
         that:
-          - as_group is success
-          - as_group is changed
-          - 'as_group.msg == "AS Group {{ as_group.as_group.id }} was deleted"'
+          - as_gr_del is success
+          - as_gr_del is changed
+          - 'as_gr_del.msg == "AS Group {{ as_group.as_group.id }} was deleted"'
 
     - name: Delete AS Group that already deleted
       opentelekomcloud.cloud.as_group:
@@ -181,15 +183,15 @@
         state: absent
         wait: yes
         timeout: 360
-      register: as_group
+      register: as_gr_err
       ignore_errors: yes
 
     - name: assert result
       assert:
         that:
-          - as_group is not success
-          - as_group is not changed
-          - 'as_group.msg == "AS Group {{ new_name }} not found"'
+          - as_gr_err is not success
+          - as_gr_err is not changed
+          - 'as_gr_err.msg == "AS Group {{ as_group.as_group.id }} not found"'
 
     - name: Create AS Group with instances
       opentelekomcloud.cloud.as_group:
@@ -212,21 +214,35 @@
           - as_group is success
           - as_group is changed
 
+    - name: Get list of AS instances using as group id
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_instances
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is success
+          - as_instances is not changed
+          - as_instances['scaling_instances']|length == 1
+
+
     - name: Delete AS Group with instances without force_delete
       opentelekomcloud.cloud.as_group:
         scaling_group:
           id: "{{ as_group.as_group.id }}"
         state: absent
+        force_delete: no
         wait: yes
         timeout: 360
-      register: as_group
+      register: as_group_err
       ignore_errors: yes
 
     - name: assert result
       assert:
         that:
-          - as_group is not success
-          - as_group is not changed
+          - as_group_err is not success
+          - as_group_err is not changed
 
 
   always:

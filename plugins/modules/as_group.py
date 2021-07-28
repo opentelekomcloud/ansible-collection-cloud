@@ -299,6 +299,15 @@ def is_value_changed(old: list, new: list):
     return True if result else False
 
 
+def new_list_with_dicts(old: list):
+    new_list = []
+    for elem in old:
+        if isinstance(elem, dict):
+            new_elem = {"id": elem.get("id")}
+            new_list.append(new_elem)
+    return new_list
+
+
 class ASGroupModule(OTCModule):
     argument_spec = dict(
         scaling_group=dict(required=True, type='dict',
@@ -421,6 +430,7 @@ class ASGroupModule(OTCModule):
             )
 
     def _attrs_networks(self, attrs, networks):
+        networks = new_list_with_dicts(networks)
         if 0 < len(networks) <= 5:
             netwrks = []
             netwrk = {}
@@ -540,7 +550,6 @@ class ASGroupModule(OTCModule):
             attrs = self._attrs_lbaas_listeners(attrs, lbaas_listeners)
 
         if not hp_audit_method:
-            # set default values  for 'health_periodic_audit_method'
             if lb_listener or lbaas_listeners:
                 attrs['health_periodic_audit_method'] = "elb_audit".upper()
             else:
@@ -598,9 +607,10 @@ class ASGroupModule(OTCModule):
                                    instance_terminate_policy, notifications,
                                    delete_publicip, delete_volume,
                                    multi_az_priority_policy, group):
-
-        if as_group.get('id') and (group.name != as_group.get('name')):
-            attrs['scaling_group_name'] = as_group.get('name')
+        if (as_group.get('id')) and as_group.get('name'):
+            if (as_group.get('id') == group.id and
+                    group.name != as_group.get('name')):
+                attrs['scaling_group_name'] = as_group.get('name')
 
         if (as_configuration and
                 as_configuration != group.scaling_configuration_id and
@@ -643,7 +653,8 @@ class ASGroupModule(OTCModule):
             attrs['availability_zones'] = availability_zones
 
         if (networks and
-                is_value_changed(group.networks, networks)):
+                is_value_changed(new_list_with_dicts(group.networks),
+                                 networks)):
             attrs = self._attrs_networks(attrs, networks)
 
         if (security_groups and
@@ -694,7 +705,7 @@ class ASGroupModule(OTCModule):
         return attrs
 
     def _wait_for_instances(self, as_group, timeout, desire_instance_number=0):
-        for count in self.sdk.utils.Iterate_timeout(
+        for count in self.sdk.utils.iterate_timeout(
             timeout=timeout,
             message="Timeout waiting for AS Instances"
         ):
@@ -706,6 +717,7 @@ class ASGroupModule(OTCModule):
                          if instance.id]):
                 for instance in instances:
                     self.conn.auto_scaling.wait_for_instance(instance=instance)
+                return
 
     def _resume_group(self, group, wait, timeout, desire_instance_number=0):
         result_group = group
@@ -713,7 +725,7 @@ class ASGroupModule(OTCModule):
         if wait:
             try:
                 if desire_instance_number > 0:
-                    self.conn.auto_scaling.wait_for_instances(
+                    self._wait_for_instances(
                         as_group=group,
                         timeout=timeout,
                         desire_instance_number=desire_instance_number
@@ -744,9 +756,11 @@ class ASGroupModule(OTCModule):
                 )
         return result_group
 
-    def _action_group(self, action, group, wait, timeout):
+    def _action_group(self, action, group, wait, timeout,
+                      desire_instance_number=0):
         if action == 'resume':
-            return self._resume_group(group, wait, timeout)
+            return self._resume_group(group, wait, timeout,
+                                      desire_instance_number)
         elif action == 'pause':
             return self._pause_group(group, wait, timeout)
 
@@ -758,8 +772,10 @@ class ASGroupModule(OTCModule):
                       instance_terminate_policy, notifications,
                       delete_publicip, delete_volume, multi_az_priority_policy,
                       group):
-        if as_group.get('id') and group.name != as_group.get('name'):
-            return True
+        if as_group.get('id') and as_group.get('name'):
+            if (as_group.get('id') == group.id and group.name !=
+                    as_group.get('name')):
+                return True
 
         if (as_configuration and
                 group.scaling_configuration_id != as_configuration and
@@ -796,7 +812,8 @@ class ASGroupModule(OTCModule):
             return True
 
         if (networks and
-                is_value_changed(group.networks, networks)):
+                is_value_changed(new_list_with_dicts(group.networks),
+                                 networks)):
             return True
 
         if (security_groups and is_value_changed(group.security_groups,
@@ -1004,7 +1021,8 @@ class ASGroupModule(OTCModule):
                                 action=action,
                                 group=group,
                                 wait=wait,
-                                timeout=timeout
+                                timeout=timeout,
+                                desire_instance_number=desire_instance_number
                             )
                         self.exit(
                             changed=changed,
@@ -1016,7 +1034,8 @@ class ASGroupModule(OTCModule):
                             action=action,
                             group=group,
                             wait=wait,
-                            timeout=timeout
+                            timeout=timeout,
+                            desire_instance_number=desire_instance_number
                         )
                         changed = True
                         self.exit(
@@ -1081,7 +1100,8 @@ class ASGroupModule(OTCModule):
                             action=action,
                             group=group,
                             wait=wait,
-                            timeout=timeout
+                            timeout=timeout,
+                            desire_instance_number=desire_instance_number
                         )
                     self.exit(
                         changed=changed,
@@ -1092,8 +1112,7 @@ class ASGroupModule(OTCModule):
                 else:
                     self.fail(
                         changed=changed,
-                        msg="AS Group {0} not found".format(as_group.get(
-                            "name"))
+                        msg="AS Group {0} not found".format(as_group.get('id'))
                     )
 
         else:
