@@ -28,9 +28,6 @@ datastores:
     returned: On Success
     type: complex
     contains:
-        datastore_name:
-            description: Specifies the database type.
-            type: str
         storage_engine:
             description: Storage engine.
             type: str
@@ -67,12 +64,14 @@ class DDSDatastoreInfo(OTCModule):
         for raw in self.conn.dds.datastores(datastore_name):
             dt = raw.to_dict()
             dt.pop('location')
+            dt.pop('id')
+            dt.pop('name')
             data.append(dt)
 
-            self.exit(
-                changed=False,
-                dns_recordset=data
-            )
+        self.exit(
+            changed=False,
+            datastores=data
+        )
 
 
 def main():
