@@ -96,24 +96,29 @@
           - keypair is success
           - keypair.key.private_key is defined
 
-    - name: Create CCE cluster node 1, reserved for cluster deletion
+    - name: Create CCE Cluster Node
       opentelekomcloud.cloud.cce_cluster_node:
         annotations:
-          annotation1: 'annoval1'
-        availability_zone: 'eu-de-02'
+          annotation1: 'abc'
+        availability_zone: 'eu-de-01'
         cluster: "{{ cce_cluster_name }}"
         count: 1
         data_volumes:
-          - SATA: 150
-          - SAS: 100
+          - volumetype: 'SATA'
+            size: 100
+            encrypted: false
+            cmk_id: ''
+          - volumetype: 'SAS'
+            size: 120
         flavor: "{{ cce_node_flavor }}"
         k8s_tags:
-          testk8stag: 'value1'
-        keypair: "{{ keypair_name }}"
+          testtag: 'value'
+        ssh_key: "{{ keypair_name }}"
         labels:
-          my: 'label'
+          mein: 'label'
         max_pods: 16
         name: "{{ cce_node_name }}"
+        network: "{{ network_name }}"
         root_volume_size: 40
         root_volume_type: SATA
         tags:
@@ -122,7 +127,14 @@
           - key: 'key2'
             value: 'value2'
         wait: true
+        state: present
       register: node
+
+    - name: assert result
+      assert:
+        that:
+          - node is success
+          - node is changed
 
     - name: assert result
       assert:

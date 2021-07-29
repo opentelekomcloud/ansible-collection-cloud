@@ -89,7 +89,8 @@
 
     - name: Create AS Group
       opentelekomcloud.cloud.as_group:
-        scaling_group_name: "{{ as_group_name }}"
+        scaling_group:
+          name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
       register: as_group
@@ -230,8 +231,11 @@
       # Cleanup
       - name: Delete AS group
         opentelekomcloud.cloud.as_group:
-          scaling_group_name: "{{ as_group_name }}"
+          scaling_group:
+            name: "{{ as_group_name }}"
           state: absent
+          force_delete: yes
+          wait: yes
         register: dropped_as_group
 
       - name: Drop alarm

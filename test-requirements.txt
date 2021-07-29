@@ -7,5 +7,4 @@ voluptuous
 yamllint
 rstcheck
 ruamel.yaml
-tox
 otcextensions>=0.10.0

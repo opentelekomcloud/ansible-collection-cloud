@@ -10,6 +10,7 @@ action_groups:
     - as_instance_info
     - as_policy
     - as_policy_info
+    - as_quota_info
     - availability_zone_info
     - cce_cluster
     - cce_cluster_cert_info
