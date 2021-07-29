@@ -241,13 +241,11 @@ options:
       - If the module should wait for the AS Group to be created or deleted.
     type: bool
     default: 'yes'
-    alias:
   timeout:
     description:
       - The duration in seconds that module should wait.
     default: 200
     type: int
-    alias:
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -344,7 +342,7 @@ class ASGroupModule(OTCModule):
         cool_down_time=dict(required=False, type='int', default=300),
         lb_listener=dict(required=False, type='str'),
         lbaas_listeners=dict(
-            required=False, type='list', elements='dict',options=dict(
+            required=False, type='list', elements='dict', options=dict(
                 pool_id=dict(required=True, type='str'),
                 protocol_port=dict(required=True, type='int'),
                 weight=dict(required=True, type='int')
@@ -515,7 +513,7 @@ class ASGroupModule(OTCModule):
     def _attrs_for_as_group_create(
             self, as_group, as_configuration, desire_instance_number,
             min_instance_number, max_instance_number, cool_down_time,
-            lb_listener, lbaas_listeners,availability_zones, networks,
+            lb_listener, lbaas_listeners, availability_zones, networks,
             security_groups, router, hp_audit_method, hp_audit_time,
             hp_audit_grace_period, instance_terminate_policy, notifications,
             delete_publicip, delete_volume, multi_az_priority_policy
@@ -672,23 +670,20 @@ class ASGroupModule(OTCModule):
         if (availability_zones
                 and is_value_changed(
                     group.availability_zones, availability_zones
-                )
-        ):
+                )):
             attrs['availability_zones'] = availability_zones
 
         if (networks
                 and is_value_changed(
                     new_list_with_dict_ids(group.networks), networks
-                )
-        ):
+                )):
             attrs = self._attrs_networks(attrs, networks)
 
         if (security_groups
                 and is_value_changed(
                     new_list_with_dict_ids(group.security_groups),
                     security_groups
-                )
-        ):
+                )):
             attrs = self._attrs_security_groups(attrs, security_groups)
 
         if (hp_audit_method
