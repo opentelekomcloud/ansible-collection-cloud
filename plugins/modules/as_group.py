@@ -687,8 +687,8 @@ class ASGroupModule(OTCModule):
             attrs = self._attrs_security_groups(attrs, security_groups)
 
         if (hp_audit_method
-                and group.health_periodic_audit_method !=
-                hp_audit_method.upper()):
+                and (group.health_periodic_audit_method !=
+                     hp_audit_method.upper())):
 
             if (not group.lb_listener_id
                     and not group.lbaas_listeners
@@ -704,13 +704,13 @@ class ASGroupModule(OTCModule):
             attrs['health_periodic_audit_time'] = hp_audit_time
 
         if (hp_audit_grace_period
-                and group.health_periodic_audit_grace_period !=
-                hp_audit_grace_period):
+                and (group.health_periodic_audit_grace_period !=
+                     hp_audit_grace_period)):
             attrs['health_periodic_audit_grace_period'] = hp_audit_grace_period
 
         if (instance_terminate_policy
-                and group.instance_terminate_policy !=
-                instance_terminate_policy.upper()):
+                and (group.instance_terminate_policy !=
+                     instance_terminate_policy.upper())):
             attrs['instance_terminate_policy'] = \
                 instance_terminate_policy.upper()
 
@@ -723,8 +723,8 @@ class ASGroupModule(OTCModule):
         if delete_volume and group.delete_volume != delete_volume:
             attrs['delete_volume'] = delete_volume
 
-        if (multi_az_priority_policy and group.multi_az_priority_policy !=
-                multi_az_priority_policy.upper()):
+        if (multi_az_priority_policy and (group.multi_az_priority_policy !=
+                                          multi_az_priority_policy.upper())):
             attrs['multi_az_priority_policy'] = multi_az_priority_policy.upper()
 
         return attrs
@@ -799,8 +799,8 @@ class ASGroupModule(OTCModule):
             delete_publicip, delete_volume, multi_az_priority_policy, group
     ):
         if as_group.get('id') and as_group.get('name'):
-            if (as_group.get('id') == group.id and group.name !=
-                    as_group.get('name')):
+            if (as_group.get('id') == group.id
+                    and group.name != as_group.get('name')):
                 return True
 
         if (as_configuration
@@ -849,8 +849,8 @@ class ASGroupModule(OTCModule):
             return True
 
         if (hp_audit_method
-                and group.health_periodic_audit_method !=
-                hp_audit_method.upper()):
+                and (group.health_periodic_audit_method !=
+                     hp_audit_method.upper())):
             return True
 
         if (hp_audit_time
@@ -858,12 +858,12 @@ class ASGroupModule(OTCModule):
             return True
 
         if (hp_audit_grace_period
-                and group.health_periodic_audit_grace_period !=
-                hp_audit_grace_period):
+                and (group.health_periodic_audit_grace_period !=
+                     hp_audit_grace_period)):
             return True
 
-        if (instance_terminate_policy and group.instance_terminate_policy !=
-                instance_terminate_policy.upper()):
+        if (instance_terminate_policy and (group.instance_terminate_policy !=
+                                           instance_terminate_policy.upper())):
             return True
 
         if notifications and group.notifications != notifications:
@@ -875,8 +875,8 @@ class ASGroupModule(OTCModule):
         if delete_volume and group.delete_volume != delete_volume:
             return True
 
-        if (multi_az_priority_policy and group.multi_az_priority_policy !=
-                multi_az_priority_policy.upper()):
+        if (multi_az_priority_policy and (group.multi_az_priority_policy !=
+                                          multi_az_priority_policy.upper())):
             return True
 
         return False
