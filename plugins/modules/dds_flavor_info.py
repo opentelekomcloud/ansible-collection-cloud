@@ -36,7 +36,7 @@ flavors:
     contains:
         az_status:
             description: Indicates the status of specifications in an AZ.
-            type: obj
+            type: list
         engine_name:
             description: Indicates the engine name.
             type: str
