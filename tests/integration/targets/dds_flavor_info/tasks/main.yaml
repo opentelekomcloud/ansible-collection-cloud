@@ -1,0 +1,16 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.dds_flavor_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get info about flavor
+      opentelekomcloud.cloud.dds_flavor_info:
+        region: "eu-de"
+      register: result
+
+    - name: assert result
+      assert:
+        that:
+          - result is success
+          - result is not changed
+          - result.datastores is defined
