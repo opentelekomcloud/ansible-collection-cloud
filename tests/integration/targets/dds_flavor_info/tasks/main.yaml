@@ -13,4 +13,4 @@
         that:
           - result is success
           - result is not changed
-          - result.datastores is defined
+          - result.flavors is defined

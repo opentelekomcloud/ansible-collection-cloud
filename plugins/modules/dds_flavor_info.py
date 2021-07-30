@@ -73,7 +73,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class DDSFlavorInfo(OTCModule):
     argument_spec = dict(
         region=dict(required=True),
-        engine_name = dict(default='DDS-Community'),
+        engine_name=dict(default='DDS-Community'),
     )
     module_kwargs = dict(
         supports_check_mode=True
