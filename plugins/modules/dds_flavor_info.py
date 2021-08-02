@@ -61,7 +61,7 @@ flavors:
 '''
 
 EXAMPLES = '''
-# Get info about datastore
+# Get info about flavor
 - opentelekomcloud.cloud.dds_flavor_info:
     region: "eu-de"
   register: result
