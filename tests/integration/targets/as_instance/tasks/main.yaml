@@ -32,7 +32,7 @@
         as_instance_name: "{{ ( prefix + '_as_inst') }}"
         min_instance_number: 0
         desire_instance_number: 2
-        max_instance_number: 5
+        max_instance_number: 4
         as_group_name: "{{ ( prefix + '_as_group') }}"
         as_config_name: "{{ ( prefix + 'as_config') }}"
         network_name: "{{ ( prefix + '_network') }}"
@@ -148,17 +148,6 @@
         delete_fip: True
       register: ecs2
 
-    - name: Create ECS3 instance
-      openstack.cloud.server:
-        name: "{{ (as_instance_name + '_3') }}"
-        image: "{{ image_name }}"
-        network: "{{ network_name }}"
-        flavor: "{{ server_flavor }}"
-        availability_zone: "{{ az1_name }}"
-        auto_ip: True
-        delete_fip: True
-      register: ecs3
-
     - name: Get list of AS Instances
       opentelekomcloud.cloud.as_instance_info:
         scaling_group: "{{ as_group.as_group.id }}"
@@ -234,7 +223,7 @@
     - name: Add AS instances
       opentelekomcloud.cloud.as_instance:
         scaling_group: "{{ as_group.as_group.id }}"
-        scaling_instances: ["{{ ecs1.server.id }}", "{{ ecs2.server.id }}", "{{ ecs3.server.id }}"]
+        scaling_instances: ["{{ ecs1.server.id }}", "{{ ecs2.server.id }}"]
         action: "add"
         state: present
       register: as_instances
@@ -464,11 +453,6 @@
       - name: Delete ECS2
         openstack.cloud.server:
           name: "{{ (as_instance_name + '_2') }}"
-          state: absent
-
-      - name: Delete ECS3
-        openstack.cloud.server:
-          name: "{{ (as_instance_name + '_3') }}"
           state: absent
 
       - name: Delete as group
