@@ -738,8 +738,8 @@ class ASGroupModule(OTCModule):
                 group=as_group
             ))
             if (len(instances) == desire_instance_number
-                    and len([instance.id for instance in instances
-                         if instance.id]) == desire_instance_number):
+                    and len([instance.id for instance in instances if
+                             instance.id]) == desire_instance_number):
                 for instance in instances:
                     self.conn.auto_scaling.wait_for_instance(instance=instance)
                 return

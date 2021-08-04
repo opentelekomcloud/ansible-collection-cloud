@@ -363,7 +363,7 @@
         instance_delete: yes
         state: absent
         wait: true
-        timeout: 600
+        timeout: 360
       register: as_instances
 
     - name: assert result
@@ -394,7 +394,7 @@
     - name: Remove group of AS instances - check mode
       opentelekomcloud.cloud.as_instance:
         scaling_group: "{{ as_group.as_group.name }}"
-        scaling_instances: [ "{{ name_list }}"]
+        scaling_instances: "{{ name_list_after_remove }}"
         instance_delete: yes
         action: "remove"
         state: absent
@@ -429,7 +429,7 @@
     - name: Remove group of AS instances
       opentelekomcloud.cloud.as_instance:
         scaling_group: "{{ as_group.as_group.name }}"
-        scaling_instances: [ "{{ name_list }}"]
+        scaling_instances: "{{ name_list }}"
         instance_delete: yes
         action: "remove"
         state: absent
