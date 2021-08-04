@@ -267,6 +267,13 @@ class ASInstanceModule(OTCModule):
                 delete_instance=instance_delete
             )
 
+    def _delete_single_instance(self, instance, delete_instance=False):
+        if isinstance(instance, list):
+            instance = self._join_lists(instance).pop()
+        return self.conn.auto_scaling.remove_instance(
+            instance=instance, delete_instance=delete_instance
+        )
+
     def _wait_for_group_inservice_status(self, as_group, timeout, interval=2):
         return self.conn.auto_scaling.wait_for_group(
             group=as_group, interval=interval, wait=timeout
@@ -431,38 +438,24 @@ class ASInstanceModule(OTCModule):
                         msg=msg
                     )
                 else:
-                    if not action:
-                        if len(as_instances) == 1:
-                            if len(instances_id) == 1:
-                                self.conn.auto_scaling.remove_instance(
-                                    instance=instances_id[0],
-                                    delete_instance=instance_delete
-                                )
-                                if wait:
-                                    self._wait_for_delete_instances(
-                                        group=group,
-                                        instances_id=instances_id,
-                                        timeout=timeout)
-                                msg = 'Instance {0} was removed'.format(
-                                    as_instances[0]
-                                )
-                                self.exit(
-                                    changed=True,
-                                    msg=msg
-                                )
-                            else:
-                                msg = 'Instance {0} not found or ' \
-                                      'Instance is not in INSERVICE ' \
-                                      'state'.format(as_instances[0])
-                                self.fail(
-                                    changed=False,
-                                    msg=msg
-                                )
-                        else:
-                            self.exit(
-                                changed=False,
-                                msg='Instances not changed'
+                    if not action and len(instances_id[0]) == 1:
+                        self._delete_single_instance(
+                            instance=instances_id,
+                            delete_instance=instance_delete
+                        )
+                        if wait:
+                            self._wait_for_delete_instances(
+                                group=group,
+                                instances_id=instances_id,
+                                timeout=timeout
                             )
+                        msg = 'Instance {0} was removed'.format(
+                            as_instances[0]
+                        )
+                        self.exit(
+                            changed=True,
+                            msg=msg
+                        )
                     elif action == 'remove':
                         self._batch_instances_action(
                             instances=instances_id,
