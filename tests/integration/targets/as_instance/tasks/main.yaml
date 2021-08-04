@@ -133,7 +133,6 @@
         network: "{{ network_name }}"
         flavor: "{{ server_flavor }}"
         availability_zone: "{{ az2_name }}"
-        auto_ip: True
         delete_fip: True
       register: ecs1
 
@@ -144,7 +143,6 @@
         network: "{{ network_name }}"
         flavor: "{{ server_flavor }}"
         availability_zone: "{{ az2_name }}"
-        auto_ip: True
         delete_fip: True
       register: ecs2
 
