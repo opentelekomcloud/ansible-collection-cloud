@@ -196,8 +196,8 @@ class ASInstanceModule(OTCModule):
                 group=group,
                 name_or_id=as_instance
             )
-            if (instance_ecs and
-                    instance_ecs.availability_zone in group.availability_zones
+            if (instance_ecs
+                    and instance_ecs.availability_zone in group.availability_zones
                     and not instance_as_group):
                 instances.append(instance_ecs.id)
         if len(instances) <= max_instances:
