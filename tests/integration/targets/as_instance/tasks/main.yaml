@@ -31,8 +31,8 @@
       set_fact:
         as_instance_name: "{{ ( prefix + '_as_inst') }}"
         min_instance_number: 0
-        desire_instance_number: 2
-        max_instance_number: 4
+        desire_instance_number: 1
+        max_instance_number: 3
         as_group_name: "{{ ( prefix + '_as_group') }}"
         as_config_name: "{{ ( prefix + 'as_config') }}"
         network_name: "{{ ( prefix + '_network') }}"

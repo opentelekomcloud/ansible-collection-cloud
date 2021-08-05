@@ -485,11 +485,11 @@ class ASGroupModule(OTCModule):
             if len(security_groups) == 1:
                 sec_groups = []
                 sec_group = {}
-                sg_group = self.conn.network.find_security_group(
+                security_group = self.conn.network.find_security_group(
                     name_or_id=security_groups[0]["id"]
                 )
-                if sg_group:
-                    sec_group['id'] = sg_group.id
+                if security_group:
+                    sec_group['id'] = security_group.id
                     sec_groups.append(sec_group)
                 attrs['security_groups'] = sec_groups
                 return attrs
@@ -737,9 +737,9 @@ class ASGroupModule(OTCModule):
             instances = list(self.conn.auto_scaling.instances(
                 group=as_group
             ))
-            if (len(instances) == desire_instance_number
-                    and len([instance.id for instance in instances if
-                             instance.id]) == desire_instance_number):
+            instances_with_id = [instance.id for instance in instances
+                                 if instance.id]
+            if (len(instances) == len(instances_with_id) == desire_instance_number):
                 for instance in instances:
                     self.conn.auto_scaling.wait_for_instance(instance=instance)
                 return
