@@ -34,7 +34,7 @@ options:
     type: str
   subnet_id:
     description:
-      - Specifies the network ID of the subnet. 
+      - Specifies the network ID of the subnet.
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
