@@ -41,8 +41,9 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 instance:
-    description: Info about a specified DB instance. If ID or name is not specified, info about\
-    all instances inside one project.
+    description:
+        - Info about a specified DB instance.
+        - If ID or name is not specified, info about all instances inside one project.
     returned: On Success
     type: complex
     contains:
@@ -63,10 +64,12 @@ instance:
               type: int
               sample: 7
             start_time:
-              description: Indicates the backup time window. Automated backups will be triggered\
-               during the backup time window. The current time is the UTC time.
+              description:
+                  - Indicates the backup time window.
+                  - Automated backups will be triggered during the backup time window.
+                  - The current time is the UTC time.
               type: str
-              sample: 22:00-23:00"
+              sample: "22:00-23:00"
         created:
           description: Indicates the DB instance creation time.
           type: str
@@ -108,8 +111,9 @@ instance:
           type: complex
           contains:
             id:
-              description: Indicates the group ID. This parameter is valid only when the node type\
-              is shard or config.
+              description:
+                  - Indicates the group ID.
+                  - This parameter is valid only when the node type is shard or config.
               type: str
               sample: null
             name:
@@ -133,13 +137,16 @@ instance:
                   type: str
                   sample: "test_dds_replica_node_3"
                 private_ip:
-                  description: Indicates the private IP address of a node. Valid only for mongos and\
-                  replica set instances. The value exists only after ECSs are created successfully.
+                  description:
+                      - Indicates the private IP address of a node.
+                      - Valid only for mongos and replica set instances.
+                      - The value exists only after ECSs are created successfully.
                   type: str
                   sample: "192.168.115.80"
                 public_ip:
-                  description: Indicates the EIP that has been bound. Valid only for mongos nodes of\
-                  cluster instances, primary nodes and secondary nodes of replica set instances.
+                  description:
+                      - Indicates the EIP that has been bound.
+                      - Valid only for mongos nodes of cluster instances.
                   type: str
                   sample: ""
                 role:
@@ -155,8 +162,9 @@ instance:
                   type: str
                   sample: "normal"
             status:
-              description: Indicates the group status. This parameter is valid only when the\
-              node type is shard or config.
+              description:
+                  - Indicates the group status.
+                  - This parameter is valid only when the node type is shard or config.
               type: str
               sample: null
             type:
@@ -168,11 +176,11 @@ instance:
               type: complex
               contains:
                 size:
-                  description: Indicates the disk size. Unit: GB
+                  description: Indicates the disk size. Unit GB
                   type: str
                   sample: "10"
                 used:
-                  description: Indicates the disk usage. Unit: GB
+                  description: Indicates the disk usage. Unit GB
                   type: str
                   sample: "0.333129882812"
         id:
@@ -192,7 +200,7 @@ instance:
           type: str
           sample: "ReplicaSet"
         pay_mode:
-          description: Indicates the billing mode. 0: indicates the pay-per-use billing mode.
+          description: Indicates the billing mode. 0 indicates the pay-per-use billing mode.
           type: str
           sample: "0"
         port:
