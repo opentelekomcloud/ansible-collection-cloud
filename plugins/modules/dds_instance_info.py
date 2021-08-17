@@ -21,8 +21,8 @@ options:
   mode:
     description:
       - Specifies the instance type.
+    choices: [sharding, replicaset]
     type: str
-    choices: [Sharding, ReplicaSet]
   datastore_type:
     description:
       - Specifies the database type. The value is DDS-Community.
