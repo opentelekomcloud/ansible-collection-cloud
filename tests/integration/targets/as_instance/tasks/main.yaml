@@ -1,0 +1,508 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.as_instance:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.as_instance_info:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.as_group:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.as_config:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.security_group:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_network:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_subnet:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_router:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.floating_ip:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.server:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.os_keypair:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        as_instance_name: "{{ ( prefix + '_as_inst') }}"
+        min_instance_number: 0
+        desire_instance_number: 1
+        max_instance_number: 3
+        as_group_name: "{{ ( prefix + '_as_group') }}"
+        as_config_name: "{{ ( prefix + 'as_config') }}"
+        network_name: "{{ ( prefix + '_network') }}"
+        subnet_name: "{{ ( prefix + '_subnet') }}"
+        router_name:  "{{ ( prefix + '_router') }}"
+        secgroup_name: "{{ ( prefix + '_secgroup') }}"
+        kp_name: "{{ ( prefix + '_kp') }}"
+        server_name: "{{ ( prefix + '_ecs') }}"
+        server_flavor: "s3.medium.1"
+        image_name: Standard_Ubuntu_18.04_latest
+        volume_type: "SATA"
+        disk_type: "SYS"
+        disk_size: 4
+        az1_name: "eu-de-01"
+        az2_name: "eu-de-03"
+
+    - name: Create keypair
+      openstack.cloud.os_keypair:
+        name: "{{ kp_name }}"
+      register: kp
+
+    - name: Create security group
+      openstack.cloud.security_group:
+        name: "{{ secgroup_name }}"
+        state: present
+      register: secgroup
+
+    - name: Create network
+      openstack.cloud.os_network:
+        name: "{{ network_name }}"
+        state: present
+      register: network
+
+    - name: Create subnet
+      openstack.cloud.os_subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ network.network.name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: subnet
+
+    - name: Create router
+      openstack.cloud.os_router:
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ network.network.name }}"
+            subnet: "{{ subnet.subnet.name }}"
+      register: router
+
+    - name: Create AS Config
+      opentelekomcloud.cloud.as_config:
+        scaling_configuration: "{{ as_config_name }}"
+        key_name: "{{ kp_name }}"
+        image: "{{ image_name }}"
+        flavor: "{{ server_flavor }}"
+        disk:
+          - size: "{{ disk_size }}"
+            volume_type: "{{ volume_type }}"
+            disk_type: "{{ disk_type }}"
+        public_ip:
+          eip:
+            ip_type: "5_bgp"
+            bandwidth:
+              size: 10
+              share_type: "PER"
+              charging_mode: "traffic"
+        security_groups: [{'id': "{{ secgroup.secgroup.id }}"}]
+      register: as_config
+
+    - name: Create AS group
+      opentelekomcloud.cloud.as_group:
+        scaling_group:
+          name: "{{ as_group_name }}"
+        scaling_configuration: "{{ as_config_name }}"
+        min_instance_number: "{{ min_instance_number }}"
+        desire_instance_number: "{{ desire_instance_number }}"
+        max_instance_number: "{{ max_instance_number }}"
+        availability_zones: ["{{ az2_name }}"]
+        networks: [{'id': "{{ network.network.id }}"}]
+        security_groups: [{'id': "{{ secgroup.secgroup.id }}"}]
+        router: "{{ router.router.id }}"
+        delete_publicip: True
+        delete_volume: True
+        action: "resume"
+        state: "present"
+        wait: yes
+        timeout: 400
+      register: as_group
+
+    - name: Create ECS1 instance
+      openstack.cloud.server:
+        name: "{{ (as_instance_name + '_1') }}"
+        image: "{{ image_name }}"
+        network: "{{ network_name }}"
+        flavor: "{{ server_flavor }}"
+        availability_zone: "{{ az2_name }}"
+        delete_fip: True
+      register: ecs1
+
+    - name: Create ECS2 instance
+      openstack.cloud.server:
+        name: "{{ (as_instance_name + '_2') }}"
+        image: "{{ image_name }}"
+        network: "{{ network_name }}"
+        flavor: "{{ server_flavor }}"
+        availability_zone: "{{ az2_name }}"
+        delete_fip: True
+      register: ecs2
+
+    - name: Get list of AS Instances
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_inst_list
+
+    - name: Get init list of ID of instances
+      set_fact:
+        init_id_list: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
+
+    - name: Get init list of Names of instances
+      set_fact:
+        init_name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
+
+    - name: assert result
+      assert:
+        that:
+          - init_id_list|length == desire_instance_number
+          - init_name_list|length == desire_instance_number
+
+    - name: Add AS instances - check mode
+      opentelekomcloud.cloud.as_instance:
+        scaling_group: "{{ as_group.as_group.name }}"
+        scaling_instances: ["{{ ecs1.server.id }}", "{{ ecs2.server.id }}"]
+        action: "add"
+        state: present
+      check_mode: yes
+      register: as_instances
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is success
+          - as_instances is changed
+
+    - name: Get list of AS Instances
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_inst_list
+
+    - name: Get init list of ID of instances
+      set_fact:
+        init_id_list: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
+
+    - name: Get init list of Names of instances
+      set_fact:
+        init_name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
+
+    - name: assert result
+      assert:
+        that:
+          - init_id_list|length == desire_instance_number
+          - init_name_list|length == desire_instance_number
+
+    - name: Get list of AS Instances
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_inst_list
+
+    - name: Get init list of ID of instances
+      set_fact:
+        id_list: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
+
+    - name: Get init list of Names of instances
+      set_fact:
+        name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
+
+    - name: assert result
+      assert:
+        that:
+          - id_list|length == init_id_list|length
+          - name_list|length == init_name_list|length
+
+    - name: Add AS instances
+      opentelekomcloud.cloud.as_instance:
+        scaling_group: "{{ as_group.as_group.id }}"
+        scaling_instances: ["{{ ecs1.server.id }}", "{{ ecs2.server.id }}"]
+        action: "add"
+        state: present
+      register: as_instances
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is success
+          - as_instances is changed
+
+    - name: Get list of AS Instances after adding new instances
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_inst_list
+
+    - name: Get list of ID of instances
+      set_fact:
+        id_list: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
+
+    - name: Get list of Names of instances
+      set_fact:
+        name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
+
+    - name: assert result
+      assert:
+        that:
+          - id_list|length == init_id_list|length + 2
+          - name_list|length == init_name_list|length + 2
+
+    - name: Protect AS instances - check mode
+      opentelekomcloud.cloud.as_instance:
+        scaling_group: "{{ as_group.as_group.id }}"
+        scaling_instances: "{{ id_list }}"
+        action: "protect"
+        state: present
+      check_mode: yes
+      register: as_instances
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is success
+          - as_instances is changed
+
+    - name: Protect AS instances
+      opentelekomcloud.cloud.as_instance:
+        scaling_group: "{{ as_group.as_group.name }}"
+        scaling_instances: "{{ name_list }}"
+        action: "protect"
+        state: present
+      register: as_instances
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is success
+          - as_instances is changed
+
+    - name: Unprotect AS instances - check mode
+      opentelekomcloud.cloud.as_instance:
+        scaling_group: "{{ as_group.as_group.id }}"
+        scaling_instances: "{{ name_list }}"
+        action: "unprotect"
+        state: present
+      check_mode: yes
+      register: as_instances
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is success
+          - as_instances is changed
+
+    - name: Unprotect AS instances
+      opentelekomcloud.cloud.as_instance:
+        scaling_group: "{{ as_group.as_group.name }}"
+        scaling_instances: "{{ name_list }}"
+        action: "unprotect"
+        state: present
+      register: as_instances
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is success
+          - as_instances is changed
+
+    - name: Remove single AS instance - check mode
+      opentelekomcloud.cloud.as_instance:
+        scaling_group: "{{ as_group.as_group.id }}"
+        scaling_instances: ["{{ id_list[0] }}"]
+        instance_delete: yes
+        state: absent
+      check_mode: yes
+      register: as_instances
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is success
+          - as_instances is changed
+
+    - name: Get list of AS Instances
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_inst_list
+
+    - name: Get list of ID of instances
+      set_fact:
+        id_list_2: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
+
+    - name: Get list of Names of instances
+      set_fact:
+        name_list_2: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
+
+    - name: assert result
+      assert:
+        that:
+          - id_list_2|length == id_list|length
+          - name_list_2|length == name_list|length
+
+    - name: Remove single AS instance
+      opentelekomcloud.cloud.as_instance:
+        scaling_group: "{{ as_group.as_group.name }}"
+        scaling_instances: ["{{ name_list[0] }}"]
+        instance_delete: yes
+        state: absent
+        wait: true
+        timeout: 360
+      register: as_instances
+
+    - name: assert result
+      assert:
+        that:
+          - as_instances is success
+          - as_instances is changed
+
+    - name: Get list of AS Instances after removing single instance
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_inst_list
+
+    - name: Get list of ID of instances
+      set_fact:
+        id_list_after_remove: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
+
+    - name: Get list of Names of instances
+      set_fact:
+        name_list_after_remove: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
+
+    - name: assert result
+      assert:
+        that:
+          - id_list_after_remove|length == id_list|length - 1
+          - name_list_after_remove|length == name_list|length - 1
+
+    - name: Remove group of AS instances - check mode
+      opentelekomcloud.cloud.as_instance:
+        scaling_group: "{{ as_group.as_group.name }}"
+        scaling_instances: "{{ name_list_after_remove }}"
+        instance_delete: yes
+        action: "remove"
+        state: absent
+      check_mode: yes
+      register: result
+
+    - name: assert result
+      assert:
+        that:
+          - result is success
+          - result is changed
+
+    - name: Get list of AS Instances
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_inst_list
+
+    - name: Get list of ID of instances
+      set_fact:
+        id_list_after_remove: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
+
+    - name: Get list of Names of instances
+      set_fact:
+        name_list_after_remove: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
+
+    - name: assert result
+      assert:
+        that:
+          - id_list_after_remove|length == id_list|length - 1
+          - name_list_after_remove|length == name_list|length - 1
+
+    - name: Remove group of AS instances
+      opentelekomcloud.cloud.as_instance:
+        scaling_group: "{{ as_group.as_group.name }}"
+        scaling_instances: "{{ name_list }}"
+        instance_delete: yes
+        action: "remove"
+        state: absent
+        wait: yes
+        timeout: 360
+      register: result
+
+    - name: assert result
+      assert:
+        that:
+          - result is success
+          - result is changed
+
+    - name: Get list of AS instances
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: result
+
+    - name: assert result
+      assert:
+        that:
+          - result.scaling_instances|length == {{ min_instance_number }}
+
+  always:
+    - block:
+      # Cleanup
+      - name: Delete ECS1
+        openstack.cloud.server:
+          name: "{{ (as_instance_name + '_1') }}"
+          state: absent
+
+      - name: Delete ECS2
+        openstack.cloud.server:
+          name: "{{ (as_instance_name + '_2') }}"
+          state: absent
+
+      - name: Delete as group
+        opentelekomcloud.cloud.as_group:
+          scaling_group:
+            name: "{{ as_group_name }}"
+          state: absent
+          force_delete: yes
+          wait: yes
+          timeout: 360
+        register: dropped_as_group
+
+      - name: assert result
+        assert:
+          that:
+            - dropped_as_group is success
+            - dropped_as_group is changed
+
+      - name: Delete as config
+        opentelekomcloud.cloud.as_config:
+          scaling_configuration: "{{ as_config_name }}"
+          state: absent
+        register: dropped_as_config
+
+      - name: assert result
+        assert:
+          that:
+            - dropped_as_config is success
+            - dropped_as_config is changed
+
+      - name: Delete existing router
+        openstack.cloud.os_router:
+          name: "{{ router.router.name }}"
+          state: absent
+
+      - name: Delete existing subnet
+        openstack.cloud.os_subnet:
+          name: "{{ subnet.subnet.name }}"
+          state: absent
+
+      - name: Delete existing network
+        openstack.cloud.os_network:
+          name: "{{ network.network.name }}"
+          state: absent
+
+      - name: Delete security group
+        openstack.cloud.security_group:
+          name: "{{ secgroup_name }}"
+          state: absent
+
+      - name: Delete keypair
+        openstack.cloud.os_keypair:
+          name: "{{ kp_name }}"
+          state: absent
+      ignore_errors: true
