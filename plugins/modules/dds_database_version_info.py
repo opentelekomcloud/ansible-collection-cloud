@@ -39,6 +39,7 @@ class DdsService(service_description.ServiceDescription):
         supports_check_mode=True
     )
 
+
 def main():
     module = DdsService()
     module()
