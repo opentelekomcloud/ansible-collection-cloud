@@ -30,7 +30,7 @@ options:
     default: 'DDS-Community'
   vpc_id:
     description:
-      - Specifies the DB instance name.
+      - Specifies the VPC ID.
     type: str
   subnet_id:
     description:
