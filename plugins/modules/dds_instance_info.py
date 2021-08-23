@@ -206,7 +206,7 @@ instance:
         port:
           description: Indicates the database port number. The port range is 2100 to 9500.
           type: int
-          sample: "8635"
+          sample: 8635
         region:
           description: Indicates the region where the DB instance is deployed.
           type: str
@@ -301,7 +301,7 @@ class DDSInstanceInfo(OTCModule):
 
         self.exit(
             changed=False,
-            instance=data
+            instances=data
         )
 
 

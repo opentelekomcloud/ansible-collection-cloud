@@ -24,7 +24,7 @@ action_groups:
     - deh_host_type_info
     - deh_server_info
     - dds_flavor_info
-    - dds_instnce_info
+    - dds_instance_info
     - floating_ip
     - loadbalancer
     - loadbalancer_info
