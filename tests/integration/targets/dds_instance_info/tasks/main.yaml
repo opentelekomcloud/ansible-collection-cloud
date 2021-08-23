@@ -12,4 +12,4 @@
         that:
           - result is success
           - result is not changed
-          - result.instance is defined
+          - result.instances is defined
