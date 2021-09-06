@@ -217,8 +217,6 @@ class DdsInstanceModule(OTCModule):
                 changed = True
 
         elif self.params['state'] == 'present':
-            # Attention: not conform password result in BadRequest with no info
-
             if instance:
                 self.exit(changed=False)
 
