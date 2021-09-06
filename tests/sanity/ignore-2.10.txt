@@ -40,6 +40,7 @@ plugins/modules/deh_server_info.py validate-modules:missing-gplv3-license
 plugins/modules/dds_datastore_info.py validate-modules:missing-gplv3-license
 plugins/modules/dds_flavor_info.py validate-modules:missing-gplv3-license
 plugins/modules/dds_instance_info.py validate-modules:missing-gplv3-license
+plugins/modules/dds_instance.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer_info.py validate-modules:missing-gplv3-license
 plugins/modules/nat_gateway.py validate-modules:missing-gplv3-license
