@@ -22,7 +22,7 @@ description:
   - Manage DDS instances.
 options:
   name:
-    description: 
+    description:
         - Specifies the DB instance name.
         - The DB instance name of the same DB engine is unique for the same tenant.
         - The value must be 4 to 64 characters in length and start with a letter.
@@ -62,7 +62,7 @@ options:
     required: true
   password:
     description:
-        - Specifies the database password. The value must be 8 to 32 characters in length, 
+        - Specifies the database password. The value must be 8 to 32 characters in length,
         - contain uppercase and lowercase letters, digits and special characters.
     required: true
   disk_encryption:
@@ -90,7 +90,7 @@ options:
     required: true
   flavor_storage:
     description:
-        - Specifies the disk type. This parameter is optional for all nodes except mongos. 
+        - Specifies the disk type. This parameter is optional for all nodes except mongos.
         - This parameter is invalid for the mongos nodes.
     type: str
     default: 'ULTRAHIGH'
