@@ -158,21 +158,22 @@ class DdsInstanceModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True, type='str'),
         datastore_version=dict(type='str', choices=['3.2', '3.4'], default='3.4'),
-        region=dict(required=True, type='str'),
-        availability_zone=dict(required=True, type='str'),
-        vpc_id=dict(required=True, type='str'),
-        subnet_id=dict(required=True, type='str'),
-        security_group=dict(required=True, type='str'),
-        password=dict(required=True, type='str', no_log=True),
+        region=dict(type='str'),
+        availability_zone=dict(type='str'),
+        router=dict(type='str'),
+        network=dict(type='str'),
+        security_group=dict(type='str'),
+        password=dict(type='str', no_log=True),
         disk_encryption=dict(type='str'),
-        mode=dict(required=True, type='str', choices=['sharding', 'replicaset']),
-        flavor_type=dict(required=True, type='str', choices=['mongos', 'shard', 'config',
+        mode=dict(type='str', choices=['sharding', 'replicaset']),
+        flavor_type=dict(type='str', choices=['mongos', 'shard', 'config',
                                                              'replica']),
-        flavor_num=dict(required=True, type='int'),
+        flavor_num=dict(type='int'),
         flavor_storage=dict(type='str', default='ULTRAHIGH'),
-        backup_timeframe=dict(required=True, type='str'),
+        backup_timeframe=dict(type='str'),
         backup_keepdays=dict(type='int'),
         ssl_option=dict(type='int'),
+        state=dict(type='str', choices=['present', 'absent'], default='present'),
     )
     module_kwargs = dict(
         required_if=[
@@ -194,6 +195,9 @@ class DdsInstanceModule(OTCModule):
         return False
 
     def run(self):
+
+        if self.params['disk_encryption']:
+            self.params['disk_encryption_id'] = self.params.pop('disk_encryption')
 
         name = self.params['name']
 
@@ -220,11 +224,11 @@ class DdsInstanceModule(OTCModule):
             if instance:
                 self.exit(changed=False)
 
-            volume_type = self.params['volume_type']
-            if volume_type:
-                self.params['volume_type'] = volume_type.upper()
+            # volume_type = self.params['volume_type']
+            # if volume_type:
+            #     self.params['volume_type'] = volume_type.upper()
 
-            instance = self.conn.create_rds_instance(**self.params)
+            instance = self.conn.create_dds_instance(**self.params)
             self.exit(changed=True, instance=instance.to_dict())
 
         self.exit(changed=changed)
