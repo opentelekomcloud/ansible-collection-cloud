@@ -46,13 +46,13 @@ options:
         - The value cannot be empty.
     type: int
     required: true
-  vpc_id:
+  router:
     description:
         - Specifies the VPC ID. The value cannot be empty.
         - The string length and whether the string complying with UUID regex rules are verified.
     type: str
     required: true
-  subnet_id:
+  network:
     description: Specifies the subnet ID.
     type: str
     required: true
@@ -195,16 +195,16 @@ class DdsInstanceModule(OTCModule):
         return False
 
     def run(self):
-
+        attrs = {}
         if self.params['disk_encryption']:
-            self.params['disk_encryption_id'] = self.params.pop('disk_encryption')
-
-        name = self.params['name']
+            attrs['disk_encryption_id'] = self.params.pop('disk_encryption')
+        if self.params['name']:
+            attrs['name'] = self.params['name']
 
         changed = False
 
         instance = self.conn.dds.find_instance(
-            name_or_id=name)
+            name_or_id=attrs['name'])
 
         if self.ansible.check_mode:
             self.exit(changed=self._system_state_change(instance))
@@ -221,15 +221,14 @@ class DdsInstanceModule(OTCModule):
                 changed = True
 
         elif self.params['state'] == 'present':
-            if instance:
-                self.exit(changed=False)
+            if not instance:
 
             # volume_type = self.params['volume_type']
             # if volume_type:
             #     self.params['volume_type'] = volume_type.upper()
 
-            instance = self.conn.create_dds_instance(**self.params)
-            self.exit(changed=True, instance=instance.to_dict())
+                instance = self.conn.create_dds_instance(**self.attrs)
+                self.exit(changed=True, instance=instance.to_dict())
 
         self.exit(changed=changed)
 
