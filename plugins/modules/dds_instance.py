@@ -132,22 +132,29 @@ dds_instance:
 '''
 
 EXAMPLES = '''
-- name: provision rds instance
+- name: provision dds instance
   opentelekomcloud.cloud.dds_instance:
     name: "{{ instance_name }}"
-    datastore_type: "mysql"
-    datastore_version: "8.0"
-    flavor: "{{ rds_flavor }}"
-    router: "{{ router_name }}"
-    network: "{{ network_name }}"
-    security_group: "default"
-    volume_type: "common"
-    volume_size: 100
-    password: "Test@123"
+    datastore_type: "DDS-Community"
+    datastore_version: "3.4"
     region: "eu-de"
     availability_zone: "eu-de-01"
-    timeout: 600
-
+    vpc_id: "{{ vpc_id }}"
+    # flavor: "{{ dds_flavor }}"
+    subnet_id: "{{ subnet_id }}"
+    security_group_id: "{{ security_group_id }}"
+    password: "Test@123"
+    disk_encryption_id: "{{ disk_encryption_id }}"
+    mode: "ReplicaSet"
+    backup_strategy: "{{ backup_strategy }}"
+    ssl_option: "{{ ssl_option }}"
+    flavor {
+        type      = "config"
+        num       = 1
+        storage   = "ULTRAHIGH"
+        size      = 20
+        spec_code = "dds.mongodb.s2.medium.4.repset"
+    }
 '''
 
 

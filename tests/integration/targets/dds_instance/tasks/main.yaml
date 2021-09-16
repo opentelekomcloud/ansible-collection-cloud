@@ -1,0 +1,81 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.dds_instance:
+      cloud: "{{ test_cloud }}"
+
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        network_name: "{{ ( prefix + 'dds_test-network') }}"
+        subnet_name: "{{ ( prefix + 'dds_test-subnet') }}"
+        router_name: "{{ ( prefix + 'dds_test-router') }}"
+        instance_name: "{{ ( 'z-' + prefix + 'dds_test-instance') }}"
+        dds_flavor: "dds.mongodb.s2.medium.4.repset"
+
+    - name: Delete missing instance
+      dds_instance:
+        state: absent
+        name: "definitely_missing_instance"
+      register: dds
+
+    - name: assert result
+      assert:
+        that:
+          - dds is success
+          - dds is not changed
+
+    - name: Create network for test
+      openstack.cloud.network:
+        cloud: "{{ test_cloud }}"
+        name: "{{ network_name }}"
+        state: present
+      register: test_network
+
+    - name: Create subnet for test
+      openstack.cloud.subnet:
+        cloud: "{{ test_cloud }}"
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ test_network.network.name }}"
+        cidr: "192.168.0.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: test_subnet
+
+    - name: Create router for test
+      openstack.cloud.router:
+        cloud: "{{ test_cloud }}"
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ test_network.network.name }}"
+            subnet: "{{ test_subnet.subnet.name }}"
+      register: test_router
+
+    - name: Create RDS Instance
+      opentelekomcloud.cloud.rds_instance:
+        name: "{{ instance_name }}"
+        datastore_version: "3.4"
+        region: "eu-de"
+        availability_zone: "eu-de-01"
+        router: "{{ test_router }}"
+        flavor: "{{ dds_flavor }}"
+        mode: "ReplicaSet"
+        network: "{{ test_network }}"
+        security_group: "default"
+        password: "Test@123"
+#        mode=dict(type='str', choices=['sharding', 'replicaset']),
+#        flavor_type=dict(type='str', choices=['mongos', 'shard', 'config',
+#        'replica' ]),
+#        flavor_num=dict(type='int'),
+#        backup_timeframe=dict(type='str'),
+#        backup_keepdays=dict(type='int'),
+#        ssl_option=dict(type='int'),
+        state: present
+        timeout: 600
+    
