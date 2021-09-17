@@ -132,29 +132,25 @@ dds_instance:
 '''
 
 EXAMPLES = '''
-- name: provision dds instance
+- name: Create DDS Instance
   opentelekomcloud.cloud.dds_instance:
     name: "{{ instance_name }}"
-    datastore_type: "DDS-Community"
     datastore_version: "3.4"
     region: "eu-de"
     availability_zone: "eu-de-01"
-    vpc_id: "{{ vpc_id }}"
-    # flavor: "{{ dds_flavor }}"
-    subnet_id: "{{ subnet_id }}"
-    security_group_id: "{{ security_group_id }}"
-    password: "Test@123"
-    disk_encryption_id: "{{ disk_encryption_id }}"
+    router: "{{ test_router }}"
+    flavor: "{{ dds_flavor }}"
     mode: "ReplicaSet"
-    backup_strategy: "{{ backup_strategy }}"
-    ssl_option: "{{ ssl_option }}"
-    flavor {
-        type      = "config"
-        num       = 1
-        storage   = "ULTRAHIGH"
-        size      = 20
-        spec_code = "dds.mongodb.s2.medium.4.repset"
-    }
+    network: "{{ test_network }}"
+    security_group: "default"
+    password: "Test@123"
+    flavor_type: "replica"
+    flavor_num: 2
+    backup_timeframe: "00:00-01:00"
+    backup_keepdays: 7
+    ssl_option: 1
+    state: present
+    timeout: 600
 '''
 
 
@@ -229,11 +225,6 @@ class DdsInstanceModule(OTCModule):
 
         elif self.params['state'] == 'present':
             if not instance:
-
-            # volume_type = self.params['volume_type']
-            # if volume_type:
-            #     self.params['volume_type'] = volume_type.upper()
-
                 instance = self.conn.create_dds_instance(**self.attrs)
                 self.exit(changed=True, instance=instance.to_dict())
 

@@ -57,8 +57,8 @@
             subnet: "{{ test_subnet.subnet.name }}"
       register: test_router
 
-    - name: Create RDS Instance
-      opentelekomcloud.cloud.rds_instance:
+    - name: Create DDS Instance
+      opentelekomcloud.cloud.dds_instance:
         name: "{{ instance_name }}"
         datastore_version: "3.4"
         region: "eu-de"
@@ -69,13 +69,11 @@
         network: "{{ test_network }}"
         security_group: "default"
         password: "Test@123"
-#        mode=dict(type='str', choices=['sharding', 'replicaset']),
-#        flavor_type=dict(type='str', choices=['mongos', 'shard', 'config',
-#        'replica' ]),
-#        flavor_num=dict(type='int'),
-#        backup_timeframe=dict(type='str'),
-#        backup_keepdays=dict(type='int'),
-#        ssl_option=dict(type='int'),
+        flavor_type: "replica"
+        flavor_num: 2
+        backup_timeframe: "00:00-01:00"
+        backup_keepdays: 7
+        ssl_option: 1
         state: present
         timeout: 600
     
