@@ -139,8 +139,7 @@ EXAMPLES = '''
     region: "eu-de"
     availability_zone: "eu-de-01"
     router: "{{ test_router }}"
-    flavor: "{{ dds_flavor }}"
-    mode: "ReplicaSet"
+    mode: "replicaset"
     network: "{{ test_network }}"
     security_group: "default"
     password: "Test@123"
@@ -148,9 +147,9 @@ EXAMPLES = '''
     flavor_num: 2
     backup_timeframe: "00:00-01:00"
     backup_keepdays: 7
-    ssl_option: 1
-    state: present
+    ssl_option: 1            
     timeout: 600
+    state: present
 '''
 
 
@@ -225,7 +224,7 @@ class DdsInstanceModule(OTCModule):
 
         elif self.params['state'] == 'present':
             if not instance:
-                instance = self.conn.create_dds_instance(**self.attrs)
+                instance = self.conn.create_dds_instance(**attrs)
                 self.exit(changed=True, instance=instance.to_dict())
 
         self.exit(changed=changed)
