@@ -77,29 +77,37 @@ options:
     choices: [sharding, replicaset]
     type: str
     required: true
-  flavor_type:
+  flavor:
     description:
-        - Specifies the node type. For a replica set instance, the value is replica.
-        - For a cluster instance, the value can be mongos, shard, or config
-    choices: [mongos, shard, config, replica]
-    type: str
-    required: true
-  flavor_num:
-    description: Specifies node quantity.
-    type: int
-    required: true
-  flavor_storage:
-    description:
-        - Specifies the disk type. This parameter is optional for all nodes except mongos.
-        - This parameter is invalid for the mongos nodes.
-    type: str
-    default: 'ULTRAHIGH'
-  flavor_size:
-    description:
-        - Specifies the disk size. This parameter is mandatory for all nodes except mongos. This parameter is invalid for the mongos nodes.
-        - For a cluster instance, the storage space of a shard node can be 10 to 1000 GB, and the config storage space is 20 GB. This parameter is invalid for mongos nodes. Therefore, you do not need to specify the storage space for mongos nodes.
-        - For a replica set instance, the value ranges from 10 to 2000.
-    type: int
+        - Specifies the instance specifications.
+    type: list
+    options:    
+        type:
+            description:
+                - Specifies the node type. For a replica set instance, the value is replica.
+                -   For a cluster instance, the value can be mongos, shard, or config
+            choices: [mongos, shard, config, replica]
+            type: str
+            required: true
+        num:
+            description: Specifies node quantity.
+            type: int
+            required: true
+        storage:
+            description:
+                - Specifies the disk type. This parameter is optional for all nodes except mongos.
+                - This parameter is invalid for the mongos nodes.
+            type: str
+            default: 'ULTRAHIGH'
+        spec_code:
+            description: Specifies the resource specification code. 
+            type: str
+        size:
+            description:
+                - Specifies the disk size. This parameter is mandatory for all nodes except mongos. This parameter is invalid for the mongos nodes.
+                - For a cluster instance, the storage space of a shard node can be 10 to 1000 GB, and the config storage space is 20 GB. This parameter is invalid for mongos nodes. Therefore, you do not need to specify the storage space for mongos nodes.
+                - For a replica set instance, the value ranges from 10 to 2000.
+            type: int
   backup_timeframe:
     description:
         - Specifies the backup time window.
@@ -116,6 +124,17 @@ options:
         - Specifies whether to enable SSL. The value 0 indicates that SSL is disabled, 1 - enabled.
         - If this parameter is not transferred, SSL is enabled by default.
     type: str
+  wait:
+     description:
+        - If the module should wait for the instance to be created.
+     type: bool
+     default: 'yes'
+  timeout:
+    description:
+      - The amount of time the module should wait for the instance to get
+        into active state.
+    default: 600
+    type: int
 
 
 requirements: ["openstacksdk", "otcextensions"]
@@ -144,20 +163,23 @@ EXAMPLES = '''
     datastore_version: "3.4"
     region: "eu-de"
     availability_zone: "eu-de-01"
-    router: "{{ test_router }}"
-    mode: "replicaset"
-    network: "{{ test_network }}"
+    router: "{{ router_name }}"
+    mode: "ReplicaSet"
+    network: "{{ network_name }}"
     security_group: "default"
     password: "Test@123"
-    flavors: 
-        - flavor_type: "replica"
-          flavor_num: 2
-          flavor_size: 20
+    flavors:
+      - type: "replica"
+        num: 1
+        storage: "ULTRAHIGH"
+        size: 10
+        spec_code: "dds.mongodb.s2.medium.4.repset"
     backup_timeframe: "00:00-01:00"
     backup_keepdays: 7
-    ssl_option: 1            
-    timeout: 600
+    ssl_option: 1
     state: present
+    wait: true
+    timeout: 600
 '''
 
 
@@ -175,7 +197,7 @@ class DdsInstanceModule(OTCModule):
         security_group=dict(type='str'),
         password=dict(type='str', no_log=True),
         disk_encryption=dict(type='str'),
-        mode=dict(type='str', choices=['sharding', 'replicaset']),
+        mode=dict(type='str', choices=['Sharding', 'ReplicaSet']),
         # flavor_type=dict(type='str', choices=['mongos', 'shard', 'config',
         #                                                      'replica']),
         # flavor_num=dict(type='int'),
@@ -185,7 +207,9 @@ class DdsInstanceModule(OTCModule):
         backup_timeframe=dict(type='str'),
         backup_keepdays=dict(type='int'),
         ssl_option=dict(type='int'),
-        state=dict(type='str', choices=['present', 'absent'], default='present')
+        state=dict(type='str', choices=['present', 'absent'], default='present'),
+        wait=dict(type='bool', default=True),
+        timeout=dict(type='int', default=600)
     )
     module_kwargs = dict(
         required_if=[
@@ -212,6 +236,30 @@ class DdsInstanceModule(OTCModule):
             attrs['disk_encryption_id'] = self.params.pop('disk_encryption')
         if self.params['name']:
             attrs['name'] = self.params['name']
+        if self.params['datastore_version']:
+            attrs['datastore_version'] = self.params['datastore_version']
+        if self.params['region']:
+            attrs['region'] = self.params['region']
+        if self.params['availability_zone']:
+            attrs['availability_zone'] = self.params['availability_zone']
+        if self.params['router']:
+            attrs['router'] = self.params['router']
+        if self.params['mode']:
+            attrs['mode'] = self.params['mode']
+        if self.params['network']:
+            attrs['network'] = self.params['network']
+        if self.params['security_group']:
+            attrs['security_group'] = self.params['security_group']
+        if self.params['password']:
+            attrs['password'] = self.params['password']
+        if self.params['backup_timeframe']:
+            attrs['backup_timeframe'] = self.params['backup_timeframe']
+        if self.params['backup_keepdays']:
+            attrs['backup_keepdays'] = self.params['backup_keepdays']
+        if self.params['ssl_option']:
+            attrs['ssl_option'] = self.params['ssl_option']
+        if self.params['flavors']:
+            attrs['flavors'] = self.params['flavors']
 
         changed = False
 
@@ -228,6 +276,8 @@ class DdsInstanceModule(OTCModule):
                 attrs = {
                     'instance': instance.id
                 }
+                if self.params['wait']:
+                    attrs['wait'] = True           
 
                 self.conn.delete_dds_instance(**attrs)
                 changed = True
