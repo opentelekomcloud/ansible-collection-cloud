@@ -71,11 +71,11 @@
         password: "Test@123"
         flavor_type: "replica"
         flavor_num: 2
+        flavor_size: 20
         backup_timeframe: "00:00-01:00"
         backup_keepdays: 7
         ssl_option: 1
         state: present
-        timeout: 600
 
     - name: assert result
       assert:

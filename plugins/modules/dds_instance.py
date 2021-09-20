@@ -94,6 +94,12 @@ options:
         - This parameter is invalid for the mongos nodes.
     type: str
     default: 'ULTRAHIGH'
+  flavor_size:
+    description:
+        - Specifies the disk size. This parameter is mandatory for all nodes except mongos. This parameter is invalid for the mongos nodes.
+        - For a cluster instance, the storage space of a shard node can be 10 to 1000 GB, and the config storage space is 20 GB. This parameter is invalid for mongos nodes. Therefore, you do not need to specify the storage space for mongos nodes.
+        - For a replica set instance, the value ranges from 10 to 2000.
+    type: int
   backup_timeframe:
     description:
         - Specifies the backup time window.
@@ -143,8 +149,10 @@ EXAMPLES = '''
     network: "{{ test_network }}"
     security_group: "default"
     password: "Test@123"
-    flavor_type: "replica"
-    flavor_num: 2
+    flavors: 
+        - flavor_type: "replica"
+          flavor_num: 2
+          flavor_size: 20
     backup_timeframe: "00:00-01:00"
     backup_keepdays: 7
     ssl_option: 1            
@@ -168,14 +176,16 @@ class DdsInstanceModule(OTCModule):
         password=dict(type='str', no_log=True),
         disk_encryption=dict(type='str'),
         mode=dict(type='str', choices=['sharding', 'replicaset']),
-        flavor_type=dict(type='str', choices=['mongos', 'shard', 'config',
-                                                             'replica']),
-        flavor_num=dict(type='int'),
-        flavor_storage=dict(type='str', default='ULTRAHIGH'),
+        # flavor_type=dict(type='str', choices=['mongos', 'shard', 'config',
+        #                                                      'replica']),
+        # flavor_num=dict(type='int'),
+        # flavor_storage=dict(type='str', default='ULTRAHIGH'),
+        # flavor_size=dict(type='int'),
+        flavors=dict(type='list', elements='dict'),
         backup_timeframe=dict(type='str'),
         backup_keepdays=dict(type='int'),
         ssl_option=dict(type='int'),
-        state=dict(type='str', choices=['present', 'absent'], default='present'),
+        state=dict(type='str', choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
         required_if=[
