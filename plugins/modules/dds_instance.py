@@ -81,7 +81,7 @@ options:
     description:
       - Specifies the instance specifications.
     type: list
-    options:    
+    options:
       type:
         description:
           - Specifies the node type. For a replica set instance, the value is replica.
@@ -100,7 +100,7 @@ options:
         type: str
         default: 'ULTRAHIGH'
       spec_code:
-          description: Specifies the resource specification code. 
+          description: Specifies the resource specification code.
           type: str
       size:
         description:
