@@ -124,17 +124,6 @@ options:
       - Specifies whether to enable SSL. The value 0 indicates that SSL is disabled, 1 - enabled.
       - If this parameter is not transferred, SSL is enabled by default.
     type: str
-  wait:
-    description:
-     - If the module should wait for the instance to be created.
-    type: bool
-    default: 'yes'
-  timeout:
-    description:
-      - The amount of time the module should wait for the instance to get
-        into active state.
-    default: 600
-    type: int
 
 
 requirements: ["openstacksdk", "otcextensions"]
