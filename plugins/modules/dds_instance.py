@@ -202,9 +202,7 @@ class DdsInstanceModule(OTCModule):
         backup_timeframe=dict(type='str'),
         backup_keepdays=dict(type='int'),
         ssl_option=dict(type='int'),
-        state=dict(type='str', choices=['present', 'absent'], default='present'),
-        wait=dict(type='bool', default=True),
-        timeout=dict(type='int', default=600)
+        state=dict(type='str', choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
         required_if=[

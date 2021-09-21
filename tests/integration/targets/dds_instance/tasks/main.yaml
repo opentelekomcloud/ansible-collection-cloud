@@ -57,27 +57,27 @@
             subnet: "{{ test_subnet.subnet.name }}"
       register: test_router
 
-        - name: Create DDS Instance
-          opentelekomcloud.cloud.dds_instance:
-            name: "{{ instance_name }}"
-            datastore_version: "3.4"
-            region: "eu-de"
-            availability_zone: "eu-de-01"
-            router: "{{ test_router }}"
-            mode: "replicaset"
-            network: "{{ test_network }}"
-            security_group: "default"
-            password: "Test@123"
-            flavors:
-              - flavor_type: "replica"
-                flavor_num: 2
-                flavor_storage: "ULTRAHIGH"
-                flavor_size: 10
-                code: "{{ dds_flavor }}"
-            backup_timeframe: "00:00-01:00"
-            backup_keepdays: 7
-            ssl_option: 1
-            state: present
+    - name: Create DDS Instance
+      opentelekomcloud.cloud.dds_instance:
+        name: "{{ instance_name }}"
+        datastore_version: "3.4"
+        region: "eu-de"
+        availability_zone: "eu-de-01"
+        router: "{{ test_router }}"
+        mode: "replicaset"
+        network: "{{ test_network }}"
+        security_group: "default"
+        password: "Test@123"
+        flavors:
+          - flavor_type: "replica"
+            flavor_num: 2
+            flavor_storage: "ULTRAHIGH"
+            flavor_size: 10
+            code: "{{ dds_flavor }}"
+        backup_timeframe: "00:00-01:00"
+        backup_keepdays: 7
+        ssl_option: 1
+        state: present
 
     - name: assert result
       assert:
