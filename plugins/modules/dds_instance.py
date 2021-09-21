@@ -23,10 +23,10 @@ description:
 options:
   name:
     description:
-        - Specifies the DB instance name.
-        - The DB instance name of the same DB engine is unique for the same tenant.
-        - The value must be 4 to 64 characters in length and start with a letter.
-        - It is case-sensitive and can contain only letters, digits, hyphens, and underscores.
+      - Specifies the DB instance name.
+      - The DB instance name of the same DB engine is unique for the same tenant.
+      - The value must be 4 to 64 characters in length and start with a letter.
+      - It is case-sensitive and can contain only letters, digits, hyphens, and underscores.
     type: str
     required: true
   datastore_version:
@@ -36,20 +36,20 @@ options:
     default: '3.4'
   region:
     description:
-        - Specifies the region ID.
-        - The value cannot be empty.
+      - Specifies the region ID.
+      - The value cannot be empty.
     type: str
     required: true
   availability_zone:
     description:
-        - Specifies the AZ ID.
-        - The value cannot be empty.
+      - Specifies the AZ ID.
+      - The value cannot be empty.
     type: int
     required: true
   router:
     description:
-        - Specifies the VPC ID. The value cannot be empty.
-        - The string length and whether the string complying with UUID regex rules are verified.
+      - Specifies the VPC ID. The value cannot be empty.
+      - The string length and whether the string complying with UUID regex rules are verified.
     type: str
     required: true
   network:
@@ -62,52 +62,52 @@ options:
     required: true
   password:
     description:
-        - Specifies the database password. The value must be 8 to 32 characters in length,
-        - contain uppercase and lowercase letters, digits and special characters.
+      - Specifies the database password. The value must be 8 to 32 characters in length,
+      - contain uppercase and lowercase letters, digits and special characters.
     required: true
   disk_encryption:
     description:
-        - Specifies the key ID used for disk encryption.
-        - The string must comply with UUID regular expression rules.
-        - If this parameter is not transferred, disk encryption is not performed.
+      - Specifies the key ID used for disk encryption.
+      - The string must comply with UUID regular expression rules.
+      - If this parameter is not transferred, disk encryption is not performed.
     type: str
   mode:
     description:
-        - Specifies the instance type. Cluster, replica set instances are supported.
+      - Specifies the instance type. Cluster, replica set instances are supported.
     choices: [sharding, replicaset]
     type: str
     required: true
   flavor:
     description:
-        - Specifies the instance specifications.
+      - Specifies the instance specifications.
     type: list
     options:    
-        type:
-            description:
-                - Specifies the node type. For a replica set instance, the value is replica.
-                -   For a cluster instance, the value can be mongos, shard, or config
-            choices: [mongos, shard, config, replica]
-            type: str
-            required: true
-        num:
-            description: Specifies node quantity.
-            type: int
-            required: true
-        storage:
-            description:
-                - Specifies the disk type. This parameter is optional for all nodes except mongos.
-                - This parameter is invalid for the mongos nodes.
-            type: str
-            default: 'ULTRAHIGH'
-        spec_code:
-            description: Specifies the resource specification code. 
-            type: str
-        size:
-            description:
-                - Specifies the disk size. This parameter is mandatory for all nodes except mongos. This parameter is invalid for the mongos nodes.
-                - For a cluster instance, the storage space of a shard node can be 10 to 1000 GB, and the config storage space is 20 GB. This parameter is invalid for mongos nodes. Therefore, you do not need to specify the storage space for mongos nodes.
-                - For a replica set instance, the value ranges from 10 to 2000.
-            type: int
+      type:
+        description:
+          - Specifies the node type. For a replica set instance, the value is replica.
+          -   For a cluster instance, the value can be mongos, shard, or config
+        choices: [mongos, shard, config, replica]
+        type: str
+        required: true
+      num:
+        description: Specifies node quantity.
+        type: int
+        required: true
+      storage:
+        description:
+          - Specifies the disk type. This parameter is optional for all nodes except mongos.
+          - This parameter is invalid for the mongos nodes.
+        type: str
+        default: 'ULTRAHIGH'
+      spec_code:
+          description: Specifies the resource specification code. 
+          type: str
+      size:
+        description:
+          - Specifies the disk size. This parameter is mandatory for all nodes except mongos. This parameter is invalid for the mongos nodes.
+          - For a cluster instance, the storage space of a shard node can be 10 to 1000 GB, and the config storage space is 20 GB. This parameter is invalid for mongos nodes. Therefore, you do not need to specify the storage space for mongos nodes.
+          - For a replica set instance, the value ranges from 10 to 2000.
+        type: int
   backup_timeframe:
     description:
         - Specifies the backup time window.
@@ -116,19 +116,19 @@ options:
     required: true
   backup_keepdays:
     description:
-        - Specifies the number of days to retain the generated backup files.
-        - The value range is from 0 to 732.
+      - Specifies the number of days to retain the generated backup files.
+      - The value range is from 0 to 732.
     type: int
   ssl_option:
     description:
-        - Specifies whether to enable SSL. The value 0 indicates that SSL is disabled, 1 - enabled.
-        - If this parameter is not transferred, SSL is enabled by default.
+      - Specifies whether to enable SSL. The value 0 indicates that SSL is disabled, 1 - enabled.
+      - If this parameter is not transferred, SSL is enabled by default.
     type: str
   wait:
-     description:
-        - If the module should wait for the instance to be created.
-     type: bool
-     default: 'yes'
+    description:
+     - If the module should wait for the instance to be created.
+    type: bool
+    default: 'yes'
   timeout:
     description:
       - The amount of time the module should wait for the instance to get
@@ -142,18 +142,18 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 dds_instance:
-    description: List of dictionaries describing DDS Instance.
-    type: complex
-    returned: On Success.
-    contains:
-        id:
-            description: Unique UUID.
-            type: str
-            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-        name:
-            description: Name (version) of the instance.
-            type: str
-            sample: "test"
+  description: List of dictionaries describing DDS Instance.
+  type: complex
+  returned: On Success.
+  contains:
+    id:
+      description: Unique UUID.
+      type: str
+      sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+    name:
+      description: Name (version) of the instance.
+      type: str
+      sample: "test"
 '''
 
 EXAMPLES = '''
@@ -270,7 +270,7 @@ class DdsInstanceModule(OTCModule):
                     'instance': instance.id
                 }
                 if self.params['wait']:
-                    attrs['wait'] = True           
+                    attrs['wait'] = True
 
                 self.conn.delete_dds_instance(**attrs)
                 changed = True
