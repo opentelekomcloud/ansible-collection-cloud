@@ -104,8 +104,11 @@ options:
           type: str
       size:
         description:
-          - Specifies the disk size. This parameter is mandatory for all nodes except mongos. This parameter is invalid for the mongos nodes.
-          - For a cluster instance, the storage space of a shard node can be 10 to 1000 GB, and the config storage space is 20 GB. This parameter is invalid for mongos nodes. Therefore, you do not need to specify the storage space for mongos nodes.
+          - Specifies the disk size. This parameter is mandatory for all nodes except mongos.
+          - This parameter is invalid for the mongos nodes.
+          - For a cluster instance, the storage space of a shard node can be 10 to 1000 GB,
+          - and the config storage space is 20 GB. This parameter is invalid for mongos nodes.
+          - Therefore, you do not need to specify the storage space for mongos nodes.
           - For a replica set instance, the value ranges from 10 to 2000.
         type: int
   backup_timeframe:
