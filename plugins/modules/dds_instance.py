@@ -23,10 +23,10 @@ description:
 options:
   name:
     description:
-        - Specifies the DB instance name.
-        - The DB instance name of the same DB engine is unique for the same tenant.
-        - The value must be 4 to 64 characters in length and start with a letter.
-        - It is case-sensitive and can contain only letters, digits, hyphens, and underscores.
+      - Specifies the DB instance name.
+      - The DB instance name of the same DB engine is unique for the same tenant.
+      - The value must be 4 to 64 characters in length and start with a letter.
+      - It is case-sensitive and can contain only letters, digits, hyphens, and underscores.
     type: str
     required: true
   datastore_version:
@@ -36,20 +36,20 @@ options:
     default: '3.4'
   region:
     description:
-        - Specifies the region ID.
-        - The value cannot be empty.
+      - Specifies the region ID.
+      - The value cannot be empty.
     type: str
     required: true
   availability_zone:
     description:
-        - Specifies the AZ ID.
-        - The value cannot be empty.
+      - Specifies the AZ ID.
+      - The value cannot be empty.
     type: int
     required: true
   router:
     description:
-        - Specifies the VPC ID. The value cannot be empty.
-        - The string length and whether the string complying with UUID regex rules are verified.
+      - Specifies the VPC ID. The value cannot be empty.
+      - The string length and whether the string complying with UUID regex rules are verified.
     type: str
     required: true
   network:
@@ -62,38 +62,52 @@ options:
     required: true
   password:
     description:
-        - Specifies the database password. The value must be 8 to 32 characters in length,
-        - contain uppercase and lowercase letters, digits and special characters.
+      - Specifies the database password. The value must be 8 to 32 characters in length,
+      - contain uppercase and lowercase letters, digits and special characters.
     required: true
   disk_encryption:
     description:
-        - Specifies the key ID used for disk encryption.
-        - The string must comply with UUID regular expression rules.
-        - If this parameter is not transferred, disk encryption is not performed.
+      - Specifies the key ID used for disk encryption.
+      - The string must comply with UUID regular expression rules.
+      - If this parameter is not transferred, disk encryption is not performed.
     type: str
   mode:
     description:
-        - Specifies the instance type. Cluster, replica set instances are supported.
+      - Specifies the instance type. Cluster, replica set instances are supported.
     choices: [sharding, replicaset]
     type: str
     required: true
-  flavor_type:
+  flavor:
     description:
-        - Specifies the node type. For a replica set instance, the value is replica.
-        - For a cluster instance, the value can be mongos, shard, or config
-    choices: [mongos, shard, config, replica]
-    type: str
-    required: true
-  flavor_num:
-    description: Specifies node quantity.
-    type: int
-    required: true
-  flavor_storage:
-    description:
-        - Specifies the disk type. This parameter is optional for all nodes except mongos.
-        - This parameter is invalid for the mongos nodes.
-    type: str
-    default: 'ULTRAHIGH'
+      - Specifies the instance specifications.
+    type: list
+    options:    
+      type:
+        description:
+          - Specifies the node type. For a replica set instance, the value is replica.
+          -   For a cluster instance, the value can be mongos, shard, or config
+        choices: [mongos, shard, config, replica]
+        type: str
+        required: true
+      num:
+        description: Specifies node quantity.
+        type: int
+        required: true
+      storage:
+        description:
+          - Specifies the disk type. This parameter is optional for all nodes except mongos.
+          - This parameter is invalid for the mongos nodes.
+        type: str
+        default: 'ULTRAHIGH'
+      spec_code:
+          description: Specifies the resource specification code. 
+          type: str
+      size:
+        description:
+          - Specifies the disk size. This parameter is mandatory for all nodes except mongos. This parameter is invalid for the mongos nodes.
+          - For a cluster instance, the storage space of a shard node can be 10 to 1000 GB, and the config storage space is 20 GB. This parameter is invalid for mongos nodes. Therefore, you do not need to specify the storage space for mongos nodes.
+          - For a replica set instance, the value ranges from 10 to 2000.
+        type: int
   backup_timeframe:
     description:
         - Specifies the backup time window.
@@ -102,13 +116,13 @@ options:
     required: true
   backup_keepdays:
     description:
-        - Specifies the number of days to retain the generated backup files.
-        - The value range is from 0 to 732.
+      - Specifies the number of days to retain the generated backup files.
+      - The value range is from 0 to 732.
     type: int
   ssl_option:
     description:
-        - Specifies whether to enable SSL. The value 0 indicates that SSL is disabled, 1 - enabled.
-        - If this parameter is not transferred, SSL is enabled by default.
+      - Specifies whether to enable SSL. The value 0 indicates that SSL is disabled, 1 - enabled.
+      - If this parameter is not transferred, SSL is enabled by default.
     type: str
 
 
@@ -117,37 +131,44 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 dds_instance:
-    description: List of dictionaries describing DDS Instance.
-    type: complex
-    returned: On Success.
-    contains:
-        id:
-            description: Unique UUID.
-            type: str
-            sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
-        name:
-            description: Name (version) of the instance.
-            type: str
-            sample: "test"
+  description: List of dictionaries describing DDS Instance.
+  type: complex
+  returned: On Success.
+  contains:
+    id:
+      description: Unique UUID.
+      type: str
+      sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+    name:
+      description: Name (version) of the instance.
+      type: str
+      sample: "test"
 '''
 
 EXAMPLES = '''
-- name: provision rds instance
+- name: Create DDS Instance
   opentelekomcloud.cloud.dds_instance:
     name: "{{ instance_name }}"
-    datastore_type: "mysql"
-    datastore_version: "8.0"
-    flavor: "{{ rds_flavor }}"
-    router: "{{ router_name }}"
-    network: "{{ network_name }}"
-    security_group: "default"
-    volume_type: "common"
-    volume_size: 100
-    password: "Test@123"
+    datastore_version: "3.4"
     region: "eu-de"
     availability_zone: "eu-de-01"
+    router: "{{ router_name }}"
+    mode: "ReplicaSet"
+    network: "{{ network_name }}"
+    security_group: "default"
+    password: "Test@123"
+    flavors:
+      - type: "replica"
+        num: 1
+        storage: "ULTRAHIGH"
+        size: 10
+        spec_code: "dds.mongodb.s2.medium.4.repset"
+    backup_timeframe: "00:00-01:00"
+    backup_keepdays: 7
+    ssl_option: 1
+    state: present
+    wait: true
     timeout: 600
-
 '''
 
 
@@ -165,15 +186,12 @@ class DdsInstanceModule(OTCModule):
         security_group=dict(type='str'),
         password=dict(type='str', no_log=True),
         disk_encryption=dict(type='str'),
-        mode=dict(type='str', choices=['sharding', 'replicaset']),
-        flavor_type=dict(type='str', choices=['mongos', 'shard', 'config',
-                                                             'replica']),
-        flavor_num=dict(type='int'),
-        flavor_storage=dict(type='str', default='ULTRAHIGH'),
+        mode=dict(type='str', choices=['Sharding', 'ReplicaSet']),
+        flavors=dict(type='list', elements='dict'),
         backup_timeframe=dict(type='str'),
         backup_keepdays=dict(type='int'),
         ssl_option=dict(type='int'),
-        state=dict(type='str', choices=['present', 'absent'], default='present'),
+        state=dict(type='str', choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
         required_if=[
@@ -200,6 +218,30 @@ class DdsInstanceModule(OTCModule):
             attrs['disk_encryption_id'] = self.params.pop('disk_encryption')
         if self.params['name']:
             attrs['name'] = self.params['name']
+        if self.params['datastore_version']:
+            attrs['datastore_version'] = self.params['datastore_version']
+        if self.params['region']:
+            attrs['region'] = self.params['region']
+        if self.params['availability_zone']:
+            attrs['availability_zone'] = self.params['availability_zone']
+        if self.params['router']:
+            attrs['router'] = self.params['router']
+        if self.params['mode']:
+            attrs['mode'] = self.params['mode']
+        if self.params['network']:
+            attrs['network'] = self.params['network']
+        if self.params['security_group']:
+            attrs['security_group'] = self.params['security_group']
+        if self.params['password']:
+            attrs['password'] = self.params['password']
+        if self.params['backup_timeframe']:
+            attrs['backup_timeframe'] = self.params['backup_timeframe']
+        if self.params['backup_keepdays']:
+            attrs['backup_keepdays'] = self.params['backup_keepdays']
+        if self.params['ssl_option']:
+            attrs['ssl_option'] = self.params['ssl_option']
+        if self.params['flavors']:
+            attrs['flavors'] = self.params['flavors']
 
         changed = False
 
@@ -216,18 +258,15 @@ class DdsInstanceModule(OTCModule):
                 attrs = {
                     'instance': instance.id
                 }
+                if self.params['wait']:
+                    attrs['wait'] = True
 
                 self.conn.delete_dds_instance(**attrs)
                 changed = True
 
         elif self.params['state'] == 'present':
             if not instance:
-
-            # volume_type = self.params['volume_type']
-            # if volume_type:
-            #     self.params['volume_type'] = volume_type.upper()
-
-                instance = self.conn.create_dds_instance(**self.attrs)
+                instance = self.conn.create_dds_instance(**attrs)
                 self.exit(changed=True, instance=instance.to_dict())
 
         self.exit(changed=changed)
