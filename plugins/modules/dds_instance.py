@@ -28,7 +28,6 @@ options:
       - The value must be 4 to 64 characters in length and start with a letter.
       - It is case-sensitive and can contain only letters, digits, hyphens, and underscores.
     type: str
-    required: true
   datastore_version:
     description: Specifies the database version.
     choices: [3.2, 3.4]
@@ -39,32 +38,31 @@ options:
       - Specifies the region ID.
       - The value cannot be empty.
     type: str
-    required: true
   availability_zone:
     description:
       - Specifies the AZ ID.
       - The value cannot be empty.
-    type: int
-    required: true
+    type: str
   router:
     description:
       - Specifies the VPC ID. The value cannot be empty.
       - The string length and whether the string complying with UUID regex rules are verified.
     type: str
-    required: true
   network:
     description: Specifies the subnet ID.
     type: str
-    required: true
   security_group:
     description: Specifies the ID of the security group where a specified DB instance belongs to.
     type: str
-    required: true
+  state:
+    choices: [present, absent]
+    default: present
+    description: Instance state
+    type: str
   password:
     description:
       - Specifies the database password. The value must be 8 to 32 characters in length,
       - contain uppercase and lowercase letters, digits and special characters.
-    required: true
   disk_encryption:
     description:
       - Specifies the key ID used for disk encryption.
@@ -74,13 +72,11 @@ options:
   mode:
     description:
       - Specifies the instance type. Cluster, replica set instances are supported.
-    choices: [sharding, replicaset]
+    choices: [Sharding, ReplicaSet]
     type: str
-    required: true
-  flavor:
+  flavors:
     description:
       - Specifies the instance specifications.
-    type: list
     options:
       type:
         description:
@@ -88,11 +84,9 @@ options:
           -   For a cluster instance, the value can be mongos, shard, or config
         choices: [mongos, shard, config, replica]
         type: str
-        required: true
       num:
         description: Specifies node quantity.
         type: int
-        required: true
       storage:
         description:
           - Specifies the disk type. This parameter is optional for all nodes except mongos.
@@ -116,7 +110,6 @@ options:
         - Specifies the backup time window.
         - Automated backups will be triggered during the backup time window. Value cannot be empty.
     type: str
-    required: true
   backup_keepdays:
     description:
       - Specifies the number of days to retain the generated backup files.
@@ -126,7 +119,7 @@ options:
     description:
       - Specifies whether to enable SSL. The value 0 indicates that SSL is disabled, 1 - enabled.
       - If this parameter is not transferred, SSL is enabled by default.
-    type: str
+    type: int
 
 
 requirements: ["openstacksdk", "otcextensions"]
@@ -170,8 +163,6 @@ EXAMPLES = '''
     backup_keepdays: 7
     ssl_option: 1
     state: present
-    wait: true
-    timeout: 600
 '''
 
 
@@ -180,7 +171,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DdsInstanceModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=True, type='str'),
+        name=dict(type='str'),
         datastore_version=dict(type='str', choices=['3.2', '3.4'], default='3.4'),
         region=dict(type='str'),
         availability_zone=dict(type='str'),
