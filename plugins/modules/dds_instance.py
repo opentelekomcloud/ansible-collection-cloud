@@ -63,6 +63,7 @@ options:
     description:
       - Specifies the database password. The value must be 8 to 32 characters in length,
       - contain uppercase and lowercase letters, digits and special characters.
+    type: str
   disk_encryption:
     description:
       - Specifies the key ID used for disk encryption.
@@ -77,7 +78,9 @@ options:
   flavors:
     description:
       - Specifies the instance specifications.
-    options:
+    type: list
+    elements: dict
+    suboptions:
       type:
         description:
           - Specifies the node type. For a replica set instance, the value is replica.
