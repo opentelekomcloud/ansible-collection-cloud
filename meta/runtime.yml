@@ -6,9 +6,11 @@ action_groups:
     - as_config_info
     - as_group
     - as_group_info
+    - as_instance
     - as_instance_info
     - as_policy
     - as_policy_info
+    - as_quota_info
     - availability_zone_info
     - cce_cluster
     - cce_cluster_cert_info
@@ -22,6 +24,9 @@ action_groups:
     - deh_host_type_info
     - deh_server_info
     - dns_recordset_info
+    - dds_flavor_info
+    - dds_instance_info
+    - dds_instance
     - floating_ip
     - loadbalancer
     - loadbalancer_info
