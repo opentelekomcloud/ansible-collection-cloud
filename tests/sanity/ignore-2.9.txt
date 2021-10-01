@@ -32,6 +32,7 @@ plugins/modules/dms_queue_info.py validate-modules:missing-gplv3-license
 plugins/modules/dms_queue_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/dns_floating_ip.py validate-modules:missing-gplv3-license
 plugins/modules/dns_recordset.py validate-modules:missing-gplv3-license
+plugins/modules/dns_recordset_info.py validate-modules:missing-gplv3-license
 plugins/modules/dns_zone.py validate-modules:missing-gplv3-license
 plugins/modules/deh_host.py validate-modules:missing-gplv3-license
 plugins/modules/deh_host_info.py validate-modules:missing-gplv3-license
