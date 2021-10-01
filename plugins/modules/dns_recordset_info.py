@@ -48,7 +48,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-dns_recordset:
+recordset:
   description: List of dictionaries describing recordset and its metadata.
   type: complex
   returned: On Success.
@@ -132,7 +132,7 @@ class DNSRecordsetInfoModule(OTCModule):
 
                     self.exit(
                         changed=False,
-                        dns_recordset=data
+                        recordset=data
                     )
                 except self.sdk.exceptions.ResourceNotFound:
                     self.fail_json(msg="Recordset not found")
@@ -152,7 +152,7 @@ class DNSRecordsetInfoModule(OTCModule):
 
         self.exit(
             changed=False,
-            dns_recordset=data
+            recordset=data
         )
 
 
