@@ -215,7 +215,7 @@ class CSSClusterInfoModule(OTCModule):
       self.exit(
         changed=False,
         clusters=data
-        )
+      )
 
 
 def main():
