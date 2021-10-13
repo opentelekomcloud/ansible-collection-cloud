@@ -187,35 +187,35 @@ class CSSClusterInfoModule(OTCModule):
 
     argument_spec = dict(
         id=dict(required=False),
-        start=dict(required=False),
-        limit=dict(required=False)
-      )
+        start=dict(type=int, required=False),
+        limit=dict(type=int, required=False)
+    )
     module_kwargs = dict(
         supports_check_mode=True
-      )
+    )
 
     def run(self):
 
-      data = []
-      query = {}
-      clusters = None
+        data = []
+        query = {}
+        clusters = None
 
-      if self.params['id']:
-          query['id'] = self.params['id']
-      if self.params['start']:
-          query['start'] = self.params['id']
-      if self.params['limit']:
-          query['limit'] = self.params['limit']
+        if self.params['id']:
+            query['id'] = self.params['id']
+        if self.params['start']:
+            query['start'] = self.params['id']
+        if self.params['limit']:
+            query['limit'] = self.params['limit']
 
-      for raw in self.conn.css.clusters(**query):
-        dt = raw.to_dict()
-        dt.pop('location')
-        data.append(dt)
+        for raw in self.conn.css.clusters(**query):
+          dt = raw.to_dict()
+          dt.pop('location')
+          data.append(dt)
 
-      self.exit(
-        changed=False,
-        clusters=data
-      )
+        self.exit(
+          changed=False,
+          clusters=data
+        )
 
 
 def main():
