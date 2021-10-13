@@ -53,7 +53,7 @@ cluster:
           type: str
           sample: "null"
         created_at:
-          desription: Time when a cluster is created. The format is ISO8601: CCYY-MM-DDThh:mm:ss.
+          desription: Time when a cluster is created. The format is ISO8601.
           type: str
           sample: "2021-10-05T15:55:06"
         datastore:
