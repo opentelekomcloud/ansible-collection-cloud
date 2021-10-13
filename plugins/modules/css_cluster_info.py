@@ -12,7 +12,7 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: cs_cluster_info
+module: css_cluster_info
 short_description: Get info about CSS clusters.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.8.1"
