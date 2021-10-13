@@ -208,13 +208,13 @@ class CSSClusterInfoModule(OTCModule):
             query['limit'] = self.params['limit']
 
         for raw in self.conn.css.clusters(**query):
-          dt = raw.to_dict()
-          dt.pop('location')
-          data.append(dt)
+            dt = raw.to_dict()
+            dt.pop('location')
+            data.append(dt)
 
         self.exit(
-          changed=False,
-          clusters=data
+            changed=False,
+            clusters=data
         )
 
 
