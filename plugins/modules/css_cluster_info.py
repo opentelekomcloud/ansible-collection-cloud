@@ -187,8 +187,8 @@ class CSSClusterInfoModule(OTCModule):
 
     argument_spec = dict(
         id=dict(required=False),
-        start=dict(type=int, required=False),
-        limit=dict(type=int, required=False)
+        start=dict(required=False, type=int),
+        limit=dict(required=False, type=int)
     )
     module_kwargs = dict(
         supports_check_mode=True
