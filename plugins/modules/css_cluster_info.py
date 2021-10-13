@@ -198,7 +198,7 @@ class CSSClusterInfoModule(OTCModule):
 
         data = []
         query = {}
-        clusters = None
+        # clusters = None
 
         if self.params['id']:
             query['id'] = self.params['id']
