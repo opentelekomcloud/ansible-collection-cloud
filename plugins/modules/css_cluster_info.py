@@ -90,14 +90,14 @@ cluster:
           description: Cluster ID.
           type: str
           sample: "a4edb35e-bded-4a44-ba9c-6b5d1f585f3d"
-        instance:
-          description:
-          type: list
-          sample:
-        instance_count:
-          description:
-          type: list
-          sample:
+        # instance:
+        #   description:
+        #   type: list
+        #   sample:
+        # instance_count:
+        #   description:
+        #   type: list
+        #   sample:
         is_disk_encrypted:
           description: Whether disks are encrypted.
           type: bool
@@ -138,16 +138,18 @@ cluster:
                   - 303: The instance is unavailable.
               type: str
               sample: "200"
-            type:
-              description:
-              type: list
-              sample: "ess"
+            # type:
+            #   description:
+            #   type: list
+            #   sample: "ess"
         progress:
           description:
-          type: str
-          sample: "[
-            "CREATING": "2%"
-            ]"
+          type: complex
+          contains: 
+            CREATING:
+              desription:
+              type: str
+              sample: "2%"
         router_id:
           description: Indicates the VPC ID.
           type: str
