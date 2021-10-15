@@ -29,11 +29,13 @@ options:
       - Start value of the query. The default value is 1, indicating that the query starts from the\
         first cluster.
     type: int
+    default: 1
   limit:
     description:
       - Number of clusters to be queried. The default value is 10, indicating that 10 clusters are\
         queried at a time.
     type: int
+    default: 10
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -200,12 +202,12 @@ class CSSClusterInfoModule(OTCModule):
 
         data = []
         query = {}
-        # clusters = None
+        clusters = None
 
         if self.params['id']:
             query['id'] = self.params['id']
         if self.params['start']:
-            query['start'] = self.params['id']
+            query['start'] = self.params['start']
         if self.params['limit']:
             query['limit'] = self.params['limit']
 
