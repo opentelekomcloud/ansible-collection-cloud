@@ -35,7 +35,6 @@ options:
       - Number of clusters to be queried. The default value is 10, indicating that 10 clusters are\
         queried at a time.
     type: int
-    default: 10
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -191,7 +190,7 @@ class CSSClusterInfoModule(OTCModule):
 
     argument_spec = dict(
         id=dict(required=False),
-        start=dict(required=False, type=int),
+        start=dict(required=False, type=int, default=1),
         limit=dict(required=False, type=int)
     )
     module_kwargs = dict(
