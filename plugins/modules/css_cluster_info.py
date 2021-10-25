@@ -26,13 +26,14 @@ options:
     type: str
   start:
     description:
-      - Start value of the query. The default value is 1, indicating that the query starts from the\
-        first cluster.
+      - Start value of the query.
+      - The default value is 1, indicating that the query starts from the first cluster.
     type: int
+    default: 1
   limit:
     description:
-      - Number of clusters to be queried. The default value is 10, indicating that 10 clusters are\
-        queried at a time.
+      - Number of clusters to be queried.
+      - The default value is 10, indicating that 10 clusters are queried at a time.
     type: int
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -189,8 +190,8 @@ class CSSClusterInfoModule(OTCModule):
 
     argument_spec = dict(
         id=dict(required=False),
-        start=dict(required=False, type=int, default=1),
-        limit=dict(required=False, type=int)
+        start=dict(required=False, default=1),
+        limit=dict(required=False)
     )
     module_kwargs = dict(
         supports_check_mode=True
