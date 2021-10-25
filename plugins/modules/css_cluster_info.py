@@ -50,11 +50,11 @@ cluster:
           type: list
           sample: "REBOOTING"
         cmk_id:
-          desciption: Key ID used for disk encryption.
+          description: Key ID used for disk encryption.
           type: str
           sample: "null"
         created_at:
-          desription: Time when a cluster is created. The format is ISO8601.
+          description: Time when a cluster is created. The format is ISO8601.
           type: str
           sample: "2021-10-05T15:55:06"
         datastore:
@@ -79,7 +79,7 @@ cluster:
           sample: "10.0.0.169:9200,10.0.0.191:9200,10.0.0.112:9200"
         error:
           description:
-              - Error codes:
+              - Error codes.
               - CSS.6000: indicates that a cluster fails to be created.
               - CSS.6001: indicates that capacity expansion of a cluster fails.
               - CSS.6002: indicates that a cluster fails to be restarted.
