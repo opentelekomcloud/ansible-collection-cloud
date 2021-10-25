@@ -26,14 +26,14 @@ options:
     type: str
   start:
     description:
-      - Start value of the query.
-      - The default value is 1, indicating that the query starts from the first cluster.
+        - Start value of the query.
+        - The default value is 1, indicating that the query starts from the first cluster.
     type: int
     default: 1
   limit:
     description:
-      - Number of clusters to be queried.
-      - The default value is 10, indicating that 10 clusters are queried at a time.
+        - Number of clusters to be queried.
+        - The default value is 10, indicating that 10 clusters are queried at a time.
     type: int
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -65,8 +65,8 @@ cluster:
               description: Supported type is elasticsearch
               type: str
               sample: "elasticsearch"
-            version: Engine version number. The current engine version is 6.2.3, 7.1.1, or 7.6.2.
-              description:
+            version:
+              description: Engine version number. The current version is 6.2.3, 7.1.1, or 7.6.2.
               type: str
               sample: "7.6.2"
         disk_encryption:
@@ -139,10 +139,10 @@ cluster:
                   - 303: The instance is unavailable.
               type: str
               sample: "200"
-            # type:
-            #   description:
-            #   type: list
-            #   sample: "ess"
+            type:
+              description: Supported type is ess (indicating the Elasticsearch node)
+              type: str
+              sample: "ess"
         progress:
           description:
           type: complex
@@ -160,9 +160,11 @@ cluster:
           type: str
           sample: "120888d9-65be-4899-b07d-aa151c2895d4"
         status:
-#What exact value?
           description:
               - Return value.
+              - 400 BadRequest. Invalid request.
+              - 404 NotFound. The requested resource cannot be found.
+              - 200 OK. The request is processed successfully.
           type: str
           sample: "200"
         subnet_id:
@@ -190,8 +192,8 @@ class CSSClusterInfoModule(OTCModule):
 
     argument_spec = dict(
         id=dict(required=False),
-        start=dict(required=False, default=1),
-        limit=dict(required=False)
+        start=dict(required=False, type=int, default=1),
+        limit=dict(required=False, type=int)
     )
     module_kwargs = dict(
         supports_check_mode=True
