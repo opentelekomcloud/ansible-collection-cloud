@@ -80,11 +80,11 @@ cluster:
         error:
           description:
               - Error codes.
-              - CSS.6000: indicates that a cluster fails to be created.
-              - CSS.6001: indicates that capacity expansion of a cluster fails.
-              - CSS.6002: indicates that a cluster fails to be restarted.
-              - CSS.6004: indicates that a node fails to be created in a cluster.
-              - CSS.6005: indicates that the service fails to be initialized.
+              - CSS.6000 indicates that a cluster fails to be created.
+              - CSS.6001 indicates that capacity expansion of a cluster fails.
+              - CSS.6002 indicates that a cluster fails to be restarted.
+              - CSS.6004 indicates that a node fails to be created in a cluster.
+              - CSS.6005 indicates that the service fails to be initialized.
           type: str
           sample: "null"
         id:
@@ -134,9 +134,9 @@ cluster:
             status:
               description:
                   - Node status.
-                  - 100: The operation, such as node creation, is in progress.
-                  - 200: The instance is available.
-                  - 303: The instance is unavailable.
+                  - 100 The operation, such as node creation, is in progress.
+                  - 200 The instance is available.
+                  - 303 The instance is unavailable.
               type: str
               sample: "200"
             type:
@@ -144,11 +144,11 @@ cluster:
               type: str
               sample: "ess"
         progress:
-          description:
+          description: Cluster operation progress, which indicates the progress of cluster creation.
           type: complex
           contains:
             CREATING:
-              desription:
+              description: Inicates creation of cluster in percentage.
               type: str
               sample: "2%"
         router_id:
@@ -174,7 +174,7 @@ cluster:
         updated_at:
           description:
               - Last modification time of a cluster.
-              - The format is ISO8601: CCYY-MM-DDThh:mm:ss.
+              - The format is ISO8601.
           type: str
           sample: "2021-10-13T10:35:56"
 '''
