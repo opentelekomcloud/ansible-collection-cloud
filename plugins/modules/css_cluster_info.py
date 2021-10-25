@@ -112,7 +112,7 @@ cluster:
           type: str
           sample: "css-test"
         nodes:
-          description:
+          description: Info about nodes included in cluster.
           type: complex
           contains:
             azCode:
@@ -192,8 +192,8 @@ class CSSClusterInfoModule(OTCModule):
 
     argument_spec = dict(
         id=dict(required=False),
-        start=dict(required=False, type=int, default=1),
-        limit=dict(required=False, type=int)
+        start=dict(required=False, type='int', default=1),
+        limit=dict(required=False, type='int')
     )
     module_kwargs = dict(
         supports_check_mode=True
