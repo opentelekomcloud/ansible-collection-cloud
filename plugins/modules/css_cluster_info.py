@@ -20,9 +20,9 @@ author: "Yustina Kvrivishvili (@YustinaKvr)"
 description:
   - Get CSS cluster info from the OTC.
 options:
-  id:
+  name:
     description:
-      - ID of the cluster to be queried.
+      - name or ID of the cluster to be queried.
     type: str
   start:
     description:
@@ -191,7 +191,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class CSSClusterInfoModule(OTCModule):
 
     argument_spec = dict(
-        id=dict(required=False),
+        name=dict(required=False),
         start=dict(required=False, type='int', default=1),
         limit=dict(required=False, type='int')
     )
@@ -199,22 +199,31 @@ class CSSClusterInfoModule(OTCModule):
         supports_check_mode=True
     )
 
+    otce_min_version = '0.24.1'
+
     def run(self):
 
         data = []
         query = {}
 
-        if self.params['id']:
-            query['id'] = self.params['id']
         if self.params['start']:
             query['start'] = self.params['start']
         if self.params['limit']:
             query['limit'] = self.params['limit']
 
-        for raw in self.conn.css.clusters(**query):
-            dt = raw.to_dict()
-            dt.pop('location')
-            data.append(dt)
+        if self.params['name']:
+            raw = self.conn.css.find_cluster(
+                name_or_id=self.params['name'],
+                ignore_missing=True)
+            if raw:
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
+        else:
+            for raw in self.conn.css.clusters(**query):
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
 
         self.exit(
             changed=False,
