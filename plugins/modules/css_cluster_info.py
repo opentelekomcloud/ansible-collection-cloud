@@ -91,14 +91,6 @@ cluster:
           description: Cluster ID.
           type: str
           sample: "a4edb35e-bded-4a44-ba9c-6b5d1f585f3d"
-        # instance:
-        #   description:
-        #   type: list
-        #   sample:
-        # instance_count:
-        #   description:
-        #   type: list
-        #   sample:
         is_disk_encrypted:
           description: Whether disks are encrypted.
           type: bool
