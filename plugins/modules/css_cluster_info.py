@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: css_cluster_info
 short_description: Get info about CSS clusters.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.24.1"
+version_added: "0.9.0"
 author: "Yustina Kvrivishvili (@YustinaKvr)"
 description:
   - Get CSS cluster info from the OTC.
