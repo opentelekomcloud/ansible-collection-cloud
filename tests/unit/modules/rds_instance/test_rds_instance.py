@@ -162,7 +162,9 @@ class RdsInstanceTest(TestCase):
             self.conn.delete_rds_instance.return_value = None
             self.module().run()
         self.conn.delete_rds_instance.assert_called_with(
-            instance=self.conn.instance.id)
+            instance=self.conn.instance.id,
+            wait=False
+        )
         self.assertTrue(result.exception.args[0]['changed'])
 
     def test_ensure_not_deleted(self):
