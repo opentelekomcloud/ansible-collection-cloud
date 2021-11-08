@@ -19,6 +19,7 @@ action_groups:
     - cce_cluster_node
     - cce_node_pool_info
     - cce_node_pool
+    - css_cluster
     - css_cluster_info
     - deh_host
     - deh_host_info
