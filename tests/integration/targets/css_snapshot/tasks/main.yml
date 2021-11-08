@@ -1,0 +1,19 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.css_snapshot:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get error message that rds instance is absent
+      opentelekomcloud.cloud.css_snapshot:
+        instance: "test-css"
+        name: "test_ansible_module"
+      register: css_snapshot
+      check_mode: true
+      ignore_errors: yes
+
+    - name: assert result
+      assert:
+        that:
+          - rds_backup is not success
+          - rds_backup is not changed
+          - 'rds_backup.msg == "CSS cluster test-css does not exist"'
