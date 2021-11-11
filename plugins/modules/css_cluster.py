@@ -31,10 +31,10 @@ options:
   datastore_version:
     description:
       - Engine version. The value can be 6.2.3, 7.1.1 or 7.6.2.
-      - The default value is 6.2.3.
+      - The default value is 7.6.2.
     type: str
     choices: [6.2.3, 7.1.1, 7.6.2]
-    default: 6.2.3
+    default: 7.6.2
   datastore_type:
     description:
       - Engine type.
@@ -209,7 +209,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class CssClusterModule(OTCModule):
     argument_spec = dict(
         name=dict(type='str', required=True),
-        datastore_version=dict(type='str', choices=['6.2.3', '7.1.1', '7.6.2'], default='6.2.3'),
+        datastore_version=dict(type='str', choices=['6.2.3', '7.1.1', '7.6.2'], default='7.6.2'),
         datastore_type=dict(type='str', default='elasticsearch'),
         instance_num=dict(type='int'),
         flavor=dict(type='str'),
@@ -332,7 +332,7 @@ class CssClusterModule(OTCModule):
                     attrs['backupStrategy']['period'] = self.params['backup_period']
                 if self.params['backup_prefix']:
                     attrs['backupStrategy']['prefix'] = self.params['backup_prefix']
-                if self.params['keepday']:
+                if self.params['backup_keepday']:
                     attrs['backupStrategy']['keepday'] = self.params['backup_keepday']
 
                 cluster = self.conn.css.create_cluster(**attrs)
