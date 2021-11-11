@@ -15,40 +15,161 @@ DOCUMENTATION = '''
 module: css_cluster
 short_description: Manage CSS clusters
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.9.0"
-author: "Vladimir Vshivkov (@enrrou)"
+version_added: 0.9.0
+author: Vladimir Vshivkov (@enrrou)
 description:
   - Manage CSS clusters
 options:
-  cluster:
-    description:
-      - Name or ID of CSS cluster.
-    type: str
-    required: true
   name:
     description:
-      - Name of RDS backup name must be start with letter.
-      - Name must be 4 to 64 characters in length.
-      - The backup name must be unique.
+      - Cluster name.
+      - It contains 4 to 32 characters. Only letters, digits, hyphens (-), and
+        underscores (_) are allowed.
+      - The value must start with a letter.
     required: true
     type: str
-
-requirements: ["openstacksdk", "otcextensions"]
+  datastore_version:
+    description:
+      - Engine version. The value can be 6.2.3, 7.1.1 or 7.6.2.
+      - The default value is 6.2.3.
+    type: str
+    choices: [6.2.3, 7.1.1, 7.6.2]
+    default: 6.2.3
+  datastore_type:
+    description:
+      - Engine type.
+      - The default value is elasticsearch. Currently, the value can only be
+        elasticsearch.
+    type: str
+    default: elasticsearch
+  instance_num:
+    description:
+      - Number of clusters.
+      - The value range is 1 to 32.
+    type: int
+  flavor:
+    description: Instance flavor name.
+    type: str
+  volume_type:
+    description:
+      - Information about the volume.
+      - COMMON Common I/O
+      - HIGH High I/O
+      - ULTRAHIGH Ultra-high I/O
+    type: str
+    choices:
+      - common
+      - high
+      - ultrahigh
+  volume_size:
+    description:
+      - 'Volume size, which must be a multiple of 4 and 10.'
+      - Unit GB
+    type: int
+  system_encrypted:
+    description:
+      - Value 1 indicates encryption is performed
+      - Value 0 indicates encryption is not performed.
+    choices:
+      - '0'
+      - '1'
+    type: str
+  system_cmkid:
+    description:
+      - Key ID.
+      - The Default Master Keys cannot be used to create grants. Specifically,
+        you cannot use Default Master Keys whose aliases end with /default in
+        KMS to create clusters.
+      - After a cluster is created, do not delete the key used by the cluster.
+        Otherwise, the cluster will become unavailable.
+    type: str
+  https_enable:
+    type: str
+    description:
+      - Whether communication is encrypted on the cluster.
+      - Available values include true and false. By default, communication is
+        encrypted.
+      - Value true indicates that communication is encrypted on the cluster.
+      - Value false indicates that communication is not encrypted on the
+        cluster.
+    choices:
+      - 'true'
+      - 'false'
+  authority_enable:
+    type: bool
+    description:
+      - Whether to enable authentication.
+      - Available values include true and false.
+      - Authentication is disabled by default.
+      - 'When authentication is enabled, httpsEnable must be set to true.'
+  admin_pwd:
+    description:
+      - Password of the cluster user admin in security mode.
+      - This parameter is mandatory only when authority_enable is set to true.
+      - The password can contain 8 to 32 characters.
+      - Passwords must contain at least 3 of the following character types
+        uppercase letters, lowercase letters, numbers, and special characters
+        (~!@#$%^&*()-_=+\\|[{}];:,<.>/?).
+    type: str
+  router:
+    description: 'VPC ID, which is used for configuring cluster network.'
+    type: str
+  net:
+    description:
+      - Subnet ID. All instances in a cluster must have the same subnets and
+        security groups.
+    type: str
+  security_group:
+    description:
+      - Security group ID. All instances in a cluster must have the same subnets
+        and security groups.
+    type: str
+  tag_key:
+    description:
+      - Tag key. The value can contain 1 to 36 characters. Only digits, letters,
+        hyphens (-) and underscores (_) are allowed.
+    type: str
+  tag_value:
+    description:
+      - Tag value. The value can contain 0 to 43 characters. Only digits,
+        letters, hyphens (-) and underscores (_) are allowed.
+    type: str
+  backup_period:
+    description:
+      - Time when a snapshot is created every day. Snapshots can only be created
+        on the hour. The time format is the time followed by the time zone,
+        specifically, HH:mm z. In the format, HH:mm refers to the hour time and
+        z refers to the time zone, for example, 00:00 GMT+08:00 and 01:00
+        GMT+08:00.
+    type: str
+  backup_prefix:
+    description: Prefix of the name of the snapshot that is automatically created.
+    type: str
+  backup_keepday:
+    description:
+      - Number of days for which automatically created snapshots are reserved.
+      - Value range is 1 to 90
+    type: int
+  state:
+    description: Instance state
+    type: str
+    choices:
+      - present
+      - absent
+    default: present
 '''
 
 RETURN = '''
-snapshots:
-    description: Dictionary of CSS snapshot
+cluster:
+    description: Dictionary of CSS cluster
     returned: changed
     type: list
     sample: [
         {
-            "snapshot_list": [
-                {
-                    "id": null,
-                    "name": null,
-                }
-            ]
+            "cluster": {
+                "id": "ef683016-871e-48bc-bf93-74a29d60d214",
+                "name": "ES-Test"
+            }
         }
     ]
 '''
@@ -58,11 +179,28 @@ EXAMPLES = '''
 ---
 - hosts: localhost
   tasks:
-    - name: Create CSS Cluster
+    - name: Create CSS cluster
       opentelekomcloud.cloud.css_cluster:
-        cluster: test
+        name: ES-Test
         state: present
-        datastore_version: 7.6.2
+        instance_num: 3
+        volume_size: 40
+        authority_enable: false
+        volume_type: common
+        router: '{{ router_id }}'
+        net: '{{ net_id }}'
+        security_group: '{{ security_group_id }}'
+        flavor: 'css.xlarge.2'
+        https_enable: false
+        system_encrypted: 0
+
+#Delete CSS Cluster
+- hosts: localhost
+  tasks:
+    - name: Create CSS cluster
+      opentelekomcloud.cloud.css_cluster:
+        name: ES-Test
+        state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -71,28 +209,41 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class CssClusterModule(OTCModule):
     argument_spec = dict(
         name=dict(type='str', required=True),
-        cluster=dict(type='str', required=True),
         datastore_version=dict(type='str', choices=['6.2.3', '7.1.1', '7.6.2'], default='6.2.3'),
         datastore_type=dict(type='str', default='elasticsearch'),
         instance_num=dict(type='int'),
-        instance_flavor=dict(type='str'),
-        instance_volume_type=dict(type='str', choices=['COMMON', 'HIGH', 'ULTRAHIGH']),
-        instance_volume_size=dict(type='int'),
-        backup_period=dict(type='str'),
-        backup_prefix=dict(type='str'),
-        backup_keepday=dict(type='int'),
-        disk_encryption=dict(type='str'),
+        flavor=dict(type='str'),
+        volume_type=dict(type='str', choices=['common', 'high', 'ultrahigh']),
+        volume_size=dict(type='int'),
+        system_encrypted=dict(type='str', choices=['0', '1']),
         system_cmkid=dict(type='str'),
         https_enable=dict(type='str', choices=['true', 'false']),
         authority_enable=dict(type='bool'),
         admin_pwd=dict(type='str'),
+        router=dict(type='str'),
+        net=dict(type='str'),
+        security_group=dict(type='str'),
         tag_key=dict(type='str'),
         tag_value=dict(type='str'),
+        backup_period=dict(type='str'),
+        backup_prefix=dict(type='str'),
+        backup_keepday=dict(type='int'),
         state=dict(type='str',
                    choices=['present', 'absent'],
                    default='present')
     )
     module_kwargs = dict(
+        required_if=[
+            ('state', 'present',
+             ['flavor', 'router', 'net',
+              'security_group', 'instance_num']),
+            ('backup_period', not None, ['backup_keepday']),
+            ('backup_keepday', not None, ['backup_period']),
+            ('authority_enable', 'true',
+             ['admin_pwd']),
+            ('system_encrypted', '1',
+             ['system_cmkid'])
+        ],
         supports_check_mode=True
     )
 
@@ -112,37 +263,85 @@ class CssClusterModule(OTCModule):
         changed = False
 
         cluster = self.conn.css.find_cluster(
-            name_or_id=self.params['name'])
+            name_or_id=self.params['name'],
+            ignore_missing=True
+        )
 
         if self.ansible.check_mode:
             self.exit_json(changed=self._system_state_change(cluster))
 
-        if self.params['state'] == 'present':
+        # Delete cluster
+        if self.params['state'] == 'absent':
+            if cluster:
+                attrs = {
+                    'cluster': cluster.id
+                }
+                changed = True
+                self.conn.css.delete_cluster(**attrs)
+
+            self.exit_json(changed=changed)
+
+        # Create cluster
+        elif self.params['state'] == 'present':
+            if cluster:
+                self.exit(changed=changed)
+
             if not cluster:
                 changed = True
-                cluster = self.conn.css.create_cluster(**self.params)
-            else:
-                pass
+
+                volume_type = self.params['volume_type']
+
+                attrs = {
+                    'name': self.params['name'],
+                    'datastore': {
+                        'type': self.params['datastore_type'],
+                        'version': self.params['datastore_version']
+                    },
+                    'instance': {
+                        "flavorRef": self.params['flavor'],
+                        'nics': {
+                            'netId': self.params['net'],
+                            'vpcId': self.params['router'],
+                            'securityGroupId': self.params['security_group']
+                        },
+                        'volume': {
+                            'volume_type': volume_type.upper(),
+                            'size': self.params['volume_size']
+                        }
+                    },
+                    'diskEncryption': {
+                        'systemEncrypted': self.params['system_encrypted']
+                    }
+                }
+
+                if self.params['system_cmkid']:
+                    attrs['diskEncryption']['systemCmkid'] = self.params['system_cmkid']
+                if self.params['instance_num']:
+                    attrs['instanceNum'] = self.params['instance_num']
+                if self.params['https_enable']:
+                    attrs['httpsEnable'] = self.params['https_enable']
+                if self.params['authority_enable']:
+                    attrs['authorityEnable'] = self.params['authority_enable']
+                if self.params['admin_pwd']:
+                    attrs['adminPwd'] = self.params['admin_pwd']
+                if self.params['tag_key']:
+                    attrs['tags']['key'] = self.params['tag_key']
+                if self.params['tag_value']:
+                    attrs['tags']['value'] = self.params['tag_value']
+                if self.params['backup_period']:
+                    attrs['backupStrategy']['period'] = self.params['backup_period']
+                if self.params['backup_prefix']:
+                    attrs['backupStrategy']['prefix'] = self.params['backup_prefix']
+                if self.params['keepday']:
+                    attrs['backupStrategy']['keepday'] = self.params['backup_keepday']
+
+                cluster = self.conn.css.create_cluster(**attrs)
 
             self.exit_json(
                 changed=changed,
                 css_cluster=cluster.to_dict(),
                 id=cluster.id
             )
-
-        elif self.params['state'] == 'absent':
-            changed = False
-
-            if cluster:
-                # Delete cluster
-                attrs = {
-                    'cluster': cluster.id
-                }
-
-                changed = True
-                self.conn.css.delete_cluster(**attrs)
-
-            self.exit_json(changed=changed)
 
 
 def main():
