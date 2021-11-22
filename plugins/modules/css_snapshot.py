@@ -32,36 +32,57 @@ options:
       - The backup name must be unique.
     required: true
     type: str
-  
+  description:
+    description:
+        - Description of a snapshot.
+        - The value contains 0 to 256 characters, and angle brackets (<) and (>) are not allowed.
+    required: false
+    type: str
+  indices:
+    description:
+        - Name of the index to be backed up.
+        - Multiple index names are separated by commas (,).
+        - By default, data of all indices is backed up.
+    required: false
+    type: str
+  state:
+    description: Whether css snapshot should be present or absent.
+    choices: [present, absent]
+    default: present
+    type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
 snapshots:
-    description: Dictionary of CSS snapshot
-    returned: changed
-    type: list
-    sample: [
-        {
-            "snapshot_list": [
-                {
-                    "id": null,
-                    "name": null,
-                }
-            ]
-        }
-    ]
+  description: Specifies the CSS snapshot.
+  returned: changed
+  type: complex
+  contains:
+    id:
+        description:  ID of the snapshot.
+        returned: On success when C(state=present)
+        type: str
+        sample: "4dae5bac-0925-4d5b-add8-cb6667b8"
+    name:
+        description:  Snapshot name.
+        returned: On success when C(state=present)
+        type: str
+        sample: "snapshot_101"
 '''
 
 EXAMPLES = '''
-#Query CSS Snapshots
----
-- hosts: localhost
-  tasks:
-    - name: Get CSS Snapshots
-      opentelekomcloud.cloud.css_snapshot:
-        cluster: test
-      register: result
+# Create css snapshot
+- opentelekomcloud.cloud.css_snapshot:
+    cluster: "test-css"
+    name: "snapshot_01"
+  register: css_snapshot
+
+# Delete css snapshot
+- opentelekomcloud.cloud.css_snapshot:
+    cluster: "test-css"
+    name: "snapshot_01"
+    state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

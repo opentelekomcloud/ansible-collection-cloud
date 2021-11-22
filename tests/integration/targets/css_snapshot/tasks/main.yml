@@ -5,7 +5,7 @@
   block:
     - name: Get error message that rds instance is absent
       opentelekomcloud.cloud.css_snapshot:
-        instance: "test-css"
+        cluster: "test-css"
         name: "test_ansible_module"
       register: css_snapshot
       check_mode: true
