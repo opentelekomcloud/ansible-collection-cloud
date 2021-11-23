@@ -51,7 +51,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ test_network.network.name }}"
             subnet: "{{ test_subnet.subnet.name }}"
@@ -110,4 +110,4 @@
             cloud: "{{ test_cloud }}"
             name: "{{ network_name }}"
             state: absent
-      ignore_errors: yes
+      ignore_errors: true

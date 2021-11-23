@@ -41,7 +41,7 @@
         name: "{{ router_name_1 }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ test_network_1.network.name }}"
             subnet: "{{ test_subnet_1.subnet.name }}"
@@ -67,7 +67,7 @@
         name: "{{ router_name_2 }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ test_network_2.network.name }}"
             subnet: "{{ test_subnet_2.subnet.name }}"
@@ -81,7 +81,7 @@
         remote_router: "{{ test_router_2.router.id }}"
         remote_project: "{{ project_id }}"
       register: vpc_peering_check
-      check_mode: yes
+      check_mode: true
 
     - name: assert result
       assert:
@@ -123,46 +123,46 @@
     - block:
       # Cleanup
 
-      - name: Drop existing vpc peering
-        opentelekomcloud.cloud.vpc_peering:
-          # pass ID as name
-          name: "{{ updated_vpc_peering.vpc_peering.name }}"
-          state: absent
-        register: dropped
+        - name: Drop existing vpc peering
+          opentelekomcloud.cloud.vpc_peering:
+            # pass ID as name
+            name: "{{ updated_vpc_peering.vpc_peering.name }}"
+            state: absent
+          register: dropped
 
-      - name: assert result
-        assert:
-          that:
-            - dropped is success
-            - dropped is changed
+        - name: assert result
+          assert:
+            that:
+              - dropped is success
+              - dropped is changed
 
-      - name: Drop existing first router
-        openstack.cloud.router:
-          name: "{{ router_name_1 }}"
-          state: absent
+        - name: Drop existing first router
+          openstack.cloud.router:
+            name: "{{ router_name_1 }}"
+            state: absent
 
-      - name: Drop existing first subnet
-        openstack.cloud.subnet:
-          name: "{{ subnet_name_1 }}"
-          state: absent
+        - name: Drop existing first subnet
+          openstack.cloud.subnet:
+            name: "{{ subnet_name_1 }}"
+            state: absent
 
-      - name: Drop existing first network
-        openstack.cloud.network:
-          name: "{{ network_name_1 }}"
-          state: absent
+        - name: Drop existing first network
+          openstack.cloud.network:
+            name: "{{ network_name_1 }}"
+            state: absent
 
-      - name: Drop existing second router
-        openstack.cloud.router:
-          name: "{{ router_name_2 }}"
-          state: absent
+        - name: Drop existing second router
+          openstack.cloud.router:
+            name: "{{ router_name_2 }}"
+            state: absent
 
-      - name: Drop existing second subnet
-        openstack.cloud.subnet:
-          name: "{{ subnet_name_2 }}"
-          state: absent
+        - name: Drop existing second subnet
+          openstack.cloud.subnet:
+            name: "{{ subnet_name_2 }}"
+            state: absent
 
-      - name: Drop existing second network
-        openstack.cloud.network:
-          name: "{{ network_name_2 }}"
-          state: absent
-      ignore_errors: yes
+        - name: Drop existing second network
+          openstack.cloud.network:
+            name: "{{ network_name_2 }}"
+            state: absent
+      ignore_errors: true

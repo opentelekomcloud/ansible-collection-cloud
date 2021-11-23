@@ -274,7 +274,7 @@ EXAMPLES = '''
      max_instance_number: 1
      action: "resume"
      state: "present"
-     wait: yes
+     wait: true
      timeout: 360
    register: result
 
@@ -283,8 +283,8 @@ EXAMPLES = '''
      scaling_group:
        name: "as_group_test"
      state: "absent"
-     force_delete: yes
-     wait: yes
+     force_delete: true
+     wait: true
      timeout: 360
    register: result
 
