@@ -37,7 +37,7 @@
         as_config_name: "{{ ( prefix + 'as_config') }}"
         network_name: "{{ ( prefix + '_network') }}"
         subnet_name: "{{ ( prefix + '_subnet') }}"
-        router_name:  "{{ ( prefix + '_router') }}"
+        router_name: "{{ ( prefix + '_router') }}"
         secgroup_name: "{{ ( prefix + '_secgroup') }}"
         kp_name: "{{ ( prefix + '_kp') }}"
         server_name: "{{ ( prefix + '_ecs') }}"
@@ -80,7 +80,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ network.network.name }}"
             subnet: "{{ subnet.subnet.name }}"
@@ -118,11 +118,11 @@
         networks: [{'id': "{{ network.network.id }}"}]
         security_groups: [{'id': "{{ secgroup.secgroup.id }}"}]
         router: "{{ router.router.id }}"
-        delete_publicip: True
-        delete_volume: True
+        delete_publicip: true
+        delete_volume: true
         action: "resume"
         state: "present"
-        wait: yes
+        wait: true
         timeout: 400
       register: as_group
 
@@ -133,7 +133,7 @@
         network: "{{ network_name }}"
         flavor: "{{ server_flavor }}"
         availability_zone: "{{ az2_name }}"
-        delete_fip: True
+        delete_fip: true
       register: ecs1
 
     - name: Create ECS2 instance
@@ -143,7 +143,7 @@
         network: "{{ network_name }}"
         flavor: "{{ server_flavor }}"
         availability_zone: "{{ az2_name }}"
-        delete_fip: True
+        delete_fip: true
       register: ecs2
 
     - name: Get list of AS Instances
@@ -171,7 +171,7 @@
         scaling_instances: ["{{ ecs1.server.id }}", "{{ ecs2.server.id }}"]
         action: "add"
         state: present
-      check_mode: yes
+      check_mode: true
       register: as_instances
 
     - name: assert result
@@ -257,7 +257,7 @@
         scaling_instances: "{{ id_list }}"
         action: "protect"
         state: present
-      check_mode: yes
+      check_mode: true
       register: as_instances
 
     - name: assert result
@@ -286,7 +286,7 @@
         scaling_instances: "{{ name_list }}"
         action: "unprotect"
         state: present
-      check_mode: yes
+      check_mode: true
       register: as_instances
 
     - name: assert result
@@ -313,9 +313,9 @@
       opentelekomcloud.cloud.as_instance:
         scaling_group: "{{ as_group.as_group.id }}"
         scaling_instances: ["{{ id_list[0] }}"]
-        instance_delete: yes
+        instance_delete: true
         state: absent
-      check_mode: yes
+      check_mode: true
       register: as_instances
 
     - name: assert result
@@ -347,7 +347,7 @@
       opentelekomcloud.cloud.as_instance:
         scaling_group: "{{ as_group.as_group.name }}"
         scaling_instances: ["{{ name_list[0] }}"]
-        instance_delete: yes
+        instance_delete: true
         state: absent
         wait: true
         timeout: 360
@@ -382,10 +382,10 @@
       opentelekomcloud.cloud.as_instance:
         scaling_group: "{{ as_group.as_group.name }}"
         scaling_instances: "{{ name_list_after_remove }}"
-        instance_delete: yes
+        instance_delete: true
         action: "remove"
         state: absent
-      check_mode: yes
+      check_mode: true
       register: result
 
     - name: assert result
@@ -417,10 +417,10 @@
       opentelekomcloud.cloud.as_instance:
         scaling_group: "{{ as_group.as_group.name }}"
         scaling_instances: "{{ name_list }}"
-        instance_delete: yes
+        instance_delete: true
         action: "remove"
         state: absent
-        wait: yes
+        wait: true
         timeout: 360
       register: result
 
@@ -443,66 +443,66 @@
   always:
     - block:
       # Cleanup
-      - name: Delete ECS1
-        openstack.cloud.server:
-          name: "{{ (as_instance_name + '_1') }}"
-          state: absent
+        - name: Delete ECS1
+          openstack.cloud.server:
+            name: "{{ (as_instance_name + '_1') }}"
+            state: absent
 
-      - name: Delete ECS2
-        openstack.cloud.server:
-          name: "{{ (as_instance_name + '_2') }}"
-          state: absent
+        - name: Delete ECS2
+          openstack.cloud.server:
+            name: "{{ (as_instance_name + '_2') }}"
+            state: absent
 
-      - name: Delete as group
-        opentelekomcloud.cloud.as_group:
-          scaling_group:
-            name: "{{ as_group_name }}"
-          state: absent
-          force_delete: yes
-          wait: yes
-          timeout: 360
-        register: dropped_as_group
+        - name: Delete as group
+          opentelekomcloud.cloud.as_group:
+            scaling_group:
+              name: "{{ as_group_name }}"
+            state: absent
+            force_delete: true
+            wait: true
+            timeout: 360
+          register: dropped_as_group
 
-      - name: assert result
-        assert:
-          that:
-            - dropped_as_group is success
-            - dropped_as_group is changed
+        - name: assert result
+          assert:
+            that:
+              - dropped_as_group is success
+              - dropped_as_group is changed
 
-      - name: Delete as config
-        opentelekomcloud.cloud.as_config:
-          scaling_configuration: "{{ as_config_name }}"
-          state: absent
-        register: dropped_as_config
+        - name: Delete as config
+          opentelekomcloud.cloud.as_config:
+            scaling_configuration: "{{ as_config_name }}"
+            state: absent
+          register: dropped_as_config
 
-      - name: assert result
-        assert:
-          that:
-            - dropped_as_config is success
-            - dropped_as_config is changed
+        - name: assert result
+          assert:
+            that:
+              - dropped_as_config is success
+              - dropped_as_config is changed
 
-      - name: Delete existing router
-        openstack.cloud.os_router:
-          name: "{{ router.router.name }}"
-          state: absent
+        - name: Delete existing router
+          openstack.cloud.os_router:
+            name: "{{ router.router.name }}"
+            state: absent
 
-      - name: Delete existing subnet
-        openstack.cloud.os_subnet:
-          name: "{{ subnet.subnet.name }}"
-          state: absent
+        - name: Delete existing subnet
+          openstack.cloud.os_subnet:
+            name: "{{ subnet.subnet.name }}"
+            state: absent
 
-      - name: Delete existing network
-        openstack.cloud.os_network:
-          name: "{{ network.network.name }}"
-          state: absent
+        - name: Delete existing network
+          openstack.cloud.os_network:
+            name: "{{ network.network.name }}"
+            state: absent
 
-      - name: Delete security group
-        openstack.cloud.security_group:
-          name: "{{ secgroup_name }}"
-          state: absent
+        - name: Delete security group
+          openstack.cloud.security_group:
+            name: "{{ secgroup_name }}"
+            state: absent
 
-      - name: Delete keypair
-        openstack.cloud.os_keypair:
-          name: "{{ kp_name }}"
-          state: absent
+        - name: Delete keypair
+          openstack.cloud.os_keypair:
+            name: "{{ kp_name }}"
+            state: absent
       ignore_errors: true

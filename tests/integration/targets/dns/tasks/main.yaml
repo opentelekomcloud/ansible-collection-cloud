@@ -18,9 +18,9 @@
         zone_public_name: "{{ ( prefix + '-dnszone.com.' ) }}"
         zone_private_name: "{{ ( prefix + '-dnszone.com.' ) }}"
         rs_name: "{{ ( prefix + '-rs.' + prefix + '-dnszone.com.' ) }}"
-        network_name: "{{ ( prefix + '-dnsnetwork' )}}"
-        subnet_name: "{{ ( prefix + '-dnssubnet' )}}"
-        router_name: "{{ ( prefix + '-dnsrouter' )}}"
+        network_name: "{{ ( prefix + '-dnsnetwork' ) }}"
+        subnet_name: "{{ ( prefix + '-dnssubnet' ) }}"
+        router_name: "{{ ( prefix + '-dnsrouter' ) }}"
 
     - name: Create network for DNS private Zone
       openstack.cloud.network:
@@ -318,54 +318,54 @@
 
   always:
     - block:
-      - name: Drop dns_floating_ip entry
-        opentelekomcloud.cloud.dns_floating_ip:
-          floating_ip: "{{ fl_ip }}"
-          state: absent
-        register: dns_fl_dr
+        - name: Drop dns_floating_ip entry
+          opentelekomcloud.cloud.dns_floating_ip:
+            floating_ip: "{{ fl_ip }}"
+            state: absent
+          register: dns_fl_dr
 
-      - name: Dropping DNS Recordset
-        opentelekomcloud.cloud.dns_recordset:
-          zone_id: "{{ dns_zo.zone.id }}"
-          recordset_name: "{{ rs_name }}"
-          state: absent
-        register: dns_rs_dr
+        - name: Dropping DNS Recordset
+          opentelekomcloud.cloud.dns_recordset:
+            zone_id: "{{ dns_zo.zone.id }}"
+            recordset_name: "{{ rs_name }}"
+            state: absent
+          register: dns_rs_dr
 
-      - name: Drop DNS public Zone
-        opentelekomcloud.cloud.dns_zone:
-          name: "{{ zone_public_name }}"
-          state: absent
-        register: dns_zo_pu_dr
+        - name: Drop DNS public Zone
+          opentelekomcloud.cloud.dns_zone:
+            name: "{{ zone_public_name }}"
+            state: absent
+          register: dns_zo_pu_dr
 
-      - name: Drop DNS private Zone
-        opentelekomcloud.cloud.dns_zone:
-          name: "{{ zone_private_name }}"
-          zone_type: "private"
-          state: absent
-        register: dns_zo_pr_dr
+        - name: Drop DNS private Zone
+          opentelekomcloud.cloud.dns_zone:
+            name: "{{ zone_private_name }}"
+            zone_type: "private"
+            state: absent
+          register: dns_zo_pr_dr
 
-      - name: Drop Floating IP
-        opentelekomcloud.cloud.floating_ip:
-          floating_ip_address: "{{ fl_ip }}"
-          state: absent
-          purge: true
-        register: fl_dr
+        - name: Drop Floating IP
+          opentelekomcloud.cloud.floating_ip:
+            floating_ip_address: "{{ fl_ip }}"
+            state: absent
+            purge: true
+          register: fl_dr
 
-      - name: Drop existing Router
-        openstack.cloud.router:
-          name: "{{ router_name }}"
-          state: absent
-        register: dns_rout_dr
+        - name: Drop existing Router
+          openstack.cloud.router:
+            name: "{{ router_name }}"
+            state: absent
+          register: dns_rout_dr
 
-      - name: Drop existing subnet
-        openstack.cloud.subnet:
-          name: "{{ subnet_name }}"
-          state: absent
-        register: dns_subnet_dr
+        - name: Drop existing subnet
+          openstack.cloud.subnet:
+            name: "{{ subnet_name }}"
+            state: absent
+          register: dns_subnet_dr
 
-      - name: Drop existing network
-        openstack.cloud.network:
-          name: "{{ network_name }}"
-          state: absent
-        register: dns_net_dr
-      ignore_errors: yes
+        - name: Drop existing network
+          openstack.cloud.network:
+            name: "{{ network_name }}"
+            state: absent
+          register: dns_net_dr
+      ignore_errors: true

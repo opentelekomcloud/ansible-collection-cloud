@@ -2,4 +2,4 @@
 - name: set fact
   set_fact:
     # otc_cloud: "{{ lookup('env', 'OS_CLOUD') | default('otc') }}"
-    #otc_cloud: otc
+    # otc_cloud: otc

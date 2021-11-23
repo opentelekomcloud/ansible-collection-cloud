@@ -137,7 +137,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ lb_net.network.name }}"
             subnet: "{{ lb_net_subnet.subnet.name }}"
@@ -231,7 +231,7 @@
         loadbalancer: "{{ lb.loadbalancer.id }}"
         name: "{{ listener_name }}"
         default_tls_container_ref: "{{ cert_1_info.elb_certificates[0].id }}"
-        sni_container_refs: [ "{{ cert_1.elb_certificate.id }}" ]
+        sni_container_refs: ["{{ cert_1.elb_certificate.id }}"]
       register: listener
 
     - name: assert result
@@ -248,7 +248,7 @@
         loadbalancer: "{{ lb.loadbalancer.id }}"
         name: "{{ listener_name }}"
         default_tls_container_ref: "{{ cert_1_info.elb_certificates[0].id }}"
-        sni_container_refs: [ "{{ cert_1.elb_certificate.id }}" ]
+        sni_container_refs: ["{{ cert_1.elb_certificate.id }}"]
       register: listener
 
     - name: assert result
@@ -265,7 +265,7 @@
         loadbalancer: "{{ lb.loadbalancer.id }}"
         name: "{{ listener_name }}"
         default_tls_container_ref: "{{ cert_1_info.elb_certificates[0].id }}"
-        sni_container_refs: [ "{{ cert_2.elb_certificate.id }}" ]
+        sni_container_refs: ["{{ cert_2.elb_certificate.id }}"]
       register: listener
 
     - name: assert result
@@ -290,7 +290,7 @@
       opentelekomcloud.cloud.loadbalancer:
         name: "{{ lb.loadbalancer.id }}"
         state: absent
-        delete_public_ip: yes
+        delete_public_ip: true
       register: loadbalancer_drop
 
     - name: assert result
@@ -325,46 +325,46 @@
   always:
     - block:
       # Cleanup
-      - name: Drop perhaps existing Server cert 1
-        opentelekomcloud.cloud.lb_certificate:
-          name: "{{ cert_name_srv_1 }}"
-          state: absent
-        register: drop
+        - name: Drop perhaps existing Server cert 1
+          opentelekomcloud.cloud.lb_certificate:
+            name: "{{ cert_name_srv_1 }}"
+            state: absent
+          register: drop
 
-      - name: Drop perhaps existing Server cert 2
-        opentelekomcloud.cloud.lb_certificate:
-          name: "{{ cert_name_srv_2 }}"
-          state: absent
-        register: drop
+        - name: Drop perhaps existing Server cert 2
+          opentelekomcloud.cloud.lb_certificate:
+            name: "{{ cert_name_srv_2 }}"
+            state: absent
+          register: drop
 
-      - name: Drop perhaps existing listener
-        opentelekomcloud.cloud.lb_listener:
-          state: absent
-          name: "{{ listener_name }}"
-        register: drop
+        - name: Drop perhaps existing listener
+          opentelekomcloud.cloud.lb_listener:
+            state: absent
+            name: "{{ listener_name }}"
+          register: drop
 
-      - name: Drop perhaps existing loadbalancer
-        opentelekomcloud.cloud.loadbalancer:
-          name: "{{ lb.loadbalancer.id }}"
-          state: absent
-          delete_public_ip: yes
-        register: drop
+        - name: Drop perhaps existing loadbalancer
+          opentelekomcloud.cloud.loadbalancer:
+            name: "{{ lb.loadbalancer.id }}"
+            state: absent
+            delete_public_ip: true
+          register: drop
 
-      - name: Drop existing Router
-        openstack.cloud.os_router:
-          name: "{{ router_name }}"
-          state: absent
-        register: drop
+        - name: Drop existing Router
+          openstack.cloud.os_router:
+            name: "{{ router_name }}"
+            state: absent
+          register: drop
 
-      - name: Drop existing subnet
-        openstack.cloud.os_subnet:
-          name: "{{ subnet_name }}"
-          state: absent
-        register: drop
+        - name: Drop existing subnet
+          openstack.cloud.os_subnet:
+            name: "{{ subnet_name }}"
+            state: absent
+          register: drop
 
-      - name: Drop existing network
-        openstack.cloud.os_network:
-          name: "{{ network_name }}"
-          state: absent
-        register: drop
+        - name: Drop existing network
+          openstack.cloud.os_network:
+            name: "{{ network_name }}"
+            state: absent
+          register: drop
       ignore_errors: true
