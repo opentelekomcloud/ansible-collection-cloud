@@ -37,11 +37,11 @@
           value: 6
           unit: "B"
           count: 1
-        alarm_enabled: True
-        alarm_action_enabled: False
-      check_mode: True
+        alarm_enabled: true
+        alarm_action_enabled: false
+      check_mode: true
       register: ces_al_ch
-    
+
     - name: assert result
       assert:
         that:
@@ -65,8 +65,8 @@
           value: 6
           unit: "B"
           count: 1
-        alarm_enabled: True
-        alarm_action_enabled: False
+        alarm_enabled: true
+        alarm_action_enabled: false
       register: ces_al
 
     - name: debug
@@ -165,16 +165,16 @@
 
   always:
     - block:
-      - name: Drop dns_floating_ip entry
-        opentelekomcloud.cloud.floating_ip:
-          floating_ip_address: "{{ fl_ip }}"
-          state: absent
-          purge: true
-        register: dns_fl_dr
+        - name: Drop dns_floating_ip entry
+          opentelekomcloud.cloud.floating_ip:
+            floating_ip_address: "{{ fl_ip }}"
+            state: absent
+            purge: true
+          register: dns_fl_dr
 
-      - name: Drop Alarm
-        opentelekomcloud.cloud.ces_alarms:
-          alarm_name: "{{ alarm_name }}"
-          state: absent
-        register: dns_rs_dr
-      ignore_errors: yes
+        - name: Drop Alarm
+          opentelekomcloud.cloud.ces_alarms:
+            alarm_name: "{{ alarm_name }}"
+            state: absent
+          register: dns_rs_dr
+      ignore_errors: true
