@@ -103,7 +103,7 @@
               size: 10
               share_type: "PER"
               charging_mode: "traffic"
-        security_groups: [{ "id": "{{ secgroup.secgroup.id }}" }]
+        security_groups: [{"id": "{{ secgroup.secgroup.id }}"}]
       register: as_config
 
     - name: Create AS group
@@ -115,8 +115,8 @@
         desire_instance_number: "{{ desire_instance_number }}"
         max_instance_number: "{{ max_instance_number }}"
         availability_zones: ["{{ az2_name }}"]
-        networks: [{ "id": "{{ network.network.id }}" }]
-        security_groups: [{ "id": "{{ secgroup.secgroup.id }}" }]
+        networks: [{"id": "{{ network.network.id }}"}]
+        security_groups: [{"id": "{{ secgroup.secgroup.id }}"}]
         router: "{{ router.router.id }}"
         delete_publicip: true
         delete_volume: true
