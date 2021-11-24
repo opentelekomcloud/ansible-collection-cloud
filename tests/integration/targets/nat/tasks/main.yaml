@@ -21,7 +21,7 @@
         nat_gateway_name: "{{ ( prefix + '_nat-gateway') }}"
         server_name: "{{ ( prefix + '_nat-server') }}"
         server_flavor: "s2.medium.2"
-        image_name: Standard_CentOS_8_latest 
+        image_name: Standard_CentOS_8_latest
 
     - name: Create network for NAT
       openstack.cloud.network:
@@ -43,7 +43,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: False
+        enable_snat: false
         interfaces:
           - net: "{{ nat_net.network.name }}"
             subnet: "{{ nat_subnet.subnet.name }}"
@@ -56,7 +56,7 @@
         router: "{{ router_name }}"
       check_mode: true
       register: nat_gw_ch
-    
+
     - name: assert result
       assert:
         that:
@@ -69,13 +69,13 @@
         internal_network: "{{ network_name }}"
         router: "{{ router_name }}"
       register: nat_gw
-    
+
     - name: assert result
       assert:
         that:
           - nat_gw is success
           - nat_gw.gateway.id is defined
-    
+
     - name: Add NAT gateway description - check mode
       nat_gateway:
         name: "{{ nat_gw.gateway.name }}"
@@ -88,7 +88,7 @@
         that:
           - nat_gw_ch is success
           - nat_gw_ch is changed
-    
+
     - name: Add NAT gateway description
       nat_gateway:
         name: "{{ nat_gw.gateway.name }}"
@@ -100,12 +100,12 @@
         that:
           - nat_gw is success
           - nat_gw.gateway.description is defined
-    
+
     - name: Allocate EIP for SNAT rule
       opentelekomcloud.cloud.floating_ip:
         network: admin_external_net
       register: fip
-    
+
     - name: assert result
       assert:
         that:
@@ -158,7 +158,7 @@
       opentelekomcloud.cloud.floating_ip:
         network: admin_external_net
       register: fip2
-        
+
     - name: assert result
       assert:
         that:
@@ -200,84 +200,84 @@
 
   always:
     - block:
-      # Cleanup      
-      - name: List SNAT rules of gateway
-        nat_snat_rule_info:
-          gateway: "{{ nat_gateway_name }}"
-        when: 
-          - nat_gw.gateway.id is defined
-        register: snat_rules
+      # Cleanup
+        - name: List SNAT rules of gateway
+          nat_snat_rule_info:
+            gateway: "{{ nat_gateway_name }}"
+          when:
+            - nat_gw.gateway.id is defined
+          register: snat_rules
 
-      - name: Drop SNAT rules
-        nat_snat_rule:
-          id: "{{ item.id }}"
-          state: absent
-        loop: "{{ snat_rules.snat_rules }}"
-        when: 
-          - nat_gw.gateway.id is defined
-          - snat_rules.snat_rules is defined
-        register: snat
+        - name: Drop SNAT rules
+          nat_snat_rule:
+            id: "{{ item.id }}"
+            state: absent
+          loop: "{{ snat_rules.snat_rules }}"
+          when:
+            - nat_gw.gateway.id is defined
+            - snat_rules.snat_rules is defined
+          register: snat
 
-      - name: Drop EIP for snat rule
-        opentelekomcloud.cloud.floating_ip:
-          floating_ip_address: "{{ fip.floating_ip.floating_ip_address }}"
-          purge: true
-          state: absent
-        when: fip is defined
-        register: fip
+        - name: Drop EIP for snat rule
+          opentelekomcloud.cloud.floating_ip:
+            floating_ip_address: "{{ fip.floating_ip.floating_ip_address }}"
+            purge: true
+            state: absent
+          when: fip is defined
+          register: fip
 
-      - name: List DNAT rules of gateway
-        nat_dnat_rule_info:
-          gateway: "{{ nat_gateway_name }}"
-        when: 
-          - nat_gw.gateway.id is defined
-        register: dnat_rules
+        - name: List DNAT rules of gateway
+          nat_dnat_rule_info:
+            gateway: "{{ nat_gateway_name }}"
+          when:
+            - nat_gw.gateway.id is defined
+          register: dnat_rules
 
-      - name: Drop DNAT rules
-        nat_dnat_rule:
-          id: "{{ item.id }}"
-          state: absent
-        loop: "{{ dnat_rules.dnat_rules }}"
-        when: 
-          - nat_gw.gateway.id is defined
-          - dnat_rules.dnat_rules is defined
-        register: dnat
+        - name: Drop DNAT rules
+          nat_dnat_rule:
+            id: "{{ item.id }}"
+            state: absent
+          loop: "{{ dnat_rules.dnat_rules }}"
+          when:
+            - nat_gw.gateway.id is defined
+            - dnat_rules.dnat_rules is defined
+          register: dnat
 
-      - name: Drop EIP for dnat rule
-        opentelekomcloud.cloud.floating_ip:
-          floating_ip_address: "{{ fip2.floating_ip.floating_ip_address }}"
-          purge: true
-          state: absent
-        when: fip2 is defined
-        register: fip2
+        - name: Drop EIP for dnat rule
+          opentelekomcloud.cloud.floating_ip:
+            floating_ip_address: "{{ fip2.floating_ip.floating_ip_address }}"
+            purge: true
+            state: absent
+          when: fip2 is defined
+          register: fip2
 
-      - name: Drop server instance
-        openstack.cloud.server:
-          name: "{{ server_name }}"
-          state: absent
-        register: server
+        - name: Drop server instance
+          openstack.cloud.server:
+            name: "{{ server_name }}"
+            state: absent
+          register: server
 
-      - name: Drop existing NAT gateway
-        nat_gateway:
-          name: "{{ nat_gateway_name }}"
-          state: absent
-        register: nat_gw
+        - name: Drop existing NAT gateway
+          nat_gateway:
+            name: "{{ nat_gateway_name }}"
+            state: absent
+          register: nat_gw
 
-      - name: Drop existing Router
-        openstack.cloud.router:
-          name: "{{ router_name }}"
-          state: absent
-        register: nat_router
+        - name: Drop existing Router
+          openstack.cloud.router:
+            name: "{{ router_name }}"
+            state: absent
+          register: nat_router
 
-      - name: Drop existing subnet
-        openstack.cloud.subnet:
-          name: "{{ subnet_name }}"
-          state: absent
-        register: nat_subnet
+        - name: Drop existing subnet
+          openstack.cloud.subnet:
+            name: "{{ subnet_name }}"
+            state: absent
+          register: nat_subnet
 
-      - name: Drop existing network
-        openstack.cloud.network:
-          name: "{{ network_name }}"
-          state: absent
-        register: nat_net
-      ignore_errors: yes
+        - name: Drop existing network
+          openstack.cloud.network:
+            name: "{{ network_name }}"
+            state: absent
+          register: nat_net
+      ignore_errors: true

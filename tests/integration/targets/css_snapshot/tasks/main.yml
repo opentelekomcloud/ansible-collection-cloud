@@ -17,7 +17,7 @@
         security_group_name: "{{ ( prefix + '-security_group') }}"
         css_cluster_name: "{{ ( 'z-' + prefix + '-css-test') }}"
         css_flavor: "css.xlarge.2"
-        snapshot_name: ""{{ ( prefix + '-snapshot') }}""
+        snapshot_name: "{{ ( prefix + '-snapshot') }}"
 
     - name: Create network for test
       openstack.cloud.network:

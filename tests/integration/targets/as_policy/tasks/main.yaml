@@ -28,7 +28,7 @@
         alarm_name: "{{ prefix + '_alarm' }}"
         network_name: "{{ ( prefix + '_network') }}"
         subnet_name: "{{ ( prefix + '_subnet') }}"
-        router_name:  "{{ ( prefix + '_router') }}"
+        router_name: "{{ ( prefix + '_router') }}"
 
     - name: Create network
       openstack.cloud.os_network:
@@ -63,8 +63,8 @@
           value: 6
           unit: "B"
           count: 1
-        alarm_enabled: True
-        alarm_action_enabled: False
+        alarm_enabled: true
+        alarm_action_enabled: false
       register: alarm
 
     - name: Create subnet
@@ -81,7 +81,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ network.network.name }}"
             subnet: "{{ subnet.subnet.name }}"
@@ -102,7 +102,7 @@
         scaling_policy_type: "alarm"
         alarm: "{{ alarm_name }}"
         state: "present"
-      check_mode: yes
+      check_mode: true
       register: as_policy
 
     - name: assert result
@@ -134,7 +134,7 @@
         alarm: "{{ alarm_name }}"
         state: "present"
       register: as_policy
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -175,11 +175,11 @@
 
     - name: Delete AS policy -check mode
       opentelekomcloud.cloud.as_policy:
-        scaling_group: "{{ as_group_name}}"
+        scaling_group: "{{ as_group_name }}"
         scaling_policy: "{{ as_policy_name }}"
         state: "absent"
       register: as_policy
-      check_mode: yes
+      check_mode: true
 
     - name: assert result
       assert:
@@ -217,7 +217,7 @@
         scaling_policy: "{{ as_policy_name }}"
         state: "absent"
       register: as_policy
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -229,38 +229,38 @@
   always:
     - block:
       # Cleanup
-      - name: Delete AS group
-        opentelekomcloud.cloud.as_group:
-          scaling_group:
-            name: "{{ as_group_name }}"
-          state: absent
-          force_delete: yes
-          wait: yes
-        register: dropped_as_group
+        - name: Delete AS group
+          opentelekomcloud.cloud.as_group:
+            scaling_group:
+              name: "{{ as_group_name }}"
+            state: absent
+            force_delete: true
+            wait: true
+          register: dropped_as_group
 
-      - name: Drop alarm
-        opentelekomcloud.cloud.ces_alarms:
-          alarm_name: "{{ alarm_name }}"
-          state: absent
+        - name: Drop alarm
+          opentelekomcloud.cloud.ces_alarms:
+            alarm_name: "{{ alarm_name }}"
+            state: absent
 
-      - name: Drop floating ip
-        opentelekomcloud.cloud.floating_ip:
-          floating_ip_address: "{{ fl_ip }}"
-          state: absent
-          purge: true
+        - name: Drop floating ip
+          opentelekomcloud.cloud.floating_ip:
+            floating_ip_address: "{{ fl_ip }}"
+            state: absent
+            purge: true
 
-      - name: Drop existing router
-        openstack.cloud.os_router:
-          name: "{{ router.router.name }}"
-          state: absent
+        - name: Drop existing router
+          openstack.cloud.os_router:
+            name: "{{ router.router.name }}"
+            state: absent
 
-      - name: Drop existing subnet
-        openstack.cloud.os_subnet:
-          name: "{{ subnet.subnet.name }}"
-          state: absent
+        - name: Drop existing subnet
+          openstack.cloud.os_subnet:
+            name: "{{ subnet.subnet.name }}"
+            state: absent
 
-      - name: Drop existing network
-        openstack.cloud.os_network:
-          name: "{{ network.network.name }}"
-          state: absent
+        - name: Drop existing network
+          openstack.cloud.os_network:
+            name: "{{ network.network.name }}"
+            state: absent
       ignore_errors: true

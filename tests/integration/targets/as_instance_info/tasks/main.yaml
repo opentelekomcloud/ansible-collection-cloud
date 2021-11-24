@@ -20,7 +20,7 @@
         as_group_name: "{{ ( prefix + '_as_group') }}"
         network_name: "{{ ( prefix + '_network') }}"
         subnet_name: "{{ ( prefix + '_subnet') }}"
-        router_name:  "{{ ( prefix + '_router') }}"
+        router_name: "{{ ( prefix + '_router') }}"
 
     - name: Create network
       openstack.cloud.os_network:
@@ -42,7 +42,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ network.network.name }}"
             subnet: "{{ subnet.subnet.name }}"
@@ -83,7 +83,7 @@
     - name: Get error message that required parameter is missing
       opentelekomcloud.cloud.as_instance_info:
       register: as_instances
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -96,7 +96,7 @@
       opentelekomcloud.cloud.as_instance_info:
         scaling_group:
       register: as_instances
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -107,27 +107,27 @@
   always:
     - block:
       # Cleanup
-      - name: Delete as group
-        opentelekomcloud.cloud.as_group:
-          scaling_group:
-            name: "{{ as_group_name }}"
-          state: absent
-          force_delete: yes
-          wait: yes
-        register: dropped_as_group
+        - name: Delete as group
+          opentelekomcloud.cloud.as_group:
+            scaling_group:
+              name: "{{ as_group_name }}"
+            state: absent
+            force_delete: true
+            wait: true
+          register: dropped_as_group
 
-      - name: Drop existing router
-        openstack.cloud.os_router:
-          name: "{{ router.router.name }}"
-          state: absent
+        - name: Drop existing router
+          openstack.cloud.os_router:
+            name: "{{ router.router.name }}"
+            state: absent
 
-      - name: Drop existing subnet
-        openstack.cloud.os_subnet:
-          name: "{{ subnet.subnet.name }}"
-          state: absent
+        - name: Drop existing subnet
+          openstack.cloud.os_subnet:
+            name: "{{ subnet.subnet.name }}"
+            state: absent
 
-      - name: Drop existing network
-        openstack.cloud.os_network:
-          name: "{{ network.network.name }}"
-          state: absent
+        - name: Drop existing network
+          openstack.cloud.os_network:
+            name: "{{ network.network.name }}"
+            state: absent
       ignore_errors: true
