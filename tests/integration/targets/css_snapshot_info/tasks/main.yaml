@@ -1,0 +1,17 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.css_snapshot_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get info about snapshots.
+      opentelekomcloud.cloud.css_snapshot_info:
+        cluster:
+      register: result
+      ignore_errors: true
+
+    - name: assert result
+      assert:
+        that:
+          - result is not success
+          - result is not changed
+          - 'result.msg == "CSS cluster is missing"'
