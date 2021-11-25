@@ -28,7 +28,7 @@
       opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
         status: "wrongStatus"
       register: anti_ddos
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:

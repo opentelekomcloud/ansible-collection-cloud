@@ -228,10 +228,9 @@ class RdsInstanceModule(OTCModule):
 
             if instance:
                 attrs = {
-                    'instance': instance.id
+                    'instance': instance.id,
+                    'wait': self.params['wait']
                 }
-                if self.params['wait']:
-                    attrs['wait'] = True
 
                 self.conn.delete_rds_instance(**attrs)
                 changed = True

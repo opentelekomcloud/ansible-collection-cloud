@@ -30,7 +30,7 @@
         version: "10"
         instance_mode: "single"
       register: rds
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:

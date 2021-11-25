@@ -22,6 +22,7 @@ plugins/modules/ces_metrics_info.py validate-modules:missing-gplv3-license
 plugins/modules/ces_quotas_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_node_info.py validate-modules:missing-gplv3-license
 plugins/modules/css_cluster_info.py validate-modules:missing-gplv3-license
+plugins/modules/css_snapshot_info.py validate-modules:missing-gplv3-license
 plugins/modules/dms_instance.py validate-modules:missing-gplv3-license
 plugins/modules/dms_instance_info.py validate-modules:missing-gplv3-license
 plugins/modules/dms_instance_topic.py validate-modules:missing-gplv3-license
