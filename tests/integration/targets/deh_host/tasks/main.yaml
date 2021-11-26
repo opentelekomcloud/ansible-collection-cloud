@@ -59,7 +59,7 @@
     - name: Modify DeH host - check mode
       deh_host:
         id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
-        auto_placement: off
+        auto_placement: false
       check_mode: true
       when:
         - deh is defined
@@ -73,7 +73,7 @@
     - name: Modify DeH host
       deh_host:
         id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
-        auto_placement: off
+        auto_placement: false
       when:
         - deh is defined
       register: deh
