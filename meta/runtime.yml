@@ -71,3 +71,110 @@ action_groups:
     - anti_ddos_fip_statuses_info.py
     - anti_ddos_optional_policies_info.py
     - object_info.py
+
+plugin_routing:
+  modules:
+    auth:
+      redirect: openstack.cloud.auth
+    catalog_endpoint:
+      redirect: openstack.cloud.catalog_endpoint
+    catalog_service:
+      redirect: openstack.cloud.catalog_service
+    compute_flavor:
+      redirect: openstack.cloud.compute_flavor
+    compute_flavor_info:
+      redirect: openstack.cloud.compute_flavor_info
+    config:
+      redirect: openstack.cloud.config
+    endpoint:
+      redirect: openstack.cloud.endpoint
+    group_assignment:
+      redirect: openstack.cloud.group_assignment
+    identity_domain:
+      redirect: openstack.cloud.identity_domain
+    identity_domain_info:
+      redirect: openstack.cloud.identity_domain_info
+    identity_group:
+      redirect: openstack.cloud.identity_group
+    identity_group_info:
+      redirect: openstack.cloud.identity_group_info
+    identity_role:
+      redirect: openstack.cloud.identity_role
+    identity_role_info:
+      redirect: openstack.cloud.identity_role_info
+    identity_user:
+      redirect: openstack.cloud.identity_user
+    identity_user_info:
+      redirect: openstack.cloud.identity_user_info
+    image:
+      redirect: openstack.cloud.image
+    image_info:
+      redirect: openstack.cloud.image_info
+    keypair:
+      redirect: openstack.cloud.keypair
+    keypair_info:
+      redirect: openstack.cloud.keypair_info
+    network:
+      redirect: openstack.cloud.network
+    networks_info:
+      redirect: openstack.cloud.networks_info
+    object:
+      redirect: openstack.cloud.object
+    port:
+      redirect: openstack.cloud.port
+    port_info:
+      redirect: openstack.cloud.port_info
+    project:
+      redirect: openstack.cloud.project
+    project_access:
+      redirect: openstack.cloud.project_access
+    project_info:
+      redirect: openstack.cloud.project_info
+    quota:
+      redirect: openstack.cloud.quota
+    recordset:
+      redirect: openstack.cloud.recordset
+    role_assignment:
+      redirect: openstack.cloud.role_assignment
+    router:
+      redirect: openstack.cloud.router
+    routers_info:
+      redirect: openstack.cloud.routers_info
+    security_group:
+      redirect: openstack.cloud.security_group
+    security_group_rule:
+      redirect: openstack.cloud.security_group_rule
+    security_group_rule_info:
+      redirect: openstack.cloud.security_group_rule_info
+    server:
+      redirect: openstack.cloud.server
+    server_action:
+      redirect: openstack.cloud.server_action
+    server_group:
+      redirect: openstack.cloud.server_group
+    server_info:
+      redirect: openstack.cloud.server_info
+    server_metadata:
+      redirect: openstack.cloud.server_metadata
+    server_volume:
+      redirect: openstack.cloud.server_volume
+    stack:
+      redirect: openstack.cloud.stack
+    stack_info:
+      redirect: openstack.cloud.stack_info
+    subnet:
+      redirect: openstack.cloud.subnet
+    subnets_info:
+      redirect: openstack.cloud.subnets_info
+    volume:
+      redirect: openstack.cloud.volume
+    volume_backup:
+      redirect: openstack.cloud.volume_backup
+    volume_backup_info:
+      redirect: openstack.cloud.volume_backup_info
+    volume_info:
+      redirect: openstack.cloud.volume_info
+    volume_snapshot:
+      redirect: openstack.cloud.volume_snapshot
+    volume_snapshot_info:
+      redirect: openstack.cloud.volume_snapshot_info
