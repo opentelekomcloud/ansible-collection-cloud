@@ -1,0 +1,14 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.security_group:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: List security groups
+      security_group:
+      register: sg
+
+    - name: assert result
+      assert:
+        that:
+          - sg is success
+          - sg.security_groups is defined
