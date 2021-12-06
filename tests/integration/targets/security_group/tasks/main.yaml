@@ -3,12 +3,39 @@
     opentelekomcloud.cloud.security_group:
       cloud: "{{ test_cloud }}"
   block:
-    - name: List security groups
-      security_group:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        security_group_name: "{{ ( prefix + 'security_group') }}"
+
+    - name: Create security group
+      opentelekomcloud.cloud.security_group:
+        state: present
+        name: "{{ security_group_name }}"
+        description: security group for foo servers
+        exclusive: true
+        security_group_rules:
+          - "direction": "egress"
+            "ethertype": "IPv4"
+          - "direction": "egress"
+            "ethertype": "IPv6"
+          - "direction": "ingress"
+            "ethertype": "IPv4"
       register: sg
 
     - name: assert result
       assert:
         that:
           - sg is success
-          - sg.security_groups is defined
+          - sg is changed
+
+  always:
+    - block:
+      # Cleanup
+        - name: Drop security group
+          opentelekomcloud.cloud.security_group:
+            name: "{{ security_group_name }}"
+            state: "absent"

@@ -42,6 +42,16 @@ options:
         - Unique name or ID of the project.
      required: false
      type: str
+   security_group_rules:
+     type: list
+     elements: dict
+     description:
+       - list of security group rules
+   exclusive:
+     type: bool
+     default: false
+     description:
+       - Deletes existing rules if true
 requirements:
     - "python >= 3.6"
     - "openstacksdk"
@@ -55,6 +65,7 @@ EXAMPLES = '''
     state: present
     name: foo
     description: security group for foo servers
+    exclusive: true
 
 # Update the existing 'foo' security group description
 - opentelekomcloud.cloud.security_group:
@@ -69,6 +80,21 @@ EXAMPLES = '''
     state: present
     name: foo
     project: myproj
+
+#Create a security groups with exclusive and with rules
+- opentelekomcloud.cloud.security_group:
+    cloud: otc
+    state: present
+    name: foo
+    description: security group for foo servers
+    exclusive: True
+    security_group_rules:
+      - "direction": "egress"
+        "ethertype": "IPv4"
+      - "direction": "egress"
+        "ethertype": "IPv6"
+      - "direction": "ingress"
+        "ethertype": "IPv4"
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -81,6 +107,8 @@ class SecurityGroupModule(OTCModule):
         description=dict(default=''),
         state=dict(default='present', choices=['absent', 'present']),
         project=dict(default=None),
+        security_group_rules=dict(type='list', elements='dict'),
+        exclusive=dict(type='bool', default=False)
     )
 
     def _needs_update(self, secgroup):
@@ -108,6 +136,10 @@ class SecurityGroupModule(OTCModule):
         state = self.params['state']
         description = self.params['description']
         project = self.params['project']
+        security_group_rules = self.params['security_group_rules']
+        exclusive = self.params['exclusive']
+
+        data = []
 
         if project is not None:
             proj = self.conn.get_project(project)
@@ -123,6 +155,7 @@ class SecurityGroupModule(OTCModule):
             filters = None
 
         secgroup = self.conn.get_security_group(name, filters=filters)
+        sg_rules = None
 
         if self.ansible.check_mode:
             self.exit(changed=self._system_state_change(secgroup))
@@ -141,8 +174,32 @@ class SecurityGroupModule(OTCModule):
                     secgroup = self.conn.update_security_group(
                         secgroup['id'], description=description)
                     changed = True
+
+            if exclusive:
+                # delete security group rules if any exists
+                sg_rules = self.conn.network.security_group_rules(
+                    security_group_id=secgroup.id)
+                if sg_rules:
+                    for rule in sg_rules:
+                        self.conn.network.delete_security_group_rule(
+                            security_group_rule=rule.id)
+
+            if security_group_rules is not None:
+                # create rules
+                for rule in security_group_rules:
+                    self.conn.create_security_group_rule(name, **rule)
+                sg_rules = self.conn.network.security_group_rules(
+                    security_group_id=secgroup.id)
+                # prepare sg rules data
+                for raw in sg_rules:
+                    dt = raw.to_dict()
+                    data.append(dt)
+                changed = True
+
             self.exit(
-                changed=changed, id=secgroup['id'], secgroup=secgroup)
+                changed=changed, id=secgroup['id'],
+                secgroup=secgroup,
+                secgroup_rules=data)
 
         if state == 'absent':
             if secgroup:
