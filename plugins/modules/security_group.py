@@ -91,10 +91,14 @@ EXAMPLES = '''
     security_group_rules:
       - "direction": "egress"
         "ethertype": "IPv4"
+        "port_range_min": "1"
+        "port_range_max": "50000"
+        "protocol": "tcp"
       - "direction": "egress"
         "ethertype": "IPv6"
       - "direction": "ingress"
         "ethertype": "IPv4"
+        "protocol": "icmp"
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
