@@ -68,7 +68,6 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 EXAMPLES = '''
-
 '''
 
 RETURN = '''
