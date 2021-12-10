@@ -49,6 +49,7 @@ action_groups:
     - volume_backup
     - waf_certificate
     - waf_certificate_info
+    - vpc
     - volume_backup_info
     - volume_snapshot_info
     - vpc_peering

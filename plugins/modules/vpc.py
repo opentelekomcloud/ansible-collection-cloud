@@ -118,7 +118,7 @@ router:
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class RouterModule(OTCModule):
+class VpcModule(OTCModule):
     argument_spec = dict(
         state=dict(default='present', choices=['absent', 'present']),
         name=dict(required=False),
@@ -150,6 +150,9 @@ class RouterModule(OTCModule):
             vpc = self.conn.vpc.find_vpc(name_or_id=name)
 
         if state == 'present':
+            if self.ansible.check_mode:
+                self.exit(changed=True)
+
             if not vpc:
                 new_vpc = self.conn.vpc.create_vpc(**query)
                 self.exit(changed=True, vpc=new_vpc)
@@ -158,18 +161,19 @@ class RouterModule(OTCModule):
                     query['routes'] = routes
                 if enabled_shared_snat:
                     query['enabled_shared_snat'] = enabled_shared_snat
-                updated_vpc = self.conn.vpc.update_vpc(**query)
+                updated_vpc = self.conn.vpc.update_vpc(vpc=vpc, **query)
                 self.exit(changed=True, vpc=updated_vpc)
         else:
             if vpc:
+                if self.ansible.check_mode:
+                    self.exit(changed=True)
                 self.conn.network.delete_router(vpc.id)
                 self.exit(changed=True)
             else:
                 self.exit(changed=False)
 
-
 def main():
-    module = RouterModule()
+    module = VpcModule()
     module()
 
 
