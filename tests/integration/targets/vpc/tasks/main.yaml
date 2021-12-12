@@ -1,6 +1,6 @@
 ---
 - module_defaults:
-    vpc:
+    opentelekomcloud.cloud.vpc:
       cloud: "{{ test_cloud }}"
 
   block:
@@ -14,7 +14,7 @@
         cidr: "192.168.0.0/24"
 
     - name: Create VPC
-      openstack.cloud.vpc:
+      opentelekomcloud.cloud.vpc:
         name: "{{ vpc_name }}"
         cidr: "{{ cidr }}"
         state: present
@@ -28,7 +28,7 @@
           - vpc_check_mode is not changed
 
     - name: Create VPC
-      openstack.cloud.vpc:
+      opentelekomcloud.cloud.vpc:
         name: "{{ vpc_name }}"
         cidr: "{{ cidr }}"
         state: present
@@ -41,7 +41,7 @@
           - vpc is changed
 
     - name: Update VPC
-      openstack.cloud.vpc:
+      opentelekomcloud.cloud.vpc:
         name: "{{ vpc_name }}"
         description: "Test vpc"
       register: updated_vpc
@@ -53,7 +53,7 @@
           - updated_vpc is defined
 
     - name: Delete VPC
-      openstack.cloud.vpc:
+      opentelekomcloud.cloud.vpc:
         name: "{{ vpc_name }}"
         state: "absent"
       register: deleted_vpc

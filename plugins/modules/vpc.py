@@ -68,6 +68,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 EXAMPLES = '''
+
 '''
 
 RETURN = '''
@@ -170,6 +171,7 @@ class VpcModule(OTCModule):
                 self.exit(changed=True)
             else:
                 self.exit(changed=False)
+
 
 def main():
     module = VpcModule()
