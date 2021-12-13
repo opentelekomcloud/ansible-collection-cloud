@@ -68,7 +68,21 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 EXAMPLES = '''
+- name: Create vpc
+  opentelekomcloud.cloud.vpc:
+    name: "vpc-test"
+    cidr: "192.168.0.0/24"
+    state: present
 
+- name: Update vpc
+  opentelekomcloud.cloud.vpc:
+    name: "vpc-test"
+    description: "New description"
+
+- name: Delete vpc
+  opentelekomcloud.cloud.vpc:
+    name: "vpc-test"
+    state: absent
 '''
 
 RETURN = '''
@@ -147,7 +161,7 @@ class VpcModule(OTCModule):
 
         vpc = None
         if name:
-            vpc = self.conn.vpc.find_vpc(name_or_id=name)
+            vpc = self.conn.vpc.find_vpc(name, ignore_missing=True)
 
         if state == 'present':
             if self.ansible.check_mode:
