@@ -138,8 +138,8 @@ class VpcModule(OTCModule):
         name=dict(required=False),
         description=dict(required=False),
         cidr=dict(required=False),
-        routes=dict(required=False),
-        enabled_shared_snat=dict(required=False)
+        routes=dict(type='list', elements='dict', required=False),
+        enabled_shared_snat=dict(type='bool', required=False)
     )
 
     def run(self):
