@@ -59,6 +59,7 @@ plugins/modules/rds_instance_info.py validate-modules:missing-gplv3-license
 plugins/modules/security_group.py validate-modules:missing-gplv3-license
 plugins/modules/security_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/tag.py validate-modules:missing-gplv3-license
+plugins/modules/vpc.py validate-modules:missing-gplv3-license
 plugins/modules/volume_backup.py validate-modules:missing-gplv3-license
 plugins/modules/waf_certificate.py validate-modules:missing-gplv3-license
 plugins/modules/waf_certificate_info.py validate-modules:missing-gplv3-license
