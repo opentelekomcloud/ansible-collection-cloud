@@ -47,6 +47,13 @@
             subnet: "{{ test_subnet.subnet.name }}"
       register: test_router
 
+    - name: Add cidr for vpc
+      opentelekomcloud.cloud.vpc:
+        cloud: "{{ test_cloud }}"
+        name: "{{ router_name }}"
+        state: present
+        cidr: "192.168.0.0/24"
+
     - name: Create CCE Cluster
       opentelekomcloud.cloud.cce_cluster:
         name: "{{ cce_cluster_name }}"
