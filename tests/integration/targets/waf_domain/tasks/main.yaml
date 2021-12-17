@@ -94,7 +94,7 @@
         sip_header_list:
           - X-Forwarded-For
       register: domain_check
-      check_mode: yes
+      check_mode: true
 
     - name: assert result
       assert:
@@ -208,18 +208,18 @@
   always:
     - block:
       # Cleanup
-      - name: Drop perhaps existing domain
-        waf_domain:
-          name: "{{ domain_name }}"
-          state: absent
+        - name: Drop perhaps existing domain
+          waf_domain:
+            name: "{{ domain_name }}"
+            state: absent
 
-      - name: Drop certificate
-        waf_certificate:
-          name: "{{ cert_name }}"
-          state: absent
+        - name: Drop certificate
+          waf_certificate:
+            name: "{{ cert_name }}"
+            state: absent
 
-      - name: Drop 2nd certificate
-        waf_certificate:
-          name: "{{ cert2_name }}"
-          state: absent
+        - name: Drop 2nd certificate
+          waf_certificate:
+            name: "{{ cert2_name }}"
+            state: absent
       ignore_errors: true

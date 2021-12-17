@@ -21,6 +21,7 @@ action_groups:
     - cce_node_pool
     - css_cluster
     - css_cluster_info
+    - css_snapshot_info
     - deh_host
     - deh_host_info
     - deh_host_type_info
@@ -43,12 +44,14 @@ action_groups:
     - rds_instance
     - rds_backup
     - rds_backup_info
+    - security_group
     - security_group_info
     - server_group_info
     - tag
     - volume_backup
     - waf_certificate
     - waf_certificate_info
+    - vpc
     - volume_backup_info
     - volume_snapshot_info
     - vpc_peering

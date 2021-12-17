@@ -7,7 +7,7 @@
       opentelekomcloud.cloud.rds_backup_info:
         instance:
       register: rds_backup_info
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -19,7 +19,7 @@
     - name: Get error message that required parameter is missing
       opentelekomcloud.cloud.rds_backup_info:
       register: rds_backup_info
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:

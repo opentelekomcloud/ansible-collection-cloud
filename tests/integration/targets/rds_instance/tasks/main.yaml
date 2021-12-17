@@ -50,7 +50,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ test_network.network.name }}"
             subnet: "{{ test_subnet.subnet.name }}"
@@ -82,26 +82,26 @@
   always:
     - block:
       # Cleanup
-      - name: Drop instance
-        opentelekomcloud.cloud.rds_instance:
-          name: "{{ instance_name }}"
-          state: "absent"
+        - name: Drop instance
+          opentelekomcloud.cloud.rds_instance:
+            name: "{{ instance_name }}"
+            state: "absent"
 
-      - name: Drop router
-        openstack.cloud.router:
-          cloud: "{{ test_cloud }}"
-          name: "{{ router_name }}"
-          state: absent
+        - name: Drop router
+          openstack.cloud.router:
+            cloud: "{{ test_cloud }}"
+            name: "{{ router_name }}"
+            state: absent
 
-      - name: Drop subnet
-        openstack.cloud.subnet:
-          cloud: "{{ test_cloud }}"
-          name: "{{ subnet_name }}"
-          state: absent
+        - name: Drop subnet
+          openstack.cloud.subnet:
+            cloud: "{{ test_cloud }}"
+            name: "{{ subnet_name }}"
+            state: absent
 
-      - name: Drop network
-        openstack.cloud.network:
-          cloud: "{{ test_cloud }}"
-          name: "{{ network_name }}"
-          state: absent
-      ignore_errors: yes
+        - name: Drop network
+          openstack.cloud.network:
+            cloud: "{{ test_cloud }}"
+            name: "{{ network_name }}"
+            state: absent
+      ignore_errors: true

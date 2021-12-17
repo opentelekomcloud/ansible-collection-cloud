@@ -36,7 +36,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ lb_net.network.name }}"
             subnet: "{{ lb_net_subnet.subnet.name }}"
@@ -49,7 +49,7 @@
         vip_subnet: "{{ subnet_name }}"
         timeout: 150
       register: loadbalancer_check
-      check_mode: yes
+      check_mode: true
 
     - name: assert result
       assert:
@@ -75,8 +75,8 @@
         name: "{{ loadbalancer_name }}"
         state: present
         vip_subnet: "{{ subnet_name }}"
-        auto_public_ip: yes
-        wait: yes
+        auto_public_ip: true
+        wait: true
         timeout: 600
 
     - name: Get loadbalancer by Name
@@ -204,7 +204,7 @@
         # pass ID as name
         name: "{{ lb.loadbalancer.id }}"
         state: absent
-        delete_public_ip: yes
+        delete_public_ip: true
       register: dropped
 
     - name: assert result
@@ -229,28 +229,28 @@
   always:
     - block:
       # Cleanup
-      - name: Drop perhaps existing loadbalancer
-        opentelekomcloud.cloud.loadbalancer:
-          name: "{{ lb.loadbalancer.id }}"
-          state: absent
-          delete_public_ip: yes
-        register: lb
+        - name: Drop perhaps existing loadbalancer
+          opentelekomcloud.cloud.loadbalancer:
+            name: "{{ lb.loadbalancer.id }}"
+            state: absent
+            delete_public_ip: true
+          register: lb
 
-      - name: Drop existing Router
-        openstack.cloud.os_router:
-          name: "{{ router_name }}"
-          state: absent
-        register: lb_net_router
+        - name: Drop existing Router
+          openstack.cloud.os_router:
+            name: "{{ router_name }}"
+            state: absent
+          register: lb_net_router
 
-      - name: Drop existing subnet
-        openstack.cloud.os_subnet:
-          name: "{{ subnet_name }}"
-          state: absent
-        register: lb_net_subnet
+        - name: Drop existing subnet
+          openstack.cloud.os_subnet:
+            name: "{{ subnet_name }}"
+            state: absent
+          register: lb_net_subnet
 
-      - name: Drop existing network
-        openstack.cloud.os_network:
-          name: "{{ network_name }}"
-          state: absent
-        register: lb_net
+        - name: Drop existing network
+          openstack.cloud.os_network:
+            name: "{{ network_name }}"
+            state: absent
+          register: lb_net
       ignore_errors: true

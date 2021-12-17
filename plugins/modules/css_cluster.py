@@ -73,7 +73,7 @@ options:
     choices:
       - '0'
       - '1'
-    type: str
+    type: int
   system_cmkid:
     description:
       - Key ID.
@@ -84,7 +84,7 @@ options:
         Otherwise, the cluster will become unavailable.
     type: str
   https_enable:
-    type: str
+    type: bool
     description:
       - Whether communication is encrypted on the cluster.
       - Available values include true and false. By default, communication is
@@ -92,9 +92,6 @@ options:
       - Value true indicates that communication is encrypted on the cluster.
       - Value false indicates that communication is not encrypted on the
         cluster.
-    choices:
-      - 'true'
-      - 'false'
   authority_enable:
     type: bool
     description:
@@ -215,9 +212,9 @@ class CssClusterModule(OTCModule):
         flavor=dict(type='str'),
         volume_type=dict(type='str', choices=['common', 'high', 'ultrahigh']),
         volume_size=dict(type='int'),
-        system_encrypted=dict(type='str', choices=['0', '1']),
+        system_encrypted=dict(type='int', choices=[0, 1]),
         system_cmkid=dict(type='str'),
-        https_enable=dict(type='str', choices=['true', 'false']),
+        https_enable=dict(type='bool'),
         authority_enable=dict(type='bool'),
         admin_pwd=dict(type='str'),
         router=dict(type='str'),
@@ -277,7 +274,8 @@ class CssClusterModule(OTCModule):
                     'cluster': cluster.id
                 }
                 changed = True
-                self.conn.css.delete_cluster(**attrs)
+                self.conn.css.delete_cluster(cluster=cluster.id,
+                                             ignore_missing=True)
 
             self.exit_json(changed=changed)
 

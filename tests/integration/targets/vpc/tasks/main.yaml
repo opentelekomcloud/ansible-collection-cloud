@@ -1,0 +1,65 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.vpc:
+      cloud: "{{ test_cloud }}"
+
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        vpc_name: "{{ ( prefix + '_vpc') }}"
+        cidr: "192.168.0.0/24"
+
+    - name: Create VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        cidr: "{{ cidr }}"
+        state: present
+      check_mode: true
+      register: vpc_check_mode
+
+    - name: assert result
+      assert:
+        that:
+          - vpc_check_mode is success
+          - vpc_check_mode is not changed
+
+    - name: Create VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        cidr: "{{ cidr }}"
+        state: present
+      register: vpc
+
+    - name: assert result
+      assert:
+        that:
+          - vpc is success
+          - vpc is changed
+
+    - name: Update VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        description: "Test vpc"
+      register: updated_vpc
+
+    - name: assert result
+      assert:
+        that:
+          - updated_vpc is success
+          - updated_vpc is defined
+
+    - name: Delete VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        state: "absent"
+      register: deleted_vpc
+
+    - name: assert result
+      assert:
+        that:
+          - deleted_vpc is success
+          - deleted_vpc is changed

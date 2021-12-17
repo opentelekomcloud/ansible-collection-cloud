@@ -27,11 +27,11 @@
         config_name: "{{ ( prefix + '_as_conf' ) }}"
         network_name: "{{ ( prefix + '_network') }}"
         subnet_name: "{{ ( prefix + '_subnet') }}"
-        router_name:  "{{ ( prefix + '_router') }}"
+        router_name: "{{ ( prefix + '_router') }}"
 
     - name: Create keypair
       openstack.cloud.os_keypair:
-          name: "{{ key_name }}"
+        name: "{{ key_name }}"
 
     - name: Create network
       openstack.cloud.os_network:
@@ -53,7 +53,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ network.network.name }}"
             subnet: "{{ subnet.subnet.name }}"
@@ -77,7 +77,7 @@
           name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
-      check_mode: yes
+      check_mode: true
       register: as_group_check
 
     - name: assert result
@@ -107,7 +107,7 @@
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
       register: as_group_err
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -122,7 +122,7 @@
           id: "{{ as_group.as_group.id }}"
           name: "{{ new_name }}"
         max_instance_number: 10
-      check_mode: yes
+      check_mode: true
       register: as_group_check
 
     - name: assert result
@@ -151,7 +151,7 @@
         scaling_group:
           id: "{{ as_group.as_group.id }}"
         state: absent
-      check_mode: yes
+      check_mode: true
       register: as_group_check
 
     - name: assert result
@@ -165,7 +165,7 @@
         scaling_group:
           id: "{{ as_group.as_group.id }}"
         state: absent
-        wait: yes
+        wait: true
         timeout: 360
       register: as_gr_del
 
@@ -181,10 +181,10 @@
         scaling_group:
           id: "{{ as_group.as_group.id }}"
         state: absent
-        wait: yes
+        wait: true
         timeout: 360
       register: as_gr_err
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -204,7 +204,7 @@
         max_instance_number: 1
         action: "resume"
         state: "present"
-        wait: yes
+        wait: true
         timeout: 360
       register: as_group
 
@@ -232,11 +232,11 @@
         scaling_group:
           id: "{{ as_group.as_group.id }}"
         state: absent
-        force_delete: no
-        wait: yes
+        force_delete: false
+        wait: true
         timeout: 360
       register: as_group_err
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -247,53 +247,52 @@
 
   always:
     - block:
-      # Cleanup
-      - name: Delete as group
-        opentelekomcloud.cloud.as_group:
-          scaling_group:
-            id: "{{ as_group.as_group.id }}"
-          state: absent
-          force_delete: yes
-          wait: yes
-          timeout: 360
-        register: dropped_as_group
+        - name: Delete as group
+          opentelekomcloud.cloud.as_group:
+            scaling_group:
+              id: "{{ as_group.as_group.id }}"
+            state: absent
+            force_delete: true
+            wait: true
+            timeout: 360
+          register: dropped_as_group
 
-      - name: assert result
-        assert:
-          that:
-            - dropped_as_group is success
-            - dropped_as_group is changed
+        - name: assert result
+          assert:
+            that:
+              - dropped_as_group is success
+              - dropped_as_group is changed
 
-      - name: Delete as config
-        opentelekomcloud.cloud.as_config:
-          scaling_configuration: "{{ config_name }}"
-          state: absent
-        register: dropped_as_config
-        ignore_errors: true
+        - name: Delete as config
+          opentelekomcloud.cloud.as_config:
+            scaling_configuration: "{{ config_name }}"
+            state: absent
+          register: dropped_as_config
+          ignore_errors: true
 
-      - name: assert result
-        assert:
-          that:
-            - dropped_as_config is success
-            - dropped_as_config is changed
+        - name: assert result
+          assert:
+            that:
+              - dropped_as_config is success
+              - dropped_as_config is changed
 
-      - name: Delete keypair
-        openstack.cloud.os_keypair:
-          name: "{{ key_name }}"
-          state: absent
+        - name: Delete keypair
+          openstack.cloud.os_keypair:
+            name: "{{ key_name }}"
+            state: absent
 
-      - name: Drop existing router
-        openstack.cloud.os_router:
-          name: "{{ router.router.name }}"
-          state: absent
+        - name: Drop existing router
+          openstack.cloud.os_router:
+            name: "{{ router.router.name }}"
+            state: absent
 
-      - name: Drop existing subnet
-        openstack.cloud.os_subnet:
-          name: "{{ subnet.subnet.name }}"
-          state: absent
+        - name: Drop existing subnet
+          openstack.cloud.os_subnet:
+            name: "{{ subnet.subnet.name }}"
+            state: absent
 
-      - name: Drop existing network
-        openstack.cloud.os_network:
-          name: "{{ network.network.name }}"
-          state: absent
+        - name: Drop existing network
+          openstack.cloud.os_network:
+            name: "{{ network.network.name }}"
+            state: absent
       ignore_errors: true

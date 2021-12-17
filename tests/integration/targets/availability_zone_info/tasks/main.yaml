@@ -5,7 +5,7 @@
   block:
     - name: Get AZ info (check mode)
       opentelekomcloud.cloud.availability_zone_info:
-      check_mode: yes
+      check_mode: true
       register: az
 
     - name: Get AZ info
