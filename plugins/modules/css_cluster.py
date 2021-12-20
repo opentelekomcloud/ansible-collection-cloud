@@ -270,13 +270,9 @@ class CssClusterModule(OTCModule):
         # Delete cluster
         if self.params['state'] == 'absent':
             if cluster:
-                attrs = {
-                    'cluster': cluster.id
-                }
                 changed = True
                 self.conn.css.delete_cluster(cluster=cluster.id,
                                              ignore_missing=True)
-
             self.exit_json(changed=changed)
 
         # Create cluster

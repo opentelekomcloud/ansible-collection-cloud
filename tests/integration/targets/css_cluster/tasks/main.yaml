@@ -8,6 +8,7 @@
     - name: Set random prefix
       set_fact:
         prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
+        short_prefix: "{{ (prefix + (99999999999 | random | to_uuid | hash('md5') | truncate(12,end='')  )) }}"
 
     - name: Set initial facts
       set_fact:
@@ -15,7 +16,7 @@
         subnet_name: "{{ ( prefix + '-test-subnet') }}"
         router_name: "{{ ( prefix + '-test-router') }}"
         security_group_name: "{{ ( prefix + '-security_group') }}"
-        css_cluster_name: "{{ ( 'z-' + 'test-a-' + 'css-test') }}"
+        css_cluster_name: "{{ ( short_prefix + 'css-test') }}"
         css_flavor: "css.xlarge.2"
         cidr: "192.168.0.0/24"
 
