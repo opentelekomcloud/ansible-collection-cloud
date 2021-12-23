@@ -29,21 +29,16 @@ options:
       - Specifies the router name or ID.
     type: str
     required: false
-  name:
+  name_or_id:
     description:
-      - Specifies the VPN service name. Can be updated.
+      - Specifies the VPN service name or id. Name can be updated.
     type: str
     required: false
-  service_id:
-    description:
-      - Specifies the VPN id of an existing vpn.
-      - Can be used when updating 'name' parameter.
-    type: str
   admin_state_up:
     description:
       - Specifies the administrative status.
     type: str
-  tenant_id:
+  project_id:
     description:
       - Specifies the project ID.
     type: str
@@ -92,7 +87,7 @@ vpn:
       description: Specifies the subnet ID.
       type: str
       sample: "df9910d4-e04b-49db-9699-ab3bd368bc04"
-    tenant_id:
+    project_id:
       description: Specifies the project ID.
       type: str
       sample: "5d9910d4-e04b-49db-9699-ab3bd368bc04"
@@ -142,10 +137,9 @@ class VPNModule(OTCModule):
     argument_spec = dict(
         subnet=dict(required=False),
         router=dict(required=False),
-        name=dict(required=False),
-        service_id=dict(required=False),
+        name_or_id=dict(required=False),
         admin_state_up=dict(required=False),
-        tenant_id=dict(required=False),
+        project_id=dict(required=False),
         description=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
@@ -157,11 +151,10 @@ class VPNModule(OTCModule):
     def run(self):
         query = {}
 
-        name = self.params['name']
-        service_id = self.params['service_id']
+        name_or_id = self.params['name_or_id']
         subnet = self.params['subnet']
         router = self.params['router']
-        tenant_id = self.params['tenant_id']
+        project_id = self.params['project_id']
         description = self.params['description']
         state = self.params['state']
 
@@ -169,27 +162,24 @@ class VPNModule(OTCModule):
         updated_vpn = None
         created_vpn = None
 
-        if name:
-            query['name'] = name
-
-        if tenant_id:
-            query['tenant_id'] = tenant_id
+        if project_id:
+            query['project_id'] = project_id
 
         if description:
             query['description'] = description
 
-        if service_id:
-            existing_vpn = self.conn.network.find_vpn_service(name_or_id=service_id)
-
-        if name:
-            existing_vpn = self.conn.network.find_vpn_service(name_or_id=name)
+        if name_or_id:
+            existing_vpn = self.conn.network.find_vpn_service(name_or_id=name_or_id)
 
         if state == 'present':
 
             if existing_vpn:
-                if not self.check_mode:
+                if not self.ansible.check_mode:
                     updated_vpn = self.conn.network.update_vpn_service(existing_vpn, **query)
                 self.exit(changed=True, vpn=updated_vpn)
+
+            if name_or_id:
+                query['name'] = name_or_id
 
             if subnet:
                 try:
@@ -200,21 +190,22 @@ class VPNModule(OTCModule):
 
             if router:
                 try:
-                    router_id = self.conn.network.find_router(name_or_id=router, ignore_missing=False).id
+                    router_id = self.conn.vpc.find_vpc(name_or_id=router, ignore_missing=False).id
                     query['router_id'] = router_id
                 except self.sdk.exceptions.ResourceNotFound:
                     self.fail_json("Router not found")
             else:
                 self.fail_json(msg='Router is mandatory for creation')
 
-            if not self.check_mode:
+            if not self.ansible.check_mode:
                 created_vpn = self.conn.network.create_vpn_service(**query)
             self.exit(changed=True, vpn=created_vpn)
 
         else:
             if existing_vpn:
-                if not self.check_mode:
+                if not self.ansible.check_mode:
                     self.conn.network.delete_vpn_service(existing_vpn, ignore_missing=False)
+                    self.exit_json(changed=True)
             self.exit_json(changed=False)
 
 
