@@ -230,15 +230,15 @@
   always:
     - block:
       # Cleanup
-      - name: Drop perhaps existing CA cert
-        opentelekomcloud.cloud.lb_certificate:
-          name: "{{ cert_name_ca }}"
-          state: absent
-        register: drop
+        - name: Drop perhaps existing CA cert
+          opentelekomcloud.cloud.lb_certificate:
+            name: "{{ cert_name_ca }}"
+            state: absent
+          register: drop
 
-      - name: Drop perhaps existing Server cert
-        opentelekomcloud.cloud.lb_certificate:
-          name: "{{ cert_name_srv }}"
-          state: absent
-        register: drop
+        - name: Drop perhaps existing Server cert
+          opentelekomcloud.cloud.lb_certificate:
+            name: "{{ cert_name_srv }}"
+            state: absent
+          register: drop
       ignore_errors: true

@@ -10,7 +10,7 @@
     - name: Set random prefix
       set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
-  
+
     - name: Set initial facts
       set_fact:
         deh_host_name: "{{ ( prefix + '_deh-host') }}"
@@ -22,14 +22,14 @@
         name: "{{ deh_host_name }}"
         state: present
         quantity: 1
-        tags: 
+        tags:
           - key: key1
             value: value1
           - key: key2
             value: value2
       check_mode: true
       register: deh_ch
-    
+
     - name: assert result
       assert:
         that:
@@ -43,53 +43,53 @@
         name: "{{ deh_host_name }}"
         state: present
         quantity: 1
-        tags: 
+        tags:
           - key: key1
             value: value1
           - key: key2
             value: value2
       register: deh
-    
+
     - name: assert result
       assert:
         that:
           - deh is success
           - deh.deh_host.dedicated_host_ids[0] is defined
-    
+
     - name: Modify DeH host - check mode
       deh_host:
         id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
-        auto_placement: off
+        auto_placement: false
       check_mode: true
-      when: 
+      when:
         - deh is defined
       register: deh_ch
-    
+
     - name: assert result
       assert:
         that:
           - deh_ch is success
-    
+
     - name: Modify DeH host
       deh_host:
         id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
-        auto_placement: off
-      when: 
+        auto_placement: false
+      when:
         - deh is defined
       register: deh
-    
+
     - name: assert result
       assert:
         that:
           - deh is success
-    
+
     - name: Query not existing ECS on dedicated host
       deh_server_info:
         dedicated_host: "{{ deh.deh_host.id }}"
-      when: 
+      when:
         - deh is defined
       register: server
-    
+
     - name: assert result
       assert:
         that:
@@ -98,10 +98,10 @@
 
   always:
     - block:
-      # Cleanup      
-      - name: Drop existing DeH host
-        deh_host:
-          name: "{{ deh.deh_host.name }}"
-          state: absent
-        register: deh
-      ignore_errors: yes
+      # Cleanup
+        - name: Drop existing DeH host
+          deh_host:
+            name: "{{ deh.deh_host.name }}"
+            state: absent
+          register: deh
+      ignore_errors: true

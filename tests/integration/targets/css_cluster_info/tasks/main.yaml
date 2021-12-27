@@ -5,6 +5,8 @@
   block:
     - name: Get info about clusters.
       opentelekomcloud.cloud.css_cluster_info:
+        limit: 1
+        start: 0
       register: result
 
     - name: assert result

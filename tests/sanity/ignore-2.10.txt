@@ -21,8 +21,10 @@ plugins/modules/ces_metrics_info.py validate-modules:missing-gplv3-license
 plugins/modules/ces_quotas_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_node_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_node.py validate-modules:missing-gplv3-license
+plugins/modules/css_cluster.py validate-modules:missing-gplv3-license
 plugins/modules/css_cluster_info.py validate-modules:missing-gplv3-license
 plugins/modules/css_snapshot.py validate-modules:missing-gplv3-license
+plugins/modules/css_snapshot_info.py validate-modules:missing-gplv3-license
 plugins/modules/dms_instance.py validate-modules:missing-gplv3-license
 plugins/modules/dms_instance_info.py validate-modules:missing-gplv3-license
 plugins/modules/dms_instance_topic.py validate-modules:missing-gplv3-license
@@ -56,8 +58,10 @@ plugins/modules/rds_datastore_info.py validate-modules:missing-gplv3-license
 plugins/modules/rds_flavor_info.py validate-modules:missing-gplv3-license
 plugins/modules/rds_instance.py validate-modules:missing-gplv3-license
 plugins/modules/rds_instance_info.py validate-modules:missing-gplv3-license
+plugins/modules/security_group.py validate-modules:missing-gplv3-license
 plugins/modules/security_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/tag.py validate-modules:missing-gplv3-license
+plugins/modules/vpc.py validate-modules:missing-gplv3-license
 plugins/modules/volume_backup.py validate-modules:missing-gplv3-license
 plugins/modules/waf_certificate.py validate-modules:missing-gplv3-license
 plugins/modules/waf_certificate_info.py validate-modules:missing-gplv3-license

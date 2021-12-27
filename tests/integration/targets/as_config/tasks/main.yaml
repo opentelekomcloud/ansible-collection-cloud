@@ -14,7 +14,7 @@
 
     - name: Create keypair
       openstack.cloud.os_keypair:
-          name: "{{ key_name }}"
+        name: "{{ key_name }}"
 
     - name: Create as config - check_mode
       opentelekomcloud.cloud.as_config:
@@ -27,7 +27,7 @@
             volume_type: 'SAS'
             disk_type: 'SYS'
       register: as_config_check
-      check_mode: yes
+      check_mode: true
 
     - name: assert result
       assert:
@@ -71,6 +71,6 @@
 
         - name: Delete keypair
           openstack.cloud.os_keypair:
-              name: "{{ key_name }}"
-              state: absent
-          ignore_errors: true
+            name: "{{ key_name }}"
+            state: absent
+      ignore_errors: true

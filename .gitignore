@@ -12,3 +12,8 @@ importer_result.json
 *.tar.gz
 doc/build
 tmp
+
+#idea
+.idea/**
+/*.egg*/**
+

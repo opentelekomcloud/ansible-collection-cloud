@@ -148,7 +148,7 @@ EXAMPLES = '''
     state: present
     vip_subnet: default_subnet
     auto_public_ip: yes
-    wait: yes
+    wait: true
     timeout: 600
 
 # Delete a load balancer(and all its related resources)

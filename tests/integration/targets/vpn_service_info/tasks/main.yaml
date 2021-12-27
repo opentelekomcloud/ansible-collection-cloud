@@ -6,7 +6,7 @@
     - name: Get list of vpn services
       opentelekomcloud.cloud.vpn_service_info:
       register: vpn_service_info
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -18,7 +18,7 @@
       opentelekomcloud.cloud.vpn_service_info:
         vpn_service: "fake_vpn"
       register: vpn_service_info
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -32,7 +32,7 @@
       opentelekomcloud.cloud.vpn_service_info:
         subnet: "fake_subnet"
       register: vpn_service_info
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -46,7 +46,7 @@
       opentelekomcloud.cloud.vpn_service_info:
         router: "fake_router"
       register: vpn_service_info
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:
@@ -62,7 +62,7 @@
         subnet: "fake_subnet"
         router: "fake_router"
       register: vpn_service_info
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert result
       assert:

@@ -1,22 +1,24 @@
 ---
 - module_defaults:
-    opentelekomcloud.cloud.cce_cluster:
+    opentelekomcloud.cloud.css_cluster:
       cloud: "{{ test_cloud }}"
   vars:
-    prefix: scenario00a-
+    prefix: test-a-
   block:
     - name: Set random prefix
       set_fact:
         prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
+        short_prefix: "{{ (prefix + (99999999999 | random | to_uuid | hash('md5') | truncate(12,end='')  )) }}"
 
     - name: Set initial facts
       set_fact:
         network_name: "{{ ( prefix + '-test-network') }}"
         subnet_name: "{{ ( prefix + '-test-subnet') }}"
         router_name: "{{ ( prefix + '-test-router') }}"
-        cce_cluster_name: "{{ ( 'z-' + prefix + '-acc-test') }}"
-        cce_flavor: "cce.s1.small"
-        container_network_mode: "overlay_l2"
+        security_group_name: "{{ ( prefix + '-security_group') }}"
+        css_cluster_name: "{{ ( short_prefix + 'css-test') }}"
+        css_flavor: "css.xlarge.2"
+        cidr: "192.168.0.0/24"
 
     - name: Create network for test
       openstack.cloud.network:
@@ -31,7 +33,7 @@
         name: "{{ subnet_name }}"
         state: present
         network_name: "{{ test_network.network.name }}"
-        cidr: "192.168.0.0/24"
+        cidr: "{{ cidr }}"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
       register: test_subnet
 
@@ -47,14 +49,35 @@
             subnet: "{{ test_subnet.subnet.name }}"
       register: test_router
 
-    - name: Create CCE Cluster
-      opentelekomcloud.cloud.cce_cluster:
-        name: "{{ cce_cluster_name }}"
-        flavor: "{{ cce_flavor }}"
-        description: "Ansible collection test"
-        router: "{{ router_name }}"
-        network: "{{ network_name }}"
-        container_network_mode: "{{ container_network_mode }}"
+    - name: Add cidr for vpc
+      opentelekomcloud.cloud.vpc:
+        name: "{{ router_name }}"
+        state: present
+        cidr: "{{ cidr }}"
+
+    - name: Create security group for test
+      openstack.cloud.security_group:
+        cloud: "{{ test_cloud }}"
+        state: present
+        name: "{{ security_group_name }}"
+        description: security group for test
+      register: test_security_group
+
+    - name: Create CSS Cluster
+      opentelekomcloud.cloud.css_cluster:
+        name: "{{ css_cluster_name }}"
+        state: present
+        instance_num: 3
+        volume_size: 40
+        authority_enable: false
+        datastore_version: 7.6.2
+        volume_type: common
+        router: "{{ test_router.router.id }}"
+        net: "{{ test_network.id }}"
+        security_group: "{{ test_security_group.id }}"
+        flavor: "{{ css_flavor }}"
+        https_enable: false
+        system_encrypted: 0
       register: cluster
 
     - name: assert result
@@ -67,8 +90,8 @@
     - block:
       # Cleanup
         - name: Drop cluster
-          opentelekomcloud.cloud.cce_cluster:
-            name: "{{ cce_cluster_name }}"
+          opentelekomcloud.cloud.css_cluster:
+            name: "{{ css_cluster_name }}"
             state: "absent"
 
         - name: Drop router
@@ -88,4 +111,10 @@
             cloud: "{{ test_cloud }}"
             name: "{{ network_name }}"
             state: absent
+
+        - name: Drop security group
+          openstack.cloud.security_group:
+            cloud: "{{ test_cloud }}"
+            state: absent
+            name: "{{ security_group_name }}"
       ignore_errors: true
