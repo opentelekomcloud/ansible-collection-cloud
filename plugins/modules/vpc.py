@@ -60,7 +60,7 @@ options:
             in the VPC. Otherwise, this value does not take effect.
          type: str
          required: false
-   enabled_shared_snat:
+   enable_shared_snat:
      description: Specifies whether the shared SNAT function is enabled.
      required: false
      type: bool
@@ -122,7 +122,7 @@ vpc:
                 destination:
                     description:
                         - Specifies the destination network segment of a route.
-                        - The value must be in the CIDR format. Currently, only the value
+                        - The value must be in the CIDR format. Currently, only the value \
                         0.0.0.0/0 is supported.
                     type: str
                 nexthop:
@@ -144,7 +144,7 @@ class VpcModule(OTCModule):
         description=dict(required=False),
         cidr=dict(required=False),
         routes=dict(type='list', elements='dict', required=False),
-        enabled_shared_snat=dict(type='bool', required=False)
+        enable_shared_snat=dict(type='bool', required=False)
     )
 
     def run(self):
@@ -155,7 +155,7 @@ class VpcModule(OTCModule):
         description = self.params['description']
         cidr = self.params['cidr']
         routes = self.params['routes']
-        enabled_shared_snat = self.params['enabled_shared_snat']
+        enable_shared_snat = self.params['enable_shared_snat']
 
         if name:
             query['name'] = name
@@ -174,27 +174,26 @@ class VpcModule(OTCModule):
 
             if not vpc:
                 new_vpc = self.conn.vpc.create_vpc(**query)
-                if routes or enabled_shared_snat is not None:
+                if routes or enable_shared_snat is not None:
                     query_update = {}
                     if routes:
                         query_update['routes'] = routes
-                    if enabled_shared_snat is not None:
-                        query_update['enabled_shared_snat'] = enabled_shared_snat
+                    if enable_shared_snat is not None:
+                        query_update['enable_shared_snat'] = enable_shared_snat
                     new_vpc = self.conn.vpc.update_vpc(vpc=new_vpc, **query_update)
                 self.exit(changed=True, vpc=new_vpc)
 
             else:
                 if routes:
                     query['routes'] = routes
-                if enabled_shared_snat:
-                    query['enabled_shared_snat'] = enabled_shared_snat
+                if enable_shared_snat:
+                    query['enable_shared_snat'] = enable_shared_snat
                 updated_vpc = self.conn.vpc.update_vpc(vpc=vpc, **query)
                 self.exit(changed=True, vpc=updated_vpc)
         else:
             if vpc:
-                if self.ansible.check_mode:
-                    self.exit(changed=True)
-                self.conn.vpc.delete_vpc(vpc.id)
+                if not self.ansible.check_mode:
+                    self.conn.vpc.delete_vpc(vpc.id)
                 self.exit(changed=True)
             else:
                 self.exit(changed=False)

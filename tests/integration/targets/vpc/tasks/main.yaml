@@ -31,6 +31,7 @@
       opentelekomcloud.cloud.vpc:
         name: "{{ vpc_name }}"
         cidr: "{{ cidr }}"
+        enable_shared_snat: true
         state: present
       register: vpc
 
@@ -39,6 +40,7 @@
         that:
           - vpc is success
           - vpc is changed
+          - vpc.vpc.enable_shared_snat is True
 
     - name: Update VPC
       opentelekomcloud.cloud.vpc:
