@@ -1,19 +1,175 @@
 ---
 - module_defaults:
-    opentelekomcloud.cloud.css_snapshot:
+    css_snapshot:
       cloud: "{{ test_cloud }}"
+  vars:
+    prefix: css_cluster_snapshot_test
   block:
-    - name: Get error message that rds instance is absent
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
+
+    - name: Set initial facts
+      set_fact:
+        network_name: "{{ ( prefix + '-test-network') }}"
+        subnet_name: "{{ ( prefix + '-test-subnet') }}"
+        router_name: "{{ ( prefix + '-test-router') }}"
+        security_group_name: "{{ ( prefix + '-security_group') }}"
+        css_cluster_name: "{{ ( 'z-' + prefix + '-css-test') }}"
+        css_flavor: "css.xlarge.2"
+        snapshot_name: "{{ ( prefix + '-snapshot') }}"
+
+    - name: Create network for test
+      openstack.cloud.network:
+        cloud: "{{ test_cloud }}"
+        name: "{{ network_name }}"
+        state: present
+      register: test_network
+
+    - name: Create subnet for test
+      openstack.cloud.subnet:
+        cloud: "{{ test_cloud }}"
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ test_network.network.name }}"
+        cidr: "192.168.0.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: test_subnet
+
+    - name: Create router for test
+      openstack.cloud.router:
+        cloud: "{{ test_cloud }}"
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ test_network.network.name }}"
+            subnet: "{{ test_subnet.subnet.name }}"
+      register: test_router
+
+    - name: Create security group for test
+      openstack.cloud.security_group:
+        cloud: "{{ test_cloud }}"
+        state: present
+        name: "{{ security_group_name }}"
+        description: security group for test
+      register: test_security_group
+
+    - name: Create CSS Cluster
+      opentelekomcloud.cloud.css_cluster:
+        cloud: "{{ test_cloud }}"
+        name: "{{ css_cluster_name }}"
+        state: present
+        instance_num: 3
+        volume_size: 40
+        authority_enable: false
+        datastore_version: 7.6.2
+        volume_type: common
+        router: "{{ test_router.router.id }}"
+        net: "{{ test_network.id }}"
+        security_group: "{{ test_security_group.id }}"
+        flavor: "{{ css_flavor }}"
+        https_enable: false
+        system_encrypted: 0
+      register: cluster
+
+    - name: Create CSS snapshot
       opentelekomcloud.cloud.css_snapshot:
-        cluster: "test-css"
-        name: "test_ansible_module"
-      register: css_snapshot
-      check_mode: true
-      ignore_errors: yes
+        cluster: "{{ css_cluster_name }}"
+        name: "{{ snapshot_name }}"
+      register: snapshot
 
     - name: assert result
       assert:
         that:
-          - rds_backup is not success
-          - rds_backup is not changed
-          - 'rds_backup.msg == "CSS cluster test-css does not exist"'
+          - snapshot is success
+          - snapshot is not changed
+          - snapshot.snapshots is defined
+
+    - name: Create CSS snapshot - check mode
+      opentelekomcloud.cloud.css_snapshot:
+        cluster: "{{ css_cluster_name }}"
+        name: "{{ snapshot_name }}"
+      register: created_snapshot
+      check_mode: true
+
+    - name: assert result
+      assert:
+        that:
+          - created_snapshot is success
+          - created_snapshot is not changed
+
+    - name: Create CSS snapshot
+      opentelekomcloud.cloud.css_snapshot:
+        cluster: "{{ css_cluster_name }}"
+        name: "{{ snapshot_name }}"
+      register: created_snapshot
+
+    - name: assert result
+      assert:
+        that:
+          - created_snapshot is success
+          - created_snapshot is changed
+          - created_snapshot.snapshots is defined
+
+    - name: Delete css snapshot - check mode
+      opentelekomcloud.cloud.as_policy:
+        scaling_group: "{{ as_group_name}}"
+        scaling_policy: "{{ as_policy_name }}"
+        state: "absent"
+      register: deleted_snapshot
+      check_mode: true
+
+    - name: assert result
+      assert:
+        that:
+          - deleted_snapshot is not changed
+          - deleted_snapshot is success
+
+    - name: Delete css snapshot
+      opentelekomcloud.cloud.as_policy:
+        scaling_group: "{{ as_group_name}}"
+        scaling_policy: "{{ as_policy_name }}"
+        state: "absent"
+      register: deleted_snapshot
+
+    - name: assert result
+      assert:
+        that:
+          - deleted_snapshot is changed
+          - deleted_snapshot is success
+
+  always:
+    - block:
+      # Cleanup
+      - name: Drop cluster
+        opentelekomcloud.cloud.css_cluster:
+          cloud: "{{ test_cloud }}"
+          name: "{{ css_cluster_name }}"
+          state: absent
+
+      - name: Drop router
+        openstack.cloud.router:
+          cloud: "{{ test_cloud }}"
+          name: "{{ router_name }}"
+          state: absent
+
+      - name: Drop subnet
+        openstack.cloud.subnet:
+          cloud: "{{ test_cloud }}"
+          name: "{{ subnet_name }}"
+          state: absent
+
+      - name: Drop network
+        openstack.cloud.network:
+          cloud: "{{ test_cloud }}"
+          name: "{{ network_name }}"
+          state: absent
+
+      - name: Drop security group
+        openstack.cloud.security_group:
+          cloud: "{{ test_cloud }}"
+          state: absent
+          name: "{{ security_group_name }}"
+        ignore_errors: yes
