@@ -42,7 +42,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ test_network.network.name }}"
             subnet: "{{ test_subnet.subnet.name }}"
@@ -115,7 +115,7 @@
 
     - name: Delete css snapshot - check mode
       opentelekomcloud.cloud.as_policy:
-        scaling_group: "{{ as_group_name}}"
+        scaling_group: "{{ as_group_name }}"
         scaling_policy: "{{ as_policy_name }}"
         state: "absent"
       register: deleted_snapshot
@@ -129,7 +129,7 @@
 
     - name: Delete css snapshot
       opentelekomcloud.cloud.as_policy:
-        scaling_group: "{{ as_group_name}}"
+        scaling_group: "{{ as_group_name }}"
         scaling_policy: "{{ as_policy_name }}"
         state: "absent"
       register: deleted_snapshot
@@ -143,33 +143,33 @@
   always:
     - block:
       # Cleanup
-      - name: Drop cluster
-        opentelekomcloud.cloud.css_cluster:
-          cloud: "{{ test_cloud }}"
-          name: "{{ css_cluster_name }}"
-          state: absent
+        - name: Drop cluster
+          opentelekomcloud.cloud.css_cluster:
+            cloud: "{{ test_cloud }}"
+            name: "{{ css_cluster_name }}"
+            state: absent
 
-      - name: Drop router
-        openstack.cloud.router:
-          cloud: "{{ test_cloud }}"
-          name: "{{ router_name }}"
-          state: absent
+        - name: Drop router
+          openstack.cloud.router:
+            cloud: "{{ test_cloud }}"
+            name: "{{ router_name }}"
+            state: absent
 
-      - name: Drop subnet
-        openstack.cloud.subnet:
-          cloud: "{{ test_cloud }}"
-          name: "{{ subnet_name }}"
-          state: absent
+        - name: Drop subnet
+          openstack.cloud.subnet:
+            cloud: "{{ test_cloud }}"
+            name: "{{ subnet_name }}"
+            state: absent
 
-      - name: Drop network
-        openstack.cloud.network:
-          cloud: "{{ test_cloud }}"
-          name: "{{ network_name }}"
-          state: absent
+        - name: Drop network
+          openstack.cloud.network:
+            cloud: "{{ test_cloud }}"
+            name: "{{ network_name }}"
+            state: absent
 
-      - name: Drop security group
-        openstack.cloud.security_group:
-          cloud: "{{ test_cloud }}"
-          state: absent
-          name: "{{ security_group_name }}"
-        ignore_errors: yes
+        - name: Drop security group
+          openstack.cloud.security_group:
+            cloud: "{{ test_cloud }}"
+            state: absent
+            name: "{{ security_group_name }}"
+      ignore_errors: true
