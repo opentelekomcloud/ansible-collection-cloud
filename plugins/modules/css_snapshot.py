@@ -23,7 +23,6 @@ options:
   cluster:
     description:
       - Name or ID of CSS cluster.
-    type: str
     required: true
   name:
     description:
@@ -31,25 +30,21 @@ options:
       - Name must be 4 to 64 characters in length.
       - The backup name must be unique.
     required: true
-    type: str
   description:
     description:
         - Description of a snapshot.
         - The value contains 0 to 256 characters, and angle brackets (<) and (>) are not allowed.
     required: false
-    type: str
   indices:
     description:
         - Name of the index to be backed up.
         - Multiple index names are separated by commas (,).
         - By default, data of all indices is backed up.
     required: false
-    type: str
   state:
     description: Whether css snapshot should be present or absent.
     choices: [present, absent]
     default: present
-    type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -90,12 +85,11 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class CssSnapshotModule(OTCModule):
     argument_spec = dict(
-        name=dict(type='str', required=True),
-        cluster=dict(type='str', required=True),
-        description=dict(type='str', required=False),
-        indices=dict(type='str'),
-        state=dict(type='str',
-                   choices=['present', 'absent'],
+        name=dict(),
+        cluster=dict(),
+        description=dict(),
+        indices=dict(),
+        state=dict(choices=['present', 'absent'],
                    default='present')
     )
     module_kwargs = dict(
@@ -115,7 +109,6 @@ class CssSnapshotModule(OTCModule):
         if self.params['name']:
             if self.params['cluster']:
                 cluster = self.conn.css.find_cluster(name_or_id=attrs['cluster'])
-                print(cluster)
 
                 if cluster:
                     changed = False
@@ -130,7 +123,6 @@ class CssSnapshotModule(OTCModule):
                             attrs['description'] = snapshot_description
 
                             snapshot = self.conn.css.create_snapshot(cluster, **attrs)
-                            print(snapshot)
                             changed = True
 
                             self.exit(changed=changed,
