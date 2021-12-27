@@ -86,46 +86,51 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-router:
-    description: Dictionary describing the router.
+vpc:
+    description: Dictionary describing the vpc.
     returned: On success when I(state) is 'present'
     type: complex
     contains:
         id:
-            description: Router ID.
+            description: Vpc ID.
             type: str
             sample: "474acfe5-be34-494c-b339-50f06aa143e4"
         name:
-            description: Router name.
+            description: Vpc name.
             type: str
-            sample: "router1"
-        admin_state_up:
-            description: Administrative state of the router.
-            type: bool
-            sample: true
+            sample: "vpc-test"
+        description:
+            description: Provides supplementary information about the VPC.
+            type: str
+            sample: ""
         status:
-            description: The router status.
+            description: The vpc status. Can be 'CREATING' or 'OK'.
             type: str
-            sample: "ACTIVE"
-        tenant_id:
-            description: The tenant ID.
+            sample: "OK"
+        cidr:
+            description:
+                - Specifies the available IP address ranges for subnets in the VPC.
+                - Possible values are 10.0.0.0/8~24, 172.16.0.0/12~24, 192.168.0.0/16~24.
+                - Must be in CIDR format.
             type: str
-            sample: "861174b82b43463c9edc5202aadc60ef"
-        external_gateway_info:
-            description: The external gateway parameters.
-            type: dict
-            sample: {
-                      "enable_snat": true,
-                      "external_fixed_ips": [
-                         {
-                           "ip_address": "10.6.6.99",
-                           "subnet_id": "4272cb52-a456-4c20-8f3c-c26024ecfa81"
-                         }
-                       ]
-                    }
+            sample: "192.168.0.0/24"
         routes:
-            description: The extra routes configuration for L3 router.
+            description: Specifies the route information.
             type: list
+            elements: dict
+            contains:
+                destination:
+                    description:
+                        - Specifies the destination network segment of a route.
+                        - The value must be in the CIDR format. Currently, only the value
+                        0.0.0.0/0 is supported.
+                    type: str
+                nexthop:
+                    description:
+                        - Specifies the next hop of a route.
+                        - The value must be an IP address and must belong to the subnet in the VPC.
+                         Otherwise, this value does not take effect.
+                    type: str
 '''
 
 
@@ -169,7 +174,15 @@ class VpcModule(OTCModule):
 
             if not vpc:
                 new_vpc = self.conn.vpc.create_vpc(**query)
+                if routes or enabled_shared_snat is not None:
+                    query_update = {}
+                    if routes:
+                        query_update['routes'] = routes
+                    if enabled_shared_snat is not None:
+                        query_update['enabled_shared_snat'] = enabled_shared_snat
+                    new_vpc = self.conn.vpc.update_vpc(vpc=new_vpc, **query_update)
                 self.exit(changed=True, vpc=new_vpc)
+
             else:
                 if routes:
                     query['routes'] = routes
@@ -181,7 +194,7 @@ class VpcModule(OTCModule):
             if vpc:
                 if self.ansible.check_mode:
                     self.exit(changed=True)
-                self.conn.network.delete_router(vpc.id)
+                self.conn.vpc.delete_vpc(vpc.id)
                 self.exit(changed=True)
             else:
                 self.exit(changed=False)
