@@ -8,6 +8,7 @@
     - name: Set random prefix
       set_fact:
         prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
+        short_prefix: "{{ (prefix + (99999999999 | random | to_uuid | hash('md5') | truncate(12,end='')  )) }}"
 
     - name: Set initial facts
       set_fact:
@@ -15,8 +16,9 @@
         subnet_name: "{{ ( prefix + '-test-subnet') }}"
         router_name: "{{ ( prefix + '-test-router') }}"
         security_group_name: "{{ ( prefix + '-security_group') }}"
-        css_cluster_name: "{{ ( 'z-' + prefix + '-css-test') }}"
+        css_cluster_name: "{{ ( short_prefix + 'css-test') }}"
         css_flavor: "css.xlarge.2"
+        cidr: "192.168.0.0/24"
         snapshot_name: "{{ ( prefix + '-snapshot') }}"
 
     - name: Create network for test
@@ -32,7 +34,7 @@
         name: "{{ subnet_name }}"
         state: present
         network_name: "{{ test_network.network.name }}"
-        cidr: "192.168.0.0/24"
+        cidr: "{{ cidr }}"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
       register: test_subnet
 
@@ -48,6 +50,12 @@
             subnet: "{{ test_subnet.subnet.name }}"
       register: test_router
 
+    - name: Add cidr for vpc
+      opentelekomcloud.cloud.vpc:
+        name: "{{ router_name }}"
+        state: present
+        cidr: "{{ cidr }}"
+
     - name: Create security group for test
       openstack.cloud.security_group:
         cloud: "{{ test_cloud }}"
@@ -58,7 +66,6 @@
 
     - name: Create CSS Cluster
       opentelekomcloud.cloud.css_cluster:
-        cloud: "{{ test_cloud }}"
         name: "{{ css_cluster_name }}"
         state: present
         instance_num: 3
@@ -114,9 +121,9 @@
           - created_snapshot.snapshots is defined
 
     - name: Delete css snapshot - check mode
-      opentelekomcloud.cloud.as_policy:
-        scaling_group: "{{ as_group_name }}"
-        scaling_policy: "{{ as_policy_name }}"
+      opentelekomcloud.cloud.css_snapshot:
+        cluster: "{{ css_cluster_name }}"
+        name: "{{ snapshot_name }}"
         state: "absent"
       register: deleted_snapshot
       check_mode: true
@@ -128,9 +135,9 @@
           - deleted_snapshot is success
 
     - name: Delete css snapshot
-      opentelekomcloud.cloud.as_policy:
-        scaling_group: "{{ as_group_name }}"
-        scaling_policy: "{{ as_policy_name }}"
+      opentelekomcloud.cloud.css_snapshot:
+        cluster: "{{ css_cluster_name }}"
+        name: "{{ snapshot_name }}"
         state: "absent"
       register: deleted_snapshot
 

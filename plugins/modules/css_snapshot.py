@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: css_snapshot
 short_description: Manage CSS snapshots
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.9.0"
+version_added: "0.10.0"
 author: "Vladimir Vshivkov (@enrrou)"
 description:
   - Manage CSS snapshots
