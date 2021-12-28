@@ -48,6 +48,7 @@ action_groups:
     - security_group
     - security_group_info
     - server_group_info
+    - subnet
     - tag
     - volume_backup
     - waf_certificate
