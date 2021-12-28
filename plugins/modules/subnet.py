@@ -17,6 +17,7 @@ module: subnet
 short_description: Manage VPC subnet
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 author: "Anton Kachurin (@outcatcher)"
+version_added: "0.11.0"
 description:
    - Manage (create, update or delete) Open Telekom Cloud VPC subnet.
 options:

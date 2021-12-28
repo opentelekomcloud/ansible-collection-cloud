@@ -17,6 +17,7 @@ module: vpc
 short_description: Create or delete vpc from Open Telekom Cloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 author: "Polina Gubina (@polina-gubina)"
+version_added: "0.10.0"
 description:
    - Create or Delete vpc from OpenStack.
 options:
