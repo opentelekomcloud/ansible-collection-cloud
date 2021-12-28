@@ -186,7 +186,7 @@ class VpcModule(OTCModule):
             else:
                 if routes:
                     query['routes'] = routes
-                if enable_shared_snat:
+                if enable_shared_snat is not None:
                     query['enable_shared_snat'] = enable_shared_snat
                 updated_vpc = self.conn.vpc.update_vpc(vpc=vpc, **query)
                 self.exit(changed=True, vpc=updated_vpc)

@@ -40,7 +40,7 @@
         that:
           - vpc is success
           - vpc is changed
-          - vpc.vpc.enable_shared_snat is True
+          - vpc.vpc.enable_shared_snat is true
 
     - name: Update VPC
       opentelekomcloud.cloud.vpc:
