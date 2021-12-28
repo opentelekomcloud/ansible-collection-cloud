@@ -23,7 +23,6 @@ action_groups:
     - css_cluster_info
     - css_snapshot
     - css_snapshot_info
-    - css_snapshot
     - deh_host
     - deh_host_info
     - deh_host_type_info

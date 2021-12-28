@@ -15,5 +15,5 @@ tmp
 
 #idea
 .idea/**
-/*.egg*/**
+*/.idea/**
 

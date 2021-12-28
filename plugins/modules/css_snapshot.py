@@ -23,28 +23,29 @@ options:
   cluster:
     description:
       - Name or ID of CSS cluster.
-    required: true
+    type: str
   name:
     description:
       - Name of CSS snapshot name must be start with letter.
       - Name must be 4 to 64 characters in length.
       - The backup name must be unique.
-    required: true
+    type: str
   description:
     description:
         - Description of a snapshot.
         - The value contains 0 to 256 characters, and angle brackets (<) and (>) are not allowed.
-    required: false
+    type: str
   indices:
     description:
         - Name of the index to be backed up.
         - Multiple index names are separated by commas (,).
         - By default, data of all indices is backed up.
-    required: false
+    type: str
   state:
     description: Whether css snapshot should be present or absent.
     choices: [present, absent]
     default: present
+    type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
