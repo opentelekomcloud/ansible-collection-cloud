@@ -16,24 +16,20 @@ DOCUMENTATION = '''
 module: vpc_info
 short_description: Get vpc info from OpenTelekomCloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.0.3"
+version_added: "0.11.1"
 author: "Polina Gubina(@polina-gubina)"
 description:
-  - Get vpc backend server group from the OTC.
+  - Get vpc from the OTC.
 options:
-  project_id:
+  name_or_id:
     description:
-      - Project id.
+      - Name or id of the vpc.
     type: str
-  limit:
-    description:
-      - Limit.
-    type: int
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-vpc_info:
+vpcs:
   description: Dictionary describing vpcs.
   type: complex
   returned: On Success.
@@ -68,9 +64,8 @@ vpc_info:
 '''
 
 EXAMPLES = '''
-# Get a vpc info.
-- vpc_info:
-    project_id: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
+# Get all vpcs
+- opentelekomcloud.cloud.vpc_info:
   register: vpc_info
 '''
 
@@ -79,20 +74,19 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class VpcInfoModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=False),
-        limit=dict(required=False, type=int)
+        name_or_id=dict(required=False)
     )
 
     def run(self):
         data = []
 
-        if self.params['name']:
-            raw = self.conn.vpc.find_vpc(name_or_id=self.params['name'])
+        if self.params['name_or_id']:
+            raw = self.conn.vpc.find_vpc(name_or_id=self.params['name_or_id'])
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
         else:
-            for raw in self.conn.vpc.vpcs(limit=2):
+            for raw in self.conn.vpc.vpcs():
                 dt = raw.to_dict()
                 dt.pop('location')
                 data.append(dt)

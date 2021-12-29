@@ -33,7 +33,7 @@
 
     - name: Getting info about new vpc
       opentelekomcloud.cloud.vpc_info:
-        name: "{{ vpc_name }}"
+        name_or_id: "{{ vpc_name }}"
       register: new_vpc
 
     - name: assert result
