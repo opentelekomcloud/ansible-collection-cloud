@@ -79,10 +79,11 @@ options:
   availability_zone:
     description: Specifies the AZ to which the subnet belongs.
     type: str
-  vpc_id:
-    description: Specifies the ID of the VPC to which the subnet belongs.
+  vpc:
+    description: Specifies the name or ID of the VPC to which the subnet belongs.
     required: true
     type: str
+    aliases: ['vpc_id']
   extra_dhcp_opts:
     description: Specifies the NTP server address configured for the subnet.
     type: list
@@ -211,7 +212,7 @@ class SubnetModule(OTCModule):
     argument_spec = dict(
         state=dict(default='present', choices=['absent', 'present']),
         name=dict(type='str', required=True),
-        vpc_id=dict(type='str', required=True),
+        vpc=dict(type='str', required=True, aliases=['vpc_id']),
         description=dict(type='str'),
         cidr=dict(type='str'),
         gateway_ip=dict(type='str'),
@@ -234,10 +235,13 @@ class SubnetModule(OTCModule):
     _update_forbidden = {'cidr', 'gateway_ip', 'description'}
 
     def run(self):
-        data = copy.deepcopy(self.params)
-        state = data.pop('state')
-
+        vpc = self.conn.vpc.find_vpc(self.params['vpc'])
+        self.params['vpc'] = vpc.id
         subnet = self.find_vpc_subnet()
+
+        data = copy.deepcopy(self.params)
+        data['vpc_id'] = data.pop('vpc')
+        state = data.pop('state')
 
         has_changes = self._changed(subnet, data)
         if self.ansible.check_mode:
@@ -245,7 +249,6 @@ class SubnetModule(OTCModule):
 
         if state == 'present':
             if subnet is None:
-                vpc = self.conn.vpc.get_vpc(data['vpc_id'])
                 self.sdk.resource.wait_for_status(
                     self.conn.vpc,
                     vpc, 'OK',
@@ -300,6 +303,8 @@ class SubnetModule(OTCModule):
                 continue
             if field in ['dns_list', 'primary_dns', 'secondary_dns']:
                 continue
+            if field in ['vpc', 'vpc_id']:
+                field = 'vpc_id'  # as `vpc` should be an ID too at this place
             if state.get(field, None) != expected[field]:
                 self.log('There is a difference in field {}. Expected {}, got {}'
                          .format(field, expected[field], state[field]))
@@ -308,7 +313,7 @@ class SubnetModule(OTCModule):
 
     def find_vpc_subnet(self):
         name = self.params['name']
-        vpc_id = self.params['vpc_id']
+        vpc_id = self.params['vpc']
 
         try:
             # first, try to find subnet by ID
