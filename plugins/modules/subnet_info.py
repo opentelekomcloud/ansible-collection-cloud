@@ -28,6 +28,7 @@ options:
   vpc:
     description:
       - Name or id of the vpc subnets should be listed within.
+    type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -40,23 +41,18 @@ subnets:
     id:
       description: Specifies the ID of the subnet.
       type: str
-      sample: "39007a7e-ee4f-4d13-8283-b4da2e037c69"
     name:
       description: Specifies the subnets name.
       type: str
-      sample: "subnet-test"
     description:
       description: Provides supplementary information about the subnet.
       type: str
-      sample: "subnet for testing"
     cidr:
       description: Specifies the subnet CIDR block.
       type: str
-      sample: "10.0.0.0/8"
     gateway_ip:
       description: Specifies the subnet gateway address.
       type: str
-      sample: 
     dhcp_enable:
       description: Specifies whether the DHCP function is enabled for the subnet.
       type: bool
@@ -109,8 +105,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class SubnetInfoModule(OTCModule):
     argument_spec = dict(
         name_or_id=dict(required=False),
-        vpc=dict(required=False),
-        project_id=dict(required=False)
+        vpc=dict(required=False)
     )
 
     def run(self):

@@ -70,6 +70,7 @@ plugins/modules/volume_snapshot_info.py validate-modules:missing-gplv3-license
 plugins/modules/vpc.py validate-modules:missing-gplv3-license
 plugins/modules/vpc_info.py validate-modules:missing-gplv3-license
 plugins/modules/subnet.py validate-modules:missing-gplv3-license
+plugins/modules/subnet_info.py validate-modules:missing-gplv3-license
 plugins/modules/vpc_peering.py validate-modules:missing-gplv3-license
 plugins/modules/vpc_peering_info.py validate-modules:missing-gplv3-license
 plugins/modules/vpc_peering_mode.py validate-modules:missing-gplv3-license
