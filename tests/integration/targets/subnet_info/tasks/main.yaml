@@ -1,0 +1,79 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.vpc:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.vpc_info:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.subnet:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.subnet_info:
+      cloud: "{{ test_cloud }}"
+
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        vpc_name: "{{ ( prefix + 'vpc') }}"
+        subnet_name: "{{ ( prefix + 'subnet') }}"
+        cidr: "192.168.0.0/24"
+        gateway: "192.168.0.1"
+
+    - name: Creating a vpc
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        state: present
+      register: vpc
+
+    - name: Creating a subnet
+      opentelekomcloud.cloud.subnet:
+        name: "{{ subnet_name }}"
+        description: "Subnet example"
+        vpc: "{{ vpc_name }}"
+        cidr: "{{ cidr }}"
+        gateway_ip: "{{ gateway }}"
+        dns_list:
+          - "100.125.4.25"
+          - "100.125.129.199"
+      register: vpc
+
+    - name: Getting info about all subnets
+      opentelekomcloud.cloud.subnet_info:
+        vpc: "{{ vpc_name }}"
+      register: all_subnets
+
+    - name: assert result
+      assert:
+        that:
+          - all_subnets is success
+          - all_subnets is not changed
+          - all_subnets | length > 0
+
+    - name: Getting info about new subnet
+      opentelekomcloud.cloud.subnet_info:
+        name_or_id: "{{ subnet_name }}"
+      register: new_subnet
+
+    - name: assert result
+      assert:
+        that:
+          - new_subnet is success
+          - new_subnet is not changed
+          - new_subnet | length > 0
+
+  always:
+    - block:
+      # Cleanup
+        - name: Drop created subnet
+          opentelekomcloud.cloud.subnet:
+            name: "{{ subnet_name }}"
+            vpc: "{{ vpc_name }}"
+            state: absent
+
+        - name: Drop created vpc
+          opentelekomcloud.cloud.vpc:
+            name: "{{ vpc_name }}"
+            state: absent
+      ignore_errors: true
