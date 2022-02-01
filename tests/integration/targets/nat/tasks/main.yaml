@@ -21,7 +21,7 @@
         nat_gateway_name: "{{ ( prefix + '_nat-gateway') }}"
         server_name: "{{ ( prefix + '_nat-server') }}"
         server_flavor: "s2.medium.2"
-        image_name: Standard_CentOS_8_latest
+        image_name: Standard_Debian_11_latest
 
     - name: Create network for NAT
       openstack.cloud.network:
@@ -200,7 +200,7 @@
 
   always:
     - block:
-      # Cleanup
+        # Cleanup
         - name: List SNAT rules of gateway
           nat_snat_rule_info:
             gateway: "{{ nat_gateway_name }}"
