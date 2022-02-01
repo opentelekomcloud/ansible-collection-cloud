@@ -17,6 +17,7 @@ These are the plugins in the opentelekomcloud.cloud collection
     as
     cce
     ces
+    dds
     deh
     dns
     ecs
