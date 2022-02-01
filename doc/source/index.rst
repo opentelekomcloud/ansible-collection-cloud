@@ -29,7 +29,6 @@ These are the plugins in the opentelekomcloud.cloud collection
     rds
     volume
     vpc
-    vpc_peering
     vpn
     waf
 
