@@ -1,5 +1,5 @@
-Auto Scaling Modules
-====================
+Auto Scaling (AS) Modules
+=========================
 
 .. toctree::
    :maxdepth: 1

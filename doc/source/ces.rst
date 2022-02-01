@@ -1,5 +1,5 @@
-Cloud Eye Service Modules
-=========================
+Cloud Eye Service (CES) Modules
+===============================
 
 .. toctree::
    :maxdepth: 1

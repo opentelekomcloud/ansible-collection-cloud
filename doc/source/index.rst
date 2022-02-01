@@ -19,11 +19,13 @@ These are the plugins in the opentelekomcloud.cloud collection
     ces
     dds
     deh
+    dms
     dns
     ecs
     elb
     misc
     nat
+    network
     rds
     volume
     vpc

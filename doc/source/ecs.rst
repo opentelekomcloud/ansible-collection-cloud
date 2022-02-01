@@ -1,5 +1,5 @@
-Compute (ECS) Modules
-=====================
+Elastic Cloud Server (ECS) Modules
+==================================
 
 .. toctree::
    :maxdepth: 1

@@ -1,5 +1,5 @@
-Domain Name Service Modules
-===========================
+Domain Name Service (DNS) Modules
+=================================
 
 .. toctree::
    :maxdepth: 1

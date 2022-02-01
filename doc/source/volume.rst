@@ -1,5 +1,5 @@
-Volume (EVS) Modules
-====================
+Elastic Volume Service (EVS) Modules
+====================================
 
 .. toctree::
    :maxdepth: 1

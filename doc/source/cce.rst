@@ -1,5 +1,5 @@
-CCE Modules
-===========
+Cloud Container Engine (CCE) Modules
+====================================
 
 .. toctree::
    :maxdepth: 1
