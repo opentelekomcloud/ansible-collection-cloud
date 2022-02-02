@@ -25,7 +25,6 @@ These are the plugins in the opentelekomcloud.cloud collection
     elb
     misc
     nat
-    network
     rds
     volume
     vpc
