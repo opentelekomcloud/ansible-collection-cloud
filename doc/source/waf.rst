@@ -1,5 +1,5 @@
-WAF Modules
-===========
+Web Application Firewall (WAF) Modules
+======================================
 
 .. toctree::
    :maxdepth: 1

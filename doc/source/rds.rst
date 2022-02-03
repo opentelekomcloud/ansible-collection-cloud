@@ -1,5 +1,5 @@
-Relational Database Service Modules
-===================================
+Relational Database Service (RDS) Modules
+=========================================
 
 .. toctree::
    :maxdepth: 1

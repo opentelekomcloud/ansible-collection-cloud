@@ -1,5 +1,5 @@
-Elastic Load Balancing Modules
-==============================
+Elastic Load Balancing (ELB) Modules
+====================================
 
 .. toctree::
    :maxdepth: 1

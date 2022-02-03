@@ -6,5 +6,6 @@ Other Modules
 
    availability_zone_info <availability_zone_info_module>
    object_info <object_info_module>
+   server_group_info <server_group_info_module>
    tag <tag_module>
 

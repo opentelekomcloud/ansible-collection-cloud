@@ -1,5 +1,5 @@
-Dedicated Host Service Modules
-==============================
+Dedicated Host Service (DEH) Modules
+====================================
 
 .. toctree::
    :maxdepth: 1

@@ -19,6 +19,7 @@ These are the plugins in the opentelekomcloud.cloud collection
     ces
     dds
     deh
+    dms
     dns
     ecs
     elb
@@ -27,7 +28,6 @@ These are the plugins in the opentelekomcloud.cloud collection
     rds
     volume
     vpc
-    vpc_peering
     vpn
     waf
 
