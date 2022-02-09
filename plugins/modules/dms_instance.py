@@ -119,7 +119,7 @@ options:
     choices: [dms.physical.storage.high, dms.physical.storage.ultra]
     type: str
   state:
-    choices: [present, abs-ent]
+    choices: [present, absent]
     default: present
     description: Instance state
     type: str
