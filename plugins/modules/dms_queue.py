@@ -30,7 +30,7 @@ options:
       - Indicates the queue type.
     choices: [normal, fifo, kafka_ha, kafka_ht]
     type: str
-    default: NORMAL
+    default: normal
   description:
     description:
       - Description.
