@@ -112,11 +112,11 @@ options:
   storage_spec_code:
     description:
       - Indicates I/O specification of a Kafka instance.
-      - When specification is 100MB or 300MB, the storage I/O can be:
+      - When specification is 100MB or 300MB, the storage I/O is
       - dms.physical.storage.high or dms.physical.storage.ultra
       - When specification is 600MB or 1200MB, the storage I/O is dms.physical.storage.ultra.
       - Required for creation
-    choices: ['dms.physical.storage.high', 'dms.physical.storage.ultra']
+    choices: [dms.physical.storage.high, dms.physical.storage.ultra]
     type: str
   state:
     choices: [present, abs-ent]

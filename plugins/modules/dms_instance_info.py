@@ -35,7 +35,7 @@ options:
   status:
     description:
       - Instance Status
-    choices: [creating, running, error, starting, closing, frozen, createfailed]  
+    choices: [creating, running, error, starting, closing, frozen, createfailed]
     type: str
   includeFailure:
     description:
