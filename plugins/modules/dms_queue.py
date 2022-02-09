@@ -112,7 +112,7 @@ class DmsQueueModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True),
         queue_mode=dict(required=False, choices=['normal', 'fifo', 'kafka_ha', 'kafka_ht'],
-                        default='NORMAL'),
+                        default='normal'),
         description=dict(required=False),
         redrive_policy=dict(required=False, default='disable'),
         max_consume_count=dict(required=False, type='int'),
