@@ -35,6 +35,7 @@ options:
   status:
     description:
       - Instance Status
+    choices: [creating, running, error, starting, closing, frozen, createfailed]  
     type: str
   includeFailure:
     description:
@@ -105,6 +106,9 @@ dms_queues:
 EXAMPLES = '''
 # Query all Instances
 - opentelekomcloud.cloud.dms_instance_info:
+
+- opentelekomcloud.cloud.dms_instance_info:
+    status: createfailed
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -115,7 +119,8 @@ class DmsInstanceInfoModule(OTCModule):
         engine=dict(required=False),
         name=dict(required=False),
         id=dict(required=False),
-        status=dict(required=False),
+        status=dict(required=False, choices=['creating', 'running', 'error', 'starting', 'closing',
+                                             'frozen', 'createfailed']),
         includeFailure=dict(required=False, type='bool', default='true'),
         exactMatchName=dict(required=False, type='bool', default='false'),
     )
@@ -135,7 +140,7 @@ class DmsInstanceInfoModule(OTCModule):
         if self.params['id']:
             query['id'] = self.params['id']
         if self.params['status']:
-            query['status'] = self.params['status']
+            query['status'] = self.params['status'].upper()
         if self.params['includeFailure']:
             query['includeFailure'] = self.params['includeFailure']
         if self.params['exactMatchName']:

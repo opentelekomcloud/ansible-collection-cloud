@@ -52,6 +52,7 @@ waf_certificate_info:
 EXAMPLES = '''
 # Get Certificates.
 - waf_certificate_info:
+    name: SDK-Daccde21b17b7d4617bb7d4617b
   register: cert
 '''
 

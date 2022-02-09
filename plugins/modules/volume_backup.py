@@ -94,6 +94,15 @@ backup:
 '''
 
 EXAMPLES = '''
+
+# Add volume backup
+- opentelekomcloud.cloud.volume_backup:
+    name: "test_vbs_backup"
+    description: "my test backup"
+    state: present
+    volume: ecs-7b0
+    force: True
+    incremental: True
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

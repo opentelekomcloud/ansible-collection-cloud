@@ -47,6 +47,7 @@ availability_zone_info:
 EXAMPLES = '''
 # Get AZ.
 - opentelekomcloud.cloud.availability_zone_info:
+    name: 'eu-de'
   register: az
 '''
 

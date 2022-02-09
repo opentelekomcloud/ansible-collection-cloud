@@ -28,6 +28,7 @@ options:
   queue_mode:
     description:
       - Indicates the queue type.
+    choices: [normal, fifo, kafka_ha, kafka_ht]
     type: str
     default: NORMAL
   description:
@@ -92,12 +93,15 @@ deh_host:
 EXAMPLES = '''
 # Create Queue
 - opentelekomcloud.cloud.dms_queue:
-    name: 'test-queue'
+    name: "test_dms_queue"
+    queue_mode: "FIFO"
+    redrive_policy: "enable"
+    max_consume_count: "9"
     state: present
 
 # Delete Queue
 - opentelekomcloud.cloud.dms_queue:
-    name: 'test-queue'
+    name: 'test_dms_queue'
     state: absent
 '''
 
@@ -128,7 +132,7 @@ class DmsQueueModule(OTCModule):
             if not queue:
                 attrs['name'] = self.params['name']
                 if self.params['queue_mode']:
-                    attrs['queue_mode'] = self.params['queue_mode']
+                    attrs['queue_mode'] = self.params['queue_mode'].upper()
                 if self.params['description']:
                     attrs['description'] = self.params['description']
                 if self.params['redrive_policy']:
