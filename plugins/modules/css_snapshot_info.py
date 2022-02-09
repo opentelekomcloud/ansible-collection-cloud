@@ -97,8 +97,7 @@ snapshots:
 EXAMPLES = '''
 #Query CSS Snapshots
 
-- name: Get CSS Snapshots
-    opentelekomcloud.cloud.css_snapshot_info:
+-opentelekomcloud.cloud.css_snapshot_info:
     cluster: test
   register: result
 '''

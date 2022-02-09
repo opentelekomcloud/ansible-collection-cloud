@@ -72,9 +72,7 @@ options:
 
 '''
 
-RETURN = ''': "25d24fc8-d019-4a34-9fff-0a09fde6a123"
-        port:
-            description: Name or ID of a network po
+RETURN = '''
 ---
 dnat_rules:
     description: List of DNAT rules.
@@ -108,7 +106,9 @@ dnat_rules:
         gateway:
             description: Name or ID of the NAT gateway
             type: str
-            samplert of an ECS or BMS
+            sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
+        port:
+            description: Name or ID of a network port of an ECS or BMS
             type: str
             sample: "25d24fc8-d019-4a34-9fff-0a09fde6a123"
         private_ip:
