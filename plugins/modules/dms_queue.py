@@ -94,7 +94,7 @@ EXAMPLES = '''
 # Create Queue
 - opentelekomcloud.cloud.dms_queue:
     name: "test_dms_queue"
-    queue_mode: "FIFO"
+    queue_mode: "fifo"
     redrive_policy: "enable"
     max_consume_count: "9"
     state: present
