@@ -96,13 +96,10 @@ snapshots:
 
 EXAMPLES = '''
 #Query CSS Snapshots
----
-- hosts: localhost
-  tasks:
-    - name: Get CSS Snapshots
-      opentelekomcloud.cloud.css_snapshot_info:
-        cluster: test
-      register: result
+
+- opentelekomcloud.cloud.css_snapshot_info:
+    cluster: 'test'
+  register: result
 '''
 
 

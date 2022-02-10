@@ -174,6 +174,9 @@ cluster:
 EXAMPLES = '''
 # Get info about clusters
 - opentelekomcloud.cloud.css_cluster_info:
+    name: "css-ea59"
+    start: 1
+    limit: 5
   register: result
 '''
 

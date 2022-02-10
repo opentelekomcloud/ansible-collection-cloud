@@ -244,6 +244,11 @@ instance:
 EXAMPLES = '''
 # Get info about instances
 - opentelekomcloud.cloud.dds_instance_info:
+    vpc_id: "7ea09482-793a-4aed-b4ce-447113d10d96"
+  register: result
+
+- opentelekomcloud.cloud.dds_instance_info:
+    mode: "replicaset"
   register: result
 '''
 

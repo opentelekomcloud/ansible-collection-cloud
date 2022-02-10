@@ -72,6 +72,7 @@ waf_domain_info:
 EXAMPLES = '''
 # Get Domain.
 - waf_domain_info:
+    name: "{{ domain_id }}"
   register: domain
 '''
 
