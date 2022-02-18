@@ -42,7 +42,7 @@ options:
      description:
         - Unique name or ID of the project.
      type: str
-      interfaces:
+   interfaces:
      description:
         - List of subnets to attach to the router internal interface. Default
           gateway associated with the subnet will be automatically attached
