@@ -45,6 +45,7 @@ action_groups:
     - rds_instance
     - rds_backup
     - rds_backup_info
+    - router
     - security_group
     - security_group_info
     - server_group_info
