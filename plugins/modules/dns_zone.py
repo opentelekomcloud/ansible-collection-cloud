@@ -133,21 +133,21 @@ class DNSZonesModule(OTCModule):
 
     def run(self):
         changed = False
-        query = {}
+        attrs = {}
+        query = {
+            'type': self.params['zone_type'],
+            'name_or_id': self.params['name']
+        }
 
-        if self.params['zone_type'] == 'private':
-            query['type'] = self.params['zone_type']
-        query['name_or_id'] = self.params['name']
-        query['ignore_missing'] = True
-        zo = self.conn.dns.find_zone(**query)
-        if zo:
-            zone_id = zo.id
-            zone_desc = zo.description
-            zone_ttl = zo.ttl
-            zone_email = zo.email
-            zone_check = True
+        zone = self.conn.dns.find_zone(**query)
+        if zone:
+            zone_id = zone.id
+            zone_desc = zone.description
+            zone_ttl = zone.ttl
+            zone_email = zone.email
+            needs_update = True
         else:
-            zone_check = False
+            needs_update = False
             if self.params['state'] == 'absent':
                 self.exit(
                     changed=False,
@@ -166,16 +166,15 @@ class DNSZonesModule(OTCModule):
             changed = True
 
         if self.params['state'] == 'present':
-            attrs = {}
             if self.ansible.check_mode:
                 self.exit_json(changed=True)
-            if zone_check is False:
+            if not needs_update:
                 # Check if VPC exists
                 if self.params['zone_type'] == 'private':
                     if not self.params['router']:
                         self.exit(
                             changed=False,
-                            message=('No Router specified, but needed for creation')
+                            message='No Router specified, but needed for creation'
                         )
                     ro = self.conn.network.find_router(
                         name_or_id=self.params['router'],
@@ -193,31 +192,31 @@ class DNSZonesModule(OTCModule):
                             message=('No Router found with name or id: %s' %
                                      self.params['router'])
                         )
-                attrs['zone_type'] = self.params['zone_type']
+                if self.params['zone_type']:
+                    attrs['zone_type'] = self.params['zone_type']
                 if self.params['description']:
                     attrs['description'] = self.params['description']
                 if self.params['email']:
                     attrs['email'] = self.params['email']
                 if self.params['ttl']:
                     attrs['ttl'] = self.params['ttl']
-                attrs['name'] = self.params['name']
-
+                if self.params['name']:
+                    attrs['name'] = self.params['name']
                 zone = self.conn.dns.create_zone(**attrs)
                 self.exit(changed=True, zone=zone.to_dict())
 
-            if zone_check is True:
+            if needs_update:
                 changed = False
-                if self.params['description'] and self.params['description'] != zone_desc:
+                if self.params['description'] != zone_desc:
                     attrs['description'] = self.params['description']
                     changed = True
-                if self.params['email'] and self.params['email'] != zone_email:
+                if self.params['email'] != zone_email:
                     attrs['email'] = self.params['email']
                     changed = True
-                if self.params['ttl'] and self.params['ttl'] != zone_ttl:
+                if self.params['ttl'] != zone_ttl:
                     attrs['ttl'] = self.params['ttl']
                     changed = True
                 attrs['zone'] = zone_id
-
                 zone = self.conn.dns.update_zone(**attrs)
                 self.exit(changed=changed, zone=zone.to_dict())
 
