@@ -1,7 +1,7 @@
 Opentelekomcloud.Cloud
 ======================
 
-Collection version 0.11.0
+Collection version 0.12.0
 
 
 Plugin Index
