@@ -151,6 +151,7 @@ class VpcModule(OTCModule):
     def run(self):
 
         query = {}
+        attrs = {}
         state = self.params['state']
         name = self.params['name']
         description = self.params['description']
@@ -165,14 +166,9 @@ class VpcModule(OTCModule):
         if cidr:
             query['cidr'] = cidr
 
-        vpc = None
-        if name:
-            vpc = self.conn.vpc.find_vpc(name, ignore_missing=True)
+        vpc = self.conn.vpc.find_vpc(name, ignore_missing=True)
 
         if state == 'present':
-            if self.ansible.check_mode:
-                self.exit(changed=True)
-
             if not vpc:
                 new_vpc = self.conn.vpc.create_vpc(**query)
                 if routes or enable_shared_snat is not None:
@@ -183,14 +179,18 @@ class VpcModule(OTCModule):
                         query_update['enable_shared_snat'] = enable_shared_snat
                     new_vpc = self.conn.vpc.update_vpc(vpc=new_vpc, **query_update)
                 self.exit(changed=True, vpc=new_vpc)
-
             else:
-                if routes:
-                    query['routes'] = routes
-                if enable_shared_snat is not None:
-                    query['enable_shared_snat'] = enable_shared_snat
-                updated_vpc = self.conn.vpc.update_vpc(vpc=vpc, **query)
-                self.exit(changed=True, vpc=updated_vpc)
+                if cidr != vpc['cidr']:
+                    attrs['cidr'] = cidr
+                if name != vpc['name']:
+                    attrs['name'] = name
+                if enable_shared_snat != vpc['enable_shared_snat']:
+                    attrs['enable_shared_snat'] = enable_shared_snat
+                if attrs:
+                    updated_vpc = self.conn.vpc.update_vpc(vpc=vpc.id, **attrs)
+                    self.exit_json(changed=True, vpc=updated_vpc)
+                else:
+                    self.exit(changed=False, vpc=vpc)
         else:
             if vpc:
                 if not self.ansible.check_mode:
