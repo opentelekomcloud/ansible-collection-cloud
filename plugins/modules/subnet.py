@@ -232,7 +232,7 @@ class SubnetModule(OTCModule):
     )
 
     _update_fields = {'dns_list', 'primary_dns', 'secondary_dns', 'extra_dhcp_opts'}
-    _update_forbidden = {'cidr', 'gateway_ip', 'description'}
+    _update_forbidden = {'cidr', 'gateway_ip'}
 
     def run(self):
         vpc = self.conn.vpc.find_vpc(self.params['vpc'])
