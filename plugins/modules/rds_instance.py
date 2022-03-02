@@ -74,10 +74,9 @@ options:
     description: Database port
     type: int
   region:
-    choices: [eu-de]
-    default: eu-de
     description: Database region
     type: str
+    default: eu-de
   replica_of:
     description: Instance ID to create the replica of
     type: str
@@ -174,7 +173,7 @@ class RdsInstanceModule(OTCModule):
         network=dict(type='str'),
         password=dict(type='str', no_log=True),
         port=dict(type='int'),
-        region=dict(type='str', choices=['eu-de'], default='eu-de'),
+        region=dict(type='str', default='eu-de'),
         replica_of=dict(type='str'),
         router=dict(type='str'),
         security_group=dict(type='str'),
