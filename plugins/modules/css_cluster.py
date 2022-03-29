@@ -121,16 +121,13 @@ options:
       - Security group ID. All instances in a cluster must have the same subnets
         and security groups.
     type: str
-  tag_key:
+  tags:
     description:
       - Tag key. The value can contain 1 to 36 characters. Only digits, letters,
         hyphens (-) and underscores (_) are allowed.
-    type: str
-  tag_value:
-    description:
       - Tag value. The value can contain 0 to 43 characters. Only digits,
         letters, hyphens (-) and underscores (_) are allowed.
-    type: str
+    type: list
   backup_period:
     description:
       - Time when a snapshot is created every day. Snapshots can only be created
@@ -190,6 +187,11 @@ EXAMPLES = '''
         flavor: 'css.xlarge.2'
         https_enable: false
         system_encrypted: 0
+        tags: 
+        - 'key': "key0" 
+          'value': "value0"
+        - 'key': "key1"
+          'value': "value1"
 
 #Delete CSS Cluster
 - hosts: localhost
@@ -220,8 +222,7 @@ class CssClusterModule(OTCModule):
         router=dict(type='str'),
         net=dict(type='str'),
         security_group=dict(type='str'),
-        tag_key=dict(type='str'),
-        tag_value=dict(type='str'),
+        tags=dict(type='list'),
         backup_period=dict(type='str'),
         backup_prefix=dict(type='str'),
         backup_keepday=dict(type='int'),
@@ -282,7 +283,6 @@ class CssClusterModule(OTCModule):
 
             if not cluster:
                 changed = True
-
                 volume_type = self.params['volume_type']
 
                 attrs = {
@@ -318,17 +318,14 @@ class CssClusterModule(OTCModule):
                     attrs['authorityEnable'] = self.params['authority_enable']
                 if self.params['admin_pwd']:
                     attrs['adminPwd'] = self.params['admin_pwd']
-                if self.params['tag_key']:
-                    attrs['tags']['key'] = self.params['tag_key']
-                if self.params['tag_value']:
-                    attrs['tags']['value'] = self.params['tag_value']
+                if self.params['tags']:
+                    attrs['tags'] = self.params['tags']
                 if self.params['backup_period']:
                     attrs['backupStrategy']['period'] = self.params['backup_period']
                 if self.params['backup_prefix']:
                     attrs['backupStrategy']['prefix'] = self.params['backup_prefix']
                 if self.params['backup_keepday']:
                     attrs['backupStrategy']['keepday'] = self.params['backup_keepday']
-
                 cluster = self.conn.css.create_cluster(**attrs)
 
             self.exit_json(
