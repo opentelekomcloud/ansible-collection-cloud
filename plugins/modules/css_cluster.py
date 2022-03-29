@@ -123,11 +123,18 @@ options:
     type: str
   tags:
     description:
-      - Tag key. The value can contain 1 to 36 characters. Only digits, letters,
-        hyphens (-) and underscores (_) are allowed.
-      - Tag value. The value can contain 0 to 43 characters. Only digits,
-        letters, hyphens (-) and underscores (_) are allowed.
+      - Tags in a cluster.
     type: list
+    elements: dict
+    suboptions:
+      key:
+        description:
+        - Tag key. The value can contain 1 to 36 characters.
+          Only digits, letters, hyphens (-) and underscores (_) are allowed.
+      value:
+        description:
+        - Tag value. The value can contain 0 to 43 characters.
+          Only digits, letters, hyphens (-) and underscores (_) are allowed.
   backup_period:
     description:
       - Time when a snapshot is created every day. Snapshots can only be created
@@ -187,8 +194,8 @@ EXAMPLES = '''
         flavor: 'css.xlarge.2'
         https_enable: false
         system_encrypted: 0
-        tags: 
-        - 'key': "key0" 
+        tags:
+        - 'key': "key0"
           'value': "value0"
         - 'key': "key1"
           'value': "value1"
@@ -222,7 +229,7 @@ class CssClusterModule(OTCModule):
         router=dict(type='str'),
         net=dict(type='str'),
         security_group=dict(type='str'),
-        tags=dict(type='list'),
+        tags=dict(required=False, type='list', elements='dict'),
         backup_period=dict(type='str'),
         backup_prefix=dict(type='str'),
         backup_keepday=dict(type='int'),
