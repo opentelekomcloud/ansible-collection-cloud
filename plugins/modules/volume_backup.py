@@ -209,7 +209,7 @@ class VolumeBackupModule(OTCModule):
         # so search this was
         backup = self.find_backup(name)
 
-        if self.check_mode:
+        if self.ansible.check_mode:
             self.exit_json(changed=self._system_state_change(backup))
 
         if self.params['state'] == 'present':
