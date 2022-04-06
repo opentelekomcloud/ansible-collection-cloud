@@ -215,7 +215,6 @@ class VolumeBackupModule(OTCModule):
         if self.params['state'] == 'present':
             if not backup:
                 cloud_volume = self.find_volume(volume)
-                cloud_snapshot_id = None
 
                 attrs = {
                     'name': name,
