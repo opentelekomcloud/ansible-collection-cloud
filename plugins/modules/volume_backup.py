@@ -236,7 +236,7 @@ class VolumeBackupModule(OTCModule):
                         timeout=self.params['timeout'],
                         name=self.params['display_name'] + '_snapshot',
                         description=self.params.get('display_description')
-                                                               )
+                    )
                     attrs['snapshot_id'] = snapshot.id
 
                 if metadata:
