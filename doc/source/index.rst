@@ -1,7 +1,7 @@
 Opentelekomcloud.Cloud
 ======================
 
-Collection version 0.12.3
+Collection version 0.12.4
 
 
 

@@ -236,6 +236,28 @@
           - dns_zo_pr is success
           - dns_zo_pr.zone.description is defined
 
+    - name: Get a DNS Nameservers info for public zone
+      opentelekomcloud.cloud.dns_nameserver:
+        zone: "{{ zone_public_name }}"
+      register: dns_ns
+
+    - name: assert result
+      assert:
+        that:
+          - dns_ns is success
+          - dns_ns.nameservers.hostname is defined
+
+    - name: Get a DNS Nameservers info for private zone
+      opentelekomcloud.cloud.dns_nameserver:
+        zone: "{{ zone_private_name }}"
+      register: dns_ns
+
+    - name: assert result
+      assert:
+        that:
+          - dns_ns is success
+          - dns_ns.nameservers.address is defined
+
     - name: Creating a DNS Recordset - check mode
       opentelekomcloud.cloud.dns_recordset:
         zone_id: "{{ dns_zo.zone.id }}"
