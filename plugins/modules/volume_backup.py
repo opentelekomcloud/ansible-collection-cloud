@@ -215,7 +215,6 @@ class VolumeBackupModule(OTCModule):
         if self.params['state'] == 'present':
             if not backup:
                 cloud_volume = self.find_volume(volume)
-                cloud_snapshot_id = None
 
                 attrs = {
                     'name': name,
@@ -225,9 +224,19 @@ class VolumeBackupModule(OTCModule):
                 }
 
                 if snapshot:
-                    cloud_snapshot_id = self.find_snapshot(snapshot,
-                                                           ignore_missing=False).id
-                    attrs['snapshot_id'] = cloud_snapshot_id
+                    snapshot = self.conn.get_volume_snapshot(
+                        self.params['display_name'], filters={'volume_id': volume.id})
+                    attrs['snapshot_id'] = snapshot.id
+                else:
+                    snapshot = self.conn.create_volume_snapshot(
+                        volume.id,
+                        force=self.params['force'],
+                        wait=self.params['wait'],
+                        timeout=self.params['timeout'],
+                        name=self.params['display_name'] + '_snapshot',
+                        description=self.params.get('display_description')
+                    )
+                    attrs['snapshot_id'] = snapshot.id
 
                 if metadata:
                     attrs['metadata'] = metadata
