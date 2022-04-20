@@ -245,7 +245,7 @@
       assert:
         that:
           - dns_ns is success
-          - dns_ns.nameservers.hostname is defined
+          - dns_ns.nameservers[0].hostname is defined
 
     - name: Get a DNS Nameservers info for private zone
       opentelekomcloud.cloud.dns_nameserver_info:
@@ -256,7 +256,7 @@
       assert:
         that:
           - dns_ns is success
-          - dns_ns.nameservers.address is defined
+          - dns_ns.nameservers[0].address is defined
 
     - name: Creating a DNS Recordset - check mode
       opentelekomcloud.cloud.dns_recordset:
