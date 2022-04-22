@@ -223,6 +223,7 @@ class VolumeBackupModule(OTCModule):
                     'is_incremental': is_incremental
                 }
 
+                volume = self.conn.get_volume(self.params['volume'])
                 if snapshot:
                     snapshot = self.conn.get_volume_snapshot(
                         self.params['display_name'], filters={'volume_id': volume.id})
