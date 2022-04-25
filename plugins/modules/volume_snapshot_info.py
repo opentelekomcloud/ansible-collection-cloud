@@ -21,10 +21,6 @@ author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Get a generator of snapshots info from the OTC.
 options:
-  details:
-    description: More detailed output
-    type: bool
-    default: True
   name:
     description:
       - Name of the snapshot.
