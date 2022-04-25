@@ -94,7 +94,6 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class VolumeSnapshotInfoModule(OTCModule):
     argument_spec = dict(
-        details=dict(default=True, type='bool'),
         name=dict(required=False),
         volume=dict(required=False),
         status=dict(required=False, choices=['creating', 'available', 'error',
@@ -107,7 +106,6 @@ class VolumeSnapshotInfoModule(OTCModule):
 
     def run(self):
 
-        details_filter = self.params['details']
         name_filter = self.params['name']
         volume_filter = self.params['volume']
         status_filter = self.params['status']
@@ -117,11 +115,11 @@ class VolumeSnapshotInfoModule(OTCModule):
         if name_filter:
             query['name'] = name_filter
         if volume_filter:
-            query['volume_id'] = self.conn.block_storage.find_volume(volume_filter)
+            query['volume_id'] = self.conn.block_storage.find_volume(volume_filter).id
         if status_filter:
             query['status'] = status_filter.lower()
 
-        for raw in self.conn.block_storage.snapshots(details_filter, **query):
+        for raw in self.conn.block_storage.snapshots(**query):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
