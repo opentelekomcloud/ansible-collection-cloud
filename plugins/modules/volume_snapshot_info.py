@@ -21,6 +21,10 @@ author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Get a generator of snapshots info from the OTC.
 options:
+  details:
+    description: More detailed output
+    type: bool
+    default: True
   name:
     description:
       - Name of the snapshot.
@@ -90,6 +94,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class VolumeSnapshotInfoModule(OTCModule):
     argument_spec = dict(
+        details=dict(default=True, type='bool'),
         name=dict(required=False),
         volume=dict(required=False),
         status=dict(required=False, choices=['creating', 'available', 'error',
@@ -102,16 +107,19 @@ class VolumeSnapshotInfoModule(OTCModule):
 
     def run(self):
 
+        details_filter = self.params['details']
         name_filter = self.params['name']
         volume_filter = self.params['volume']
         status_filter = self.params['status']
 
         data = []
         query = {}
+        if details_filter:
+            query['details'] = details_filter
         if name_filter:
             query['name'] = name_filter
         if volume_filter:
-            query['volume_id'] = self.conn.block_storage.find_volume(volume_filter).id
+            query['volume_id'] = self.conn.block_storage.find_volume(volume_filter)
         if status_filter:
             query['status'] = status_filter.lower()
 
