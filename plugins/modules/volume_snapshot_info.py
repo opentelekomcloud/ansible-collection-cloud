@@ -114,6 +114,8 @@ class VolumeSnapshotInfoModule(OTCModule):
 
         data = []
         query = {}
+        if details_filter:
+            query['details'] = details_filter
         if name_filter:
             query['name'] = name_filter
         if volume_filter:
@@ -121,7 +123,7 @@ class VolumeSnapshotInfoModule(OTCModule):
         if status_filter:
             query['status'] = status_filter.lower()
 
-        for raw in self.conn.block_storage.snapshots(details_filter, **query):
+        for raw in self.conn.block_storage.snapshots(**query):
             dt = raw.to_dict()
             dt.pop('location')
             data.append(dt)
