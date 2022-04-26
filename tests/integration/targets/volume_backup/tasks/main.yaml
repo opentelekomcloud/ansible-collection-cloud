@@ -12,8 +12,7 @@
   block:
     - name: Set random prefix
       set_fact:
-        prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
-        short_prefix: "{{ (prefix + (99999999999 | random | to_uuid | hash('md5') | truncate(12,end='')  )) }}"
+        prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
       set_fact:
