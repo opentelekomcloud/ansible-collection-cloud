@@ -18,7 +18,7 @@
       set_fact:
         display_name: "{{ ( prefix + '-test-volume') }}"
         backup_name: "{{ ( prefix + '-test-backup') }}"
-        availability_zone: "{{ eu-de-01 }}"
+        availability_zone: "eu-de-01"
 
     - name: 1 create volume
       openstack.cloud.volume:
