@@ -119,7 +119,7 @@ class VolumeSnapshotInfoModule(OTCModule):
         if name_filter:
             query['name'] = name_filter
         if volume_filter:
-            query['volume_id'] = self.conn.block_storage.find_volume(volume_filter)
+            query['volume_id'] = self.conn.block_storage.find_volume(volume_filter).id
         if status_filter:
             query['status'] = status_filter.lower()
 
