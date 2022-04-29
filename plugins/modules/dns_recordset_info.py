@@ -124,9 +124,12 @@ class DNSRecordsetInfoModule(OTCModule):
                 self.fail_json(msg="Zone not found")
             if self.params['name']:
                 try:
+                    query['name_or_id'] = self.params['name']
+                    if self.params['type']:
+                        query['type'] = self.params['type']
+
                     recordset = self.conn.dns.find_recordset(
-                        zone=query['zone'], name_or_id=self.params['name'],
-                        ignore_missing=False)
+                        ignore_missing=False, **query)
                     dt = recordset.to_dict()
                     dt.pop('location')
                     data.append(dt)
