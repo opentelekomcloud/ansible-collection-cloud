@@ -148,11 +148,15 @@ class DNSRecordsetModule(OTCModule):
                          self.params['zone_id'])
             )
 
-        rs = self.conn.dns.find_recordset(
+        find_args = dict(
             name_or_id=self.params['recordset_name'],
             zone=zo.id,
             ignore_missing=True
         )
+        if self.params['type']:
+            find_args['type'] = self.params['type']
+
+        rs = self.conn.dns.find_recordset(**find_args)
 
         # recordset deletion
         if self.params['state'] == 'absent':
