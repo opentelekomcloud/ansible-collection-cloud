@@ -5,7 +5,7 @@
 - name: Create a backup of the system volume
   opentelekomcloud.cloud.volume_backup:
     display_name: "{{ backup_name }}"
-    display_description: "Full backup of the test instance used for example usecases"
+    display_description: "Full backup of the test instance"
     state: absent
     volume: "{{ ecs_1_vol }}"
     force: True
