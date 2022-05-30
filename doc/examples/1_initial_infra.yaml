@@ -1,1 +1,80 @@
----# First, we need to create ecosystem for further infrastructure. Its include network entities, such# VPC and subnet, security group and couple of ECSs.- name: Create VPC  opentelekomcloud.cloud.vpc:    name: "{{ vpc_name }}"    cidr: "10.10.0.0/24"    state: present  register: newvpc  tags:    - vpc# Please pay attention on CIDR block: in case of insufficient numbers of available hosts there# could be errors in autoscaling groups behavior- name: Create subnet for VPC  opentelekomcloud.cloud.subnet:    name: "{{ vpc_subnet_name }}"    vpc: "{{ vpc_name }}"    cidr: "10.10.0.0/27"    gateway_ip: "10.10.0.1"    dns_list:      - "100.125.4.25"      - "100.125.129.199"  register: sn  tags:    - subnet# Exclusive mode guarantee that only explicitly passed rules are will take effect, and all of the# existing before will be deleted. To disable this behavior set 'Exclusive' option as False- name: Create new security group  opentelekomcloud.cloud.security_group:    state: present    name: "{{ security_group_name }}"    description: "Security group for testing purposes"    security_group_rules:      - direction: "egress"        ethertype: "IPv4"        protocol: "tcp"      - direction: "egress"        ethertype: "IPv6"      - direction: "ingress"        ethertype: "IPv4"        protocol: "tcp"        port_range_max: 22        port_range_min: 22    exclusive: True  register: secgroup  tags:    - security_group- name: Create first ECS and attach it to the resources  openstack.cloud.server:    name: "{{ ecs1_name }}"    image: "Standard_CentOS_7_latest"    network: "{{  newvpc.vpc.id  }}"    flavor: "s3.medium.1"    availability_zone: "eu-de-01"    volume_size: 6    security_groups: "{{ security_group_name }}"    auto_ip: no    state: present  register: ecs1  tags:    - server1- name: Create second ECS and attach it to the resources  openstack.cloud.server:    name: "{{ ecs2_name }}"    image: "Standard_CentOS_7_latest"    network: "{{  newvpc.vpc.id  }}"    flavor: "s3.medium.1"    availability_zone: "eu-de-01"    volume_size: 6    security_groups: "{{ security_group_name }}"    auto_ip: no    state: present  register: ecs2  tags:    - server2
+---
+
+# First, we need to create ecosystem for further infrastructure. Its include network entities, such
+# VPC and subnet, security group and couple of ECSs.
+- name: Create VPC
+  opentelekomcloud.cloud.vpc:
+    name: "{{ vpc_name }}"
+    cidr: "10.10.0.0/24"
+    state: present
+  register: newvpc
+  tags:
+    - vpc
+
+# Please pay attention on CIDR block: in case of insufficient numbers of available hosts there
+# could be errors in autoscaling groups behavior
+- name: Create subnet for VPC
+  opentelekomcloud.cloud.subnet:
+    name: "{{ vpc_subnet_name }}"
+    vpc: "{{ vpc_name }}"
+    cidr: "10.10.0.0/27"
+    gateway_ip: "10.10.0.1"
+    dns_list:
+      - "100.125.4.25"
+      - "100.125.129.199"
+  register: sn
+  tags:
+    - subnet
+
+# Exclusive mode guarantee that only explicitly passed rules are will take effect, and all of the
+# existing before will be deleted. To disable this behavior set Exclusive option as False
+- name: Create new security group
+  opentelekomcloud.cloud.security_group:
+    state: present
+    name: "{{ security_group_name }}"
+    description: "Security group for testing purposes"
+    security_group_rules:
+      - direction: "egress"
+        ethertype: "IPv4"
+        protocol: "tcp"
+      - direction: "egress"
+        ethertype: "IPv6"
+      - direction: "ingress"
+        ethertype: "IPv4"
+        protocol: "tcp"
+        port_range_max: 22
+        port_range_min: 22
+    exclusive: True
+  register: secgroup
+  tags:
+    - security_group
+
+- name: Create first ECS and attach it to the resources
+  openstack.cloud.server:
+    name: "{{ ecs1_name }}"
+    image: "Standard_CentOS_7_latest"
+    network: "{{  newvpc.vpc.id  }}"
+    flavor: "s3.medium.1"
+    availability_zone: "eu-de-01"
+    volume_size: 6
+    security_groups: "{{ security_group_name }}"
+    auto_ip: no
+    state: present
+  register: ecs1
+  tags:
+    - server1
+
+- name: Create second ECS and attach it to the resources
+  openstack.cloud.server:
+    name: "{{ ecs2_name }}"
+    image: "Standard_CentOS_7_latest"
+    network: "{{  newvpc.vpc.id  }}"
+    flavor: "s3.medium.1"
+    availability_zone: "eu-de-01"
+    volume_size: 6
+    security_groups: "{{ security_group_name }}"
+    auto_ip: no
+    state: present
+  register: ecs2
+  tags:
+    - server2
