@@ -95,12 +95,11 @@ options:
     description:
       - Path to the logfile of the OpenStackSDK. If empty no log is written
     type: str
-    default: None
   sdk_log_level:
     description: Log level of the OpenStackSDK
     type: str
-    deafult: WARN
-    choices: [WARN, DEBUG]
+    default: WARN
+    choices: [ERROR, WARN, INFO, DEBUG]
 requirements:
   - python >= 3.6
   - openstacksdk >= 0.36.0
