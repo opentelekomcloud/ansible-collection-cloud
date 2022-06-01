@@ -16,12 +16,12 @@ try:
     import openstack as sdk
     import otcextensions
     from otcextensions import sdk as otc_sdk
+    from pkg_resources import parse_version as V
     HAS_LIBRARIES = True
 except ImportError:
     HAS_LIBRARIES = False
 
 from ansible.module_utils.basic import AnsibleModule
-from distutils.version import StrictVersion
 
 
 def openstack_full_argument_spec(**kwargs):
@@ -122,11 +122,11 @@ class OTCModule:
             self.fail_json(msg='openstacksdk and otcextensions are required for this self')
 
         if min_version:
-            min_version = max(StrictVersion('0.6.9'), StrictVersion(min_version))
+            min_version = max(V('0.6.9'), V(min_version))
         else:
-            min_version = StrictVersion('0.6.9')
+            min_version = V('0.6.9')
 
-        if StrictVersion(otcextensions.__version__) < min_version:
+        if V(otcextensions.__version__) < min_version:
             self.fail_json(
                 msg="To utilize this self, the installed version of "
                     "the otcextensions library MUST be >={min_version}".format(
@@ -181,10 +181,10 @@ class OTCModule:
         versioned_result = {}
         for var_name in kwargs:
             if ('min_ver' in self.argument_spec[var_name]
-                    and StrictVersion(self.sdk_version) < self.argument_spec[var_name]['min_ver']):
+                    and V(self.sdk_version) < self.argument_spec[var_name]['min_ver']):
                 continue
             if ('max_ver' in self.argument_spec[var_name]
-                    and StrictVersion(self.sdk_version) > self.argument_spec[var_name]['max_ver']):
+                    and V(self.sdk_version) > self.argument_spec[var_name]['max_ver']):
                 continue
             versioned_result.update({var_name: kwargs[var_name]})
         return versioned_result
