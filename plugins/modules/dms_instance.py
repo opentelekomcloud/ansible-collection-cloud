@@ -185,7 +185,7 @@ class DmsInstanceModule(OTCModule):
         engine_version=dict(required=False, default='2.3.0'),
         storage_space=dict(required=False, type='int'),
         access_user=dict(required=False),
-        password=dict(required=False),
+        password=dict(required=False, no_log=True),
         vpc_id=dict(required=False),
         security_group_id=dict(required=False),
         subnet_id=dict(required=False),

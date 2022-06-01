@@ -30,7 +30,7 @@ options:
     type: str
   datastore_version:
     description: Specifies the database version.
-    choices: [3.2, 3.4]
+    choices: ['3.2', '3.4']
     type: str
     default: '3.4'
   region:

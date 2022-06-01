@@ -108,6 +108,10 @@ class SubnetInfoModule(OTCModule):
         vpc=dict(required=False)
     )
 
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
+
     def run(self):
         data = []
 
