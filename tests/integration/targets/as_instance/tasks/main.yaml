@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: AS Instance tests
+  module_defaults:
     opentelekomcloud.cloud.as_instance:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.as_instance_info:
@@ -24,11 +25,11 @@
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         as_instance_name: "{{ ( prefix + '_as_inst') }}"
         min_instance_number: 0
         desire_instance_number: 1
@@ -150,15 +151,15 @@
       register: as_inst_list
 
     - name: Get init list of ID of instances
-      set_fact:
+      ansible.builtin.set_fact:
         init_id_list: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
 
     - name: Get init list of Names of instances
-      set_fact:
+      ansible.builtin.set_fact:
         init_name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - init_id_list|length == desire_instance_number
           - init_name_list|length == desire_instance_number
@@ -173,7 +174,7 @@
       register: as_instances
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_instances is success
           - as_instances is changed
@@ -184,15 +185,15 @@
       register: as_inst_list
 
     - name: Get init list of ID of instances
-      set_fact:
+      ansible.builtin.set_fact:
         init_id_list: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
 
     - name: Get init list of Names of instances
-      set_fact:
+      ansible.builtin.set_fact:
         init_name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - init_id_list|length == desire_instance_number
           - init_name_list|length == desire_instance_number
@@ -203,15 +204,15 @@
       register: as_inst_list
 
     - name: Get init list of ID of instances
-      set_fact:
+      ansible.builtin.set_fact:
         id_list: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
 
     - name: Get init list of Names of instances
-      set_fact:
+      ansible.builtin.set_fact:
         name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - id_list|length == init_id_list|length
           - name_list|length == init_name_list|length
@@ -225,7 +226,7 @@
       register: as_instances
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_instances is success
           - as_instances is changed
@@ -236,15 +237,15 @@
       register: as_inst_list
 
     - name: Get list of ID of instances
-      set_fact:
+      ansible.builtin.set_fact:
         id_list: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
 
     - name: Get list of Names of instances
-      set_fact:
+      ansible.builtin.set_fact:
         name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - id_list|length == init_id_list|length + 2
           - name_list|length == init_name_list|length + 2
@@ -259,7 +260,7 @@
       register: as_instances
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_instances is success
           - as_instances is changed
@@ -273,7 +274,7 @@
       register: as_instances
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_instances is success
           - as_instances is changed
@@ -288,7 +289,7 @@
       register: as_instances
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_instances is success
           - as_instances is changed
@@ -302,7 +303,7 @@
       register: as_instances
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_instances is success
           - as_instances is changed
@@ -317,7 +318,7 @@
       register: as_instances
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_instances is success
           - as_instances is changed
@@ -328,15 +329,15 @@
       register: as_inst_list
 
     - name: Get list of ID of instances
-      set_fact:
+      ansible.builtin.set_fact:
         id_list_2: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
 
     - name: Get list of Names of instances
-      set_fact:
+      ansible.builtin.set_fact:
         name_list_2: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - id_list_2|length == id_list|length
           - name_list_2|length == name_list|length
@@ -352,7 +353,7 @@
       register: as_instances
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_instances is success
           - as_instances is changed
@@ -363,15 +364,15 @@
       register: as_inst_list
 
     - name: Get list of ID of instances
-      set_fact:
+      ansible.builtin.set_fact:
         id_list_after_remove: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
 
     - name: Get list of Names of instances
-      set_fact:
+      ansible.builtin.set_fact:
         name_list_after_remove: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - id_list_after_remove|length == id_list|length - 1
           - name_list_after_remove|length == name_list|length - 1
@@ -387,7 +388,7 @@
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is changed
@@ -398,15 +399,15 @@
       register: as_inst_list
 
     - name: Get list of ID of instances
-      set_fact:
+      ansible.builtin.set_fact:
         id_list_after_remove: "{{ as_inst_list.scaling_instances | map(attribute='id') | list }}"
 
     - name: Get list of Names of instances
-      set_fact:
+      ansible.builtin.set_fact:
         name_list_after_remove: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - id_list_after_remove|length == id_list|length - 1
           - name_list_after_remove|length == name_list|length - 1
@@ -423,7 +424,7 @@
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is changed
@@ -434,18 +435,19 @@
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result.scaling_instances|length == {{ min_instance_number }}
 
   always:
-    - block:
-        # Cleanup
+    - name: Cleanup
+      block:
         - name: Delete ECS1
           openstack.cloud.server:
             name: "{{ (as_instance_name + '_1') }}"
             delete_fip: true
             state: absent
+          failed_when: false
 
         - name: Delete ECS2
           openstack.cloud.server:
@@ -462,9 +464,10 @@
             wait: true
             timeout: 360
           register: dropped_as_group
+          failed_when: false
 
         - name: assert result
-          assert:
+          ansible.builtin.assert:
             that:
               - dropped_as_group is success
               - dropped_as_group is changed
@@ -474,9 +477,10 @@
             scaling_configuration: "{{ as_config_name }}"
             state: absent
           register: dropped_as_config
+          failed_when: false
 
         - name: assert result
-          assert:
+          ansible.builtin.assert:
             that:
               - dropped_as_config is success
               - dropped_as_config is changed
@@ -485,24 +489,28 @@
           openstack.cloud.security_group:
             name: "{{ secgroup_name }}"
             state: absent
+          failed_when: false
 
         - name: Delete existing router
           openstack.cloud.os_router:
             name: "{{ router.router.name }}"
             state: absent
+          failed_when: false
 
         - name: Delete existing subnet
           openstack.cloud.os_subnet:
             name: "{{ subnet.subnet.name }}"
             state: absent
+          failed_when: false
 
         - name: Delete existing network
           openstack.cloud.os_network:
             name: "{{ network.network.name }}"
             state: absent
+          failed_when: false
 
         - name: Delete keypair
           openstack.cloud.os_keypair:
             name: "{{ kp_name }}"
             state: absent
-      ignore_errors: true
+          failed_when: false

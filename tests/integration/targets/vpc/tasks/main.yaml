@@ -1,15 +1,16 @@
 ---
-- module_defaults:
+- name: VPC Tests
+  module_defaults:
     opentelekomcloud.cloud.vpc:
       cloud: "{{ test_cloud }}"
 
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         vpc_name: "{{ ( prefix + '_vpc') }}"
         cidr: "192.168.0.0/24"
 
@@ -22,7 +23,7 @@
       register: vpc_check_mode
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc_check_mode is success
           - vpc_check_mode is not changed
@@ -36,7 +37,7 @@
       register: vpc
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc is success
           - vpc is changed
@@ -49,7 +50,7 @@
       register: updated_vpc
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - updated_vpc is success
           - updated_vpc is defined
@@ -61,7 +62,7 @@
       register: deleted_vpc
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deleted_vpc is success
           - deleted_vpc is changed

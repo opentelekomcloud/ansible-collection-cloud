@@ -1,15 +1,16 @@
 ---
-- block:
+- name: Volume Snapshot Info tests
+  block:
     - name: Get volume snapshot info
-      volume_snapshot_info:
+      opentelekomcloud.cloud.volume_snapshot_info:
       register: snapshot
 
     - name: Debug snapshots
-      debug:
+      ansible.builtin.debug:
         var: snapshot
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - snapshot is success
           - snapshot is not changed

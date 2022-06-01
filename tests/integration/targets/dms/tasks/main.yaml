@@ -1,11 +1,11 @@
-- name: Doing Integration test
+- name: DMS tests
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set facts
-      set_fact:
+      ansible.builtin.set_fact:
         queue_name: "{{ ( 'a' + prefix + '-queue' ) }}"
         group_name: "{{ ( 'group_test' ) }}"
         instance_name: "{{ ( 'a' + prefix + '-instance' ) }}"
@@ -105,7 +105,8 @@
       register: dms_sg
 
   always:
-    - block:
+    - name: Cleanup
+      block:
         - name: DMS Delete Queue Group
           opentelekomcloud.cloud.dms_queue_group:
             queue_name: '{{ queue_name }}'
@@ -113,6 +114,7 @@
             state: absent
           register: dms_queue_group_rm
           check_mode: false
+          failed_when: false
 
         - name: Delete Queue
           opentelekomcloud.cloud.dms_queue:
@@ -120,28 +122,32 @@
             state: absent
           register: dms_queue_rm
           check_mode: false
+          failed_when: false
 
         - name: Delete Security Group
           openstack.cloud.security_group:
             name: "{{ sg_name }}"
             state: absent
           register: dms_sg
+          failed_when: false
 
         - name: Drop existing Router
           openstack.cloud.router:
             name: "{{ router_name }}"
             state: absent
           register: dns_rout_dr
+          failed_when: false
 
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
           register: dns_subnet_dr
+          failed_when: false
 
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network_name }}"
             state: absent
           register: dns_net_dr
-      ignore_errors: true
+          failed_when: false

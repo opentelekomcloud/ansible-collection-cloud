@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: AS Group tests
+  module_defaults:
     opentelekomcloud.cloud.as_group:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.as_instance_info:
@@ -16,11 +17,11 @@
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         as_group_name: "{{ ( prefix + '_as_group') }}"
         new_name: "{{ ( prefix + 'new_name') }}"
         key_name: "{{ ( prefix + '_key') }}"
@@ -81,7 +82,7 @@
       register: as_group_check
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_group_check is changed
 
@@ -94,7 +95,7 @@
       register: as_group
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_group is success
           - as_group is changed
@@ -107,14 +108,7 @@
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
       register: as_group_err
-      ignore_errors: true
-
-    - name: assert result
-      assert:
-        that:
-          - as_group_err is not success
-          - as_group_err is not changed
-          - 'as_group_err.msg == "AS Group {{ as_group.as_group.id }} exists"'
+      failed_when: 'as_group_err is changed or as_group_err.msg != "AS Group {{ as_group.as_group.id }} exists"'
 
     - name: Update as group - check mode
       opentelekomcloud.cloud.as_group:
@@ -126,7 +120,7 @@
       register: as_group_check
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_group_check is success
           - as_group_check is changed
@@ -140,7 +134,7 @@
       register: as_group
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_group is success
           - as_group is changed
@@ -155,7 +149,7 @@
       register: as_group_check
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_group_check is changed
           - as_group_check is success
@@ -170,7 +164,7 @@
       register: as_gr_del
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_gr_del is success
           - as_gr_del is changed
@@ -184,14 +178,7 @@
         wait: true
         timeout: 360
       register: as_gr_err
-      ignore_errors: true
-
-    - name: assert result
-      assert:
-        that:
-          - as_gr_err is not success
-          - as_gr_err is not changed
-          - 'as_gr_err.msg == "AS Group {{ as_group.as_group.id }} not found"'
+      failed_when: 'as_gr_err.msg != "AS Group {{ as_group.as_group.id }} not found"'
 
     - name: Create AS Group with instances
       opentelekomcloud.cloud.as_group:
@@ -209,7 +196,7 @@
       register: as_group
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_group is success
           - as_group is changed
@@ -220,12 +207,11 @@
       register: as_instances
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_instances is success
           - as_instances is not changed
           - as_instances['scaling_instances']|length == 1
-
 
     - name: Delete AS Group with instances without force_delete
       opentelekomcloud.cloud.as_group:
@@ -236,17 +222,11 @@
         wait: true
         timeout: 360
       register: as_group_err
-      ignore_errors: true
-
-    - name: assert result
-      assert:
-        that:
-          - as_group_err is not success
-          - as_group_err is not changed
-
+      failed_when: "as_group_err is changed"
 
   always:
-    - block:
+    - name: Cleanup
+      block:
         - name: Delete as group
           opentelekomcloud.cloud.as_group:
             scaling_group:
@@ -256,43 +236,35 @@
             wait: true
             timeout: 360
           register: dropped_as_group
-
-        - name: assert result
-          assert:
-            that:
-              - dropped_as_group is success
-              - dropped_as_group is changed
+          failed_when: "dropped_as_group is not changed"
 
         - name: Delete as config
           opentelekomcloud.cloud.as_config:
             scaling_configuration: "{{ config_name }}"
             state: absent
           register: dropped_as_config
-          ignore_errors: true
-
-        - name: assert result
-          assert:
-            that:
-              - dropped_as_config is success
-              - dropped_as_config is changed
+          failed_when: "dropped_as_config is not changed"
 
         - name: Delete keypair
           openstack.cloud.os_keypair:
             name: "{{ key_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing router
           openstack.cloud.os_router:
             name: "{{ router.router.name }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing subnet
           openstack.cloud.os_subnet:
             name: "{{ subnet.subnet.name }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing network
           openstack.cloud.os_network:
             name: "{{ network.network.name }}"
             state: absent
-      ignore_errors: true
+          ignore_errors: false

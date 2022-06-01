@@ -1,17 +1,18 @@
 ---
-- module_defaults:
-    css_snapshot:
+- name: CSS Snapshot tests
+  module_defaults:
+    opentelekomcloud.cloud.css_snapshot:
       cloud: "{{ test_cloud }}"
   vars:
     prefix: css_cluster_snapshot_test
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
         short_prefix: "{{ (prefix + (99999999999 | random | to_uuid | hash('md5') | truncate(12,end='')  )) }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         network_name: "{{ ( prefix + '-test-network') }}"
         subnet_name: "{{ ( prefix + '-test-subnet') }}"
         router_name: "{{ ( prefix + '-test-router') }}"
@@ -88,7 +89,7 @@
       register: snapshot
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - snapshot is success
           - snapshot is not changed
@@ -102,7 +103,7 @@
       check_mode: true
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - created_snapshot is success
           - created_snapshot is not changed
@@ -114,7 +115,7 @@
       register: created_snapshot
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - created_snapshot is success
           - created_snapshot is changed
@@ -129,7 +130,7 @@
       check_mode: true
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deleted_snapshot is not changed
           - deleted_snapshot is success
@@ -142,14 +143,14 @@
       register: deleted_snapshot
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deleted_snapshot is changed
           - deleted_snapshot is success
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop cluster
           opentelekomcloud.cloud.css_cluster:
             cloud: "{{ test_cloud }}"
@@ -179,4 +180,4 @@
             cloud: "{{ test_cloud }}"
             state: absent
             name: "{{ security_group_name }}"
-      ignore_errors: true
+      ignore_errors: false

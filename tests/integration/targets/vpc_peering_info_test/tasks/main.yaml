@@ -1,15 +1,16 @@
 ---
-- block:
+- name: VPC Peering Info tests
+  block:
     - name: Get vpc peerings info
-      vpc_peering_info:
+      opentelekomcloud.cloud.vpc_peering_info:
       register: vpc_peerings
 
     - name: Debug vpc peerings
-      debug:
+      ansible.builtin.debug:
         var: vpc_peerings
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc_peerings is success
           - vpc_peerings is not changed

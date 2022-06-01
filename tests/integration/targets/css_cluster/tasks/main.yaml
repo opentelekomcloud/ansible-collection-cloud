@@ -1,17 +1,18 @@
 ---
-- module_defaults:
+- name: CSS Cluster tests
+  module_defaults:
     opentelekomcloud.cloud.css_cluster:
       cloud: "{{ test_cloud }}"
   vars:
     prefix: test-a-
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
         short_prefix: "{{ (prefix + (99999999999 | random | to_uuid | hash('md5') | truncate(12,end='')  )) }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         network_name: "{{ ( prefix + '-test-network') }}"
         subnet_name: "{{ ( prefix + '-test-subnet') }}"
         router_name: "{{ ( prefix + '-test-router') }}"
@@ -81,40 +82,44 @@
       register: cluster
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - cluster is success
           - cluster is changed
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop cluster
           opentelekomcloud.cloud.css_cluster:
             name: "{{ css_cluster_name }}"
             state: "absent"
+          failed_when: false
 
         - name: Drop router
           openstack.cloud.router:
             cloud: "{{ test_cloud }}"
             name: "{{ router_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop subnet
           openstack.cloud.subnet:
             cloud: "{{ test_cloud }}"
             name: "{{ subnet_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop network
           openstack.cloud.network:
             cloud: "{{ test_cloud }}"
             name: "{{ network_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop security group
           openstack.cloud.security_group:
             cloud: "{{ test_cloud }}"
             state: absent
             name: "{{ security_group_name }}"
-      ignore_errors: true
+          failed_when: false

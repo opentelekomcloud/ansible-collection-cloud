@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: CSS Snapshot Info tests
+  module_defaults:
     opentelekomcloud.cloud.css_snapshot_info:
       cloud: "{{ test_cloud }}"
   block:
@@ -10,7 +11,7 @@
       ignore_errors: true
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is not success
           - result is not changed

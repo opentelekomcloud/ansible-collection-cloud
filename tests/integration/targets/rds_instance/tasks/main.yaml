@@ -1,14 +1,15 @@
 ---
-- module_defaults:
+- name: RDS Instance tests
+  module_defaults:
     opentelekomcloud.cloud.rds_instance:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         network_name: "{{ ( prefix + 'rds_test-network') }}"
         subnet_name: "{{ ( prefix + 'rds_test-subnet') }}"
         router_name: "{{ ( prefix + 'rds_test-router') }}"
@@ -16,13 +17,13 @@
         rds_flavor: "rds.mysql.s1.medium"
 
     - name: Delete missing instance
-      rds_instance:
+      opentelekomcloud.cloud.rds_instance:
         state: absent
         name: "definitely_missing_instance"
       register: rds
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - rds is success
           - rds is not changed
@@ -74,34 +75,37 @@
       register: obj
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - obj is success
           - obj is changed
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop instance
           opentelekomcloud.cloud.rds_instance:
             name: "{{ instance_name }}"
             state: "absent"
+          failed_when: false
 
         - name: Drop router
           openstack.cloud.router:
             cloud: "{{ test_cloud }}"
             name: "{{ router_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop subnet
           openstack.cloud.subnet:
             cloud: "{{ test_cloud }}"
             name: "{{ subnet_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop network
           openstack.cloud.network:
             cloud: "{{ test_cloud }}"
             name: "{{ network_name }}"
             state: absent
-      ignore_errors: true
+          failed_when: false

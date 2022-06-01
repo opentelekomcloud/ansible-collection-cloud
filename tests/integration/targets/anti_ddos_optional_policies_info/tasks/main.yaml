@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: AntiDDoS Optional Policies Info tests
+  module_defaults:
     opentelekomcloud.cloud.anti_ddos_optional_policies_info:
       cloud: "{{ test_cloud }}"
   block:
@@ -8,7 +9,7 @@
       register: anti_ddos_optional_policies_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - anti_ddos_optional_policies_info is success
           - anti_ddos_optional_policies_info is not changed
