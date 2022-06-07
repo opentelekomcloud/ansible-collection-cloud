@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: AS Policy Info tests
+  module_defaults:
     opentelekomcloud.cloud.as_policy_info:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.as_group:
@@ -14,11 +15,11 @@
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         as_group_name: "{{ ( prefix + '_as_group') }}"
         key_name: "{{ ( prefix + '_key') }}"
         network_name: "{{ ( prefix + '_network') }}"
@@ -69,7 +70,7 @@
       register: as_policies
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_policies is success
           - as_policies is not changed
@@ -81,7 +82,7 @@
       register: as_policies
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_policies is success
           - as_policies is not changed
@@ -90,31 +91,17 @@
     - name: Get error message that required parameter is missing
       opentelekomcloud.cloud.as_policy_info:
       register: as_policies
-      ignore_errors: true
-
-    - name: assert result
-      assert:
-        that:
-          - as_policies is not success
-          - as_policies is not changed
-          - 'as_policies.msg == "missing required arguments: scaling_group"'
+      failed_when: 'as_policies.msg != "missing required arguments: scaling_group"'
 
     - name: Get error when AS group id is missing
       opentelekomcloud.cloud.as_policy_info:
         scaling_group:
       register: as_policies
-      ignore_errors: true
-
-    - name: assert result
-      assert:
-        that:
-          - as_policies is not success
-          - as_policies is not changed
-          - 'as_policies.msg == "Scaling group is missing"'
+      failed_when: 'as_policies.msg != "Scaling group is missing"'
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Delete as group
           opentelekomcloud.cloud.as_group:
             scaling_group:
@@ -123,24 +110,28 @@
             force_delete: true
             wait: true
           register: dropped_as_group
+          failed_when: false
 
         - name: Delete keypair
           openstack.cloud.os_keypair:
             name: "{{ key_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing router
           openstack.cloud.os_router:
             name: "{{ router.router.name }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing subnet
           openstack.cloud.os_subnet:
             name: "{{ subnet.subnet.name }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing network
           openstack.cloud.os_network:
             name: "{{ network.network.name }}"
             state: absent
-      ignore_errors: true
+          failed_when: false

@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: DDS Datastore Info tests
+  module_defaults:
     opentelekomcloud.cloud.dds_datastore_info:
       cloud: "{{ test_cloud }}"
   block:
@@ -9,7 +10,7 @@
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is not changed

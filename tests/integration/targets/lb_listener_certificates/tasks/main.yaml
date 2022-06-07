@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: LoadBalancer Certificates tests
+  module_defaults:
     opentelekomcloud.cloud.loadbalancer:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.lb_listener:
@@ -16,11 +17,11 @@
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         network_name: "{{ ( prefix + '_acc-lb-network') }}"
         subnet_name: "{{ ( prefix + '_acc-lb-subnet') }}"
         router_name: "{{ ( prefix + '_acc-lb-router') }}"
@@ -150,7 +151,7 @@
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
 
@@ -161,7 +162,7 @@
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
 
@@ -179,7 +180,7 @@
       register: cert_1_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - cert_1 is success
           - cert_1 is changed
@@ -201,7 +202,7 @@
       register: cert_2_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - cert_2 is success
           - cert_2 is changed
@@ -218,7 +219,7 @@
       register: lb
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - lb is success
           - lb is changed
@@ -235,7 +236,7 @@
       register: listener
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - listener is success
           - listener is changed
@@ -252,7 +253,7 @@
       register: listener
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - listener is success
           - listener is not changed
@@ -269,7 +270,7 @@
       register: listener
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - listener is success
           - listener is changed
@@ -281,7 +282,7 @@
       register: listener_drop
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - listener_drop is success
           - listener_drop is changed
@@ -294,7 +295,7 @@
       register: loadbalancer_drop
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - loadbalancer_drop is success
           - loadbalancer_drop is changed
@@ -306,7 +307,7 @@
       register: cert_drop_1
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - cert_drop_1 is success
           - cert_drop_1 is changed
@@ -318,30 +319,33 @@
       register: cert_drop_2
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - cert_drop_2 is success
           - cert_drop_2 is changed
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop perhaps existing Server cert 1
           opentelekomcloud.cloud.lb_certificate:
             name: "{{ cert_name_srv_1 }}"
             state: absent
           register: drop
+          failed_when: false
 
         - name: Drop perhaps existing Server cert 2
           opentelekomcloud.cloud.lb_certificate:
             name: "{{ cert_name_srv_2 }}"
             state: absent
           register: drop
+          failed_when: false
 
         - name: Drop perhaps existing listener
           opentelekomcloud.cloud.lb_listener:
             state: absent
             name: "{{ listener_name }}"
           register: drop
+          failed_when: false
 
         - name: Drop perhaps existing loadbalancer
           opentelekomcloud.cloud.loadbalancer:
@@ -349,22 +353,25 @@
             state: absent
             delete_public_ip: true
           register: drop
+          failed_when: false
 
         - name: Drop existing Router
           openstack.cloud.os_router:
             name: "{{ router_name }}"
             state: absent
           register: drop
+          failed_when: false
 
         - name: Drop existing subnet
           openstack.cloud.os_subnet:
             name: "{{ subnet_name }}"
             state: absent
           register: drop
+          failed_when: false
 
         - name: Drop existing network
           openstack.cloud.os_network:
             name: "{{ network_name }}"
             state: absent
           register: drop
-      ignore_errors: true
+          failed_when: false

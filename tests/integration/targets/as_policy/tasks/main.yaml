@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: AS Policy tests
+  module_defaults:
     opentelekomcloud.cloud.as_policy:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.as_policy_info:
@@ -18,11 +19,11 @@
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         as_group_name: "{{ ( prefix + '_as_group') }}"
         as_policy_name: "{{ prefix + '_as_policy' }}"
         alarm_name: "{{ prefix + '_alarm' }}"
@@ -42,7 +43,7 @@
       register: fl
 
     - name: Set additional facts
-      set_fact:
+      ansible.builtin.set_fact:
         fl_ip: "{{ fl.floating_ip.floating_ip_address }}"
         fl_ip_id: "{{ fl.floating_ip.id }}"
 
@@ -106,7 +107,7 @@
       register: as_policy
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_policy is changed
 
@@ -120,7 +121,7 @@
       register: as_policy
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_policy is success
           - as_policy is changed
@@ -134,14 +135,7 @@
         alarm: "{{ alarm_name }}"
         state: "present"
       register: as_policy
-      ignore_errors: true
-
-    - name: assert result
-      assert:
-        that:
-          - as_policy is not success
-          - as_policy is not changed
-          - 'as_policy.msg == "Scaling policy {{ as_policy_name }} exists"'
+      failed_when: 'as_policy.msg != "Scaling policy {{ as_policy_name }} exists"'
 
     - name: Get list of AS Policies
       opentelekomcloud.cloud.as_policy_info:
@@ -149,7 +143,7 @@
       register: as_policies
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_policies is success
           - as_policies['scaling_policies']|length == 1
@@ -167,7 +161,7 @@
       register: as_policy
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_policy is success
           - as_policy is changed
@@ -182,7 +176,7 @@
       check_mode: true
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_policy is changed
 
@@ -194,7 +188,7 @@
       register: as_policy
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_policy is success
           - as_policy is changed
@@ -206,7 +200,7 @@
       register: as_policies
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_policies is success
           - as_policies['scaling_policies']|length == 0
@@ -217,18 +211,11 @@
         scaling_policy: "{{ as_policy_name }}"
         state: "absent"
       register: as_policy
-      ignore_errors: true
-
-    - name: assert result
-      assert:
-        that:
-          - as_policy is not success
-          - as_policy is not changed
-          - 'as_policy.msg == "Scaling policy {{ as_policy_name }} not found"'
+      failed_when: 'as_policy.msg != "Scaling policy {{ as_policy_name }} not found"'
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Delete AS group
           opentelekomcloud.cloud.as_group:
             scaling_group:
@@ -237,30 +224,35 @@
             force_delete: true
             wait: true
           register: dropped_as_group
+          failed_when: false
 
         - name: Drop alarm
           opentelekomcloud.cloud.ces_alarms:
             alarm_name: "{{ alarm_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop floating ip
           opentelekomcloud.cloud.floating_ip:
             floating_ip_address: "{{ fl_ip }}"
             state: absent
             purge: true
+          failed_when: false
 
         - name: Drop existing router
           openstack.cloud.os_router:
             name: "{{ router.router.name }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing subnet
           openstack.cloud.os_subnet:
             name: "{{ subnet.subnet.name }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing network
           openstack.cloud.os_network:
             name: "{{ network.network.name }}"
             state: absent
-      ignore_errors: true
+          failed_when: false

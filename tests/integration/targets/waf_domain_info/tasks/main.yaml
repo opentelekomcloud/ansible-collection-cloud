@@ -1,26 +1,27 @@
 ---
-- module_defaults:
-    waf_domain_info:
+- name: WAF Domain Info tests
+  module_defaults:
+    opentelekomcloud.cloud.waf_domain_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: Get WAF Domains info
-      waf_domain_info:
+      opentelekomcloud.cloud.waf_domain_info:
       register: domain
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - domain is success
           - domain is not changed
           - domain.waf_domains is defined
 
     - name: Get WAF Domain with name filter info
-      waf_domain_info:
+      opentelekomcloud.cloud.waf_domain_info:
         name: www.fakedomain.otc
       register: domain
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - domain is success
           - domain is not changed

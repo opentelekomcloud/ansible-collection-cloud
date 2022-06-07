@@ -1,8 +1,8 @@
 ---
-- name: Doing Integration test
+- name: DNS tests
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Assigning Floating IP
@@ -11,7 +11,7 @@
       register: fl
 
     - name: Set facts
-      set_fact:
+      ansible.builtin.set_fact:
         fl_ip: "{{ fl.floating_ip.floating_ip_address }}"
         ptrdname: "{{ ( prefix + 'dns.com.' ) }}"
         description: "{{ ( prefix + 'description-dns' ) }}"
@@ -57,7 +57,7 @@
       register: dns_fl_ch
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_fl_ch is success
           - dns_fl_ch is changed
@@ -70,11 +70,11 @@
       register: dns_fl
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: dns_fl.ptr
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_fl is success
           - dns_fl.ptr is defined
@@ -89,7 +89,7 @@
       register: dns_fl_ch
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_fl_ch is success
           - dns_fl_ch is changed
@@ -103,11 +103,11 @@
       register: dns_fl
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: dns_fl.ptr
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_fl is success
           - dns_fl.ptr.description is defined
@@ -120,7 +120,7 @@
       register: dns_zo_ch
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_zo_ch is success
           - dns_zo_ch is changed
@@ -132,11 +132,11 @@
       register: dns_zo
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: dns_zo.zone
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_zo is success
           - dns_zo.zone is defined
@@ -150,7 +150,7 @@
       register: dns_zo_ch
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_zo_ch is success
           - dns_zo_ch is changed
@@ -163,11 +163,11 @@
       register: dns_zo
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: dns_zo.zone
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_zo is success
           - dns_zo.zone.description is defined
@@ -182,7 +182,7 @@
       register: dns_zo_pr_ch
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_zo_pr_ch is success
           - dns_zo_pr_ch is changed
@@ -196,11 +196,11 @@
       register: dns_zo_pr
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: dns_zo_pr.zone
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_zo_pr is success
           - dns_zo_pr.zone is defined
@@ -214,7 +214,7 @@
       register: dns_zo_pr_ch
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_zo_pr_ch is success
           - dns_zo_pr_ch is changed
@@ -227,11 +227,11 @@
       register: dns_zo_pr
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: dns_zo_pr.zone
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_zo_pr is success
           - dns_zo_pr.zone.description is defined
@@ -242,7 +242,7 @@
       register: dns_ns
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_ns is success
           - dns_ns.nameservers[0].hostname is defined
@@ -253,7 +253,7 @@
       register: dns_ns
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_ns is success
           - dns_ns.nameservers[0].address is defined
@@ -271,7 +271,7 @@
       register: dns_rs_ch
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_rs_ch is success
           - dns_rs_ch is changed
@@ -288,11 +288,11 @@
       register: dns_rs
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: dns_rs.recordset
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_rs is success
           - dns_rs.recordset is defined
@@ -311,7 +311,7 @@
       register: dns_rs_ch
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_rs_ch is success
           - dns_rs_ch is changed
@@ -329,22 +329,24 @@
       register: dns_rs
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: dns_rs.recordset
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dns_rs is success
           - dns_rs.recordset.description is defined
 
   always:
-    - block:
+    - name: Cleanup
+      block:
         - name: Drop dns_floating_ip entry
           opentelekomcloud.cloud.dns_floating_ip:
             floating_ip: "{{ fl_ip }}"
             state: absent
           register: dns_fl_dr
+          failed_when: false
 
         - name: Dropping DNS Recordset
           opentelekomcloud.cloud.dns_recordset:
@@ -352,12 +354,14 @@
             recordset_name: "{{ rs_name }}"
             state: absent
           register: dns_rs_dr
+          failed_when: false
 
         - name: Drop DNS public Zone
           opentelekomcloud.cloud.dns_zone:
             name: "{{ zone_public_name }}"
             state: absent
           register: dns_zo_pu_dr
+          failed_when: false
 
         - name: Drop DNS private Zone
           opentelekomcloud.cloud.dns_zone:
@@ -365,6 +369,7 @@
             zone_type: "private"
             state: absent
           register: dns_zo_pr_dr
+          failed_when: false
 
         - name: Drop Floating IP
           opentelekomcloud.cloud.floating_ip:
@@ -372,22 +377,25 @@
             state: absent
             purge: true
           register: fl_dr
+          failed_when: false
 
         - name: Drop existing Router
           openstack.cloud.router:
             name: "{{ router_name }}"
             state: absent
           register: dns_rout_dr
+          failed_when: false
 
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
           register: dns_subnet_dr
+          failed_when: false
 
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network_name }}"
             state: absent
           register: dns_net_dr
-      ignore_errors: true
+          failed_when: false

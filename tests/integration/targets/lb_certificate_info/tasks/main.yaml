@@ -1,26 +1,27 @@
 ---
-- module_defaults:
-    lb_certificate_info:
+- name: LoadBalancer Certificate Info tests
+  module_defaults:
+    opentelekomcloud.cloud.lb_certificate_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: Get ELB Cert info
-      lb_certificate_info:
+      opentelekomcloud.cloud.lb_certificate_info:
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is not changed
           - result.elb_certificates is defined
 
     - name: Get ELB Cert with name filter info
-      lb_certificate_info:
+      opentelekomcloud.cloud.lb_certificate_info:
         name: some_fake
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is not changed

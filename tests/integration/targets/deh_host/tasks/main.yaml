@@ -1,22 +1,23 @@
 ---
 # author: @tischrei
-- module_defaults:
-    openstack.cloud.deh_host:
+- name: DeH Host tests
+  module_defaults:
+    opentelekomcloud.cloud.deh_host:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.deh_host_info:
+    opentelekomcloud.cloud.deh_host_info:
       cloud: "{{ test_cloud }}"
 
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         deh_host_name: "{{ ( prefix + '_deh-host') }}"
 
     - name: Allocate DeH host - check_mode
-      deh_host:
+      opentelekomcloud.cloud.deh_host:
         availability_zone: eu-de-01
         host_type: s2-medium
         name: "{{ deh_host_name }}"
@@ -31,13 +32,13 @@
       register: deh_ch
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deh_ch is success
           - deh_ch is changed
 
     - name: Allocate DeH host
-      deh_host:
+      opentelekomcloud.cloud.deh_host:
         availability_zone: eu-de-01
         host_type: s2-medium
         name: "{{ deh_host_name }}"
@@ -51,13 +52,13 @@
       register: deh
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deh is success
           - deh.deh_host.dedicated_host_ids[0] is defined
 
     - name: Modify DeH host - check mode
-      deh_host:
+      opentelekomcloud.cloud.deh_host:
         id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
         auto_placement: false
       check_mode: true
@@ -66,12 +67,12 @@
       register: deh_ch
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deh_ch is success
 
     - name: Modify DeH host
-      deh_host:
+      opentelekomcloud.cloud.deh_host:
         id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
         auto_placement: false
       when:
@@ -79,29 +80,29 @@
       register: deh
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deh is success
 
     - name: Query not existing ECS on dedicated host
-      deh_server_info:
+      opentelekomcloud.cloud.deh_server_info:
         dedicated_host: "{{ deh.deh_host.id }}"
       when:
         - deh is defined
       register: server
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - server is success
           - server.deh_servers is defined
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop existing DeH host
-          deh_host:
+          opentelekomcloud.cloud.deh_host:
             name: "{{ deh.deh_host.name }}"
             state: absent
           register: deh
-      ignore_errors: true
+          failed_when: false

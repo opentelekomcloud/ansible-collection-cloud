@@ -1,16 +1,17 @@
 ---
-- module_defaults:
-    lb_certificate:
+- name: LoadBalancer Certificate tests
+  module_defaults:
+    opentelekomcloud.cloud.lb_certificate:
       cloud: "{{ test_cloud }}"
-    lb_certificate_info:
+    opentelekomcloud.cloud.lb_certificate_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         cert_name_srv: "{{ ( prefix + '_acc-srv-lb-cert') }}"
         cert_name_ca: "{{ ( prefix + '_acc-ca-lb-cert') }}"
         cert_description: "{{ ( prefix + '_acc-lb-cert-description') }}"
@@ -107,7 +108,7 @@
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
 
@@ -118,7 +119,7 @@
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
 
@@ -135,7 +136,7 @@
       register: result_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is changed
@@ -155,7 +156,7 @@
       register: result_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is changed
@@ -175,7 +176,7 @@
       register: result_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is changed
@@ -189,7 +190,7 @@
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is changed
@@ -208,7 +209,7 @@
       register: result_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is changed
@@ -222,23 +223,24 @@
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is changed
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop perhaps existing CA cert
           opentelekomcloud.cloud.lb_certificate:
             name: "{{ cert_name_ca }}"
             state: absent
           register: drop
+          failed_when: false
 
         - name: Drop perhaps existing Server cert
           opentelekomcloud.cloud.lb_certificate:
             name: "{{ cert_name_srv }}"
             state: absent
           register: drop
-      ignore_errors: true
+          failed_when: false

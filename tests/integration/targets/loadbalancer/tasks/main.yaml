@@ -1,14 +1,15 @@
 ---
-- module_defaults:
-    loadbalancer:
+- name: LoadBalancer tests
+  module_defaults:
+    opentelekomcloud.cloud.loadbalancer:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         network_name: "{{ ( prefix + '_acc-lb-network') }}"
         subnet_name: "{{ ( prefix + '_acc-lb-subnet') }}"
         router_name: "{{ ( prefix + '_acc-lb-router') }}"
@@ -52,7 +53,7 @@
       check_mode: true
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - loadbalancer_check is changed
 
@@ -65,7 +66,7 @@
       register: lb
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - lb is success
           - lb is changed
@@ -85,7 +86,7 @@
       register: res
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - res is success
           - res.loadbalancers is defined
@@ -102,7 +103,7 @@
       register: lstnr
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - lstnr is success
           - lstnr is changed
@@ -115,7 +116,7 @@
       register: lstnr
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - lstnr is success
           - lstnr is changed
@@ -126,7 +127,7 @@
       register: res
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - res is success
           - res.listeners is defined
@@ -143,7 +144,7 @@
       register: pool
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - pool is success
           - pool is changed
@@ -158,7 +159,7 @@
       register: pool
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - pool is success
           - pool is changed
@@ -169,7 +170,7 @@
       register: res
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - res is success
           - res.server_groups is defined
@@ -182,7 +183,7 @@
       register: dropped
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dropped is success
           - dropped is changed
@@ -194,7 +195,7 @@
       register: dropped
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dropped is success
           - dropped is changed
@@ -208,7 +209,7 @@
       register: dropped
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dropped is success
           - dropped is changed
@@ -221,36 +222,39 @@
       register: dropped
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dropped is success
           - dropped is not changed
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop perhaps existing loadbalancer
           opentelekomcloud.cloud.loadbalancer:
             name: "{{ lb.loadbalancer.id }}"
             state: absent
             delete_public_ip: true
           register: lb
+          failed_when: false
 
         - name: Drop existing Router
           openstack.cloud.os_router:
             name: "{{ router_name }}"
             state: absent
           register: lb_net_router
+          failed_when: false
 
         - name: Drop existing subnet
           openstack.cloud.os_subnet:
             name: "{{ subnet_name }}"
             state: absent
           register: lb_net_subnet
+          failed_when: false
 
         - name: Drop existing network
           openstack.cloud.os_network:
             name: "{{ network_name }}"
             state: absent
           register: lb_net
-      ignore_errors: true
+          failed_when: false

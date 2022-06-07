@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: Availability Zone Info tests
+  module_defaults:
     opentelekomcloud.cloud.availability_zone_info:
       cloud: "{{ test_cloud }}"
   block:
@@ -13,7 +14,7 @@
       register: az
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - az is success
           - az is not changed

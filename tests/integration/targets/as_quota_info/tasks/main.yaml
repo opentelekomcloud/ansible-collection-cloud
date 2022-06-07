@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: AS Quota Info tests
+  module_defaults:
     opentelekomcloud.cloud.as_quota_info:
       cloud: "{{ test_cloud }}"
   block:
@@ -8,7 +9,7 @@
       register: as_quotas
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_quotas is success
           - as_quotas is not changed

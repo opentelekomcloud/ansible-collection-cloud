@@ -125,7 +125,7 @@ class VpnServicesInfoModule(OTCModule):
         description=dict(type='str', required=False),
         external_v4_ip=dict(type='str', required=False),
         external_v6_ip=dict(type='str', required=False),
-        router=dict(type='str', requiered=False),
+        router=dict(type='str', required=False),
         status=dict(required=False,
                     choices=["active", "down", "build",
                              "error", "pending_create",
@@ -134,6 +134,7 @@ class VpnServicesInfoModule(OTCModule):
         project_id=dict(type='str', required=False),
         vpn_service=dict(type='str', required=False)
     )
+
     module_kwargs = dict(
         supports_check_mode=True
     )

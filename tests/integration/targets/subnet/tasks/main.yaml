@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: Subnet tests
+  module_defaults:
     opentelekomcloud.cloud.vpc:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.subnet:
@@ -7,11 +8,11 @@
 
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         vpc_name: "{{ ( prefix + '_vpc') }}"
         subnet_name: "test-subnet"
         cidr: "192.168.0.0/24"
@@ -36,7 +37,7 @@
       register: subnet
 
     - name: Assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - subnet is success
           - subnet is changed
@@ -56,7 +57,7 @@
       register: subnet_check_mode
 
     - name: Assert check result
-      assert:
+      ansible.builtin.assert:
         that:
           - subnet_check_mode is success
           - subnet_check_mode is not changed
@@ -73,7 +74,7 @@
       register: updated_subnet
 
     - name: Assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - updated_subnet is success
           - updated_subnet is changed
@@ -87,7 +88,7 @@
       register: deleted_subnet
 
     - name: Assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deleted_subnet is success
           - deleted_subnet is changed
@@ -101,7 +102,7 @@
       check_mode: true
 
     - name: Assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deleted_subnet_check is success
           - deleted_subnet_check is not changed

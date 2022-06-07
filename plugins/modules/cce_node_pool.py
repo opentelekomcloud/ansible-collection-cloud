@@ -342,7 +342,7 @@ class CceNodePoolModule(OTCModule):
             choices=['SATA', 'SAS', 'SSD'],
             default='SATA'),
         scale_down_cooldown_time=dict(required=False, type='int'),
-        ssh_key=dict(required=False),
+        ssh_key=dict(required=False, no_log=False),
         state=dict(default='present', choices=['absent', 'present']),
         tags=dict(required=False, type='list', elements='dict'),
         taints=dict(required=False, type='list', elements='dict'),

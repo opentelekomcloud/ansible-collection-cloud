@@ -1,6 +1,7 @@
 ---
 # author: Tino Schreiber (@tischrei)
-- module_defaults:
+- name: CCE Lifecycle tests
+  module_defaults:
     opentelekomcloud.cloud.cce_cluster:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.cce_cluster_node:
@@ -12,11 +13,11 @@
 
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ (99999999 | random | to_uuid | hash('md5')) }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         network_name: "{{ ( prefix + '-cce-network') }}"
         subnet_name: "{{ ( prefix + '-ccc-subnet') }}"
         router_name: "{{ ( prefix + '-cce-router') }}"
@@ -68,7 +69,7 @@
       register: cluster
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - cluster is success
           - cluster is changed
@@ -79,7 +80,7 @@
       register: cluster_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - cluster_info is success
           - cluster_info.cce_clusters is defined
@@ -91,7 +92,7 @@
       register: keypair
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - keypair is success
           - keypair.key.private_key is defined
@@ -131,13 +132,13 @@
       register: node
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - node is success
           - node is changed
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - node is success
           - node.cce_cluster_node.id is defined
@@ -158,7 +159,7 @@
       register: node2
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - node2 is success
           - node2.cce_cluster_node.id is defined
@@ -169,14 +170,14 @@
       register: node_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - node_info is success
           - node_info.cce_cluster_nodes is defined
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop node 2
           opentelekomcloud.cloud.cce_cluster_node:
             cluster: "{{ cce_cluster_name }}"
@@ -184,33 +185,38 @@
             state: absent
             wait: true
           register: node2
+          failed_when: false
 
         - name: Drop cluster
           opentelekomcloud.cloud.cce_cluster:
             name: "{{ cce_cluster_name }}"
             timeout: 3000
             state: "absent"
+          failed_when: false
 
         - name: Drop Keypair
           openstack.cloud.keypair:
             state: "absent"
             name: "{{ keypair_name }}"
+          failed_when: false
 
         - name: Drop router
           openstack.cloud.router:
             cloud: "{{ test_cloud }}"
             name: "{{ router_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop subnet
           openstack.cloud.subnet:
             cloud: "{{ test_cloud }}"
             name: "{{ subnet_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop network
           openstack.cloud.network:
             cloud: "{{ test_cloud }}"
             name: "{{ network_name }}"
             state: absent
-      ignore_errors: true
+          failed_when: false

@@ -1,16 +1,17 @@
 ---
-- block:
+- name: Nat SNAT Rule Info tests
+  block:
     - name: Get SNAT rule info
-      nat_snat_rule_info:
+      opentelekomcloud.cloud.nat_snat_rule_info:
         cloud: "{{ test_cloud }}"
       register: sn
 
     - name: debug configs
-      debug:
+      ansible.builtin.debug:
         var: sn.snat_rules
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - sn is success
           - sn is not changed

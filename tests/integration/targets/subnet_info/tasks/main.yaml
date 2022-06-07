@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: Subnet Info tests
+  module_defaults:
     opentelekomcloud.cloud.vpc:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.vpc_info:
@@ -11,11 +12,11 @@
 
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         vpc_name: "{{ ( prefix + 'vpc') }}"
         subnet_name: "{{ ( prefix + 'subnet') }}"
         cidr: "192.168.0.0/24"
@@ -45,7 +46,7 @@
       register: all_subnets
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - all_subnets is success
           - all_subnets is not changed
@@ -57,23 +58,24 @@
       register: new_subnet
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - new_subnet is success
           - new_subnet is not changed
           - new_subnet | length > 0
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop created subnet
           opentelekomcloud.cloud.subnet:
             name: "{{ subnet_name }}"
             vpc: "{{ vpc_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop created vpc
           opentelekomcloud.cloud.vpc:
             name: "{{ vpc_name }}"
             state: absent
-      ignore_errors: true
+          failed_when: false

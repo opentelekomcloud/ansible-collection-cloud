@@ -1,16 +1,17 @@
 ---
-- block:
+- name: DeH Host Info tests
+  block:
     - name: Get Dedicated host info
-      deh_host_info:
+      opentelekomcloud.cloud.deh_host_info:
         cloud: "{{ test_cloud }}"
       register: deh
 
     - name: debug deh
-      debug:
+      ansible.builtin.debug:
         var: deh.deh_hosts
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deh is success
           - deh is not changed

@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: AntiDDoS FIP Statuses Info tests
+  module_defaults:
     opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
       cloud: "{{ test_cloud }}"
   block:
@@ -8,7 +9,7 @@
       register: anti_ddos
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - anti_ddos is success
           - anti_ddos is not changed
@@ -19,7 +20,7 @@
       register: anti_ddos
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - anti_ddos is success
           - anti_ddos is not changed
@@ -31,7 +32,7 @@
       ignore_errors: true
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - anti_ddos is not success
           - anti_ddos is not changed

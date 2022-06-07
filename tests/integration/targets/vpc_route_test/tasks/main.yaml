@@ -1,14 +1,15 @@
 ---
-- module_defaults:
+- name: VPC Route tests
+  module_defaults:
     opentelekomcloud.cloud.vpc_route:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         network_name_1: "{{ ( prefix + 'vpc_route_test-network_1') }}"
         subnet_name_1: "{{ ( prefix + 'vpc_route_test-subnet_1') }}"
         router_name_1: "{{ ( prefix + 'vpc_route_test-router_1') }}"
@@ -91,7 +92,7 @@
       check_mode: true
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc_route_check is changed
 
@@ -103,24 +104,24 @@
       register: vpc_route
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc_route is success
           - vpc_route is changed
 
   always:
-    - block:
-      # Cleanup
-
+    - name: Cleanup
+      block:
         - name: Drop existing vpc route
           opentelekomcloud.cloud.vpc_route:
             # pass ID as name
             route_id: "{{ vpc_route.vpc_route.id }}"
             state: absent
           register: dropped
+          failed_when: false
 
         - name: assert result
-          assert:
+          ansible.builtin.assert:
             that:
               - dropped is success
               - dropped is changed
@@ -129,34 +130,40 @@
           opentelekomcloud.cloud.vpc_peering:
             name: "{{ vpc_peering_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing first router
           openstack.cloud.router:
             name: "{{ router_name_1 }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing first subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name_1 }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing first network
           openstack.cloud.network:
             name: "{{ network_name_1 }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing second router
           openstack.cloud.router:
             name: "{{ router_name_2 }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing second subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name_2 }}"
             state: absent
+          failed_when: false
 
         - name: Drop existing second network
           openstack.cloud.network:
             name: "{{ network_name_2 }}"
             state: absent
-      ignore_errors: true
+          failed_when: false
