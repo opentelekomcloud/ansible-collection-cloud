@@ -1,0 +1,72 @@
+---
+- module_defaults:
+    opentelekomcloud.cloud.cbr_backup:
+      cloud: "{{ test_cloud }}"
+
+  block:
+    - name: Set random prefix
+      set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      set_fact:
+        zone_name: "{{ ( prefix + 'test.zone') }}"
+        recordset_random_name: "{{ ( prefix + 'recordset.' + prefix + 'test.zone') }}"
+
+    - name: Creating a public DNS Zone
+      opentelekomcloud.cloud.dns_zone:
+        name: "{{ zone_name }}"
+        state: present
+      register: dns_zo
+
+    - name: Creating a DNS Recordset
+      opentelekomcloud.cloud.dns_recordset:
+        zone_id: "{{ dns_zo.zone.id }}"
+        recordset_name: "{{ recordset_random_name }}"
+        type: A
+        records:
+          - "1.1.1.1"
+          - "2.2.2.2"
+        state: present
+      register: dns_rs
+
+    - name: Getting info about recordset in created zone
+      opentelekomcloud.cloud.dns_recordset_info:
+        zone: "{{ dns_zo.zone.id }}"
+      register: recordsets
+
+    - name: assert result
+      assert:
+        that:
+          - recordsets is success
+          - recordsets is not changed
+          - recordsets | length > 0
+
+    - name: Get info about created recordset
+      opentelekomcloud.cloud.dns_recordset_info:
+        zone: "{{ dns_zo.zone.id }}"
+        name: "{{ dns_rs.recordset.name }}"
+      register: rs
+
+    - name: assert result
+      assert:
+        that:
+          - rs is success
+          - rs is not changed
+          - rs | length > 0
+
+
+  always:
+    - block:
+      # Cleanup
+        - name: Drop created recordset
+          opentelekomcloud.cloud.dns_recordset:
+            recordset_name: "{{ recordset_random_name }}"
+            state: absent
+            zone_id: "{{ dns_zo.zone.id }}"
+
+        - name: Drop created DNS zone
+          opentelekomcloud.cloud.dns_zone:
+            name: "{{ dns_zo.zone.name }}"
+            state: absent
+      ignore_errors: true
