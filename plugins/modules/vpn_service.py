@@ -145,7 +145,11 @@ class VPNModule(OTCModule):
     )
 
     module_kwargs = dict(
-        supports_check_mode=True
+        supports_check_mode=True,
+        required_if=[
+            ('state', 'present', ['router', 'subnet']),
+            ('state', 'absent', ['name_or_id'])
+        ]
     )
 
     def run(self):
@@ -161,6 +165,7 @@ class VPNModule(OTCModule):
         existing_vpn = None
         updated_vpn = None
         created_vpn = None
+        recreated_vpn = None
 
         if project_id:
             query['project_id'] = project_id
@@ -170,41 +175,50 @@ class VPNModule(OTCModule):
 
         if name_or_id:
             existing_vpn = self.conn.network.find_vpn_service(name_or_id=name_or_id)
+            if existing_vpn:
+                query['name'] = existing_vpn.name
+            else:
+                query['name'] = name_or_id
 
         if state == 'present':
 
+            if self.ansible.check_mode:
+                self.exit(changed=True)
+
+            subnet_id = None
+            router_id = None
+
+            try:
+                subnet_id = self.conn.network.find_subnet(name_or_id=subnet, ignore_missing=False).id
+            except self.sdk.exceptions.ResourceNotFound:
+                self.fail_json("Subnet not found")
+            query['subnet_id'] = subnet_id
+
+            try:
+                router_id = self.conn.vpc.find_vpc(name_or_id=router, ignore_missing=False).id
+            except self.sdk.exceptions.ResourceNotFound:
+                self.fail_json("Router not found")
+            query['router_id'] = router_id
+
             if existing_vpn:
-                if not self.ansible.check_mode:
-                    updated_vpn = self.conn.network.update_vpn_service(existing_vpn, **query)
+                if query['router_id'] != existing_vpn.router_id:
+                    self.conn.network.delete_vpn_service(vpn_service=existing_vpn)
+                    recreated_vpn = self.conn.network.create_vpn_service(**query)
+                    self.exit(changed=True, vpn=recreated_vpn)
+                if query['subnet_id'] != existing_vpn.subnet_id:
+                    self.conn.network.delete_vpn_service(vpn_service=existing_vpn)
+                    recreated_vpn = self.conn.network.create_vpn_service(**query)
+                    self.exit(changed=True, vpn=recreated_vpn)
+                updated_vpn = self.conn.network.update_vpn_service(existing_vpn, **query)
                 self.exit(changed=True, vpn=updated_vpn)
 
-            if name_or_id:
-                query['name'] = name_or_id
-
-            if subnet:
-                try:
-                    subnet_id = self.conn.network.find_subnet(name_or_id=subnet, ignore_missing=False).id
-                    query['subnet_id'] = subnet_id
-                except self.sdk.exceptions.ResourceNotFound:
-                    self.fail_json("Subnet not found")
-
-            if router:
-                try:
-                    router_id = self.conn.vpc.find_vpc(name_or_id=router, ignore_missing=False).id
-                    query['router_id'] = router_id
-                except self.sdk.exceptions.ResourceNotFound:
-                    self.fail_json("Router not found")
-            else:
-                self.fail_json(msg='Router is mandatory for creation')
-
-            if not self.ansible.check_mode:
-                created_vpn = self.conn.network.create_vpn_service(**query)
+            created_vpn = self.conn.network.create_vpn_service(**query)
             self.exit(changed=True, vpn=created_vpn)
 
         else:
             if existing_vpn:
                 if not self.ansible.check_mode:
-                    self.conn.network.delete_vpn_service(existing_vpn, ignore_missing=False)
+                    self.conn.network.delete_vpn_service(vpn_service=existing_vpn, ignore_missing=False)
                     self.exit_json(changed=True)
             self.exit_json(changed=False)
 
