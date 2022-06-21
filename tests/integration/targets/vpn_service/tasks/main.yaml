@@ -30,7 +30,7 @@
         network_name: "{{ test_network.network.name }}"
         cidr: "192.168.0.0/24"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
-      register: test_subnet
+      register: test_subnet_1
 
     - name: Create second subnet for test
       openstack.cloud.subnet:
@@ -40,7 +40,7 @@
         network_name: "{{ test_network.network.name }}"
         cidr: "192.168.1.0/24"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
-      register: test_subnet
+      register: test_subnet_2
 
     - name: Create router for test
       openstack.cloud.router:
@@ -51,14 +51,16 @@
         enable_snat: True
         interfaces:
           - net: "{{ test_network.network.name }}"
-            subnet: "{{ test_subnet.subnet.name }}"
+            subnet: "{{ test_subnet_1.subnet.name }}"
+          - net: "{{ test_network.network.name }}"
+            subnet: "{{ test_subnet_2.subnet.name }}"
       register: test_router
 
     - name: Create vpn service
       opentelekomcloud.cloud.vpn_service:
         router: "{{ router_name }}"
         subnet: "{{ subnet_name_1 }}"
-        name_or_id: "{{ new_vpn }}"
+        name_or_id: "{{ vpn_name }}"
       register: test_vpn_1
 
     - name: assert result
@@ -72,7 +74,7 @@
       opentelekomcloud.cloud.vpn_service:
         router: "{{ router_name }}"
         subnet: "{{ subnet_name_2 }}"
-        name_or_id: "{{ new_vpn }}"
+        name_or_id: "{{ vpn_name }}"
       register: test_vpn_2
 
     - name: assert result
@@ -86,7 +88,7 @@
       opentelekomcloud.cloud.vpn_service:
         router: "{{ router_name }}"
         subnet: "{{ subnet_name_2 }}"
-        name_or_id: "{{ new_vpn }}"
+        name_or_id: "{{ vpn_name }}"
         description: "new description"
       register: updated_vpn
 
@@ -99,7 +101,7 @@
 
     - name: Delete vpn service
       opentelekomcloud.cloud.vpn_service:
-        name_or_id: "{{ new_vpn }}"
+        name_or_id: "{{ vpn_name }}"
         state: "absent"
       register: deleted_vpn
 
