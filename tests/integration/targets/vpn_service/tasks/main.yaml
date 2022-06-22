@@ -9,56 +9,75 @@
 
     - name: Set initial facts
       set_fact:
-        network_name: "{{ ( prefix + 'vpn-test-network') }}"
+        network_name_1: "{{ ( prefix + 'vpn-test-network-1') }}"
         subnet_name_1: "{{ ( prefix + 'vpn-test-subnet-1') }}"
+        router_name_1: "{{ ( prefix + 'vpn-test-router-1') }}"
+        network_name_2: "{{ ( prefix + 'vpn-test-network-2') }}"
         subnet_name_2: "{{ ( prefix + 'vpn-test-subnet-2') }}"
-        router_name: "{{ ( prefix + 'vpn-test-router') }}"
+        router_name_2: "{{ ( prefix + 'vpn-test-router-2') }}"
         vpn_name: "{{ ( prefix + 'vpn-test') }}"
 
-    - name: Create network for test
+    - name: Create first network for test
       openstack.cloud.network:
         cloud: "{{ test_cloud }}"
-        name: "{{ network_name }}"
+        name: "{{ network_name_1 }}"
         state: present
-      register: test_network
+      register: test_network_1
 
     - name: Create first subnet for test
       openstack.cloud.subnet:
         cloud: "{{ test_cloud }}"
         name: "{{ subnet_name_1 }}"
         state: present
-        network_name: "{{ test_network.network.name }}"
+        network_name: "{{ test_network_1.network.name }}"
         cidr: "192.168.0.0/24"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
       register: test_subnet_1
+
+    - name: Create first router for test
+      openstack.cloud.router:
+        cloud: "{{ test_cloud }}"
+        name: "{{ router_name_1 }}"
+        state: present
+        network: admin_external_net
+        enable_snat: True
+        interfaces:
+          - net: "{{ test_network_1.network.name }}"
+            subnet: "{{ test_subnet_1.subnet.name }}"
+      register: test_router
+
+    - name: Create second network for test
+      openstack.cloud.network:
+        cloud: "{{ test_cloud }}"
+        name: "{{ network_name_2 }}"
+        state: present
+      register: test_network_2
 
     - name: Create second subnet for test
       openstack.cloud.subnet:
         cloud: "{{ test_cloud }}"
         name: "{{ subnet_name_2 }}"
         state: present
-        network_name: "{{ test_network.network.name }}"
-        cidr: "192.168.1.0/24"
+        network_name: "{{ test_network_2.network.name }}"
+        cidr: "192.168.0.0/24"
         dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
       register: test_subnet_2
 
-    - name: Create router for test
+    - name: Create second router for test
       openstack.cloud.router:
         cloud: "{{ test_cloud }}"
-        name: "{{ router_name }}"
+        name: "{{ router_name_2 }}"
         state: present
         network: admin_external_net
         enable_snat: True
         interfaces:
-          - net: "{{ test_network.network.name }}"
-            subnet: "{{ test_subnet_1.subnet.name }}"
-          - net: "{{ test_network.network.name }}"
+          - net: "{{ test_network_2.network.name }}"
             subnet: "{{ test_subnet_2.subnet.name }}"
-      register: test_router
+      register: test_router_2
 
     - name: Create vpn service
       opentelekomcloud.cloud.vpn_service:
-        router: "{{ router_name }}"
+        router: "{{ router_name_1 }}"
         subnet: "{{ subnet_name_1 }}"
         name_or_id: "{{ vpn_name }}"
       register: test_vpn_1
@@ -72,7 +91,7 @@
 
     - name: Recreate vpn service
       opentelekomcloud.cloud.vpn_service:
-        router: "{{ router_name }}"
+        router: "{{ router_name_2 }}"
         subnet: "{{ subnet_name_2 }}"
         name_or_id: "{{ vpn_name }}"
       register: test_vpn_2
@@ -86,7 +105,7 @@
 
     - name: Update vpn service
       opentelekomcloud.cloud.vpn_service:
-        router: "{{ router_name }}"
+        router: "{{ router_name_2 }}"
         subnet: "{{ subnet_name_2 }}"
         name_or_id: "{{ vpn_name }}"
         description: "new description"
@@ -116,13 +135,13 @@
       # Cleanup
       - name: Drop vpn
         opentelekomcloud.cloud.vpn_service:
-          name: "{{ vpn_name }}"
+          name_or_id: "{{ vpn_name }}"
           state: "absent"
 
-      - name: Drop router
+      - name: Drop first router
         openstack.cloud.router:
           cloud: "{{ test_cloud }}"
-          name: "{{ router_name }}"
+          name: "{{ router_name_1 }}"
           state: absent
 
       - name: Drop first subnet
@@ -131,15 +150,27 @@
           name: "{{ subnet_name_1 }}"
           state: absent
 
+      - name: Drop first network
+        openstack.cloud.network:
+          cloud: "{{ test_cloud }}"
+          name: "{{ network_name_1 }}"
+          state: absent
+
+      - name: Drop second router
+        openstack.cloud.router:
+          cloud: "{{ test_cloud }}"
+          name: "{{ router_name_2 }}"
+          state: absent
+
       - name: Drop second subnet
         openstack.cloud.subnet:
           cloud: "{{ test_cloud }}"
           name: "{{ subnet_name_2 }}"
           state: absent
 
-      - name: Drop network
+      - name: Drop second network
         openstack.cloud.network:
           cloud: "{{ test_cloud }}"
-          name: "{{ network_name }}"
+          name: "{{ network_name_2 }}"
           state: absent
       ignore_errors: yes
