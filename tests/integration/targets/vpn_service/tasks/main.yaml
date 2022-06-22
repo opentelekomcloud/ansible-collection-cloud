@@ -103,21 +103,6 @@
           - test_vpn_2 is changed
           - test_vpn_2.vpn.id is defined
 
-    - name: Update vpn service
-      opentelekomcloud.cloud.vpn_service:
-        router: "{{ router_name_2 }}"
-        subnet: "{{ subnet_name_2 }}"
-        name_or_id: "{{ vpn_name }}"
-        description: "new description"
-      register: updated_vpn
-
-    - name: assert result
-      assert:
-        that:
-          - updated_vpn is success
-          - updated_vpn is changed
-          - updated_vpn.vpn.description is defined
-
     - name: Delete vpn service
       opentelekomcloud.cloud.vpn_service:
         name_or_id: "{{ vpn_name }}"
@@ -137,40 +122,46 @@
         opentelekomcloud.cloud.vpn_service:
           name_or_id: "{{ vpn_name }}"
           state: "absent"
+        failed_when: false
 
       - name: Drop first router
         openstack.cloud.router:
           cloud: "{{ test_cloud }}"
           name: "{{ router_name_1 }}"
           state: absent
+        failed_when: false
 
       - name: Drop first subnet
         openstack.cloud.subnet:
           cloud: "{{ test_cloud }}"
           name: "{{ subnet_name_1 }}"
           state: absent
+        failed_when: false
 
       - name: Drop first network
         openstack.cloud.network:
           cloud: "{{ test_cloud }}"
           name: "{{ network_name_1 }}"
           state: absent
+        failed_when: false
 
       - name: Drop second router
         openstack.cloud.router:
           cloud: "{{ test_cloud }}"
           name: "{{ router_name_2 }}"
           state: absent
+        failed_when: false
 
       - name: Drop second subnet
         openstack.cloud.subnet:
           cloud: "{{ test_cloud }}"
           name: "{{ subnet_name_2 }}"
           state: absent
+        failed_when: false
 
       - name: Drop second network
         openstack.cloud.network:
           cloud: "{{ test_cloud }}"
           name: "{{ network_name_2 }}"
           state: absent
-      ignore_errors: yes
+        failed_when: false
