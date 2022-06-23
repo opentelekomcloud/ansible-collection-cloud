@@ -437,7 +437,7 @@
     - name: assert result
       ansible.builtin.assert:
         that:
-          - result.scaling_instances|length == {{ min_instance_number }}
+          - result.scaling_instances | length == {{ min_instance_number }}
 
   always:
     - name: Cleanup

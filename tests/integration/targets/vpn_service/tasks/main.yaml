@@ -1,14 +1,21 @@
 ---
-- module_defaults:
+- name: Vpn service tests
+  module_defaults:
+    openstack.cloud.network:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.subnet:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.router:
+      cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.vpn_service:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         network_name_1: "{{ ( prefix + 'vpn-test-network-1') }}"
         subnet_name_1: "{{ ( prefix + 'vpn-test-subnet-1') }}"
         router_name_1: "{{ ( prefix + 'vpn-test-router-1') }}"
@@ -40,7 +47,7 @@
         name: "{{ router_name_1 }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ test_network_1.network.name }}"
             subnet: "{{ test_subnet_1.subnet.name }}"
@@ -69,7 +76,7 @@
         name: "{{ router_name_2 }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ test_network_2.network.name }}"
             subnet: "{{ test_subnet_2.subnet.name }}"
@@ -83,7 +90,7 @@
       register: test_vpn_1
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - test_vpn_1 is success
           - test_vpn_1 is changed
@@ -97,7 +104,7 @@
       register: test_vpn_2
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - test_vpn_2 is success
           - test_vpn_2 is changed
@@ -110,58 +117,59 @@
       register: deleted_vpn
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deleted_vpn is success
           - deleted_vpn is changed
 
   always:
-    - block:
+    - name: Cleanup
+      block:
       # Cleanup
-      - name: Drop vpn
-        opentelekomcloud.cloud.vpn_service:
-          name_or_id: "{{ vpn_name }}"
-          state: "absent"
-        failed_when: false
+        - name: Drop vpn
+          opentelekomcloud.cloud.vpn_service:
+            name_or_id: "{{ vpn_name }}"
+            state: "absent"
+          failed_when: false
 
-      - name: Drop first router
-        openstack.cloud.router:
-          cloud: "{{ test_cloud }}"
-          name: "{{ router_name_1 }}"
-          state: absent
-        failed_when: false
+        - name: Drop first router
+          openstack.cloud.router:
+            cloud: "{{ test_cloud }}"
+            name: "{{ router_name_1 }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop first subnet
-        openstack.cloud.subnet:
-          cloud: "{{ test_cloud }}"
-          name: "{{ subnet_name_1 }}"
-          state: absent
-        failed_when: false
+        - name: Drop first subnet
+          openstack.cloud.subnet:
+            cloud: "{{ test_cloud }}"
+            name: "{{ subnet_name_1 }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop first network
-        openstack.cloud.network:
-          cloud: "{{ test_cloud }}"
-          name: "{{ network_name_1 }}"
-          state: absent
-        failed_when: false
+        - name: Drop first network
+          openstack.cloud.network:
+            cloud: "{{ test_cloud }}"
+            name: "{{ network_name_1 }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop second router
-        openstack.cloud.router:
-          cloud: "{{ test_cloud }}"
-          name: "{{ router_name_2 }}"
-          state: absent
-        failed_when: false
+        - name: Drop second router
+          openstack.cloud.router:
+            cloud: "{{ test_cloud }}"
+            name: "{{ router_name_2 }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop second subnet
-        openstack.cloud.subnet:
-          cloud: "{{ test_cloud }}"
-          name: "{{ subnet_name_2 }}"
-          state: absent
-        failed_when: false
+        - name: Drop second subnet
+          openstack.cloud.subnet:
+            cloud: "{{ test_cloud }}"
+            name: "{{ subnet_name_2 }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop second network
-        openstack.cloud.network:
-          cloud: "{{ test_cloud }}"
-          name: "{{ network_name_2 }}"
-          state: absent
-        failed_when: false
+        - name: Drop second network
+          openstack.cloud.network:
+            cloud: "{{ test_cloud }}"
+            name: "{{ network_name_2 }}"
+            state: absent
+          failed_when: false
