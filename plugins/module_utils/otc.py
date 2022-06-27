@@ -30,7 +30,7 @@ def openstack_full_argument_spec(**kwargs):
         auth_type=dict(default=None),
         auth=dict(default=None, type='dict', no_log=True),
         region_name=dict(default=None),
-        validate_certs=dict(default=False, type='bool', aliases=['verify']),
+        validate_certs=dict(default=None, type='bool', aliases=['verify']),
         ca_cert=dict(default=None, aliases=['cacert']),
         client_cert=dict(default=None, aliases=['cert']),
         client_key=dict(default=None, no_log=True, aliases=['key']),
@@ -148,9 +148,9 @@ class OTCModule:
                 # For 'interface' parameter, fail if we receive a non-default value
                 if self.params['interface'] != 'public':
                     self.fail_json(msg=fail_message.format(param='interface'))
-                    conn = sdk.connect(**cloud_config)
-                    otc_sdk.load(conn)
-                    return sdk, conn
+                conn = sdk.connect(**cloud_config)
+                otc_sdk.load(conn)
+                return sdk, conn
             else:
                 conn = sdk.connect(
                     cloud=cloud_config,
