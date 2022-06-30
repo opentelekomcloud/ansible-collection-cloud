@@ -1,0 +1,156 @@
+---
+- name: AS Instance tests
+  module_defaults:
+    opentelekomcloud.cloud.as_instance:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        network_name: "{{ ( prefix + '_network') }}"
+        subnet_name: "{{ ( prefix + '_subnet') }}"
+        router_name: "{{ ( prefix + '_router') }}"
+        kp_name: "{{ ( prefix + '_kp') }}"
+        server_name: "{{ ( prefix + '_ecs') }}"
+        server_flavor: "s3.medium.1"
+        image_name: Standard_Ubuntu_18.04_latest
+        volume_type: "SATA"
+        disk_type: "SYS"
+        disk_size: 4
+        az1_name: "eu-de-01"
+        vault_name: "{{ ( prefix + '_vault') }}"
+
+    - name: Create keypair
+      openstack.cloud.os_keypair:
+        name: "{{ kp_name }}"
+      register: kp
+
+    - name: Create network
+      openstack.cloud.os_network:
+        name: "{{ network_name }}"
+        state: present
+      register: network
+
+    - name: Create subnet
+      openstack.cloud.os_subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ network.network.name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: subnet
+
+    - name: Create router
+      openstack.cloud.os_router:
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: true
+        interfaces:
+          - net: "{{ network.network.name }}"
+            subnet: "{{ subnet.subnet.name }}"
+      register: router
+
+    - name: Create ECS instance
+      openstack.cloud.server:
+        name: "{{ (server_name) }}"
+        image: "{{ image_name }}"
+        network: "{{ network_name }}"
+        flavor: "{{ server_flavor }}"
+        availability_zone: "{{ az2_name }}"
+      register: ecs1
+
+    - name: Create CBR vault
+      opentelekomcloud.cloud.cbr_vault:
+        name_or_id: "{{ (vault_name) }}"
+        image: "{{ image_name }}"
+        network: "{{ network_name }}"
+        flavor: "{{ server_flavor }}"
+        availability_zone: "{{ az2_name }}"
+        resources: []
+      register: created_vault
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - created_vault is success
+          - created_vault is changed
+
+    - name: Associate resources CBR vault
+      opentelekomcloud.cloud.cbr_vault:
+        name_or_id: "{{ (vault_name) }}"
+        resources: [ {"id": ecs1.server.id, "type":"OS::Nova::Server"}]
+        action: "associate_resources"
+      register: vault
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - vault is success
+          - vault is changed
+          - vault['resources']|length > 0
+
+    - name: Dissociate resources CBR vault
+      opentelekomcloud.cloud.cbr_vault:
+        name_or_id: "{{ (vault_name) }}"
+        resource_ids: [ecs1.server.id]
+        action: "dissociate_resources"
+      register: vault
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - vault is success
+          - vault is changed
+          - vault['resources']|length == 0
+
+  always:
+    - name: Cleanup
+      block:
+        - name: Delete CBR vault
+          opentelekomcloud.cloud.cbr_vault:
+            name_or_id: "{{ (vault_name) }}"
+            state: absent
+          register: vault
+
+        - name: assert result
+          ansible.builtin.assert:
+            that:
+              - vault is success
+              - vault is changed
+
+        - name: Delete ECS
+          openstack.cloud.server:
+            name: "{{ (server_name) }}"
+            delete_fip: true
+            state: absent
+          failed_when: false
+
+        - name: Delete existing router
+          openstack.cloud.os_router:
+            name: "{{ router.router.name }}"
+            state: absent
+          failed_when: false
+
+        - name: Delete existing subnet
+          openstack.cloud.os_subnet:
+            name: "{{ subnet.subnet.name }}"
+            state: absent
+          failed_when: false
+
+        - name: Delete existing network
+          openstack.cloud.os_network:
+            name: "{{ network.network.name }}"
+            state: absent
+          failed_when: false
+
+        - name: Delete keypair
+          openstack.cloud.os_keypair:
+            name: "{{ kp_name }}"
+            state: absent
+          failed_when: false
+
+
