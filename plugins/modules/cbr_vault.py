@@ -98,35 +98,35 @@ options:
     elements: dict
     suboptions:
       id:
-        description: 
+        description:
           - ID of the resource to be backed up.
         type: str
         required: true
       type:
-        description: 
+        description:
           - Type of the resource to be backed up.
         type: str
         required: true
         choices: ['OS::Nova::Server', 'OS::Cinder::Volume']
       name:
-        description: 
+        description:
           - Resource name. Minimum 0, maximum 255.
         type: str
         required: false
   tags:
     description:
-      - Tag list. This list cannot be an empty list. The list can contain/
-       up to 10 keys. Keys in this list must be unique.
+      - Tag list. This list cannot be an empty list. The list can contain\
+      up to 10 keys. Keys in this list must be unique.
     type: list
     elements: dict
     suboptions:
       key:
-        description: 
+        description:
           - Key. It can contain a maximum of 36 characters.
         type: str
         required: true
       value:
-        description: 
+        description:
           - Value. It is mandatory when a tag is added and optional when\
            a tag is deleted.
         type: str
@@ -142,12 +142,12 @@ options:
     elements: dict
     suboptions:
       key:
-        description: 
+        description:
           - Key. It can contain a maximum of 36 characters.
         type: str
         required: true
       value:
-        description: 
+        description:
           - Value. It is mandatory when a tag is added and optional when\
            a tag is deleted.
         type: str
@@ -202,19 +202,16 @@ class CBRVaultModule(OTCModule):
         name_or_id=dict(required=True, type='str'),
         policy=dict(required=False),
         billing=dict(required=False, type=dict, options=dict(
-                cloud_type=dict(required=False, type='str'),
-                consistent_level=dict(required=True, type='str'),
-                object_type=dict(required=True, type='str', choices=['server',
-                                                                     'disk']),
-                protect_type=dict(required=True, type='str'),
-                size=dict(required=True, type='str'),
-                charging_mode=dict(required=True, type='str',
-                                   default='post_paid'),
-                is_auto_renew=dict(required=False, type='bool', default=False),
-                is_auto_pay=dict(required=False, type='bool', default=False),
-                console_url=dict(required=False, type='str'),
-
-            )),
+            cloud_type=dict(required=False, type='str'),
+            consistent_level=dict(required=True, type='str'),
+            object_type=dict(required=True, type='str',
+                             choices=['server','disk']),
+            protect_type=dict(required=True, type='str'),
+            size=dict(required=True, type='str'),
+            charging_mode=dict(required=True, type='str', default='post_paid'),
+            is_auto_renew=dict(required=False, type='bool', default=False),
+            is_auto_pay=dict(required=False, type='bool', default=False),
+            console_url=dict(required=False, type='str'),)),
         description=dict(required=False, type='str'),
         resources=dict(type='list', elements='dict', options=dict(
             id=dict(required=False, type='str'),
@@ -239,6 +236,12 @@ class CBRVaultModule(OTCModule):
                     'dissociate_resources', 'bind_policy', 'unbind_policy'])
     )
     module_kwargs = dict(
+        required_if=[
+            ('action', 'associate_resources', ['name_or_id', 'resources']),
+            ('action', 'dissociate_resources', ['name_or_id', 'resource_ids']),
+            ('action', 'bind_policy', ['name_or_id', 'policy']),
+            ('action', 'unbind_policy', ['name_or_id', 'policy'])
+        ],
         supports_check_mode=True
     )
 
@@ -292,10 +295,9 @@ class CBRVaultModule(OTCModule):
         return parsed_billing
 
     def run(self):
-        changed = False
         attrs = {}
         action = None
-
+        policy = None
         state = self.params['state']
         if self.params['description']:
             attrs['description'] = self.params['description']
@@ -311,6 +313,8 @@ class CBRVaultModule(OTCModule):
             policy = self.conn.cbr.find_policy(name_or_id=self.params['policy'])
             if policy:
                 attrs['policy_id'] = policy.id
+            else:
+                self.fail_json("'policy' not found")
         if self.params['resources']:
             attrs['resources'] = self._parse_resources()
         else:
@@ -324,39 +328,22 @@ class CBRVaultModule(OTCModule):
 
         vault = self.conn.cbr.find_vault(name_or_id=self.params['name_or_id'],
                                          ignore_missing=True)
-
-        new_vault = None
         if vault:
             if action == 'associate_resources':
-                resources = None
-                if self.params['resources']:
-                    resources = self._parse_resources()
-                else:
-                    self.fail_json("'resources' is mandatory for\
-                     'associate_resources' action")
-
+                resources = self._parse_resources()
                 self.conn.cbr.associate_resources(vault=vault.id,
                                                   resources=resources)
 
             if action == 'dissociate_resources':
-                if not self.params['resource_ids']:
-                    self.fail_json("'resource_ids' is mandatory for\
-                     'dissociate_resources' action")
                 resource_ids = self.params['resource_ids']
-                self.conn.cbr.dissociate_resources(vault=vault,
-                                                  resources=resource_ids)
+                self.conn.cbr.dissociate_resources(
+                    vault=vault, resources=resource_ids)
 
             if action == 'bind_policy':
-                if not self.params['policy']:
-                    self.fail_json("'policy' is mandatory for\
-                     'bind_policy' action")
                 self.conn.cbr.bind_policy(vault=vault, policy=policy)
 
             if action == 'unbind_policy':
-                if not self.params['policy']:
-                    self.fail_json("'policy' is mandatory for\
-                     'unbind_policy' action")
-                new_vault = self.conn.cbr.bind_policy(vault=vault, policy=policy)
+                self.conn.cbr.unbind_policy(vault=vault, policy=policy)
 
             if state == 'absent':
                 self.conn.cbr.delete_vault(vault=vault)
