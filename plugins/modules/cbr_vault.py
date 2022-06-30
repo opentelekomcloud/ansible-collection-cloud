@@ -329,6 +329,9 @@ class CBRVaultModule(OTCModule):
         vault = self.conn.cbr.find_vault(name_or_id=self.params['name_or_id'],
                                          ignore_missing=True)
         if vault:
+            if self.ansible.check_mode:
+                self.exit_json(changed=True)
+
             if action == 'associate_resources':
                 resources = self._parse_resources()
                 self.conn.cbr.associate_resources(vault=vault.id,
@@ -347,14 +350,21 @@ class CBRVaultModule(OTCModule):
 
             if state == 'absent':
                 self.conn.cbr.delete_vault(vault=vault)
-
             self.exit(changed=True)
+
+        if state == 'absent':
+            if self.ansible.check_mode:
+                self.exit_json(changed=False)
 
         if action in ('associate_resources', 'dissociate_resources',
                       'bind_policy', 'unbind_policy') or state == 'absent':
+            if self.ansible.check_mode:
+                self.exit_json(changed=False)
             self.fail_json('vault not found')
 
         attrs['name'] = self.params['name_or_id']
+        if self.ansible.check_mode:
+            self.exit_json(changed=True)
         created_vault = self.conn.cbr.create_vault(**attrs)
         self.exit(changed=True, vault=created_vault)
 
