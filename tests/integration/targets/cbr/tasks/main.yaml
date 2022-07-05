@@ -52,6 +52,8 @@
         network: "{{ network_name }}"
         flavor: "{{ server_flavor }}"
         availability_zone: "{{ az_name }}"
+        boot_from_volume: true
+        volume_size: 40
       register: ecs1
 
     - name: Create CBR vault
