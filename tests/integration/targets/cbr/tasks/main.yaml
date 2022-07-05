@@ -10,23 +10,14 @@
 
     - name: Set initial facts
       ansible.builtin.set_fact:
-        network_name: "{{ ( prefix + '_network') }}"
-        subnet_name: "{{ ( prefix + '_subnet') }}"
-        router_name: "{{ ( prefix + '_router') }}"
-        kp_name: "{{ ( prefix + '_kp') }}"
-        server_name: "{{ ( prefix + '_ecs') }}"
+        network_name: "{{ (prefix + '_network') }}"
+        subnet_name: "{{ (prefix + '_subnet') }}"
+        router_name: "{{ (prefix + '_router') }}"
+        server_name: "{{ (prefix + '_ecs') }}"
         server_flavor: "s3.medium.1"
-        image_name: Standard_Ubuntu_18.04_latest
-        volume_type: "SATA"
-        disk_type: "SYS"
-        disk_size: 4
+        image_name: "Standard_Ubuntu_18.04_latest"
         az_name: "eu-de-01"
-        vault_name: "{{ ( prefix + '_vault') }}"
-
-    - name: Create keypair
-      openstack.cloud.os_keypair:
-        name: "{{ kp_name }}"
-      register: kp
+        vault_name: "{{ (prefix + '_vault') }}"
 
     - name: Create network
       openstack.cloud.os_network:
@@ -81,7 +72,7 @@
     - name: Associate resources CBR vault
       opentelekomcloud.cloud.cbr_vault:
         name_or_id: "{{ (vault_name) }}"
-        resources: [ {"id": ecs1.server.id, "type":"OS::Nova::Server"}]
+        resources: [{"id": ecs1.server.id, "type":"OS::Nova::Server"}]
         action: "associate_resources"
       register: vault
 
@@ -145,11 +136,4 @@
             name: "{{ network.network.name }}"
             state: absent
           failed_when: false
-
-        - name: Delete keypair
-          openstack.cloud.os_keypair:
-            name: "{{ kp_name }}"
-            state: absent
-          failed_when: false
-
 
