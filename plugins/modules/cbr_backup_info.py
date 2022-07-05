@@ -15,14 +15,14 @@ DOCUMENTATION = '''
 module: cbr_backup_info
 short_description: Get cbr backup resource list
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.1.2"
+version_added: "0.12.4"
 author: "Gubina Polina (@Polina-Gubina)"
 description:
     - Get cbr backup resource list.
 options:
-  backup_id:
+  name_or_id:
     description:
-      - Backup id.
+      - Backup name or id.
     type: str
   checkpoint_id:
     description:
@@ -231,7 +231,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class CBRBackupsModule(OTCModule):
     argument_spec = dict(
-        backup_id=dict(required=False),
+        name_or_id=dict(required=False),
         checkpoint_id=dict(required=False),
         dec=dict(required=False, type='bool'),
         end_time=dict(required=False),
@@ -268,9 +268,9 @@ class CBRBackupsModule(OTCModule):
         query = {}
         backup = None
 
-        if self.params['backup_id']:
+        if self.params['name_or_id']:
             backup = self.conn.cbr.find_backup(
-                name_or_id=self.params['backup_id'])
+                name_or_id=self.params['name_or_id'])
             self.exit(
                 changed=False,
                 backup=backup

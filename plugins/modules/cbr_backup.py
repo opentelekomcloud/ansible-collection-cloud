@@ -15,14 +15,14 @@ DOCUMENTATION = '''
 module: cbr_backup
 short_description: Manage CBR backup resource
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.1.2"
+version_added: "0.12.4"
 author: "Polina Gubina (@Polina-Gubina)"
 description:
     - Manage CBR backup resource from the OTC.
 options:
-  backup_id:
+  name_or_id:
     description:
-      - Backup id.
+      - Backup name of id.
     type: str
     required: true
   mappings:
@@ -167,7 +167,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class CBRBackupModule(OTCModule):
     argument_spec = dict(
-        backup_id=dict(required=False),
+        name_or_id=dict(required=True),
         mappings=dict(type='list', required=False, elements='dict',
                       options=dict(backup_id=dict(type='str', required=True),
                                    volume_id=dict(type='str', required=True))),
@@ -178,6 +178,9 @@ class CBRBackupModule(OTCModule):
                     choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
+        required_if=[
+            ('state', 'present', ['name_or_id'])
+        ],
         supports_check_mode=True
     )
 
@@ -193,16 +196,19 @@ class CBRBackupModule(OTCModule):
             parsed_mappings.append(mapping)
         return parsed_mappings
 
+    def _system_state_change(self, backup):
+        state = self.params['state']
+        if state == 'present':
+            if not backup:
+                return True
+        elif state == 'absent' and backup:
+            return True
+        return False
+
     def run(self):
         changed = False
-        attrs = {}
         query = {'backup': self.params['backup_id']}
 
-        if self.params['state'] == 'absent':
-            self.conn.cbr.delete_backup(backup=self.params['backup_id'])
-            self.exit(
-                changed=True
-            )
         if self.params['mappings']:
             query['mappings'] = self._parse_mappings()
         if self.params['power_on']:
@@ -212,10 +218,21 @@ class CBRBackupModule(OTCModule):
         if self.params['volume_id']:
             query['volume_id'] = self.params['volume_id']
 
-        self.conn.cbr.restore_data(**query)
+        backup = self.conn.cbr.find_backup(name_or_id=self.params['backup_id'])
 
+        if self.ansible.check_mode:
+            self.exit_json(changed=self._system_state_change(backup))
+
+        if backup:
+            if self.params['state'] == 'present':
+                self.conn.cbr.restore_data(**query)
+            else:
+                self.conn.cbr.delete_backup(backup=self.params['backup_id'])
+            self.exit(
+                changed=True
+            )
         self.exit(
-            changed=True
+            changed=False
         )
 
 
