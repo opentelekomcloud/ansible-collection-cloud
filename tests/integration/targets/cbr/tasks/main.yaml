@@ -20,7 +20,7 @@
         volume_type: "SATA"
         disk_type: "SYS"
         disk_size: 4
-        az1_name: "eu-de-01"
+        az_name: "eu-de-01"
         vault_name: "{{ ( prefix + '_vault') }}"
 
     - name: Create keypair
@@ -60,17 +60,16 @@
         image: "{{ image_name }}"
         network: "{{ network_name }}"
         flavor: "{{ server_flavor }}"
-        availability_zone: "{{ az2_name }}"
+        availability_zone: "{{ az_name }}"
       register: ecs1
 
     - name: Create CBR vault
       opentelekomcloud.cloud.cbr_vault:
         name_or_id: "{{ (vault_name) }}"
-        image: "{{ image_name }}"
-        network: "{{ network_name }}"
-        flavor: "{{ server_flavor }}"
-        availability_zone: "{{ az2_name }}"
-        resources: []
+        billing: {"consistent_level" : "crash_consistent",
+                  "object_type" : "server", "protect_type" : "backup",
+                  "size" : 40, "charging_mode" : "post_paid",
+                  "is_auto_renew" : false, "is_auto_pay" : false}
       register: created_vault
 
     - name: assert result

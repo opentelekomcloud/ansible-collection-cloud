@@ -168,8 +168,8 @@ options:
     default: true
   threshold:
     description:
-      - Vault capacity threshold. If the vault capacity usage exceeds this\ 
-      threshold and smn_notify is true, an exception notification is sent.\
+      - Vault capacity threshold. If the vault capacity usage exceeds this/
+      threshold and smn_notify is true, an exception notification is sent./
       Can be set only in update.
     type: int
     default: 80
@@ -205,7 +205,7 @@ class CBRVaultModule(OTCModule):
             cloud_type=dict(required=False, type='str'),
             consistent_level=dict(required=True, type='str'),
             object_type=dict(required=True, type='str',
-                             choices=['server','disk']),
+                             choices=['server', 'disk']),
             protect_type=dict(required=True, type='str'),
             size=dict(required=True, type='str'),
             charging_mode=dict(required=True, type='str', default='post_paid'),
@@ -217,8 +217,7 @@ class CBRVaultModule(OTCModule):
             id=dict(required=False, type='str'),
             type=dict(required=True, type='str',
                       choices=['OS::Nova::Server', 'OS::Cinder::Volume']),
-            name=dict(required=False, type='str')
-            )),
+            name=dict(required=False, type='str'))),
         resource_ids=dict(required=False, type='list', elements='str'),
         tags=dict(required=False, type='list', elements='dict',
                   options=dict(key=dict(required=True, type='str'),
@@ -294,10 +293,29 @@ class CBRVaultModule(OTCModule):
             parsed_billing['console_url'] = billing['console_url']
         return parsed_billing
 
+    def _system_state_change(self, vault):
+        state = self.params['state']
+        if state == 'present' and not vault:
+            return True
+        if state == 'absent' and vault:
+            return True
+        return False
+
+    def _require_update(self, vault):
+        require_update = False
+        if vault:
+            for param_key in ['ram', 'vcpus', 'disk', 'ephemeral',
+                              'swap', 'rxtx_factor', 'is_public']:
+                if self.params[param_key] != vault[param_key]:
+                    require_update = True
+                    break
+        return require_update
+
     def run(self):
         attrs = {}
         action = None
         policy = None
+        changed = False
         state = self.params['state']
         if self.params['description']:
             attrs['description'] = self.params['description']
@@ -328,6 +346,13 @@ class CBRVaultModule(OTCModule):
 
         vault = self.conn.cbr.find_vault(name_or_id=self.params['name_or_id'],
                                          ignore_missing=True)
+
+        require_update = self._require_update(vault)
+        if self.ansible.check_mode:
+            if self._system_state_change(vault) or require_update:
+                changed = True
+            self.exit_json(changed=changed)
+
         if vault:
             if self.ansible.check_mode:
                 self.exit_json(changed=True)
