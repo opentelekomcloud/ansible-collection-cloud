@@ -33,7 +33,8 @@ options:
     type: str
   billing:
     description:
-        - Parameter information for creation. Mandatory for creation.
+        - Parameter information for creation. Mandatory for creation.\
+        Only size can be updated.
     type: dict
     suboptions:
       cloud_type:
@@ -134,6 +135,10 @@ options:
     description:
       - Whether automatic association is supported.
     type: bool
+  name:
+    description:
+      - Used for modifying.
+    type: str
   bind_rules:
     description:
       - Rules for automatic association. Filters automatically associated\
@@ -223,6 +228,7 @@ class CBRVaultModule(OTCModule):
                   options=dict(key=dict(required=True, type='str'),
                                value=dict(required=True, type='str'))),
         auto_bind=dict(type='bool', required=False),
+        name=dict(required=False, type='str'),
         bind_rules=dict(type='list', required=False, elements=dict,
                         options=dict(key=dict(required=True, type='str'),
                                      value=dict(required=True, type='str'))),
@@ -304,8 +310,8 @@ class CBRVaultModule(OTCModule):
     def _require_update(self, vault):
         require_update = False
         if vault:
-            for param_key in ['ram', 'vcpus', 'disk', 'ephemeral',
-                              'swap', 'rxtx_factor', 'is_public']:
+            for param_key in ['billing', 'name', 'auto_bind', 'bind_rules',
+                              'auto_expand', 'smn_notify', 'threshold']:
                 if self.params[param_key] != vault[param_key]:
                     require_update = True
                     break
@@ -333,10 +339,6 @@ class CBRVaultModule(OTCModule):
                 attrs['policy_id'] = policy.id
             else:
                 self.fail_json("'policy' not found")
-        if self.params['resources']:
-            attrs['resources'] = self._parse_resources()
-        else:
-            attrs['resources'] = []
         if self.params['billing']:
             attrs['billing'] = self._parse_billing()
         if self.params['tags']:
@@ -354,28 +356,36 @@ class CBRVaultModule(OTCModule):
             self.exit_json(changed=changed)
 
         if vault:
-            if self.ansible.check_mode:
-                self.exit_json(changed=True)
 
             if action == 'associate_resources':
                 resources = self._parse_resources()
                 self.conn.cbr.associate_resources(vault=vault.id,
                                                   resources=resources)
+                self.exit(changed=True)
 
             if action == 'dissociate_resources':
                 resource_ids = self.params['resource_ids']
                 self.conn.cbr.dissociate_resources(
                     vault=vault, resources=resource_ids)
+                self.exit(changed=True)
 
             if action == 'bind_policy':
                 self.conn.cbr.bind_policy(vault=vault, policy=policy)
+                self.exit(changed=True)
 
             if action == 'unbind_policy':
                 self.conn.cbr.unbind_policy(vault=vault, policy=policy)
+                self.exit(changed=True)
+
+            if state == 'present':
+                if self.params['name']:
+                    attrs['name'] = self.params['name']
+                self.conn.cbr.update_vault(vault=vault, **attrs)
+                self.exit(changed=True)
 
             if state == 'absent':
                 self.conn.cbr.delete_vault(vault=vault)
-            self.exit(changed=True)
+                self.exit(changed=True)
 
         if state == 'absent':
             if self.ansible.check_mode:
@@ -387,6 +397,10 @@ class CBRVaultModule(OTCModule):
                 self.exit_json(changed=False)
             self.fail_json('vault not found')
 
+        if self.params['resources']:
+            attrs['resources'] = self._parse_resources()
+        else:
+            attrs['resources'] = []
         attrs['name'] = self.params['name_or_id']
         if self.ansible.check_mode:
             self.exit_json(changed=True)

@@ -1,7 +1,9 @@
 ---
 - name: AS Instance tests
   module_defaults:
-    opentelekomcloud.cloud.as_instance:
+    opentelekomcloud.cloud.volume:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.cbr_vault:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
@@ -10,59 +12,35 @@
 
     - name: Set initial facts
       ansible.builtin.set_fact:
-        network_name: "{{ (prefix + '_network') }}"
-        subnet_name: "{{ (prefix + '_subnet') }}"
-        router_name: "{{ (prefix + '_router') }}"
-        server_name: "{{ (prefix + '_ecs') }}"
-        server_flavor: "s3.medium.1"
-        image_name: "Standard_Ubuntu_18.04_latest"
+        volume_name1: "{{ (prefix + '_volume1') }}"
+        volume_name2: "{{ (prefix + '_volume2') }}"
         az_name: "eu-de-01"
         vault_name: "{{ (prefix + '_vault') }}"
 
-    - name: Create network
-      openstack.cloud.os_network:
-        name: "{{ network_name }}"
-        state: present
-      register: network
-
-    - name: Create subnet
-      openstack.cloud.os_subnet:
-        name: "{{ subnet_name }}"
-        state: present
-        network_name: "{{ network.network.name }}"
-        cidr: "192.168.110.0/24"
-        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
-      register: subnet
-
-    - name: Create router
-      openstack.cloud.os_router:
-        name: "{{ router_name }}"
-        state: present
-        network: admin_external_net
-        enable_snat: true
-        interfaces:
-          - net: "{{ network.network.name }}"
-            subnet: "{{ subnet.subnet.name }}"
-      register: router
-
-    - name: Create ECS instance
-      openstack.cloud.server:
-        name: "{{ (server_name) }}"
-        image: "{{ image_name }}"
-        network: "{{ network_name }}"
-        flavor: "{{ server_flavor }}"
+    - name: Create first volume
+      openstack.cloud.volume:
+        size: 1
         availability_zone: "{{ az_name }}"
-        boot_from_volume: true
-        volume_size: 40
-      register: ecs1
+        display_name: "{{ volume_name1 }}"
+        state: present
+      register: vol1
+
+    - name: Create second volume
+      openstack.cloud.volume:
+        size: 1
+        availability_zone: "{{ az_name }}"
+        display_name: "{{ volume_name2 }}"
+        state: present
+      register: vol2
 
     - name: Create CBR vault
       opentelekomcloud.cloud.cbr_vault:
         name_or_id: "{{ (vault_name) }}"
         billing: {"consistent_level" : "crash_consistent",
-                  "object_type" : "server", "protect_type" : "backup",
+                  "object_type" : "disk", "protect_type" : "backup",
                   "size" : 40, "charging_mode" : "post_paid",
                   "is_auto_renew" : false, "is_auto_pay" : false}
+        resources: [{"id": '{{ vol1.volume.id }}', "type":"OS::Cinder::Volume"}]
       register: created_vault
 
     - name: assert result
@@ -74,7 +52,7 @@
     - name: Associate resources CBR vault
       opentelekomcloud.cloud.cbr_vault:
         name_or_id: "{{ (vault_name) }}"
-        resources: [{"id": ecs1.server.id, "type":"OS::Nova::Server"}]
+        resources: [{"id": '{{ vol2.volume.id }}', "type":"OS::Nova::Server"}]
         action: "associate_resources"
       register: vault
 
@@ -88,7 +66,7 @@
     - name: Dissociate resources CBR vault
       opentelekomcloud.cloud.cbr_vault:
         name_or_id: "{{ (vault_name) }}"
-        resource_ids: [ecs1.server.id]
+        resource_ids: ['{{ vol2.volume.id }}']
         action: "dissociate_resources"
       register: vault
 
@@ -114,28 +92,12 @@
               - vault is success
               - vault is changed
 
-        - name: Delete ECS
-          openstack.cloud.server:
-            name: "{{ (server_name) }}"
-            delete_fip: true
+        - name: Delete first volume
+          openstack.cloud.volume:
+            display_name: "{{ volume_name1 }}"
             state: absent
-          failed_when: false
 
-        - name: Delete existing router
-          openstack.cloud.os_router:
-            name: "{{ router.router.name }}"
+        - name: Delete second volume
+          openstack.cloud.volume:
+            display_name: "{{ volume_name1 }}"
             state: absent
-          failed_when: false
-
-        - name: Delete existing subnet
-          openstack.cloud.os_subnet:
-            name: "{{ subnet.subnet.name }}"
-            state: absent
-          failed_when: false
-
-        - name: Delete existing network
-          openstack.cloud.os_network:
-            name: "{{ network.network.name }}"
-            state: absent
-          failed_when: false
-
