@@ -324,7 +324,6 @@ class CBRVaultModule(OTCModule):
         attrs = {}
         action = None
         policy = None
-        changed = False
         state = self.params['state']
         if self.params['description']:
             attrs['description'] = self.params['description']
