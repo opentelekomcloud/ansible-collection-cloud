@@ -310,8 +310,9 @@ class CBRVaultModule(OTCModule):
     def _require_update(self, vault):
         require_update = False
         if vault:
-            if self.params['billing']['size'] != vault['billing']['size']:
-                return True
+            if self.params['billing']:
+                if self.params['billing']['size'] != vault['billing']['size']:
+                    return True
             for param_key in ['name', 'auto_bind', 'bind_rules',
                               'auto_expand', 'smn_notify', 'threshold']:
                 if self.params[param_key] != vault[param_key]:
@@ -353,17 +354,15 @@ class CBRVaultModule(OTCModule):
 
         require_update = self._require_update(vault)
         if self.ansible.check_mode:
-            print("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
             if self._system_state_change(vault) or require_update:
                 self.exit_json(changed=True)
             self.exit_json(changed=False)
 
         if vault:
-
             if action == 'associate_resources':
                 resources = self._parse_resources()
-                self.conn.cbr.associate_resources(vault=vault.id,
-                                                  resources=resources)
+                self.conn.cbr.associate_resources(
+                    vault=vault.id, resources=resources)
                 self.exit(changed=True)
 
             if action == 'dissociate_resources':
