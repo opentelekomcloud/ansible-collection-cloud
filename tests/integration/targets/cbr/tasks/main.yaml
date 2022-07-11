@@ -1,7 +1,7 @@
 ---
-- name: AS Instance tests
+- name: Cbr vault tests
   module_defaults:
-    opentelekomcloud.cloud.volume:
+    openstack.cloud.volume:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.cbr_vault:
       cloud: "{{ test_cloud }}"
@@ -52,7 +52,7 @@
     - name: Associate resources CBR vault
       opentelekomcloud.cloud.cbr_vault:
         name_or_id: "{{ (vault_name) }}"
-        resources: [{"id": '{{ vol2.volume.id }}', "type":"OS::Nova::Server"}]
+        resources: [{"id": '{{ vol2.volume.id }}', "type":"OS::Cinder::Volume"}]
         action: "associate_resources"
       register: vault
 
