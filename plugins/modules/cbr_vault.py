@@ -28,13 +28,13 @@ options:
   policy:
     description:
       - Backup policy name or id. If the value of this parameter is null,\
-       automatic backup is not performed. Can be set during creation and for\
-       binding/unbinding policy to the vault.
+        automatic backup is not performed. Can be set during creation and for\
+        binding/unbinding policy to the vault.
     type: str
   billing:
     description:
         - Parameter information for creation. Mandatory for creation.\
-        Only size can be updated.
+          Only size can be updated.
     type: dict
     suboptions:
       cloud_type:
@@ -44,7 +44,7 @@ options:
       consistent_level:
         description:
           - Specification, which is crash_consistent\
-           by default (crash consistent backup).
+            by default (crash consistent backup).
         type: str
         default: "crash_consistent"
         required: true
@@ -72,14 +72,14 @@ options:
       is_auto_renew:
         description:
           - Whether to automatically renew the subscription after expiration.\
-           By default, it is not renewed.
+            By default, it is not renewed.
         default: False
         type: bool
       is_auto_pay:
         description:
           - Whether the fee is automatically deducted from the\
-           customer's account balance after an order is submitted.\
-           The non-automatic payment mode is used by default.
+            customer's account balance after an order is submitted.\
+            The non-automatic payment mode is used by default.
         type: bool
         default: False
       console_url:
@@ -93,8 +93,8 @@ options:
   resources:
     description:
       - Associated resources. Set this parameter to [] if no\
-       resources are associated when creating a vault. Mandatory for creation\
-       and associating resources.
+        resources are associated when creating a vault. Mandatory for creation\
+        and associating resources.
     type: list
     elements: dict
     suboptions:
@@ -117,7 +117,7 @@ options:
   tags:
     description:
       - Tag list. This list cannot be an empty list. The list can contain\
-      up to 10 keys. Keys in this list must be unique.
+        up to 10 keys. Keys in this list must be unique.
     type: list
     elements: dict
     suboptions:
@@ -129,7 +129,7 @@ options:
       value:
         description:
           - Value. It is mandatory when a tag is added and optional when\
-           a tag is deleted.
+            a tag is deleted.
         type: str
   auto_bind:
     description:
@@ -142,7 +142,7 @@ options:
   bind_rules:
     description:
       - Rules for automatic association. Filters automatically associated\
-       resources by tag.
+        resources by tag.
     type: list
     elements: dict
     suboptions:
@@ -154,7 +154,7 @@ options:
       value:
         description:
           - Value. It is mandatory when a tag is added and optional when\
-           a tag is deleted.
+            a tag is deleted.
         type: str
   resource_ids:
     description:
@@ -164,7 +164,7 @@ options:
   auto_expand:
     description:
       - Whether to enable auto capacity expansion for the vault.\
-      Can be set in update.
+        Can be set in update.
     type: bool
   smn_notify:
     description:
@@ -174,8 +174,8 @@ options:
   threshold:
     description:
       - Vault capacity threshold. If the vault capacity usage exceeds this/
-      threshold and smn_notify is true, an exception notification is sent./
-      Can be set only in update.
+        threshold and smn_notify is true, an exception notification is sent./
+        Can be set only in update.
     type: int
     default: 80
   state:
