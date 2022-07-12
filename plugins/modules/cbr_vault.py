@@ -194,9 +194,135 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
+cbr_vault:
+    description: AS groups object.
+    type: complex
+    returned: On Success.
+    contains:
+      billing:
+        description: Operation info.
+        type: complex
+        contains:
+          allocated:
+            description:
+              - Allocated capacity, in MB.
+            type: int
+          charging_mode:
+            description:
+              - Billing mode.
+            type: str
+          cloud_type:
+            description:
+              - Cloud type.
+            type: str
+          consistent_level:
+            description:
+              - Specification.
+            type: str
+          object_type:
+            description:
+              - Object type, which can be server or disk.
+            type: str
+          order_id:
+            description:
+              - Order id.
+            type: str
+          product_id:
+            description:
+              - Product id.
+            type: str
+          protect_type:
+            description:
+              - Protection type, which is backup.
+            type: str
+          size:
+            description: Capacity, in GB.
+            type: int
+          spec_code:
+            description: Specification code.
+            type: str
+          status:
+            description: Vault status.
+            type: str
+          storage_unit:
+            description: Name of the bucket for the vault.
+            type: str
+          used:
+            description:
+              - Used capacity, in MB.
+            type: int
+          frozen_scene:
+            description: Scenario when an account is frozen.
+            type: str
+      description:
+        description: User-defined vault description.
+        type: str
+      id:
+        description: Vault id.
+        type: str
+      name:
+        description: Vault name.
+        type: str
+      project_id:
+        description: Project ID.
+        type: str
+      provider_id:
+        description: Vault name.
+        type: list
+      resources:
+        description: Vault resources.
+        type: list
+      tags:
+        description: Vault tags.
+        type: list
+      auto_bind:
+        description: Indicates whether automatic association is enabled.
+        type: bool
+      bind_rules:
+        description: Association rule.
+        type: complex
+      user_id:
+        description: User id.
+        type: str
+      created_at:
+        description: Creation time.
+        type: str
+      auto_expand:
+        description: Whether to enable auto capacity expansion for the vault.
+        type: bool
 '''
 
 EXAMPLES = '''
+- name: Create vault
+  opentelekomcloud.cloud.cbr_vault:
+    name_or_id: "vault-namenew"
+    resources: [{"id": '9f1e2203-f222-490d-8c78-23c01ca4f4b9', "type":"OS::Cinder::Volume"}]
+    billing:
+      consistent_level: "crash_consistent"
+      object_type: "disk"
+      protect_type: "backup"
+      size: 40
+  register: vault
+
+- name: Associate resources CBR vault
+  opentelekomcloud.cloud.cbr_vault:
+    name_or_id: "new-vault"
+    resources: [{"id": '9f1e2203-f222-490d-8c78-23c01ca4f4b9', "type":"OS::Cinder::Volume"}]
+    action: "associate_resources"
+  register: vault
+
+- name: Dissociate resources CBR vault
+  opentelekomcloud.cloud.cbr_vault:
+    name_or_id: "new-vault"
+    resource_ids: ['9f1e2203-f222-490d-8c78-23c01ca4f4b9']
+    action: "dissociate_resources"
+  register: vault
+
+- name: Delete CBR vault
+  opentelekomcloud.cloud.cbr_vault:
+    name_or_id: "new-vault"
+    state: absent
+  register: vault
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
