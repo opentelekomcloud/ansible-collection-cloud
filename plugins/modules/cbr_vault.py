@@ -173,8 +173,8 @@ options:
     default: true
   threshold:
     description:
-      - Vault capacity threshold. If the vault capacity usage exceeds this/
-      threshold and smn_notify is true, an exception notification is sent./
+      - Vault capacity threshold. If the vault capacity usage exceeds this\
+      threshold and smn_notify is true, an exception notification is sent.\
       Can be set only in update.
     type: int
     default: 80
@@ -187,8 +187,8 @@ options:
   action:
     description:
       - What needs to be done.
-    choices: ['associate_resources', 'dissociate_resources', 'bind_policy',/
-                                                            'unbind_policy']
+    choices: ['associate_resources', 'dissociate_resources', 'bind_policy',\
+                                                                'unbind_policy']
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -332,32 +332,35 @@ class CBRVaultModule(OTCModule):
     argument_spec = dict(
         name_or_id=dict(required=True, type='str'),
         policy=dict(required=False),
-        billing=dict(required=False, type=dict, options=dict(
+        billing=dict(required=False, type='dict', options=dict(
             cloud_type=dict(required=False, type='str'),
-            consistent_level=dict(required=True, type='str'),
+            consistent_level=dict(required=True, type='str',
+                                  default='crash_consistent'),
             object_type=dict(required=True, type='str',
                              choices=['server', 'disk']),
             protect_type=dict(required=True, type='str'),
-            size=dict(required=True, type='str'),
-            charging_mode=dict(required=True, type='str', default='post_paid'),
+            size=dict(required=True, type=int),
+            charging_mode=dict(required=False, type='str', default='post_paid'),
             is_auto_renew=dict(required=False, type='bool', default=False),
             is_auto_pay=dict(required=False, type='bool', default=False),
             console_url=dict(required=False, type='str'),)),
         description=dict(required=False, type='str'),
         resources=dict(type='list', elements='dict', options=dict(
-            id=dict(required=False, type='str'),
+            id=dict(required=True, type='str'),
             type=dict(required=True, type='str',
                       choices=['OS::Nova::Server', 'OS::Cinder::Volume']),
             name=dict(required=False, type='str'))),
         resource_ids=dict(required=False, type='list', elements='str'),
         tags=dict(required=False, type='list', elements='dict',
-                  options=dict(key=dict(required=True, type='str'),
-                               value=dict(required=True, type='str'))),
+                  options=dict(key=dict(required=True, type='str',
+                                                            no_log=False),
+                               value=dict(required=False, type='str'))),
         auto_bind=dict(type='bool', required=False),
         name=dict(required=False, type='str'),
-        bind_rules=dict(type='list', required=False, elements=dict,
-                        options=dict(key=dict(required=True, type='str'),
-                                     value=dict(required=True, type='str'))),
+        bind_rules=dict(type='list', required=False, elements='dict',
+                        options=dict(key=dict(required=True,
+                                              type='str', no_log=False),
+                                     value=dict(required=False, type='str'))),
         auto_expand=dict(type='bool', required=False),
         smn_notify=dict(type='bool', default=True, required=False),
         threshold=dict(type='int', default=80, required=False),
