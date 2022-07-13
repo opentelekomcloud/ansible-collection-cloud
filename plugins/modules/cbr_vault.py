@@ -47,7 +47,6 @@ options:
             by default (crash consistent backup).
         type: str
         default: "crash_consistent"
-        required: true
       object_type:
         description:
           - Object type, which can be server or disk.
@@ -280,7 +279,15 @@ cbr_vault:
         type: bool
       bind_rules:
         description: Association rule.
-        type: complex
+        type: list
+        elements: dict
+        contains:
+          key:
+            description: Key..
+            type: str
+          value:
+            description: Value.
+            type: str
       user_id:
         description: User id.
         type: str
@@ -334,12 +341,12 @@ class CBRVaultModule(OTCModule):
         policy=dict(required=False),
         billing=dict(required=False, type='dict', options=dict(
             cloud_type=dict(required=False, type='str'),
-            consistent_level=dict(required=True, type='str',
+            consistent_level=dict(required=False, type='str',
                                   default='crash_consistent'),
             object_type=dict(required=True, type='str',
                              choices=['server', 'disk']),
             protect_type=dict(required=True, type='str'),
-            size=dict(required=True, type=int),
+            size=dict(required=True, type='int'),
             charging_mode=dict(required=False, type='str', default='post_paid'),
             is_auto_renew=dict(required=False, type='bool', default=False),
             is_auto_pay=dict(required=False, type='bool', default=False),
