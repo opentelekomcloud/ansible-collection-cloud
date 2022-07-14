@@ -35,7 +35,7 @@
 
     - name: Create CBR vault
       opentelekomcloud.cloud.cbr_vault:
-        name_or_id: "{{ (vault_name) }}"
+        name: "{{ (vault_name) }}"
         billing:
           consistent_level: "crash_consistent"
           object_type: "disk"
@@ -52,7 +52,7 @@
 
     - name: Associate resources CBR vault
       opentelekomcloud.cloud.cbr_vault:
-        name_or_id: "{{ (vault_name) }}"
+        name: "{{ (vault_name) }}"
         resources: [{"id": '{{ vol2.volume.id }}', "type":"OS::Cinder::Volume"}]
         action: "associate_resources"
       register: vault
@@ -65,7 +65,7 @@
 
     - name: Dissociate resources CBR vault
       opentelekomcloud.cloud.cbr_vault:
-        name_or_id: "{{ (vault_name) }}"
+        name: "{{ (vault_name) }}"
         resource_ids: ['{{ vol2.volume.id }}']
         action: "dissociate_resources"
       register: vault
@@ -81,7 +81,7 @@
       block:
         - name: Delete CBR vault
           opentelekomcloud.cloud.cbr_vault:
-            name_or_id: "{{ (vault_name) }}"
+            name: "{{ (vault_name) }}"
             state: absent
           register: vault
 

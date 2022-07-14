@@ -20,7 +20,7 @@ author: "Gubina Polina (@Polina-Gubina)"
 description:
     - Manage cbr vault from the OTC.
 options:
-  name_or_id:
+  name:
     description:
       - Vault name or id.
     type: str
@@ -134,10 +134,6 @@ options:
     description:
       - Whether automatic association is supported.
     type: bool
-  name:
-    description:
-      - Used for modifying.
-    type: str
   bind_rules:
     description:
       - Rules for automatic association. Filters automatically associated\
@@ -193,7 +189,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-cbr_vault:
+vault:
     description: AS groups object.
     type: complex
     returned: On Success.
@@ -302,8 +298,10 @@ cbr_vault:
 EXAMPLES = '''
 - name: Create vault
   opentelekomcloud.cloud.cbr_vault:
-    name_or_id: "vault-namenew"
-    resources: [{"id": '9f1e2203-f222-490d-8c78-23c01ca4f4b9', "type":"OS::Cinder::Volume"}]
+    name: "vault-namenew"
+    resources:
+      - id: '9f1e2203-f222-490d-8c78-23c01ca4f4b9'
+        type: "OS::Cinder::Volume"
     billing:
       consistent_level: "crash_consistent"
       object_type: "disk"
@@ -313,21 +311,23 @@ EXAMPLES = '''
 
 - name: Associate resources CBR vault
   opentelekomcloud.cloud.cbr_vault:
-    name_or_id: "new-vault"
-    resources: [{"id": '9f1e2203-f222-490d-8c78-23c01ca4f4b9', "type":"OS::Cinder::Volume"}]
+    name: "new-vault"
+    resources:
+      - id: '9f1e2203-f222-490d-8c78-23c01ca4f4b9'
+        type: "OS::Cinder::Volume"
     action: "associate_resources"
   register: vault
 
 - name: Dissociate resources CBR vault
   opentelekomcloud.cloud.cbr_vault:
-    name_or_id: "new-vault"
+    name: "new-vault"
     resource_ids: ['9f1e2203-f222-490d-8c78-23c01ca4f4b9']
     action: "dissociate_resources"
   register: vault
 
 - name: Delete CBR vault
   opentelekomcloud.cloud.cbr_vault:
-    name_or_id: "new-vault"
+    name: "new-vault"
     state: absent
   register: vault
 '''
@@ -337,7 +337,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class CBRVaultModule(OTCModule):
     argument_spec = dict(
-        name_or_id=dict(required=True, type='str'),
+        name=dict(required=True, type='str'),
         policy=dict(required=False),
         billing=dict(required=False, type='dict', options=dict(
             cloud_type=dict(required=False, type='str'),
@@ -363,7 +363,6 @@ class CBRVaultModule(OTCModule):
                                                             no_log=False),
                                value=dict(required=False, type='str'))),
         auto_bind=dict(type='bool', required=False),
-        name=dict(required=False, type='str'),
         bind_rules=dict(type='list', required=False, elements='dict',
                         options=dict(key=dict(required=True,
                                               type='str', no_log=False),
@@ -378,10 +377,10 @@ class CBRVaultModule(OTCModule):
     )
     module_kwargs = dict(
         required_if=[
-            ('action', 'associate_resources', ['name_or_id', 'resources']),
-            ('action', 'dissociate_resources', ['name_or_id', 'resource_ids']),
-            ('action', 'bind_policy', ['name_or_id', 'policy']),
-            ('action', 'unbind_policy', ['name_or_id', 'policy'])
+            ('action', 'associate_resources', ['name', 'resources']),
+            ('action', 'dissociate_resources', ['name', 'resource_ids']),
+            ('action', 'bind_policy', ['name', 'policy']),
+            ('action', 'unbind_policy', ['name', 'policy'])
         ],
         supports_check_mode=True
     )
@@ -407,8 +406,10 @@ class CBRVaultModule(OTCModule):
             parsed_tag = {}
             parsed_tag['key'] = tag.get('key')\
                 if tag.get('key') else self.fail_json(msg="'key' is required for 'tag'")
-            parsed_tag['value'] = tag.get('value')\
-                if tag.get('value') else self.fail_json(msg="'value' is required for 'tag'")
+            if tag.get('value'):
+                parsed_tag['value'] = tag.get('value')
+            else:
+                parsed_tag['value'] = None
             parsed_tags.append(parsed_tag)
         return parsed_tags
 
@@ -484,7 +485,7 @@ class CBRVaultModule(OTCModule):
         if self.params['action']:
             action = self.params['action']
 
-        vault = self.conn.cbr.find_vault(name_or_id=self.params['name_or_id'],
+        vault = self.conn.cbr.find_vault(name_or_id=self.params['name'],
                                          ignore_missing=True)
 
         require_update = self._require_update(vault)
@@ -515,8 +516,6 @@ class CBRVaultModule(OTCModule):
                 self.exit(changed=True)
 
             if state == 'present':
-                if self.params['name']:
-                    attrs['name'] = self.params['name']
                 self.conn.cbr.update_vault(vault=vault, **attrs)
                 self.exit(changed=True)
 
@@ -526,19 +525,21 @@ class CBRVaultModule(OTCModule):
 
         if state == 'absent':
             if self.ansible.check_mode:
-                self.exit_json(changed=False)
+                self.exit_json(changed=False,
+                               msg="vault {0} not found".format(vault.id))
 
         if action in ('associate_resources', 'dissociate_resources',
                       'bind_policy', 'unbind_policy') or state == 'absent':
             if self.ansible.check_mode:
                 self.exit_json(changed=False)
-            self.fail_json('vault not found')
+            self.fail_json(
+                changed=False, msg="vault {0} not found".format(vault.id))
 
         if self.params['resources']:
             attrs['resources'] = self._parse_resources()
         else:
             attrs['resources'] = []
-        attrs['name'] = self.params['name_or_id']
+        attrs['name'] = self.params['name']
         if self.ansible.check_mode:
             self.exit_json(changed=True)
         created_vault = self.conn.cbr.create_vault(**attrs)
