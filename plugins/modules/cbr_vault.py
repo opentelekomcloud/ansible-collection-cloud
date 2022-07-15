@@ -190,7 +190,7 @@ requirements: ["openstacksdk", "otcextensions"]
 
 RETURN = '''
 vault:
-    description: AS groups object.
+    description: Vault object.
     type: complex
     returned: On Success.
     contains:
@@ -321,7 +321,8 @@ EXAMPLES = '''
 - name: Dissociate resources CBR vault
   opentelekomcloud.cloud.cbr_vault:
     name: "new-vault"
-    resource_ids: ['9f1e2203-f222-490d-8c78-23c01ca4f4b9']
+    resource_ids:
+      - '9f1e2203-f222-490d-8c78-23c01ca4f4b9'
     action: "dissociate_resources"
   register: vault
 
@@ -447,9 +448,6 @@ class CBRVaultModule(OTCModule):
     def _require_update(self, vault):
         require_update = False
         if vault:
-            if self.params['billing']:
-                if self.params['billing']['size'] != vault['billing']['size']:
-                    return True
             for param_key in ['name', 'auto_bind', 'bind_rules',
                               'auto_expand', 'smn_notify', 'threshold']:
                 if self.params[param_key] != vault[param_key]:
