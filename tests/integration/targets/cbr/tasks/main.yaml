@@ -1,0 +1,102 @@
+---
+- name: Cbr vault tests
+  module_defaults:
+    openstack.cloud.volume:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.cbr_vault:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        volume_name1: "{{ (prefix + '_volume1') }}"
+        volume_name2: "{{ (prefix + '_volume2') }}"
+        az_name: "eu-de-01"
+        vault_name: "{{ (prefix + '_vault') }}"
+
+    - name: Create first volume
+      openstack.cloud.volume:
+        size: 1
+        availability_zone: "{{ az_name }}"
+        display_name: "{{ volume_name1 }}"
+        state: present
+      register: vol1
+
+    - name: Create second volume
+      openstack.cloud.volume:
+        size: 1
+        availability_zone: "{{ az_name }}"
+        display_name: "{{ volume_name2 }}"
+        state: present
+      register: vol2
+
+    - name: Create CBR vault
+      opentelekomcloud.cloud.cbr_vault:
+        name: "{{ (vault_name) }}"
+        billing:
+          consistent_level: "crash_consistent"
+          object_type: "disk"
+          protect_type: "backup"
+          size: 40
+        resources: [{"id": '{{ vol1.volume.id }}', "type":"OS::Cinder::Volume"}]
+      register: created_vault
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - created_vault is success
+          - created_vault is changed
+
+    - name: Associate resources CBR vault
+      opentelekomcloud.cloud.cbr_vault:
+        name: "{{ (vault_name) }}"
+        resources: [{"id": '{{ vol2.volume.id }}', "type":"OS::Cinder::Volume"}]
+        action: "associate_resources"
+      register: vault
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - vault is success
+          - vault is changed
+
+    - name: Dissociate resources CBR vault
+      opentelekomcloud.cloud.cbr_vault:
+        name: "{{ (vault_name) }}"
+        resource_ids: ['{{ vol2.volume.id }}']
+        action: "dissociate_resources"
+      register: vault
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - vault is success
+          - vault is changed
+
+  always:
+    - name: Cleanup
+      block:
+        - name: Delete CBR vault
+          opentelekomcloud.cloud.cbr_vault:
+            name: "{{ (vault_name) }}"
+            state: absent
+          register: vault
+
+        - name: assert result
+          ansible.builtin.assert:
+            that:
+              - vault is success
+              - vault is changed
+
+        - name: Delete first volume
+          openstack.cloud.volume:
+            display_name: "{{ volume_name1 }}"
+            state: absent
+
+        - name: Delete second volume
+          openstack.cloud.volume:
+            display_name: "{{ volume_name1 }}"
+            state: absent
