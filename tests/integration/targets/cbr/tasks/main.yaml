@@ -76,6 +76,11 @@
           - vault is success
           - vault is changed
 
+    - name: Create a restore point
+      opentelekomcloud.cloud.cbr_restore_point:
+        vault: "{{ vault.vault.id }}"
+      register: checkpoint
+
   always:
     - name: Cleanup
       block:

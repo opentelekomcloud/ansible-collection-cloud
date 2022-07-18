@@ -20,7 +20,7 @@ author: "Gubina Polina (@Polina-Gubina)"
 description:
     - Get cbr backup resource list.
 options:
-  name_or_id:
+  name:
     description:
       - Backup name or id.
     type: str
@@ -54,10 +54,6 @@ options:
     description:
       - Backup sharing status.
     choices: ['pending', 'accept', 'reject']
-    type: str
-  name:
-    description:
-      - Backup name.
     type: str
   offset:
     description:
@@ -126,7 +122,7 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-backup:
+backups:
   description: CBR backups list.
   type: complex
   returned: On Success.
@@ -134,83 +130,116 @@ backup:
     checkpoint_id:
       description: Restore point ID.
       type: str
-      sample: "MyZone123"
     created_at:
       description: Creation time.
       type: str
-      sample: "mail@mail.com"
     description:
       description: Backup description.
       type: str
-      sample: "fe80804323f2065d0175980e81617c10"
     expired_at:
       description: Expiration time.
       type: str
-      sample: "test.test2."
     extend_info:
       description: Extended information.
-      type: str
+      type: complex
+      contains:
+        auto_trigger:
+          description:
+            - Whether the backup is automatically generated.
+          type: bool
+        bootable:
+          description:
+            - Whether the backup is a system disk backup.
+          type: bool
+        incremental:
+          description:
+            - Whether the backup is an incremental backup.
+          type: bool
+        snapshot_id:
+          description:
+            - Snapshot ID of the disk backup.
+          type: str
+        support_lld:
+          description:
+            - Whether to allow lazyloading for fast restoration.
+          type: bool
+        supported_restore_mode:
+          description:
+            - Restoration mode. Possible values are na,\
+            snapshot, and backup. snapshot indicates the backup\
+            can be used to create a full-server image. backup\
+            indicates the data is restored from backups of the EVS\
+            disks of the server. na indicates the backup cannot be\
+            used for restoration.
+          type: str
+        os_images_data:
+          description:
+            - ID list of images created using backups.
+          type: list
+          elements: dict
+          contains:
+            image_id:
+              description:
+                - Image ID.
+              type: str
+        contain_system_disk:
+          description:
+            - Whether the VM backup data contains system disk data.
+          type: bool
+        encrypted:
+          description:
+            - Whether the backup is encrypted.
+          type: bool
+        system_disk:
+          description:
+            - Whether the disk is a system disk.
+          type: bool
     id:
       description: Backup id.
       type: str
-      sample: ""
     image_type:
       description: Backup type.
       type: str
-      sample: 300
     name:
       description: Backup name.
       type: str
-      sample: "private"
     parent_id:
       description: Parent backup ID.
       type: str
-      sample: 300
     project_id:
       description: Project ID.
       type: str
-      sample: "private"
     protected_at:
       description: Backup time.
       type: str
-      sample: "private"
     resource_az:
       description: Resource availability zone.
       type: str
-      sample: 300
     resource_id:
       description: Resource ID.
       type: str
-      sample: "private"
     resource_name:
       description: Resource name.
       type: str
-      sample: 300
     resource_size:
       description: Resource size, in GB.
       type: str
-      sample: "private"
     resource_type:
       description: Resource type.
       type: str
-      sample: 300
     status:
       description: Backup status.
       type: str
-      sample: "private"
     updated_at:
       description: Update time.
       type: str
-      sample: 300
     vault_id:
       description: Vault id.
       type: str
-      sample: "private"
     provider_id:
       description: Backup provider ID, which is used to distinguish\
        backup objects. The value can be as follows:.
       type: str
-      sample: "private"
 '''
 
 EXAMPLES = '''
@@ -231,7 +260,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class CBRBackupsModule(OTCModule):
     argument_spec = dict(
-        name_or_id=dict(required=False),
+        name=dict(required=False),
         checkpoint_id=dict(required=False),
         dec=dict(required=False, type='bool'),
         end_time=dict(required=False),
@@ -240,7 +269,6 @@ class CBRBackupsModule(OTCModule):
         marker=dict(type='str'),
         member_status=dict(required=False,
                            type='str', choices=['pending', 'accept', 'reject']),
-        name=dict(required=False, type='str'),
         offset=dict(required=False, type='int'),
         own_type=dict(required=False, type='str',
                       choices=['all_granted', 'private', 'shared'],
@@ -249,7 +277,7 @@ class CBRBackupsModule(OTCModule):
         resource_az=dict(required=False, type='str'),
         resource_id=dict(required=False, type='str'),
         resource_name=dict(required=False, type='str'),
-        resource_type=dict(required=False, type='int',
+        resource_type=dict(required=False, type='str',
                            choices=['OS::Cinder::Volume', 'OS::Nova::Server']),
         sort=dict(required=False, type='str'),
         start_time=dict(required=False, type='str'),
@@ -268,7 +296,7 @@ class CBRBackupsModule(OTCModule):
         query = {}
         backup = None
 
-        if self.params['name_or_id']:
+        if self.params['name']:
             backup = self.conn.cbr.find_backup(
                 name_or_id=self.params['name_or_id'])
             self.exit(

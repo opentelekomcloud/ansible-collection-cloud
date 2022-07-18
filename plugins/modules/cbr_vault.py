@@ -279,7 +279,7 @@ vault:
         elements: dict
         contains:
           key:
-            description: Key..
+            description: Key.
             type: str
           value:
             description: Value.

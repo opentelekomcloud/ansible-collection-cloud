@@ -76,83 +76,73 @@ backup:
     checkpoint_id:
       description: Restore point ID.
       type: str
-      sample: "MyZone123"
     created_at:
       description: Creation time.
       type: str
-      sample: "mail@mail.com"
     description:
       description: Backup description.
       type: str
-      sample: "fe80804323f2065d0175980e81617c10"
     expired_at:
       description: Expiration time.
       type: str
-      sample: "test.test2."
     extend_info:
       description: Extended information.
-      type: str
+      type: complex
+      contains:
+        allocated:
+          description:
+            - Allocated capacity, in MB.
+          type: int
+        charging_mode:
+          description:
+            - Billing mode.
+          type: str
     id:
       description: Backup id.
       type: str
-      sample: ""
     image_type:
       description: Backup type.
       type: str
-      sample: 300
     name:
       description: Backup name.
       type: str
-      sample: "private"
     parent_id:
       description: Parent backup ID.
       type: str
-      sample: 300
     project_id:
       description: Project ID.
       type: str
-      sample: "private"
     protected_at:
       description: Backup time.
       type: str
-      sample: "private"
     resource_az:
       description: Resource availability zone.
       type: str
-      sample: 300
     resource_id:
       description: Resource ID.
       type: str
-      sample: "private"
     resource_name:
       description: Resource name.
       type: str
-      sample: 300
     resource_size:
       description: Resource size, in GB.
       type: str
-      sample: "private"
     resource_type:
       description: Resource type.
       type: str
-      sample: 300
     status:
       description: Backup status.
       type: str
-      sample: "private"
     updated_at:
       description: Update time.
       type: str
-      sample: 300
     vault_id:
       description: Vault id.
       type: str
-      sample: "private"
     provider_id:
       description: Backup provider ID, which is used to distinguish\
        backup objects. The value can be as follows:.
       type: str
-      sample: "private"
 '''
 
 EXAMPLES = '''
@@ -167,7 +157,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class CBRBackupModule(OTCModule):
     argument_spec = dict(
-        name_or_id=dict(required=True),
+        name=dict(required=True),
         mappings=dict(type='list', required=False, elements='dict',
                       options=dict(backup_id=dict(type='str', required=True),
                                    volume_id=dict(type='str', required=True))),
@@ -207,7 +197,7 @@ class CBRBackupModule(OTCModule):
 
     def run(self):
         changed = False
-        query = {'backup': self.params['backup_id']}
+        query = {}
 
         if self.params['mappings']:
             query['mappings'] = self._parse_mappings()
@@ -218,7 +208,8 @@ class CBRBackupModule(OTCModule):
         if self.params['volume_id']:
             query['volume_id'] = self.params['volume_id']
 
-        backup = self.conn.cbr.find_backup(name_or_id=self.params['backup_id'])
+        backup = self.conn.cbr.find_backup(name_or_id=self.params['name'])
+        query = {"backup": backup.id}
 
         if self.ansible.check_mode:
             self.exit_json(changed=self._system_state_change(backup))
@@ -227,7 +218,8 @@ class CBRBackupModule(OTCModule):
             if self.params['state'] == 'present':
                 self.conn.cbr.restore_data(**query)
             else:
-                self.conn.cbr.delete_backup(backup=self.params['backup_id'])
+                self.exit(var=backup.id)
+                self.conn.cbr.delete_backup(backup=backup.id)
             self.exit(
                 changed=True
             )
