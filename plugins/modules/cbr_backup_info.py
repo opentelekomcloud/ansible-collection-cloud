@@ -114,9 +114,9 @@ options:
        ranges from 1 to 100. For example, if used_percent is set to 80,\
        all backups who occupied 80% or more of the vault capacity are displayed.
     type: str
-  vault_id:
+  vault:
     description:
-      - Vault id.
+      - Vault id or name.
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -285,7 +285,7 @@ class CBRBackupsModule(OTCModule):
                     'protecting', 'deleting', 'restoring', 'error',
                     'waiting_protect', 'waiting_delete', 'waiting_restore']),
         used_percent=dict(required=False, type='str'),
-        vault_id=dict(required=False, type='str')
+        vault=dict(required=False, type='str')
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -298,7 +298,7 @@ class CBRBackupsModule(OTCModule):
 
         if self.params['name']:
             backup = self.conn.cbr.find_backup(
-                name_or_id=self.params['name_or_id'])
+                name_or_id=self.params['name'])
             self.exit(
                 changed=False,
                 backup=backup
@@ -341,8 +341,11 @@ class CBRBackupsModule(OTCModule):
             query['status'] = self.params['status']
         if self.params['used_percent']:
             query['used_percent'] = self.params['used_percent']
-        if self.params['vault_id']:
-            query['vault_id'] = self.params['vault_id']
+        if self.params['vault']:
+            vault = self.conn.cbr.find_vault(name_or_id=self.params['vault'])
+            if not vault:
+                self.fail_json(msg="Vault not found")
+            query['vault_id'] = vault.id
 
         for raw in self.conn.cbr.backups(**query):
             dt = raw.to_dict()

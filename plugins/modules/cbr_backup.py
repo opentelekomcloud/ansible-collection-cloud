@@ -20,7 +20,7 @@ author: "Polina Gubina (@Polina-Gubina)"
 description:
     - Manage CBR backup resource from the OTC.
 options:
-  name_or_id:
+  name:
     description:
       - Backup name of id.
     type: str
@@ -64,6 +64,16 @@ options:
     choices: [present, absent]
     type: str
     default: "present"
+  wait:
+    description:
+      - If the module should wait for the backup to be deleted.
+    type: bool
+    default: 'yes'
+  timeout:
+    description:
+      - The amount of time the module should wait.
+    default: 180
+    type: int
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -165,11 +175,13 @@ class CBRBackupModule(OTCModule):
         server_id=dict(type='str', required=False),
         volume_id=dict(type='str', required=False),
         state=dict(type='str',
-                    choices=['present', 'absent'], default='present')
+                    choices=['present', 'absent'], default='present'),
+        wait=dict(type='bool', default=True),
+        timeout=dict(type='int', default=180)
     )
     module_kwargs = dict(
         required_if=[
-            ('state', 'present', ['name_or_id'])
+            ('state', 'present', ['name'])
         ],
         supports_check_mode=True
     )
@@ -209,7 +221,7 @@ class CBRBackupModule(OTCModule):
             query['volume_id'] = self.params['volume_id']
 
         backup = self.conn.cbr.find_backup(name_or_id=self.params['name'])
-        query = {"backup": backup.id}
+        query['backup'] = backup.id
 
         if self.ansible.check_mode:
             self.exit_json(changed=self._system_state_change(backup))
@@ -218,7 +230,6 @@ class CBRBackupModule(OTCModule):
             if self.params['state'] == 'present':
                 self.conn.cbr.restore_data(**query)
             else:
-                self.exit(var=backup.id)
                 self.conn.cbr.delete_backup(backup=backup.id)
             self.exit(
                 changed=True
