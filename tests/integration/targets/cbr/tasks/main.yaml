@@ -81,6 +81,12 @@
         vault: "{{ vault.vault.id }}"
       register: checkpoint
 
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - checkpoint is success
+          - checkpoint is changed
+
     - name: Getting backup list
       opentelekomcloud.cloud.cbr_backup_info:
         vault: "{{ vault.vault.id }}"
