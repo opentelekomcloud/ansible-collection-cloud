@@ -88,31 +88,31 @@ options:
     choices: ['OS::Cinder::Volume', 'OS::Nova::Server']
   sort:
     description:
-      - A group of properties separated by commas (,)\
-       and sorting directions. The value format is [:],[:],\
-       where the value of direction is asc (in ascending order)\
-       or desc (in descending order). If the parameter direction is\
-       not specified, the default sorting direction is desc. The value of\
-       sort contains a maximum of 255 characters. The value range of key is\
-       as follows: [created_at, updated_at, name, status, protected_at, id].
+        - A group of properties separated by commas (,)\
+        and sorting directions. The value format is [:],[:],\
+        where the value of direction is asc (in ascending order)\
+        or desc (in descending order). If the parameter direction is\
+        not specified, the default sorting direction is desc. The value of\
+        sort contains a maximum of 255 characters. The value range of key is\
+        as follows: [created_at, updated_at, name, status, protected_at, id].
     type: str
   start_time:
     description:
       - Time when the backup starts, in %YYYY-%mm-%ddT%HH:%MM:%SSZ format.\
-       For example, 2018-02-01T12:00:00Z.
+      For example, 2018-02-01T12:00:00Z.
     type: str
   status:
     description:
       - Status. When the API is called, multiple statuses can be transferred\
-       for filtering, for example, status=available&status=error.
+      for filtering, for example, status=available&status=error.
     type: str
     choices: ['available', 'protecting', 'deleting', 'restoring', 'error',\
-     'waiting_protect', 'waiting_delete', 'waiting_restore']
+    'waiting_protect', 'waiting_delete', 'waiting_restore']
   used_percent:
     description:
       - Backups are filtered based on the occupied vault capacity. The value\
-       ranges from 1 to 100. For example, if used_percent is set to 80,\
-       all backups who occupied 80% or more of the vault capacity are displayed.
+      ranges from 1 to 100. For example, if used_percent is set to 80,\
+      all backups who occupied 80% or more of the vault capacity are displayed.
     type: str
   vault:
     description:
@@ -243,16 +243,13 @@ backups:
 '''
 
 EXAMPLES = '''
-# Getting one cbr backup by id:
-- name: Testing
-  opentelekomcloud.cloud.dns_zone:
-    name: "test.com."
-    state: present
-    zone_type: private
-    router: 79c32783-e560-4e3a-95b1-5a0756441e12
-    description: test2
-    ttl: 5000
-    email: mail2@mail2.test
+- name: Getting one cbr backup:
+  opentelekomcloud.cloud.cbr_backup_info:
+    name: "name-or-id"
+
+- name: Getting cbr backups list for vault:
+  opentelekomcloud.cloud.cbr_backup_info:
+    vault: "name-or-id-vault"
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -281,9 +278,10 @@ class CBRBackupsModule(OTCModule):
                            choices=['OS::Cinder::Volume', 'OS::Nova::Server']),
         sort=dict(required=False, type='str'),
         start_time=dict(required=False, type='str'),
-        status=dict(required=False, type='str', choices=['available',
-                    'protecting', 'deleting', 'restoring', 'error',
-                    'waiting_protect', 'waiting_delete', 'waiting_restore']),
+        status=dict(required=False, type='str',
+                    choices=['available', 'protecting', 'deleting',
+                             'restoring', 'error', 'waiting_protect',
+                             'waiting_delete', 'waiting_restore']),
         used_percent=dict(required=False, type='str'),
         vault=dict(required=False, type='str')
     )

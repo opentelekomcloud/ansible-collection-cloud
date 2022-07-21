@@ -26,7 +26,7 @@ options:
     type: str
     required: true
   mappings:
-    description: 
+    description:
         - Restored mapping relationship. This parameter is mandatory for\
         VM restoration and optional for disk restoration.
     type: list
@@ -43,7 +43,7 @@ options:
             type: str
             required: true
   power_on:
-    description: 
+    description:
         - Whether the server is powered on after restoration.\
         By default it is powered on after restoration.
     type: bool
@@ -54,8 +54,8 @@ options:
      This parameter is mandatory for VM restoration.
     type: str
   volume_id:
-    description: 
-        - ID of the target disk to be restored.\ 
+    description:
+        - ID of the target disk to be restored.\
         This parameter is mandatory for disk restoration.
     type: str
   state:
@@ -157,9 +157,15 @@ backup:
 
 EXAMPLES = '''
 # Restore backup:
-- name: 
+- name:
   opentelekomcloud.cloud.cbr_backup:
+    name: "backup-name-or-id"
+    volume_id: "volume-id"
 
+# Delete backup:
+- name:
+  opentelekomcloud.cloud.cbr_backup:
+    name: "backup-name-or-id"
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -175,7 +181,7 @@ class CBRBackupModule(OTCModule):
         server_id=dict(type='str', required=False),
         volume_id=dict(type='str', required=False),
         state=dict(type='str',
-                    choices=['present', 'absent'], default='present'),
+                   choices=['present', 'absent'], default='present'),
         wait=dict(type='bool', default=True),
         timeout=dict(type='int', default=180)
     )
@@ -208,7 +214,6 @@ class CBRBackupModule(OTCModule):
         return False
 
     def run(self):
-        changed = False
         query = {}
 
         if self.params['mappings']:
@@ -240,7 +245,7 @@ class CBRBackupModule(OTCModule):
 
 
 def main():
-    module =CBRBackupModule()
+    module = CBRBackupModule()
     module()
 
 

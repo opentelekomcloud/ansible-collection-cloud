@@ -26,7 +26,8 @@ options:
     type: str
     required: true
   auto_trigger:
-    description: Whether automatic triggering is enabled
+    description:
+        - Whether automatic triggering is enabled
     type: bool
     default: False
   description:
@@ -57,9 +58,9 @@ options:
         type: str
         required: true
       name:
-        description: 
+        description:
           - Name of the resource to be backed up.\
-           The value consists of 0 to 255 characters..
+          The value consists of 0 to 255 characters..
         type: str
       type:
         description: Cloud type, which is public.
@@ -162,6 +163,9 @@ checkpoint:
 '''
 
 EXAMPLES = '''
+# Create a restore point
+opentelekomcloud.cloud.cbr_restore_point:
+  vault: "vault-name-or-id"
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
