@@ -70,7 +70,10 @@
 - name: Add AS instances to the AS group
   opentelekomcloud.cloud.as_instance:
     scaling_group: "{{ as_group_new.as_group.id }}"
-    scaling_instances: ["{{ ecs1.server.id }}", "{{ ecs2.server.id }}"]
+    scaling_instances: [
+        "{{ ecs1.server.id }}"
+        "{{ ecs2.server.id }}"
+    ]
     action: "add"
     state: present
   register: as_instances

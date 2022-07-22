@@ -1,0 +1,76 @@
+- hosts: localhost
+  tasks:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        network_name: "{{ ( prefix + '_network') }}"
+        subnet_name: "{{ ( prefix + '_subnet') }}"
+        router_name: "{{ ( prefix + '_router') }}"
+        server_name: "{{ ( prefix + '_ecs') }}"
+        server_flavor: "s3.medium.1"
+        image_name: Standard_Ubuntu_18.04_latest
+        volume_type: "SATA"
+        az_name: "eu-de-01"
+        vault_name: "{{ ( prefix + '_vault') }}"
+    - name: Create network
+      openstack.cloud.os_network:
+        name: "{{ network_name }}"
+        state: present
+      register: network
+
+    - name: Create subnet
+      openstack.cloud.os_subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ network.network.name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: subnet
+
+    - name: Create router
+      openstack.cloud.os_router:
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: true
+        interfaces:
+          - net: "{{ network.network.name }}"
+            subnet: "{{ subnet.subnet.name }}"
+      register: router
+
+    - name: Create ECS instance
+      openstack.cloud.server:
+        name: "{{ (server_name) }}"
+        image: "{{ image_name }}"
+        network: "{{ network_name }}"
+        flavor: "{{ server_flavor }}"
+        availability_zone: "{{ az_name }}"
+      register: ecs1
+
+    - name: Delete ECS
+      openstack.cloud.server:
+        name: "{{ (server_name) }}"
+        delete_fip: true
+        state: absent
+      failed_when: false
+
+    - name: Delete existing router
+      openstack.cloud.os_router:
+        name: "{{ router.router.name }}"
+        state: absent
+      failed_when: false
+
+    - name: Delete existing subnet
+      openstack.cloud.os_subnet:
+        name: "{{ subnet.subnet.name }}"
+        state: absent
+      failed_when: false
+
+    - name: Delete existing network
+      openstack.cloud.os_network:
+        name: "{{ network.network.name }}"
+        state: absent
+      failed_when: false

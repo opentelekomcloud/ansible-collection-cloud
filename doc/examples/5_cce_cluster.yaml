@@ -4,11 +4,17 @@
 - name: Create CCE Cluster
   opentelekomcloud.cloud.cce_cluster:
     name: "{{ cce_cluster_name }}"
-    flavor: "{{ cce_flavor }}"
     description: "Cloud Container Engine test cluster"
+    type: "virtualmachine"
+    version: "v1.21"
+    flavor: "{{ cce_flavor }}"
+    authentication_mode: "rbac"
+    kube_proxy_mode: "iptables"
     router: "{{ router }}"
     network: "{{ network_id }}"
     container_network_mode: "{{ container_network_mode }}"
+    container_network_cidr: "10.0.0.0/16"
+    availability_zone: "multi_az"
     state: present
   register: cluster
 
@@ -16,7 +22,7 @@
   opentelekomcloud.cloud.cce_cluster_cert_info:
     cluster: "{{ cluster.cce_cluster.id }}"
 
-# After cluster creating is done, you should create a node pool, which will contain some number
+# After cluster creating is finished, you should create a node pool, which will contain some number
 #  of working nodes.
 - name: Create node pool
   opentelekomcloud.cloud.cce_node_pool:
@@ -41,7 +47,6 @@
     network: "{{ network_id }}"
     priority: 2
     os: "{{ os_cluster_name }}"
-    scale_down_cooldown_time: 5
     ssh_key: "{{ keypair_name }}"
     tags:
       - key: "my_first_key"

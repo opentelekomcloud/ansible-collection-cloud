@@ -1,5 +1,11 @@
 ---
 
+# There are many services interconnected with Cloud eye. All the services are logically united
+# into groups named Namespaces. Every Namespace supports plenty of metrics, and each of them can
+# be monitored. Besides particular metric you want to check up, you need to know Dimension -
+# this entity pecifies the metric dimension of the selected resource type. In this
+# example we want to monitor inbound bandwidth of public IP connected to our VPC. So first of
+# all we will assign a new public IP for further monitoring.
 - name: Assign Floating IP
   opentelekomcloud.cloud.floating_ip:
     network: admin_external_net
