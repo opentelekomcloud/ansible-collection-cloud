@@ -23,6 +23,10 @@ action_groups:
     - css_cluster_info
     - css_snapshot
     - css_snapshot_info
+    - cbr_backup
+    - cbr_backup_info
+    - cbr_restore_point
+    - cbr_vault
     - deh_host
     - deh_host_info
     - deh_host_type_info

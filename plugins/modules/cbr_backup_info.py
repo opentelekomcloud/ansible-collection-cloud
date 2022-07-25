@@ -84,17 +84,11 @@ options:
   resource_type:
     description:
       - Resource type.
-    type: str
     choices: ['OS::Cinder::Volume', 'OS::Nova::Server']
+    type: str
   sort:
     description:
-        - A group of properties separated by commas (,)\
-        and sorting directions. The value format is [:],[:],\
-        where the value of direction is asc (in ascending order)\
-        or desc (in descending order). If the parameter direction is\
-        not specified, the default sorting direction is desc. The value of\
-        sort contains a maximum of 255 characters. The value range of key is\
-        as follows: [created_at, updated_at, name, status, protected_at, id].
+      - A group of properties separated by commas (,) and sorting directions.
     type: str
   start_time:
     description:
@@ -243,12 +237,12 @@ backups:
 '''
 
 EXAMPLES = '''
-- name: Getting one cbr backup:
-  opentelekomcloud.cloud.cbr_backup_info:
+# Getting one cbr backup:
+- opentelekomcloud.cloud.cbr_backup_info:
     name: "name-or-id"
 
-- name: Getting cbr backups list for vault:
-  opentelekomcloud.cloud.cbr_backup_info:
+# Getting cbr backups list for vault:
+- opentelekomcloud.cloud.cbr_backup_info:
     vault: "name-or-id-vault"
 '''
 

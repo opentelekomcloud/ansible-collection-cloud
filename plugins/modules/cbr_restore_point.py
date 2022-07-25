@@ -174,7 +174,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class CBRRestorePointModule(OTCModule):
     argument_spec = dict(
         vault=dict(required=True, type='str'),
-        auto_trigger=dict(required=False, type='bool'),
+        auto_trigger=dict(required=False, type='bool', default=False),
         description=dict(required=False, type='str'),
         incremental=dict(required=False, type='bool'),
         name=dict(type='str', required=False),
@@ -183,7 +183,9 @@ class CBRRestorePointModule(OTCModule):
                               options=dict(
                                   id=dict(required=True, type='str'),
                                   name=dict(required=False, type='str'),
-                                  type=dict(required=True, type='str')
+                                  type=dict(required=True, type='str',
+                                            choices=['OS::Nova::Server',
+                                                     'OS::Cinder::Volume'])
                               )
                               )
     )

@@ -13,22 +13,19 @@
 
 DOCUMENTATION = '''
 module: cbr_backup
-short_description: Manage CBR backup resource
+short_description: Manage CBR Backup Resource
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.12.4"
-author: "Polina Gubina (@Polina-Gubina)"
-description:
-    - Manage CBR backup resource from the OTC.
+author: "Gubina Polina (@Polina-Gubina)"
+description: Manage CBR backup resource from the OTC.
 options:
   name:
-    description:
-      - Backup name of id.
+    description: Backup name of id.
     type: str
     required: true
   mappings:
     description:
-        - Restored mapping relationship. This parameter is mandatory for\
-        VM restoration and optional for disk restoration.
+        - Restored mapping relationship. This parameter is mandatory for VM restoration and optional for disk restoration.
     type: list
     elements: dict
     suboptions:
@@ -37,17 +34,17 @@ options:
               - backup_id
             type: str
             required: true
-          volume_id:
-            description:
-              - ID of the disk to which data is restored.
-            type: str
-            required: true
+        volume_id:
+          description:
+            - ID of the disk to which data is restored.
+          type: str
+          required: true
   power_on:
     description:
         - Whether the server is powered on after restoration.\
         By default it is powered on after restoration.
     type: bool
-    default: true
+    default: True
   server_id:
     description:
      - ID of the target VM to be restored.\
@@ -63,17 +60,7 @@ options:
       - Whether resource should be present or absent.
     choices: [present, absent]
     type: str
-    default: "present"
-  wait:
-    description:
-      - If the module should wait for the backup to be deleted.
-    type: bool
-    default: 'yes'
-  timeout:
-    description:
-      - The amount of time the module should wait.
-    default: 180
-    type: int
+    default: present
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -177,13 +164,11 @@ class CBRBackupModule(OTCModule):
         mappings=dict(type='list', required=False, elements='dict',
                       options=dict(backup_id=dict(type='str', required=True),
                                    volume_id=dict(type='str', required=True))),
-        power_on=dict(type='bool', default='true', required=False),
+        power_on=dict(type='bool', default=True, required=False),
         server_id=dict(type='str', required=False),
         volume_id=dict(type='str', required=False),
         state=dict(type='str',
-                   choices=['present', 'absent'], default='present'),
-        wait=dict(type='bool', default=True),
-        timeout=dict(type='int', default=180)
+                   choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(
         required_if=[
