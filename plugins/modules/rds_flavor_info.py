@@ -28,12 +28,10 @@ options:
     description:
       - Name of the database (datastore type).
     choices: [mysql, postgresql, sqlserver]
-    default: postgresql
     type: str
   version:
     description:
       - Datastore version
-    required: true
     type: str
   instance_mode:
     description:
@@ -43,7 +41,6 @@ options:
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
-# TODO: describe proper output
 RETURN = '''
 rds_flavors:
     description: List of dictionaries describing RDS flavors
@@ -58,6 +55,18 @@ rds_flavors:
             description: Name (version) of the datastore.
             type: str
             sample: "10"
+        ram:
+            description: Quantity of RAM Gigabytes
+            type: int
+            sample: 128
+        spec_code:
+            description: Name of the flavor specification
+            type: str
+            sample: "rds.mysql.c3.15xlarge.2.ha"
+        vcpus:
+            description: Quantity of available virtual CPUs
+            type: str
+            sample: "60"
 '''
 
 EXAMPLES = '''
@@ -75,9 +84,8 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class RdsFlavorModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
-        datastore=dict(choices=['mysql', 'postgresql', 'sqlserver'],
-                       default='postgresql'),
-        version=dict(required=True),
+        datastore=dict(choices=['mysql', 'postgresql', 'sqlserver']),
+        version=dict(required=False),
         instance_mode=dict(choices=['single', 'replica', 'ha'])
     )
     module_kwargs = dict(
