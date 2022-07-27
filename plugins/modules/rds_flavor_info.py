@@ -83,9 +83,8 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class RdsFlavorModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
-        datastore=dict(choices=['mysql', 'postgresql', 'sqlserver'],
-                       default='postgresql'),
-        version=dict(required=True),
+        datastore=dict(choices=['mysql', 'postgresql', 'sqlserver']),
+        version=dict(required=False),
         instance_mode=dict(choices=['single', 'replica', 'ha'])
     )
     module_kwargs = dict(
