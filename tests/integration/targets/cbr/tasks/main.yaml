@@ -76,6 +76,65 @@
           - vault is success
           - vault is changed
 
+    - name: Create a restore point
+      opentelekomcloud.cloud.cbr_restore_point:
+        vault: "{{ vault.vault.id }}"
+      register: checkpoint
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - checkpoint is success
+          - checkpoint is changed
+
+    - name: Getting backup list
+      opentelekomcloud.cloud.cbr_backup_info:
+        vault: "{{ vault.vault.id }}"
+      register: backups_list
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - backups_list is success
+          - backups_list['backups']|length == 1
+
+    - name: Get backup
+      opentelekomcloud.cloud.cbr_backup_info:
+        name: "{{ backups_list.backups[0].id }}"
+      register: backup
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - backup is success
+          - backup.backup.id is defined
+
+    - name: Restore backup
+      opentelekomcloud.cloud.cbr_backup:
+        name: "{{ backup.backup.id }}"
+        volume_id: "{{ vol1.volume.id }}"
+      register: restore_backup
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - restore_backup is success
+          - restore_backup is changed
+
+    - name: Delete backup
+      opentelekomcloud.cloud.cbr_backup:
+        name: "{{ backup.backup.id }}"
+        state: absent
+        wait: true
+        timeout: 600
+      register: delete_backup
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - delete_backup is success
+          - delete_backup is changed
+
   always:
     - name: Cleanup
       block:
