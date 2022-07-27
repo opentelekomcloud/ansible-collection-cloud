@@ -27,13 +27,10 @@ options:
   datastore:
     description:
       - Name of the database (datastore type).
-    choices: [mysql, postgresql, sqlserver]
-    default: postgresql
     type: str
   version:
     description:
       - Datastore version
-    required: true
     type: str
   instance_mode:
     description:
@@ -43,7 +40,6 @@ options:
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
-# TODO: describe proper output
 RETURN = '''
 rds_flavors:
     description: List of dictionaries describing RDS flavors
@@ -58,6 +54,18 @@ rds_flavors:
             description: Name (version) of the datastore.
             type: str
             sample: "10"
+        ram:
+            description: Quantity of RAM Gigabytes
+            type: int
+            sample: 128
+        spec_code:
+            description: Name of the flavor specification
+            type: str
+            sample: "rds.mysql.c3.15xlarge.2.ha"
+        vcpus:
+            description: Quantity of available virtual CPUs
+            type: str
+            sample: "60"
 '''
 
 EXAMPLES = '''
