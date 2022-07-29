@@ -84,7 +84,6 @@ options:
   operation_type:
     description: Protection type, which is backup.
     type: str
-    default: "backup"
   pattern:
     description: 
       - Scheduling rule. It supports only parameters FREQ,\
@@ -211,8 +210,8 @@ class CBRPolicyModule(OTCModule):
         timezone=dict(type='str', required=False),
         week_backups=dict(type='int', required=False),
         year_backups=dict(type='int', required=False),
-        operation_type=dict(type='str', required=False, default="backup"),
-        pattern=dict(type='list', required=True, action='append'),
+        operation_type=dict(type='str', required=False),
+        pattern=dict(type='list', required=False, action='append'),
         state=dict(type='str', default='present')
     )
     module_kwargs = dict(
@@ -247,30 +246,6 @@ class CBRPolicyModule(OTCModule):
         query = {}
 
         state = self.params['state']
-        query['operation_type'] = self.params['operation_type']
-        query['trigger'] = {}
-        query['trigger']['properties'] = {}
-        query['trigger']['properties']['pattern'] = []
-        query['trigger']['properties']['pattern'] = self.params['pattern']
-
-        if self.params['enabled']:
-            query['enabled'] = self.params['enabled']
-
-        query['operation_definition'] = {}
-        if self.params['day_backups']:
-            query['operation_definition']['day_backups'] = self.params['day_backups']
-        if self.params['max_backups']:
-            query['operation_definition']['max_backups'] = self.params['max_backups']
-        if self.params['month_backups']:
-            query['operation_definition']['month_backups'] = self.params['month_backups']
-        if self.params['retention_duration_days']:
-            query['operation_definition']['retention_duration_days'] = self.params['retention_duration_days']
-        if self.params['timezone']:
-            query['operation_definition']['timezone'] = self.params['timezone']
-        if self.params['week_backups']:
-            query['operation_definition']['week_backups'] = self.params['week_backups']
-        if self.params['year_backups']:
-            query['operation_definition']['year_backups'] = self.params['year_backups']
 
         policy = self.conn.cbr.find_policy(name_or_id=self.params['name'])
 
@@ -291,11 +266,50 @@ class CBRPolicyModule(OTCModule):
                 changed=changed
             )
 
-        if policy:
-            policy = self.conn.cbr.update_policy(policy=policy.id, **query)
-        else:
+        if self.params['operation_type']:
+            query['operation_type'] = self.params['operation_type']
+
+        query['trigger'] = {}
+        query['trigger']['properties'] = {}
+        query['trigger']['properties']['pattern'] = []
+        if self.params['pattern']:
+            query['trigger']['properties']['pattern'] = self.params['pattern']
+
+        if self.params['enabled']:
+            query['enabled'] = self.params['enabled']
+
+        query['operation_definition'] = {}
+        if self.params['day_backups']:
+            query['operation_definition']['day_backups'] = self.params['day_backups']
+        if self.params['max_backups']:
+            query['operation_definition']['max_backups'] = self.params['max_backups']
+        if self.params['month_backups']:
+            query['operation_definition']['month_backups'] = self.params['month_backups']
+        if self.params['retention_duration_days']:
+            query['operation_definition']['retention_duration_days'] = self.params['retention_duration_days']
+        if self.params['timezone']:
+            query['operation_definition']['timezone'] = self.params['timezone']
+        if self.params['week_backups']:
+            query['operation_definition']['week_backups'] = self.params['week_backups']
+        if self.params['year_backups']:
+            query['operation_definition']['year_backups'] = self.params['year_backups']
+
+        if not policy:
+            if not self.params['operation_type']:
+                query['operation_type'] = 'backup'
+            if not self.params['pattern']:
+                self.fail_exit(
+                    msg="'pattern' is mandatory for creation"
+                )
             query['name'] = self.params['name']
             policy = self.conn.cbr.create_policy(**query)
+        else:
+            if not query['operation_definition']:
+                del query['operation_definition']
+            if not self.params['pattern']:
+                del query['trigger']
+
+            policy = self.conn.cbr.update_policy(policy=policy.id, **query)
         self.exit(
             policy=policy,
             changed=True
