@@ -15,7 +15,6 @@
   opentelekomcloud.cloud.lb_certificate:
     name: "elb_https_cert"
     type: "server"
-    admin_state_up: True
     content: "/home/user/files/rootCA.pem"
     private_key: "/home/user/files/rootCA.key"
   register: elb_cert
@@ -25,7 +24,6 @@
 #  listener itself.
 - name: Create listener for HTTPS traffic
   opentelekomcloud.cloud.lb_listener:
-    admin_state_up: True
     name: "{{ listener_https_name }}"
     protocol: terminated_https
     protocol_port: 443
@@ -33,7 +31,7 @@
     default_tls_container_ref: "{{ elb_cert.elb_certificate.id }}"
   register: listener_https
 
-# This backend server group will contain multiple ECSs.
+# This backend server group will contain multiple ECSs. Here we use roundrobin algorythm, as we use http protocol, but you can choose source_ip or least_connection 
 - name: Create backend server group
   opentelekomcloud.cloud.lb_pool:
     state: present
