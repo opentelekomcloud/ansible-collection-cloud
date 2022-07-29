@@ -57,7 +57,7 @@
         value: "first_taint_value"
         effect: "NoSchedule"
       - key: "second_taint_key"
-        value: "secound_taint_value"
+        value: "second_taint_value"
         effect: "NoExecute"
     state: present
   register: pool

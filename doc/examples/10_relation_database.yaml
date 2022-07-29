@@ -8,7 +8,7 @@
     instance_mode: "ha"
   register: rds_flavors
 
-# In this debug you can see all the flavors of the choosen DB type, and now you can decide what
+# In this debug you can see all the flavors of the chosen DB type, and now you can decide what
 # flavor exactly fits your needs
 - name: debug
   ansible.builtin.debug:
@@ -16,8 +16,8 @@
 
 # Now let's create RDS instance. You can locate it in two or more availability zones.
 # Password you pass to the module handles in secure mode: this means that it won't be shown in
-# module's output. Please pay attention that automatic backup strategy is setting here, in the
-# moment of creating RDS instance.
+# module's output. Please pay attention that automatic backup strategy is setting here, too.
+# Attribute 'cmk_id' needed for system encryption, has been created beforehand.
 - name: Create RDS instance
   opentelekomcloud.cloud.rds_instance:
     name: "{{ rds_instance_name }}"

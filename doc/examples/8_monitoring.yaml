@@ -1,8 +1,9 @@
 ---
 
 # Now we'll create several alarms to watch our infrastructure. Mind that 'alarm_name' is given by
-# user, and 'dimensions' name and 'metric_name' are constant for each kind of resource, and can be
-# taken from API reference. SMN topic here has been created beforehand.
+# user, and 'dimensions' name and 'metric_name' are embedded and constant for each kind of resource, and can be
+# taken from user's guide on docs portal here  https://docs.otc.t-systems.com/usermanual/ces/en-us_topic_0202622212.html
+# SMN topic here has been created beforehand.
 - name: Create alarm for ECS CPU utilization
   opentelekomcloud.cloud.ces_alarms:
     alarm_name: "ecs1_cpu_load"
