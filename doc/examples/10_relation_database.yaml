@@ -1,7 +1,7 @@
 ---
 
 # First of all, let's choose type and version of DB of an RDS instance. For example, we want it
-# to be a MySQL in HA mode
+# to be a MySQL (besides that you can choose postgresql or sqlserver on Microsoft) in HA (or single or replica) mode
 - name: Get info about choosen type of DB
   opentelekomcloud.cloud.rds_flavor_info:
     datastore: "mysql"
