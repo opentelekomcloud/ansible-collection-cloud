@@ -26,9 +26,8 @@ options:
     type: str
   key_state:
     description:
-      - State of a CMK that matches the regular expression ^[1-5]{1}$.
+      - State of a CMK, values from 1 to 5.
     type: str
-    default: 1
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -44,9 +43,7 @@ keys:
           type: str
           sample: "0d0466b0-e727-4d9c-b35d-f84bb474a37f"
         creation_date:
-          description:
-            - Time when a key is created.
-            - The value is a timestamp expressed in the number of seconds since 00:00:00 UTC on January 1, 1970.
+          description: Time when a key is created.
           type: str
           sample: "1638806642000"
         default_key_flag:
@@ -68,22 +65,19 @@ keys:
         key_state:
           description: State of a CMK.
           type: str
-          sample: "2",
+          sample: "2"
         key_type:
           description: Type of a CMK.
           type: str
-          sample: "1",
+          sample: "1"
         realm:
           description: Region where a CMK resides.
           type: str
-          sample: "eu-de",
-        scheduled_deletion_date: 
-          description:
-            - Time when a key will be deleted as scheduled.
-            - The value is a timestamp expressed in the number of seconds since 00:00:00 UTC on January 1, 1970.
+          sample: "eu-de"
+        scheduled_deletion_date:
+          description: Time when a key will be deleted as scheduled.
           type: str
           sample: ""
-
 '''
 
 EXAMPLES = '''
@@ -102,7 +96,7 @@ UUID_PATTERN = re.compile(r'^[\da-f]{8}-([\da-f]{4}-){3}[\da-f]{12}$', re.IGNORE
 class KMSInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False),
-        key_state=dict(required=False),
+        key_state=dict(required=False, no_log=False),
     )
     module_kwargs = dict(
         supports_check_mode=True
