@@ -168,6 +168,32 @@
           - updated_policy.policy.operation_defenition.day_backups == 5
           - updated_policy.policy.enabled == False
 
+    - name: Bind policy to the CBR vault
+      opentelekomcloud.cloud.cbr_vault:
+        name: "{{ (vault_name) }}"
+        policy: "{{ (policy_name) }}"
+        action: "bind_policy"
+      register: bind_policy
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - bind_policy is success
+          - bind_policy is changed
+
+    - name: Unbind policy from CBR vault
+      opentelekomcloud.cloud.cbr_vault:
+        name: "{{ (vault_name) }}"
+        policy: "{{ (policy_name) }}"
+        action: "unbind_policy"
+      register: unbind_policy
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - unbind_policy is success
+          - unbind_policy is changed
+
     - name: Delete policy
       opentelekomcloud.cloud.cbr_policy:
         name: "{{ policy_name }}"

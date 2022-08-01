@@ -36,7 +36,7 @@ options:
     type: int
   max_backups:
     description:
-        - Maximum number of retained backups. 
+        - Maximum number of retained backups.
         - If the value is set to -1, the backups will\
         not be cleared even though the configured retained backup\
         quantity is exceeded. If this parameter and retention_duration_days\
@@ -83,7 +83,7 @@ options:
     description: Protection type, which is backup.
     type: str
   pattern:
-    description: 
+    description:
       - Scheduling rule. It supports only parameters FREQ,\
       BYDAY, BYHOUR, BYMINUTE, and INTERVAL. FREQ can be set only to\
       WEEKLY or DAILY. BYDAY can be set to MO, TU, WE, TH, FR, SA,\
