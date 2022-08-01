@@ -24,9 +24,8 @@ options:
     type: str
     required: true
   enabled:
-    description: Whether to enable the policy.
+    description: Whether to enable the policy. By default 'true'.
     type: bool
-    default: 'yes'
   day_backups:
     description:
         - Specifies the number of retained daily backups.\
@@ -41,9 +40,9 @@ options:
         - If the value is set to -1, the backups will\
         not be cleared even though the configured retained backup\
         quantity is exceeded. If this parameter and retention_duration_days\
-        are both left blank, the backups will be retained permanently.
+        are both left blank, the backups will be retained permanently.\
+        By default -1.
     type: int
-    default: -1
   month_backups:
     description:
      - Specifies the number of retained monthly backups.\
@@ -55,9 +54,8 @@ options:
   retention_duration_days:
     description:
         - ID of the target disk to be restored.\
-        This parameter is mandatory for disk restoration.
+        This parameter is mandatory for disk restoration. By default -1.
     type: int
-    default: -1
   timezone:
     description:
      - Time zone where the user is located.\
@@ -202,11 +200,11 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class CBRPolicyModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True),
-        enabled=dict(type='bool', default=True, required=False),
+        enabled=dict(type='bool', required=False),
         day_backups=dict(type='int', required=False),
-        max_backups=dict(type='int', required=False, default=-1),
+        max_backups=dict(type='int', required=False),
         month_backups=dict(type='int', required=False),
-        retention_duration_days=dict(type='int', required=False, default=-1),
+        retention_duration_days=dict(type='int', required=False),
         timezone=dict(type='str', required=False),
         week_backups=dict(type='int', required=False),
         year_backups=dict(type='int', required=False),
@@ -221,16 +219,18 @@ class CBRPolicyModule(OTCModule):
     def _require_update(self, policy):
         require_update = False
         if policy:
-            if self.params['enabled'] != policy.enabled:
-                require_update = True
+            if self.params['enabled'] is not None:
+                if self.params['enabled'] != policy.enabled:
+                    require_update = True
             if self.params['pattern']:
                 require_update = True
             for param_key in ['day_backups', 'max_backups', 'month_backups',
                               'retention_duration_days', 'timezone',
                               'week_backups', 'year_backups']:
-                if self.params[param_key] != policy.operation_definition[param_key]:
-                    require_update = True
-                    break
+                if self.params[param_key]:
+                    if self.params[param_key] != policy.operation_definition[param_key]:
+                        require_update = True
+                        break
         return require_update
 
     def _system_state_change(self, policy):
@@ -298,9 +298,15 @@ class CBRPolicyModule(OTCModule):
             if not self.params['operation_type']:
                 query['operation_type'] = 'backup'
             if not self.params['pattern']:
-                self.fail_exit(
+                self.fail_json(
                     msg="'pattern' is mandatory for creation"
                 )
+            if not self.params['enabled']:
+                query['enabled'] = True
+            if not self.params['max_backups']:
+                query['operation_definition']['max_backups'] = -1
+            if not self.params['retention_duration_days']:
+                query['operation_definition']['retention_duration_days'] = -1
             query['name'] = self.params['name']
             policy = self.conn.cbr.create_policy(**query)
         else:

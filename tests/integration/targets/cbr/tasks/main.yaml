@@ -16,6 +16,7 @@
         volume_name2: "{{ (prefix + '_volume2') }}"
         az_name: "eu-de-01"
         vault_name: "{{ (prefix + '_vault') }}"
+        volume_name: "{{ (prefix + '_policy') }}"
 
     - name: Create first volume
       openstack.cloud.volume:
@@ -134,6 +135,49 @@
         that:
           - delete_backup is success
           - delete_backup is changed
+
+    - name: Create policy
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_name }}"
+        day_backups: 0
+        month_backups: 0
+        retention_duration_days: 5
+        year_backups: 0
+        pattern:
+          - "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00"
+      register: policy
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - policy is success
+          - policy is changed
+
+    - name: Update policy
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_name }}"
+        day_backups: 5
+        enabled: False
+      register: updated_policy
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - updated_policy is success
+          - updated_policy is changed
+          - updated_policy.policy.operation_defenition.day_backups == 5
+          - updated_policy.policy.enabled == False
+
+    - name: Delete policy
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_name }}"
+      register: deleted_policy
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - deleted_policy is success
+          - deleted_policy is changed
 
   always:
     - name: Cleanup
