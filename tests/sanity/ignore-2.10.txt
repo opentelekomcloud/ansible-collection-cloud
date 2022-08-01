@@ -99,3 +99,4 @@ plugins/modules/anti_ddos_optional_policies_info.py validate-modules:missing-gpl
 plugins/modules/server_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/object_info.py validate-modules:missing-gplv3-license
 plugins/modules/dns_nameserver_info.py validate-modules:missing-gplv3-license
+plugins/modules/kms_info.py validate-modules:missing-gplv3-license

@@ -84,3 +84,4 @@ action_groups:
     - anti_ddos_optional_policies_info.py
     - object_info.py
     - dns_nameserver_info.py
+    - kms_info.py
