@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: kms_info
 short_description: Get info about KMS keys.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.12.0"
+version_added: "0.12.5"
 author: "Anton Sidelnikov (@anton-sidelnikov)"
 description:
   - Get KMS key info from the OTC.
