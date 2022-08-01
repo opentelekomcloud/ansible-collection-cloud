@@ -8,8 +8,8 @@
     display_description: "Full backup of the test instance"
     state: absent
     volume: "{{ ecs_1_vol }}"
-    force: True
-    wait: yes
+    force: true
+    wait: true
     timeout: 123
   register: bckp
   tags:

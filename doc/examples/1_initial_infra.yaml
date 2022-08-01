@@ -75,7 +75,7 @@
         protocol: "tcp"
         port_range_max: 22
         port_range_min: 22
-    exclusive: True
+    exclusive: true
   register: secgroup
   tags:
     - security_group
@@ -89,7 +89,7 @@
     availability_zone: "eu-de-01"
     volume_size: 6
     security_groups: "{{ security_group_name }}"
-    auto_ip: no
+    auto_ip: false
     state: present
   register: ecs1
   tags:
@@ -104,7 +104,7 @@
     availability_zone: "eu-de-01"
     volume_size: 6
     security_groups: "{{ security_group_name }}"
-    auto_ip: no
+    auto_ip: false
     state: present
   register: ecs2
   tags:
