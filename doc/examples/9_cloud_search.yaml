@@ -1,0 +1,47 @@
+---
+
+# Here we'll create Cloud Search cluster contained 1 node. Attribute 'cmk_id' is the Master
+# Key, which encrypts system. This attribute has been created beforehand. Please pay attention that
+# backup strategy is setting up also in this module.
+- name: Create Cloud Search cluster
+  opentelekomcloud.cloud.css_cluster:
+    name: "{{ css_cluster_name }}"
+    state: present
+    flavor: "{{ css_flavour }}"
+    instance_num: 1
+    datastore_version: "7.6.2"
+    datastore_type: "elasticsearch"
+    volume_type: "common"
+    volume_size: 40
+    system_encrypted: 1
+    system_cmkid: "{{ cmk_id }}"
+    https_enable: False
+    authority_enable: False
+    admin_pwd: "{{ password }}"
+    router: "{{ router }}"
+    net: "{{ network_id }}"
+    security_group: "{{ secgroup_id }}"
+    backup_period: "00:00 GMT+03:00"
+    backup_prefix: "yetanother"
+    backup_keepday: 1
+  register: css_cluster
+
+- name: Get info about created cluster
+  opentelekomcloud.cloud.css_cluster_info:
+    name: "{{ css_cluster.id }}"
+  register: css_info
+
+# By default, data of all indices is backed up. You can use the asterisk (*) to back up data of
+# certain indices.
+- name: Create snapshot of the cluster
+  opentelekomcloud.cloud.css_snapshot:
+    cluster: "{{ css_cluster.id }}"
+    name: "{{ css_snapshot_name }}"
+    description: "Example snapshot of the CSS cluster"
+    state: present
+    indices: "yetanother*"
+  register: css_snapshot
+
+- name: Get info about CSS snapshot
+  opentelekomcloud.cloud.css_snapshot_info:
+    cluster: "{{ css_cluster.id }}"

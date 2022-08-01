@@ -1,0 +1,110 @@
+---
+
+# Now we'll create several alarms to watch our infrastructure. Mind that 'alarm_name' is given by
+# user, and 'dimensions' name and 'metric_name' are embedded and constant for each kind of resource, and can be
+# taken from user's guide on docs portal here  https://docs.otc.t-systems.com/usermanual/ces/en-us_topic_0202622212.html
+# SMN topic here has been created beforehand.
+- name: Create alarm for ECS CPU utilization
+  opentelekomcloud.cloud.ces_alarms:
+    alarm_name: "ecs1_cpu_load"
+    state: present
+    metric:
+      namespace: "SYS.ECS"
+      dimensions:
+        - name: "instance_id"
+          value: "{{ ecs_1_id }}"
+      metric_name: "CPU_usage"
+    condition:
+          period: 300
+          filter: average
+          comparison_operator: ">="
+          value: 50
+          unit: "Percent"
+          count: 1
+    alarm_enabled: true
+    alarm_action_enabled: False
+    alarm_actions:
+      - type: "notification"
+        notificationList: "urn:smn:eu-de:5dd3c0b24cdc4d31952c49589182a89d:yet_another_topic"
+  register: ecs_cpu_alarm
+
+# As we're watching ECS, 'namespace' attribute is the same, but 'metric_name' is different.
+- name: Create alarm for ECS CPU and memory usage
+  opentelekomcloud.cloud.ces_alarms:
+    alarm_name: "ecs1_mem_util"
+    state: present
+    metric:
+      namespace: "SYS.ECS"
+      dimensions:
+        - name: "instance_id"
+          value: "{{ ecs_1_id }}"
+      metric_name: "Memory_usage"
+    condition:
+          period: 300
+          filter: average
+          comparison_operator: ">="
+          value: 50
+          unit: "Percent"
+          count: 1
+    alarm_enabled: true
+    alarm_action_enabled: True
+    alarm_actions:
+      - type: "notification"
+        notificationList: "urn:smn:eu-de:5dd3c0b24cdc4d31952c49589182a89d:yet_another_topic"
+  register: ecs_mem_alarm
+
+# Let's set up alarm for upstream bandwidth for ELB.
+- name: Create watchdog alarm for Load Balancer
+  opentelekomcloud.cloud.ces_alarms:
+    alarm_name: "lb_watchdog"
+    state: present
+    metric:
+      namespace: "SYS.ELB"
+      dimensions:
+        - name: "lbaas_instance_id"
+          value: "{{ elb_id }}"
+      metric_name: "m16_l7_upstream_5xx"
+    condition:
+          period: 300
+          filter: average
+          comparison_operator: ">="
+          value: 5
+          unit: "Count/s"
+          count: 1
+    alarm_enabled: true
+    alarm_action_enabled: True
+    alarm_actions:
+      - type: "notification"
+        notificationList: "urn:smn:eu-de:5dd3c0b24cdc4d31952c49589182a89d:yet_another_topic"
+  register: elb_5xx_alarm
+
+# Here type of 'alarm_actions' has been switched to 'autoscaling'. In this case you should set
+# field 'notificationList' to empty list.
+- name: Create load alarm for Auto Scaling Group to adjust number of instances
+  opentelekomcloud.cloud.ces_alarms:
+    alarm_name: "as_load"
+    state: present
+    metric:
+      namespace: "SYS.AS"
+      dimensions:
+        - name: "AutoScalingGroup"
+          value: "{{ as_group_name }}"
+      metric_name: "mem_util"
+    condition:
+          period: 300
+          filter: average
+          comparison_operator: ">="
+          value: 50
+          unit: "Percent"
+          count: 2
+    alarm_enabled: true
+    alarm_action_enabled: True
+    alarm_actions:
+      - type: "autoscaling"
+        notificationList: []
+  register: as_mem_alarm
+
+- name: Get Alarm Infos
+  opentelekomcloud.cloud.ces_alarms_info:
+    name: "{{ alarm_name }}"
+  register: ces_al_info

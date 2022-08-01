@@ -1,0 +1,85 @@
+---
+
+# Keypair is mandatory condition for creating and modifying AS configurations and groups. Be avoid
+# of accidental deleting of this entity, because in this case you'll lost control on your AS
+# entities.
+- name: Create new keypair for accessing AS config
+  openstack.cloud.keypair:
+    name: "{{ keypair_name }}"
+  register: kp
+  tags:
+    - create_keypair
+
+# You're able to create a new AS config based on existing ECS, using it as a template. For this,
+# point ECS's id as a parameter. Here is example of a new AS config, taken from scratch.
+- name: Create new AS config
+  opentelekomcloud.cloud.as_config:
+    scaling_configuration: "{{ as_new_config_name }}"
+    key_name: "{{ keypair_name }}"
+    image: "Standard_CentOS_7_latest"
+    flavor: "s3.medium.1"
+    disk:
+      - size: 10
+        volume_type: 'SAS'
+        disk_type: 'SYS'
+  register: as_config_new
+  tags:
+    - create_as_config
+
+# Please pay attention to numbers of desiring instances. It should fall within range given in CIDR
+# block of attaching subnet. Router parameter points to VPC ID.
+- name: Create AS Group
+  opentelekomcloud.cloud.as_group:
+    scaling_group:
+      name: "{{ as_group_name }}"
+    scaling_configuration: "{{ as_config_new.as_config.name }}"
+    min_instance_number: 0
+    desire_instance_number: 2
+    max_instance_number: 4
+    availability_zones: ["eu-de-01"]
+    networks: [{"id": "{{ network_id }}"}]
+    security_groups: [{"id": "{{ secgroup_id }}"}]
+    router: "{{ router }}"
+    delete_publicip: true
+    delete_volume: true
+    action: "resume"
+    state: "present"
+    wait: true
+    timeout: 400
+  register: as_group
+  tags:
+    - create_as_group
+
+- name: Rename AS group
+  opentelekomcloud.cloud.as_group:
+    scaling_group:
+      id: "{{ as_group.as_group.id }}"
+      name: "{{ new_as_group_name }}"
+    max_instance_number: 4
+  register: as_group_new
+
+- name: Get list of AS instances using AS group id
+  opentelekomcloud.cloud.as_instance_info:
+    scaling_group: "{{ as_group_new.as_group.id }}"
+  register: as_inst_list
+  tags:
+    - get_list
+
+# Besides creating instances directly from AS group module, you can add already existing ECSs to the
+# AS group. Please pay attention that instances to be added must be in the same AZ as AS group.
+- name: Add AS instances to the AS group
+  opentelekomcloud.cloud.as_instance:
+    scaling_group: "{{ as_group_new.as_group.id }}"
+    scaling_instances:
+        - "{{ ecs1.server.id }}"
+        - "{{ ecs2.server.id }}"
+    action: "add"
+    state: present
+  register: as_instances
+  tags:
+    - add_instances
+
+- name: Get list of AS Instances after adding new instances
+  opentelekomcloud.cloud.as_instance_info:
+    scaling_group: "{{ as_group.as_group.id }}"
+  register: as_inst_list_af

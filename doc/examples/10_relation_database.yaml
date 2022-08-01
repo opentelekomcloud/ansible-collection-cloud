@@ -1,0 +1,68 @@
+---
+
+# First of all, let's choose type and version of DB of an RDS instance. For example, we want it
+# to be a MySQL (besides that you can choose postgresql or sqlserver on Microsoft) in HA (or single or replica) mode
+- name: Get info about choosen type of DB
+  opentelekomcloud.cloud.rds_flavor_info:
+    datastore: "mysql"
+    instance_mode: "ha"
+  register: rds_flavors
+
+# In this debug you can see all the flavors of the chosen DB type, and now you can decide what
+# flavor exactly fits your needs
+- name: debug
+  ansible.builtin.debug:
+    msg: "{{ rds_flavors.rds_flavors[0].name }}"
+
+# Now let's create RDS instance. You can locate it in two or more availability zones.
+# Password you pass to the module handles in secure mode: this means that it won't be shown in
+# module's output. Please pay attention that automatic backup strategy is setting here, too.
+# Attribute 'cmk_id' needed for system encryption, has been created beforehand.
+- name: Create RDS instance
+  opentelekomcloud.cloud.rds_instance:
+    name: "{{ rds_instance_name }}"
+    state: present
+    region: "eu-de"
+    availability_zone: "eu-de-01,eu-de-02"
+    datastore_type: "mysql"
+    datastore_version: "8.0"
+    flavor: "{{ rds_flavors.rds_flavors[0].name }}"
+    ha_mode: "semisync"
+    router: "{{ router }}"
+    network: "{{ network_id }}"
+    port: 8080
+    security_group: "{{ secgroup_id }}"
+    password: "{{ password }}"
+    volume_type: "ultrahigh"
+    volume_size: 40
+    disk_encryption: "{{ cmk_id }}"
+    backup_keepdays: 1
+    backup_timeframe: "02:00-03:00"
+    wait: True
+    timeout: 777
+  register: rds
+
+# With this info module you can get info about your instance
+- name: Let's get info about whole RDS instance
+  opentelekomcloud.cloud.rds_instance_info:
+    name: "{{ rds.instance.name }}"
+
+- name: Let's get info about datastore
+  opentelekomcloud.cloud.rds_datastore_info:
+    name: "{{ rds.instance.id }}"
+
+- name: Now create backup of the created instance
+  opentelekomcloud.cloud.rds_backup:
+    instance: "{{ rds.instance.id }}"
+    name: "{{ rds_backup_name }}"
+    state: present
+    description: "Backup of the RDS instance"
+    wait: True
+  register: rds_bckp
+
+# Queirying RDS backup info. You can use any of specified attributes, together or separetely.
+- name: Get RDS backup info
+  opentelekomcloud.cloud.rds_backup_info:
+    instance: "{{ rds.instance.id }}"
+    backup: "{{ rds_bckp.backup.id }}"
+    backup_type: "{{ rds_bckp.backup.type }}"
