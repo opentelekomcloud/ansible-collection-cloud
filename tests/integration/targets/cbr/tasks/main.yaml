@@ -157,7 +157,7 @@
       opentelekomcloud.cloud.cbr_policy:
         name: "{{ policy_name }}"
         day_backups: 5
-        enabled: False
+        enabled: false
       register: updated_policy
 
     - name: assert result
@@ -194,20 +194,20 @@
           - unbind_policy is success
           - unbind_policy is changed
 
-    - name: Delete policy
-      opentelekomcloud.cloud.cbr_policy:
-        name: "{{ policy_name }}"
-      register: deleted_policy
-
-    - name: assert result
-      ansible.builtin.assert:
-        that:
-          - deleted_policy is success
-          - deleted_policy is changed
-
   always:
     - name: Cleanup
       block:
+        - name: Delete policy
+          opentelekomcloud.cloud.cbr_policy:
+            name: "{{ policy_name }}"
+          register: deleted_policy
+
+        - name: assert result
+          ansible.builtin.assert:
+            that:
+              - deleted_policy is success
+              - deleted_policy is changed
+
         - name: Delete CBR vault
           opentelekomcloud.cloud.cbr_vault:
             name: "{{ (vault_name) }}"
