@@ -15,14 +15,14 @@
           value: "{{ ecs_1_id }}"
       metric_name: "CPU_usage"
     condition:
-          period: 300
-          filter: average
-          comparison_operator: ">="
-          value: 50
-          unit: "Percent"
-          count: 1
+      period: 300
+      filter: average
+      comparison_operator: ">="
+      value: 50
+      unit: "Percent"
+      count: 1
     alarm_enabled: true
-    alarm_action_enabled: False
+    alarm_action_enabled: false
     alarm_actions:
       - type: "notification"
         notificationList: "urn:smn:eu-de:5dd3c0b24cdc4d31952c49589182a89d:yet_another_topic"
@@ -40,14 +40,14 @@
           value: "{{ ecs_1_id }}"
       metric_name: "Memory_usage"
     condition:
-          period: 300
-          filter: average
-          comparison_operator: ">="
-          value: 50
-          unit: "Percent"
-          count: 1
+      period: 300
+      filter: average
+      comparison_operator: ">="
+      value: 50
+      unit: "Percent"
+      count: 1
     alarm_enabled: true
-    alarm_action_enabled: True
+    alarm_action_enabled: true
     alarm_actions:
       - type: "notification"
         notificationList: "urn:smn:eu-de:5dd3c0b24cdc4d31952c49589182a89d:yet_another_topic"
@@ -65,14 +65,14 @@
           value: "{{ elb_id }}"
       metric_name: "m16_l7_upstream_5xx"
     condition:
-          period: 300
-          filter: average
-          comparison_operator: ">="
-          value: 5
-          unit: "Count/s"
-          count: 1
+      period: 300
+      filter: average
+      comparison_operator: ">="
+      value: 5
+      unit: "Count/s"
+      count: 1
     alarm_enabled: true
-    alarm_action_enabled: True
+    alarm_action_enabled: true
     alarm_actions:
       - type: "notification"
         notificationList: "urn:smn:eu-de:5dd3c0b24cdc4d31952c49589182a89d:yet_another_topic"
@@ -91,14 +91,14 @@
           value: "{{ as_group_name }}"
       metric_name: "mem_util"
     condition:
-          period: 300
-          filter: average
-          comparison_operator: ">="
-          value: 50
-          unit: "Percent"
-          count: 2
+      period: 300
+      filter: average
+      comparison_operator: ">="
+      value: 50
+      unit: "Percent"
+      count: 2
     alarm_enabled: true
-    alarm_action_enabled: True
+    alarm_action_enabled: true
     alarm_actions:
       - type: "autoscaling"
         notificationList: []

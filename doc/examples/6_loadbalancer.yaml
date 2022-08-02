@@ -3,7 +3,7 @@
 - name: Create loadbalancer for cluster
   opentelekomcloud.cloud.loadbalancer:
     state: present
-    auto_public_ip: True
+    auto_public_ip: true
     name: "{{ lb_name }}"
     vip_subnet: "{{ vpc_subnet_name }}"
   register: lb
@@ -31,7 +31,8 @@
     default_tls_container_ref: "{{ elb_cert.elb_certificate.id }}"
   register: listener_https
 
-# This backend server group will contain multiple ECSs. Here we use roundrobin algorithm, as we use http protocol, but you can choose source_ip or least_connection 
+# This backend server group will contain multiple ECSs.
+# Here we use roundrobin algorithm, as we use http protocol, but you can choose source_ip or least_connection.
 - name: Create backend server group
   opentelekomcloud.cloud.lb_pool:
     state: present

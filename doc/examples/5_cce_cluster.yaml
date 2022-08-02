@@ -28,14 +28,14 @@
   opentelekomcloud.cloud.cce_node_pool:
     name: "{{ node_pool_name }}"
     availability_zone: "eu-de-01"
-    autoscaling_enabled: False
+    autoscaling_enabled: false
     cluster: "{{ cluster.cce_cluster.id }}"
     data_volumes:
       - volumetype: "SSD"
         size: 120
       - volumetype: "SATA"
         size: 100
-        encrypted: False
+        encrypted: false
     flavor: "{{ node_flavor }}"
     initial_node_count: 0
     k8s_tags:
