@@ -104,94 +104,122 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-backup:
-  description: CBR backups list.
+policy:
+  description: CBR policy object.
   type: complex
   returned: On Success.
   contains:
-    checkpoint_id:
-      description: Restore point ID.
-      type: str
-    created_at:
-      description: Creation time.
-      type: str
-    description:
-      description: Backup description.
-      type: str
-    expired_at:
-      description: Expiration time.
-      type: str
-    extend_info:
-      description: Extended information.
-      type: complex
-      contains:
-        allocated:
-          description:
-            - Allocated capacity, in MB.
-          type: int
-        charging_mode:
-          description:
-            - Billing mode.
-          type: str
+    enabled:
+      description: Whether the policy is enabled.
+      type: bool
     id:
-      description: Backup id.
-      type: str
-    image_type:
-      description: Backup type.
+      description: Policy ID.
       type: str
     name:
-      description: Backup name.
+      description: Policy name.
       type: str
-    parent_id:
-      description: Parent backup ID.
+    operation_definition:
+      description: Policy attributes.
+      type: complex
+      contains:
+        day_backups:
+          description:
+            - Specifies the number of retained daily backups.
+          type: int
+        max_backups:
+          description:
+            - Maximum number of retained backups.
+          type: int
+        month_backups:
+          description:
+            - Specifies the number of retained monthly backups.
+          type: int
+        retention_duration_days:
+          description:
+            - Duration of retaining a backup, in days.
+          type: int
+        timezone:
+          description:
+            - Time zone where the user is located.
+          type: str
+        week_backups:
+          description:
+            - Specifies the number of retained weekly backups.
+          type: int
+        year_backups:
+          description:
+            - Specifies the number of retained yearly backups.
+          type: str
+    operation_type:
+      description: Backup id.
       type: str
-    project_id:
-      description: Project ID.
-      type: str
-    protected_at:
-      description: Backup time.
-      type: str
-    resource_az:
-      description: Resource availability zone.
-      type: str
-    resource_id:
-      description: Resource ID.
-      type: str
-    resource_name:
-      description: Resource name.
-      type: str
-    resource_size:
-      description: Resource size, in GB.
-      type: str
-    resource_type:
-      description: Resource type.
-      type: str
-    status:
-      description: Backup status.
-      type: str
-    updated_at:
-      description: Update time.
-      type: str
-    vault_id:
-      description: Vault id.
-      type: str
-    provider_id:
-      description: Backup provider ID, which is used to distinguish\
-       backup objects. The value can be as follows:.
-      type: str
+    trigger:
+      description: Time scheduling rule for the policy.
+      type: complex
+      contains:
+        id:
+          description:
+            - Scheduler ID.
+          type: str
+        name:
+          description:
+            - Scheduler name.
+          type: str
+        properties:
+          description:
+            - Scheduler attributes.
+          type: complex
+          contains:
+            pattern:
+              description:
+                - Scheduling policy of the scheduler.
+              type: list
+            start_time:
+              description:
+                - Start time of the scheduler.
+              type: str
+        type:
+          description:
+            - Scheduler type. Currently, only time (periodic scheduling) is supported.
+          type: str
+    associated_vaults:
+      description: Associated vault.
+      type: list
+      contains:
+        destination_vault_id:
+          description:
+            - ID of the associated remote vault.
+          type: str
+        vault_id:
+          description:
+            - Vault ID.
+          type: str
 '''
 
 EXAMPLES = '''
-# Restore backup:
+# Create policy:
 - name:
-  opentelekomcloud.cloud.cbr_backup:
-    name: "backup-name-or-id"
-    volume_id: "volume-id"
+  opentelekomcloud.cloud.cbr_policy:
+    name: "newpolicy"
+    day_backups: 0
+    month_backups: 0
+    retention_duration_days: 5
+    year_backups: 0
+    pattern:
+      - "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00"
 
-# Delete backup:
+# Update policy:
 - name:
-  opentelekomcloud.cloud.cbr_backup:
-    name: "backup-name-or-id"
+  opentelekomcloud.cloud.cbr_policy:
+    name: "newpolicy"
+    day_backups: 5
+    enabled: False
+
+# Delete policy:
+- name:
+  opentelekomcloud.cloud.cbr_policy:
+    name: "newpolicy"
+    state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
