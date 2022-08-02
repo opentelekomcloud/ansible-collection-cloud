@@ -92,8 +92,7 @@ options:
       The scheduling interval must not be less than 1 hour.\
       A maximum of 24 time points are allowed in a day.
     type: list
-    required: true
-    action: append
+    elements: str
   state:
     description:
       - Whether resource should be present or absent.
@@ -237,8 +236,8 @@ class CBRPolicyModule(OTCModule):
         week_backups=dict(type='int', required=False),
         year_backups=dict(type='int', required=False),
         operation_type=dict(type='str', required=False),
-        pattern=dict(type='list', required=False, action='append'),
-        state=dict(type='str', default='present')
+        pattern=dict(type='list', required=False, elements='str'),
+        state=dict(type='str', default='present', choices=['present', 'absent'])
     )
     module_kwargs = dict(
         supports_check_mode=True
