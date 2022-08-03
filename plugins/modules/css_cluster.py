@@ -33,7 +33,7 @@ options:
       - Engine version. The value can be 6.2.3, 7.1.1 or 7.6.2.
       - The default value is 7.6.2.
     type: str
-    choices: [6.2.3, 7.1.1, 7.6.2]
+    choices: [7.6.2, 7.9.3]
     default: 7.6.2
   datastore_type:
     description:
@@ -135,22 +135,42 @@ options:
         description:
         - Tag value. The value can contain 0 to 43 characters.
           Only digits, letters, hyphens (-) and underscores (_) are allowed.
-  backup_period:
+  backup_strategy:
     description:
-      - Time when a snapshot is created every day. Snapshots can only be created
-        on the hour. The time format is the time followed by the time zone,
-        specifically, HH:mm z. In the format, HH:mm refers to the hour time and
-        z refers to the time zone, for example, 00:00 GMT+08:00 and 01:00
-        GMT+08:00.
-    type: str
-  backup_prefix:
-    description: Prefix of the name of the snapshot that is automatically created.
-    type: str
-  backup_keepday:
-    description:
-      - Number of days for which automatically created snapshots are reserved.
-      - Value range is 1 to 90
-    type: int
+      - Automatic snapshot creation. This function is disabled by default.
+    type: dict
+    suboptions:
+      period:
+        description:
+        - Time when a snapshot is created every day. Snapshots can only be created
+            on the hour. The time format is the time followed by the time zone,
+            specifically, HH:mm z. In the format, HH:mm refers to the hour time and
+            z refers to the time zone, for example, 00:00 GMT+08:00 and 01:00
+            GMT+08:00.
+        type: str
+      prefix:
+        description:
+          - Prefix of the name of the snapshot that is automatically created.
+        type: str
+      keepday:
+        description:
+        - Number of days for which automatically created snapshots are reserved.
+          Value range is 1 to 90
+        type: int
+      bucket:
+        description:
+        - OBS bucket used for storing backup.
+          If there is snapshot data in an OBS bucket,
+          only the OBS bucket will be used for backup storage and cannot be changed.
+        type: str
+      basepath:
+        description:
+        - Storage path of the snapshot in the OBS bucket.
+        type: str
+      agency:
+        description:
+        - IAM agency used to access OBS.
+        type: str
   state:
     description: Instance state
     type: str
@@ -199,6 +219,12 @@ EXAMPLES = '''
           'value': "value0"
         - 'key': "key1"
           'value': "value1"
+        backup_period: "00:00 GMT+03:00"
+        backup_prefix: "yetanother"
+        backup_keepday: 1
+        backup_bucket: "css-bucket"
+        backup_basepath: "css-backup"
+        backup_agency: "css-agency"
 
 #Delete CSS Cluster
 - hosts: localhost
@@ -215,7 +241,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class CssClusterModule(OTCModule):
     argument_spec = dict(
         name=dict(type='str', required=True),
-        datastore_version=dict(type='str', choices=['6.2.3', '7.1.1', '7.6.2'], default='7.6.2'),
+        datastore_version=dict(type='str', choices=['7.6.2', '7.9.3'], default='7.6.2'),
         datastore_type=dict(type='str', default='elasticsearch'),
         instance_num=dict(type='int'),
         flavor=dict(type='str'),
@@ -230,9 +256,15 @@ class CssClusterModule(OTCModule):
         net=dict(type='str'),
         security_group=dict(type='str'),
         tags=dict(required=False, type='list', elements='dict'),
-        backup_period=dict(type='str'),
-        backup_prefix=dict(type='str'),
-        backup_keepday=dict(type='int'),
+        backup_strategy=dict(type='dict', options=dict(
+            period=dict(type='str'),
+            prefix=dict(type='str'),
+            keepday=dict(type='int'),
+            bucket=dict(type='str'),
+            basepath=dict(type='str'),
+            agency=dict(type='str'),
+        )),
+
         state=dict(type='str',
                    choices=['present', 'absent'],
                    default='present')
@@ -242,8 +274,6 @@ class CssClusterModule(OTCModule):
             ('state', 'present',
              ['flavor', 'router', 'net',
               'security_group', 'instance_num']),
-            ('backup_period', not None, ['backup_keepday']),
-            ('backup_keepday', not None, ['backup_period']),
             ('authority_enable', 'true',
              ['admin_pwd']),
             ('system_encrypted', '1',
@@ -262,9 +292,6 @@ class CssClusterModule(OTCModule):
         return False
 
     def run(self):
-        attrs = {}
-
-        cluster = None
         changed = False
 
         cluster = self.conn.css.find_cluster(
@@ -312,7 +339,8 @@ class CssClusterModule(OTCModule):
                     },
                     'diskEncryption': {
                         'systemEncrypted': self.params['system_encrypted']
-                    }
+                    },
+                    'backupStrategy': {},
                 }
 
                 if self.params['system_cmkid']:
@@ -327,12 +355,22 @@ class CssClusterModule(OTCModule):
                     attrs['adminPwd'] = self.params['admin_pwd']
                 if self.params['tags']:
                     attrs['tags'] = self.params['tags']
-                if self.params['backup_period']:
-                    attrs['backupStrategy']['period'] = self.params['backup_period']
-                if self.params['backup_prefix']:
-                    attrs['backupStrategy']['prefix'] = self.params['backup_prefix']
-                if self.params['backup_keepday']:
-                    attrs['backupStrategy']['keepday'] = self.params['backup_keepday']
+
+                if self.params['backup_strategy']:
+                    attrs['backupStrategy'] = {}
+                    if self.params['backup_strategy']['period']:
+                        attrs['backupStrategy']['period'] = self.params['backup_strategy']['period']
+                    if self.params['backup_strategy']['prefix']:
+                        attrs['backupStrategy']['prefix'] = self.params['backup_strategy']['prefix']
+                    if self.params['backup_strategy']['keepday']:
+                        attrs['backupStrategy']['keepday'] = self.params['backup_strategy']['keepday']
+                    if self.params['backup_strategy']['bucket']:
+                        attrs['backupStrategy']['bucket'] = self.params['backup_strategy']['bucket']
+                    if self.params['backup_strategy']['basepath']:
+                        attrs['backupStrategy']['basePath'] = self.params['backup_strategy']['basepath']
+                    if self.params['backup_strategy']['agency']:
+                        attrs['backupStrategy']['agency'] = self.params['backup_strategy']['agency']
+
                 cluster = self.conn.css.create_cluster(**attrs)
 
             self.exit_json(
