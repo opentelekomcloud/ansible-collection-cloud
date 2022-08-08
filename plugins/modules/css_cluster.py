@@ -219,12 +219,13 @@ EXAMPLES = '''
           'value': "value0"
         - 'key': "key1"
           'value': "value1"
-        backup_period: "00:00 GMT+03:00"
-        backup_prefix: "yetanother"
-        backup_keepday: 1
-        backup_bucket: "css-bucket"
-        backup_basepath: "css-backup"
-        backup_agency: "css-agency"
+        backup_strategy:
+          period: "00:00 GMT+03:00"
+          prefix: "yetanother"
+          keepday: 1
+          agency: "css-agency"
+          bucket: "css-bucket"
+          basepath: "css-test"
 
 #Delete CSS Cluster
 - hosts: localhost
@@ -251,7 +252,7 @@ class CssClusterModule(OTCModule):
         system_cmkid=dict(type='str'),
         https_enable=dict(type='bool'),
         authority_enable=dict(type='bool'),
-        admin_pwd=dict(type='str'),
+        admin_pwd=dict(type='str', no_log=True),
         router=dict(type='str'),
         net=dict(type='str'),
         security_group=dict(type='str'),
@@ -340,7 +341,6 @@ class CssClusterModule(OTCModule):
                     'diskEncryption': {
                         'systemEncrypted': self.params['system_encrypted']
                     },
-                    'backupStrategy': {},
                 }
 
                 if self.params['system_cmkid']:
