@@ -341,6 +341,7 @@ class CssClusterModule(OTCModule):
                     'diskEncryption': {
                         'systemEncrypted': self.params['system_encrypted']
                     },
+                    'backupStrategy': {},
                 }
 
                 if self.params['system_cmkid']:
@@ -357,7 +358,6 @@ class CssClusterModule(OTCModule):
                     attrs['tags'] = self.params['tags']
 
                 if self.params['backup_strategy']:
-                    attrs['backupStrategy'] = {}
                     if self.params['backup_strategy']['period']:
                         attrs['backupStrategy']['period'] = self.params['backup_strategy']['period']
                     if self.params['backup_strategy']['prefix']:
