@@ -260,7 +260,7 @@ class CssClusterModule(OTCModule):
         backup_strategy=dict(type='dict', options=dict(
             period=dict(type='str'),
             prefix=dict(type='str'),
-            keepday=dict(type='int'),
+            keepday=dict(type='int', range=[1, 90]),
             bucket=dict(type='str'),
             basepath=dict(type='str'),
             agency=dict(type='str'),
@@ -321,7 +321,6 @@ class CssClusterModule(OTCModule):
                 volume_type = self.params['volume_type']
 
                 attrs = {
-                    'name': self.params['name'],
                     'datastore': {
                         'type': self.params['datastore_type'],
                         'version': self.params['datastore_version']
@@ -342,6 +341,7 @@ class CssClusterModule(OTCModule):
                         'systemEncrypted': self.params['system_encrypted']
                     },
                     'backupStrategy': {},
+                    'name': self.params['name']
                 }
 
                 if self.params['system_cmkid']:
@@ -362,16 +362,23 @@ class CssClusterModule(OTCModule):
                         attrs['backupStrategy']['period'] = self.params['backup_strategy']['period']
                     if self.params['backup_strategy']['prefix']:
                         attrs['backupStrategy']['prefix'] = self.params['backup_strategy']['prefix']
-                    if self.params['backup_strategy']['keepday']:
-                        attrs['backupStrategy']['keepday'] = self.params['backup_strategy']['keepday']
                     if self.params['backup_strategy']['bucket']:
                         attrs['backupStrategy']['bucket'] = self.params['backup_strategy']['bucket']
                     if self.params['backup_strategy']['basepath']:
                         attrs['backupStrategy']['basePath'] = self.params['backup_strategy']['basepath']
                     if self.params['backup_strategy']['agency']:
                         attrs['backupStrategy']['agency'] = self.params['backup_strategy']['agency']
+                    if self.params['backup_strategy']['keepday'] in range(1, 90):
+                        attrs['backupStrategy']['keepDay'] = self.params['backup_strategy']['keepday']
+                    else:
+                        self.exit(
+                            changed=False,
+                            failed=True,
+                            message='keepday must be in range from 1 to 90'
+                        )
 
-                cluster = self.conn.css.create_cluster(**attrs)
+
+                cluster = self.conn.css.create_cluster(**self.params)
 
             self.exit_json(
                 changed=changed,
