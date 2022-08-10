@@ -260,7 +260,7 @@ class CssClusterModule(OTCModule):
         backup_strategy=dict(type='dict', options=dict(
             period=dict(type='str'),
             prefix=dict(type='str'),
-            keepday=dict(type='int', range=[1, 90]),
+            keepday=dict(type='int'),
             bucket=dict(type='str'),
             basepath=dict(type='str'),
             agency=dict(type='str'),
@@ -374,9 +374,8 @@ class CssClusterModule(OTCModule):
                         self.exit(
                             changed=False,
                             failed=True,
-                            message='keepday must be in range from 1 to 90'
+                            message='backup strategy keepday must be in range from 1 to 90'
                         )
-
 
                 cluster = self.conn.css.create_cluster(**self.params)
 
