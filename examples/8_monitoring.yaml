@@ -47,7 +47,7 @@
           unit: "Percent"
           count: 1
     alarm_enabled: true
-    alarm_action_enabled: True
+    alarm_action_enabled: true
     alarm_actions:
       - type: "notification"
         notificationList: "urn:smn:eu-de:5dd3c0b24cdc4d31952c49589182a89d:yet_another_topic"
@@ -72,7 +72,7 @@
           unit: "Count/s"
           count: 1
     alarm_enabled: true
-    alarm_action_enabled: True
+    alarm_action_enabled: true
     alarm_actions:
       - type: "notification"
         notificationList: "urn:smn:eu-de:5dd3c0b24cdc4d31952c49589182a89d:yet_another_topic"
@@ -98,7 +98,7 @@
           unit: "Percent"
           count: 2
     alarm_enabled: true
-    alarm_action_enabled: True
+    alarm_action_enabled: true
     alarm_actions:
       - type: "autoscaling"
         notificationList: []

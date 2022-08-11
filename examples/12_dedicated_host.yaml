@@ -9,7 +9,7 @@
   opentelekomcloud.cloud.deh_host:
     name: "{{ deh_name }}"
     state: present
-    auto_placement: True
+    auto_placement: true
     availability_zone: "eu-de-01"
     quantity: 1
     host_type: "s2"

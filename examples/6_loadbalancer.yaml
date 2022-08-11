@@ -3,7 +3,7 @@
 - name: Create loadbalancer for cluster
   opentelekomcloud.cloud.loadbalancer:
     state: present
-    auto_public_ip: True
+    auto_public_ip: true
     name: "{{ lb_name }}"
     vip_subnet: "{{ vpc_subnet_name }}"
   register: lb

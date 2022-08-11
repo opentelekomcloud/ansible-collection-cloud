@@ -38,7 +38,7 @@
     disk_encryption: "{{ cmk_id }}"
     backup_keepdays: 1
     backup_timeframe: "02:00-03:00"
-    wait: True
+    wait: true
     timeout: 777
   register: rds
 
@@ -57,7 +57,7 @@
     name: "{{ rds_backup_name }}"
     state: present
     description: "Backup of the RDS instance"
-    wait: True
+    wait: true
   register: rds_bckp
 
 # Queirying RDS backup info. You can use any of specified attributes, together or separetely.
