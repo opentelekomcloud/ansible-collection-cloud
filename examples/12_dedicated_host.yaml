@@ -18,15 +18,6 @@
         value: "101"
   register: deh
 
-- name: add line in vars file
-  ansible.builtin.lineinfile:
-    state: present
-    path: "/home/yustina/git/dumb_but_brave/Ansible/otc_tests/examples_yustina/group_vars/all.yaml"
-    regexp: "^deh_host_id:.*"
-    insertafter: EOF
-    line: "{{ ('deh_host_id: ' + deh.deh_host.dedicated_host_ids[0]) }}"
-    create: True
-
 - name: Change host name
   opentelekomcloud.cloud.deh_host:
     id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
