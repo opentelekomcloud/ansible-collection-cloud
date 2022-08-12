@@ -58,7 +58,7 @@
 #      register: router
 
 # Exclusive mode guarantee that only explicitly passed rules are will take effect, and all of the
-# existing before will be deleted. To disable this behavior set Exclusive option as False
+# existing before will be deleted. To disable this behavior set Exclusive option as false
 - name: Create new security group
   opentelekomcloud.cloud.security_group:
     state: present

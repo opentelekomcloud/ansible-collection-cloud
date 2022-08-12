@@ -15,8 +15,8 @@
     volume_size: 40
     system_encrypted: 1
     system_cmkid: "{{ cmk_id }}"
-    https_enable: False
-    authority_enable: False
+    https_enable: false
+    authority_enable: false
     admin_pwd: "{{ password }}"
     router: "{{ router }}"
     net: "{{ network_id }}"
