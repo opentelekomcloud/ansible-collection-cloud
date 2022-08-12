@@ -9,7 +9,7 @@
     state: absent
     volume: "{{ ecs_1_vol }}"
     force: true
-    wait: yes
+    wait: true
     timeout: 123
   register: bckp
   tags:
