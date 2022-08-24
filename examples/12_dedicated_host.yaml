@@ -1,0 +1,49 @@
+---
+
+# This playbook shows how to allocate dedicated host in OTC. First, query list of available host
+# types to choose one of them.
+- name: Query list of available host types
+  opentelekomcloud.cloud.deh_host_type_info:
+    az: "eu-de-01"
+  register: deh_type
+
+# This play is allocating Dedicated host. Set 'auto_placement' to true to allow an ECS to be placed
+# on any available DeH if its DeH ID is not specified during its creation. And please pay
+# attention that more than one DEHs with the same name are possible!
+- name: Allocate Dedicated host
+  opentelekomcloud.cloud.deh_host:
+    name: "{{ deh_name }}"
+    state: present
+    auto_placement: true
+    availability_zone: "eu-de-01"
+    quantity: 1
+    host_type: "s2"
+    tags:
+      - key: "First"
+        value: "101"
+  register: deh
+
+# In this play we'll change the hostname. For this, you need an host's ID as the only attribute to
+# unequivocally define the host.
+- name: Change host name
+  opentelekomcloud.cloud.deh_host:
+    id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
+    name: "{{ deh_new_name }}"
+  register: deh_change
+
+- name: Get info about host after name changing
+  opentelekomcloud.cloud.deh_host_info:
+    host: "{{ deh_change.deh_host.name }}"
+  register: deh_new_info
+
+# Let's check whether hostname has been changed.
+- name: Assert result
+  ansible.builtin.assert:
+    that:
+      - deh.deh_host.name != deh_change.deh_host.name
+      - deh_new_info.deh_hosts[0].name == deh_change.deh_host.name
+
+
+- name: Get info about ECSs allocated on dedicated host
+  opentelekomcloud.cloud.deh_server_info:
+    dedicated_host: "{{ deh_change.deh_host.id }}"
