@@ -26,7 +26,7 @@ as VPC and subnet, security group and a couple of ECSs.
 
 <a name="opentelekomcloud.cloud.vpc"></a>
 
-###opentelekomcloud.cloud.vpc
+### opentelekomcloud.cloud.vpc
 
 ```yaml
    - name: Create VPC
@@ -40,7 +40,7 @@ as VPC and subnet, security group and a couple of ECSs.
 ```
 <a name="opentelekomcloud.cloud.subnet"></a>
 
-###opentelekomcloud.cloud.subnet
+### opentelekomcloud.cloud.subnet
 
 Please pay attention on CIDR block: in case of insufficient numbers of available hosts there
 could be errors in autoscaling groups behavior.
