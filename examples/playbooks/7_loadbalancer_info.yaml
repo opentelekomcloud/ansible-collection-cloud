@@ -6,7 +6,7 @@
   register: lb_info
 
 - name: Get info about specified certificate
-  opentelekomcloud.cloud.lb_certificate:
+  opentelekomcloud.cloud.lb_certificate_info:
     name: "elb_https_cert"
   register: elb_cert_info
 
@@ -16,7 +16,7 @@
   register: listener_https_info
 
 - name: Get info about specified backend server group
-  opentelekomcloud.cloud.lb_pool:
+  opentelekomcloud.cloud.lb_pool_info:
     name: "{{ backend_server_name }}"
   register: backend_group_info
 
