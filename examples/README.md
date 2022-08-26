@@ -10,8 +10,9 @@ https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/example
 
 **Modules are used in this doc:**
 
-* [opentelekomcloud.cloud.vpc](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/docs_module_examples/examples/README.md#opentelekomcloudcloudvpc)
+* [opentelekomcloud.cloud.vpc](#opentelekomcloud.cloud.vpc)
 * [opentelekomcloud.cloud.subnet](#opentelekomcloud.cloud.subnet)
+
 
 
 Initial Infrastructure
@@ -23,8 +24,10 @@ mandatory for every kind of systems, so let's start with them.
 First, we need to create ecosystem for further infrastructure. Its include network entities, such
 as VPC and subnet, security group and a couple of ECSs.
 
-opentelekomcloud.cloud.vpc
---------------------------
+<a name="opentelekomcloud.cloud.vpc"></a>
+
+###opentelekomcloud.cloud.vpc
+
 ```yaml
    - name: Create VPC
      opentelekomcloud.cloud.vpc:
@@ -37,8 +40,8 @@ opentelekomcloud.cloud.vpc
 ```
 <a name="opentelekomcloud.cloud.subnet"></a>
 
-opentelekomcloud.cloud.subnet
------------------------------
+###opentelekomcloud.cloud.subnet
+
 Please pay attention on CIDR block: in case of insufficient numbers of available hosts there
 could be errors in autoscaling groups behavior.
 ```yaml
