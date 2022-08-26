@@ -11,8 +11,8 @@ https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/example
 
 **Modules are used in this doc:**
 
-* [opentelekomcloud.cloud.vpc](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/examples/README.md#opentelekomcloud.cloud.vpc)
-* [opentelekomcloud.cloud.subnet](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/examples/README.md#opentelekomcloud.cloud.subnet)
+* [opentelekomcloud.cloud.vpc](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/examples/README.md#opentelekomcloudcloudvpc)
+* [opentelekomcloud.cloud.subnet](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/examples/README.md#opentelekomcloudcloudsubnet)
 
 
 Initial Infrastructure
