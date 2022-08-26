@@ -4,15 +4,14 @@ Open Telekom Cloud Manuals
 
 This document contains examples of implementing OTC modules. Besides playbooks itself, we also
 put here tips and tricks helping you to understand how exactly the code works.
-For raw playbooks please go to [Playbooks](https://github
-.com/opentelekomcloud/ansible-collection-cloud/tree/master/examples/playbooks).
+For raw playbooks please go to [Playbooks](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/docs_module_examples/examples/playbooks).
 
 https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/examples/README.md#
 
 **Modules are used in this doc:**
 
 * [opentelekomcloud.cloud.vpc](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/docs_module_examples/examples/README.md#opentelekomcloudcloudvpc)
-* [opentelekomcloud.cloud.subnet](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/docs_module_example/examples/README.md#opentelekomcloudcloudsubnet)
+* [opentelekomcloud.cloud.subnet](#opentelekomcloud.cloud.subnet)
 
 
 Initial Infrastructure
@@ -36,6 +35,8 @@ opentelekomcloud.cloud.vpc
     tags:
     - vpc
 ```
+<a name="opentelekomcloud.cloud.subnet"></a>
+
 opentelekomcloud.cloud.subnet
 -----------------------------
 Please pay attention on CIDR block: in case of insufficient numbers of available hosts there
