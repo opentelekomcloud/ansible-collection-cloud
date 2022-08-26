@@ -1,5 +1,5 @@
 ---
-hosts: localhost
+- hosts: localhost
   tasks:
 
     # Keypair is mandatory condition for creating and modifying AS configurations and groups. Be avoid
