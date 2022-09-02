@@ -170,7 +170,7 @@
 
     - name: Bind policy to the CBR vault
       opentelekomcloud.cloud.cbr_vault:
-        name: "{{ (vault_name) }}"
+        name: "{{ vault_name }}"
         policy: "{{ (policy_name) }}"
         action: "bind_policy"
       register: bind_policy

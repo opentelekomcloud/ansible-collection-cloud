@@ -66,7 +66,7 @@ options:
     description:
         - Specifies the number of retained weekly backups.\
         The latest backup of each week is saved in the long term.\
-        This parameter can be effective together with the maximum numbe\
+        This parameter can be effective together with the maximum number\
         of retained backups specified by max_backups. The value ranges from 0\
         to 100. If this parameter is configured, timezone is mandatory.
     type: int
@@ -197,28 +197,25 @@ policy:
 
 EXAMPLES = '''
 # Create policy:
-- name:
-  opentelekomcloud.cloud.cbr_policy:
-    name: "newpolicy"
-    day_backups: 0
-    month_backups: 0
-    retention_duration_days: 5
-    year_backups: 0
-    pattern:
-      - "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00"
+opentelekomcloud.cloud.cbr_policy:
+  name: "newpolicy"
+  day_backups: 0
+  month_backups: 0
+  retention_duration_days: 5
+  year_backups: 0
+  pattern:
+    - "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00"
 
 # Update policy:
-- name:
-  opentelekomcloud.cloud.cbr_policy:
-    name: "newpolicy"
-    day_backups: 5
-    enabled: False
+opentelekomcloud.cloud.cbr_policy:
+  name: "newpolicy"
+  day_backups: 5
+  enabled: False
 
 # Delete policy:
-- name:
-  opentelekomcloud.cloud.cbr_policy:
-    name: "newpolicy"
-    state: absent
+opentelekomcloud.cloud.cbr_policy:
+  name: "newpolicy"
+  state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -296,9 +293,7 @@ class CBRPolicyModule(OTCModule):
         if self.params['operation_type']:
             query['operation_type'] = self.params['operation_type']
 
-        query['trigger'] = {}
-        query['trigger']['properties'] = {}
-        query['trigger']['properties']['pattern'] = []
+        query['trigger'] = {'trigger': {'properties': {'pattern': []}}}
         if self.params['pattern']:
             query['trigger']['properties']['pattern'] = self.params['pattern']
 
