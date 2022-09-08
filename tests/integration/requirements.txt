@@ -1,2 +1,2 @@
 otcextensions
-openstacksdk<0.99.0
+openstacksdk
