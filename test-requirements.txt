@@ -9,4 +9,3 @@ yamllint
 rstcheck
 ruamel.yaml
 otcextensions>=0.10.0
-openstacksdk<=0.98.999
