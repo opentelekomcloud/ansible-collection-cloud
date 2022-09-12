@@ -24,7 +24,7 @@
       register: lb_net
 
     - name: Create subnet for ELB
-      openstack.cloudsubnet:
+      openstack.cloud.subnet:
         name: "{{ subnet_name }}"
         state: present
         network_name: "{{ lb_net.network.name }}"
