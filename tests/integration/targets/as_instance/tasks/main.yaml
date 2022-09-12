@@ -21,7 +21,7 @@
       cloud: "{{ test_cloud }}"
     openstack.cloud.server:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_keypair:
+    openstack.cloud.keypair:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
@@ -51,7 +51,7 @@
         az2_name: "eu-de-03"
 
     - name: Create keypair
-      openstack.cloud.os_keypair:
+      openstack.cloud.keypair:
         name: "{{ kp_name }}"
       register: kp
 
@@ -510,7 +510,7 @@
           failed_when: false
 
         - name: Delete keypair
-          openstack.cloud.os_keypair:
+          openstack.cloud.keypair:
             name: "{{ kp_name }}"
             state: absent
           failed_when: false

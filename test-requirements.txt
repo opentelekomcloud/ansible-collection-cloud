@@ -1,4 +1,4 @@
-openstacksdk>=0.61.0,<0.99.0
+openstacksdk
 ansible-lint>=6.0.0
 pycodestyle==2.8.0
 flake8>=4.0.0

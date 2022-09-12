@@ -5,7 +5,7 @@
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.as_instance_info:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_keypair:
+    openstack.cloud.keypair:
       cloud: "{{ test_cloud }}"
     openstack.cloud.os_network:
       cloud: "{{ test_cloud }}"
@@ -31,7 +31,7 @@
         router_name: "{{ ( prefix + '_router') }}"
 
     - name: Create keypair
-      openstack.cloud.os_keypair:
+      openstack.cloud.keypair:
         name: "{{ key_name }}"
 
     - name: Create network
@@ -246,7 +246,7 @@
           failed_when: "dropped_as_config is not changed"
 
         - name: Delete keypair
-          openstack.cloud.os_keypair:
+          openstack.cloud.keypair:
             name: "{{ key_name }}"
             state: absent
           failed_when: false
