@@ -9,11 +9,11 @@
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.lb_certificate_info:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_network:
+    openstack.cloud.network:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_subnet:
+    openstack.cloud.subnet:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_router:
+    openstack.cloud.router:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
@@ -119,13 +119,13 @@
           -----END RSA PRIVATE KEY-----
 
     - name: Create network for ELB
-      openstack.cloud.os_network:
+      openstack.cloud.network:
         name: "{{ network_name }}"
         state: present
       register: lb_net
 
     - name: Create subnet for ELB
-      openstack.cloud.os_subnet:
+      openstack.cloud.subnet:
         name: "{{ subnet_name }}"
         state: present
         network_name: "{{ lb_net.network.name }}"
@@ -134,7 +134,7 @@
       register: lb_net_subnet
 
     - name: Create Router for ELB
-      openstack.cloud.os_router:
+      openstack.cloud.router:
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
@@ -356,21 +356,21 @@
           failed_when: false
 
         - name: Drop existing Router
-          openstack.cloud.os_router:
+          openstack.cloud.router:
             name: "{{ router_name }}"
             state: absent
           register: drop
           failed_when: false
 
         - name: Drop existing subnet
-          openstack.cloud.os_subnet:
+          openstack.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
           register: drop
           failed_when: false
 
         - name: Drop existing network
-          openstack.cloud.os_network:
+          openstack.cloud.network:
             name: "{{ network_name }}"
             state: absent
           register: drop

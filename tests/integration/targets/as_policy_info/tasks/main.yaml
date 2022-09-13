@@ -5,13 +5,13 @@
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.as_group:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_keypair:
+    openstack.cloud.keypair:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_network:
+    openstack.cloud.network:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_subnet:
+    openstack.cloud.subnet:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_router:
+    openstack.cloud.router:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
@@ -27,17 +27,17 @@
         router_name: "{{ ( prefix + '_router') }}"
 
     - name: Create keypair
-      openstack.cloud.os_keypair:
+      openstack.cloud.keypair:
         name: "{{ key_name }}"
 
     - name: Create network
-      openstack.cloud.os_network:
+      openstack.cloud.network:
         name: "{{ network_name }}"
         state: present
       register: network
 
     - name: Create subnet
-      openstack.cloud.os_subnet:
+      openstack.cloud.subnet:
         name: "{{ subnet_name }}"
         state: present
         network_name: "{{ network.network.name }}"
@@ -46,7 +46,7 @@
       register: subnet
 
     - name: Create router
-      openstack.cloud.os_router:
+      openstack.cloud.router:
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
@@ -113,25 +113,25 @@
           failed_when: false
 
         - name: Delete keypair
-          openstack.cloud.os_keypair:
+          openstack.cloud.keypair:
             name: "{{ key_name }}"
             state: absent
           failed_when: false
 
         - name: Drop existing router
-          openstack.cloud.os_router:
+          openstack.cloud.router:
             name: "{{ router.router.name }}"
             state: absent
           failed_when: false
 
         - name: Drop existing subnet
-          openstack.cloud.os_subnet:
+          openstack.cloud.subnet:
             name: "{{ subnet.subnet.name }}"
             state: absent
           failed_when: false
 
         - name: Drop existing network
-          openstack.cloud.os_network:
+          openstack.cloud.network:
             name: "{{ network.network.name }}"
             state: absent
           failed_when: false
