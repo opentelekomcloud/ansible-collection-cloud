@@ -332,7 +332,7 @@ class CceClusterNodeModule(OTCModule):
         flavor=dict(required=False),
         floating_ip=dict(required=False),
         k8s_tags=dict(required=False, type='dict'),
-        ssh_key=dict(required=False),
+        ssh_key=dict(required=False, no_log=False),
         labels=dict(required=False, type='dict'),
         lvm_config=dict(required=False),
         max_pods=dict(required=False, type='int'),

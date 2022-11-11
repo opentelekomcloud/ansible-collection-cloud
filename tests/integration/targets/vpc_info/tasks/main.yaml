@@ -1,0 +1,54 @@
+---
+- name: VPC Info tests
+  module_defaults:
+    opentelekomcloud.cloud.vpc:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.vpc_info:
+      cloud: "{{ test_cloud }}"
+
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        vpc_name: "{{ ( prefix + 'vpc') }}"
+
+    - name: Creating a vpc
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        state: present
+      register: vpc
+
+    - name: Getting info about all vpcs
+      opentelekomcloud.cloud.vpc_info:
+      register: all_vpcs
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - all_vpcs is success
+          - all_vpcs is not changed
+          - all_vpcs | length > 0
+
+    - name: Getting info about new vpc
+      opentelekomcloud.cloud.vpc_info:
+        name_or_id: "{{ vpc_name }}"
+      register: new_vpc
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - new_vpc is success
+          - new_vpc is not changed
+          - new_vpc | length > 0
+
+  always:
+    - name: Cleanup
+      block:
+        - name: Drop created vpc
+          opentelekomcloud.cloud.vpc:
+            name: "{{ vpc_name }}"
+            state: absent
+          failed_when: false

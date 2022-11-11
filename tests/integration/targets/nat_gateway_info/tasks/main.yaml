@@ -1,16 +1,17 @@
 ---
-- block:
+- name: Nat Gateway Info tests
+  block:
     - name: Get NAT gateway info
-      nat_gateway_info:
+      opentelekomcloud.cloud.nat_gateway_info:
         cloud: "{{ test_cloud }}"
       register: gw
 
     - name: debug configs
-      debug:
+      ansible.builtin.debug:
         var: gw.nat_gateways
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - gw is success
           - gw is not changed

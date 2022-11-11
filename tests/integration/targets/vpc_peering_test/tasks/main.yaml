@@ -1,14 +1,15 @@
 ---
-- module_defaults:
+- name: VPC Peering tests
+  module_defaults:
     opentelekomcloud.cloud.vpc_peering:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         network_name_1: "{{ ( prefix + 'vpc_peering_test-network_1') }}"
         subnet_name_1: "{{ ( prefix + 'vpc_peering_test-subnet_1') }}"
         router_name_1: "{{ ( prefix + 'vpc_peering_test-router_1') }}"
@@ -41,7 +42,7 @@
         name: "{{ router_name_1 }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ test_network_1.network.name }}"
             subnet: "{{ test_subnet_1.subnet.name }}"
@@ -67,7 +68,7 @@
         name: "{{ router_name_2 }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ test_network_2.network.name }}"
             subnet: "{{ test_subnet_2.subnet.name }}"
@@ -81,10 +82,10 @@
         remote_router: "{{ test_router_2.router.id }}"
         remote_project: "{{ project_id }}"
       register: vpc_peering_check
-      check_mode: yes
+      check_mode: true
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc_peering_check is changed
 
@@ -98,7 +99,7 @@
       register: vpc_peering
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - vpc_peering is success
           - vpc_peering is changed
@@ -114,55 +115,60 @@
       register: updated_vpc_peering
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - updated_vpc_peering is success
           - updated_vpc_peering is changed
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
+        - name: Drop existing vpc peering
+          opentelekomcloud.cloud.vpc_peering:
+            # pass ID as name
+            name: "{{ updated_vpc_peering.vpc_peering.name }}"
+            state: absent
+          register: dropped
+          failed_when: false
 
-      - name: Drop existing vpc peering
-        opentelekomcloud.cloud.vpc_peering:
-          # pass ID as name
-          name: "{{ updated_vpc_peering.vpc_peering.name }}"
-          state: absent
-        register: dropped
+        - name: assert result
+          ansible.builtin.assert:
+            that:
+              - dropped is success
+              - dropped is changed
 
-      - name: assert result
-        assert:
-          that:
-            - dropped is success
-            - dropped is changed
+        - name: Drop existing first router
+          openstack.cloud.router:
+            name: "{{ router_name_1 }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop existing first router
-        openstack.cloud.router:
-          name: "{{ router_name_1 }}"
-          state: absent
+        - name: Drop existing first subnet
+          openstack.cloud.subnet:
+            name: "{{ subnet_name_1 }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop existing first subnet
-        openstack.cloud.subnet:
-          name: "{{ subnet_name_1 }}"
-          state: absent
+        - name: Drop existing first network
+          openstack.cloud.network:
+            name: "{{ network_name_1 }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop existing first network
-        openstack.cloud.network:
-          name: "{{ network_name_1 }}"
-          state: absent
+        - name: Drop existing second router
+          openstack.cloud.router:
+            name: "{{ router_name_2 }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop existing second router
-        openstack.cloud.router:
-          name: "{{ router_name_2 }}"
-          state: absent
+        - name: Drop existing second subnet
+          openstack.cloud.subnet:
+            name: "{{ subnet_name_2 }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop existing second subnet
-        openstack.cloud.subnet:
-          name: "{{ subnet_name_2 }}"
-          state: absent
-
-      - name: Drop existing second network
-        openstack.cloud.network:
-          name: "{{ network_name_2 }}"
-          state: absent
-      ignore_errors: yes
+        - name: Drop existing second network
+          openstack.cloud.network:
+            name: "{{ network_name_2 }}"
+            state: absent
+          failed_when: false

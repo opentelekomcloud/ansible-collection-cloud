@@ -1,0 +1,111 @@
+---
+# Let's create a Cloud Container Engine cluster and attach it to the previously deployed
+#  infrastructure.
+- name: Create CCE Cluster
+  opentelekomcloud.cloud.cce_cluster:
+    name: "{{ cce_cluster_name }}"
+    description: "Cloud Container Engine test cluster"
+    type: "virtualmachine"
+    version: "v1.21"
+    flavor: "{{ cce_flavor }}"
+    authentication_mode: "rbac"
+    kube_proxy_mode: "iptables"
+    router: "{{ router }}"
+    network: "{{ network_id }}"
+    container_network_mode: "{{ container_network_mode }}"
+    container_network_cidr: "10.0.0.0/16"
+    availability_zone: "multi_az"
+    state: present
+  register: cluster
+
+- name: Get info about cluster certificate
+  opentelekomcloud.cloud.cce_cluster_cert_info:
+    cluster: "{{ cluster.cce_cluster.id }}"
+
+# After cluster creating is finished, you should create a node pool, which will contain some number
+#  of working nodes.
+- name: Create node pool
+  opentelekomcloud.cloud.cce_node_pool:
+    name: "{{ node_pool_name }}"
+    availability_zone: "eu-de-01"
+    autoscaling_enabled: false
+    cluster: "{{ cluster.cce_cluster.id }}"
+    data_volumes:
+      - volumetype: "SSD"
+        size: 120
+      - volumetype: "SATA"
+        size: 100
+        encrypted: false
+    flavor: "{{ node_flavor }}"
+    initial_node_count: 0
+    k8s_tags:
+      mytag: "myvalue"
+      mysecondtag: "mysecondvalue"
+    min_node_count: 1
+    max_node_count: 3
+    network: "{{ network_id }}"
+    priority: 2
+    os: "{{ os_cluster_name }}"
+    ssh_key: "{{ keypair_name }}"
+    tags:
+      - key: "my_first_key"
+        value: "my_first_value"
+      - key: "my_second_key"
+        value: "my_secound_value"
+    taints:
+      - key: "first_taint_key"
+        value: "first_taint_value"
+        effect: "NoSchedule"
+      - key: "second_taint_key"
+        value: "second_taint_value"
+        effect: "NoExecute"
+    state: present
+  register: pool
+
+# Now you can add to the node pool nodes. Please pay attention that AZ of these nodes must be
+#  equal to node pool's AZ.
+- name: Create CCE Cluster Node
+  opentelekomcloud.cloud.cce_cluster_node:
+    annotations:
+      annotation1: "Test cluster nodes"
+    availability_zone: "eu-de-01"
+    cluster: "{{ cce_cluster_name }}"
+    count: 1
+    data_volumes:
+      - volumetype: "SATA"
+        size: 100
+        encrypted: false
+      - volumetype: "SAS"
+        size: 120
+    flavor: "{{ node_flavor }}"
+    k8s_tags:
+      testtag: "value"
+    ssh_key: "{{ keypair_name }}"
+    labels:
+      mein: "label"
+    max_pods: 16
+    name: "{{ cce_node_name }}"
+    network: "{{ network_id }}"
+    os: "{{ os_cluster_name }}"
+    root_volume_size: 40
+    root_volume_type: SATA
+    tags:
+      - key: "key1"
+        value: "value1"
+      - key: "key2"
+        value: "value2"
+    wait: true
+    state: present
+  register: node
+
+- name: Get info about cluster
+  opentelekomcloud.cloud.cce_cluster_info:
+    name: "{{ cluster.cce_cluster.id }}"
+
+- name: Get info about node pool
+  opentelekomcloud.cloud.cce_node_pool_info:
+    cce_cluster: "{{ cluster.cce_cluster.id }}"
+
+- name: Get info about cluster nodes
+  opentelekomcloud.cloud.cce_cluster_node_info:
+    cce_cluster: "{{ cluster.cce_cluster.id }}"

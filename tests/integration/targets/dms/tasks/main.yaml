@@ -1,19 +1,19 @@
-- name: Doing Integration test
+- name: DMS tests
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set facts
-      set_fact:
+      ansible.builtin.set_fact:
         queue_name: "{{ ( 'a' + prefix + '-queue' ) }}"
         group_name: "{{ ( 'group_test' ) }}"
         instance_name: "{{ ( 'a' + prefix + '-instance' ) }}"
-        network_name: "{{ ( prefix + '-dmsnetwork' )}}"
-        subnet_name: "{{ ( prefix + '-dmssubnet' )}}"
-        router_name: "{{ ( prefix + '-dmsrouter' )}}"
-        sg_name: "{{ ( prefix + '-dmssg' )}}"
-    
+        network_name: "{{ ( prefix + '-dmsnetwork' ) }}"
+        subnet_name: "{{ ( prefix + '-dmssubnet' ) }}"
+        router_name: "{{ ( prefix + '-dmsrouter' ) }}"
+        sg_name: "{{ ( prefix + '-dmssg' ) }}"
+
     - name: DMS Queue
       opentelekomcloud.cloud.dms_queue:
         name: '{{ queue_name }}'
@@ -39,7 +39,7 @@
         queue: '{{ queue_name }}'
         include_deadletter: true
       register: zone_net
-    
+
     - name: Send Messages
       opentelekomcloud.cloud.dms_message:
         queue: '{{ queue_name }}'
@@ -47,14 +47,14 @@
           - body: 'test1'
             attributes:
               attribute1: 'value1'
-              attribute2: 'value2' 
+              attribute2: 'value2'
           - body: 'test2'
             attributes:
               attribute1: 'value3'
-              attribute2: 'value4' 
+              attribute2: 'value4'
         task: send
       register: dms_mess_send
-    
+
     - name: List DMS Queue Group Info
       opentelekomcloud.cloud.dms_queue_group_info:
         queue: '{{ queue_name }}'
@@ -72,7 +72,7 @@
     - name: List DMS Instance Info
       opentelekomcloud.cloud.dms_instance_info:
       register: dms_instance
-    
+
     - name: Create network for DMS Instance
       openstack.cloud.network:
         name: "{{ network_name }}"
@@ -98,50 +98,56 @@
           - net: "{{ dms_net.network.name }}"
             subnet: "{{ dms_subnet.subnet.name }}"
       register: dms_router
-    
+
     - name: Create Security Group for DMS Instance
       openstack.cloud.security_group:
         name: "{{ sg_name }}"
       register: dms_sg
 
   always:
-    - block:
-      - name: DMS Delete Queue Group
-        opentelekomcloud.cloud.dms_queue_group:
-          queue_name: '{{ queue_name }}'
-          group_name: '{{ group_name }}'
-          state: absent
-        register: dms_queue_group_rm
-        check_mode: false
+    - name: Cleanup
+      block:
+        - name: DMS Delete Queue Group
+          opentelekomcloud.cloud.dms_queue_group:
+            queue_name: '{{ queue_name }}'
+            group_name: '{{ group_name }}'
+            state: absent
+          register: dms_queue_group_rm
+          check_mode: false
+          failed_when: false
 
-      - name: Delete Queue
-        opentelekomcloud.cloud.dms_queue:
-          name: '{{ queue_name }}'
-          state: absent
-        register: dms_queue_rm
-        check_mode: false
-      
-      - name: Delete Security Group
-        openstack.cloud.security_group:
-          name: "{{ sg_name }}"
-          state: absent
-        register: dms_sg
+        - name: Delete Queue
+          opentelekomcloud.cloud.dms_queue:
+            name: '{{ queue_name }}'
+            state: absent
+          register: dms_queue_rm
+          check_mode: false
+          failed_when: false
 
-      - name: Drop existing Router
-        openstack.cloud.router:
-          name: "{{ router_name }}"
-          state: absent
-        register: dns_rout_dr
+        - name: Delete Security Group
+          openstack.cloud.security_group:
+            name: "{{ sg_name }}"
+            state: absent
+          register: dms_sg
+          failed_when: false
 
-      - name: Drop existing subnet
-        openstack.cloud.subnet:
-          name: "{{ subnet_name }}"
-          state: absent
-        register: dns_subnet_dr
+        - name: Drop existing Router
+          openstack.cloud.router:
+            name: "{{ router_name }}"
+            state: absent
+          register: dns_rout_dr
+          failed_when: false
 
-      - name: Drop existing network
-        openstack.cloud.network:
-          name: "{{ network_name }}"
-          state: absent
-        register: dns_net_dr
-      ignore_errors: yes
+        - name: Drop existing subnet
+          openstack.cloud.subnet:
+            name: "{{ subnet_name }}"
+            state: absent
+          register: dns_subnet_dr
+          failed_when: false
+
+        - name: Drop existing network
+          openstack.cloud.network:
+            name: "{{ network_name }}"
+            state: absent
+          register: dns_net_dr
+          failed_when: false

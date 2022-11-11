@@ -146,7 +146,7 @@ EXAMPLES = '''
     name: "test_ansible_module"
     description: "This is a description"
     state: present
-    wait: yes
+    wait: true
     timeout: 200
   register: rds_backup
 

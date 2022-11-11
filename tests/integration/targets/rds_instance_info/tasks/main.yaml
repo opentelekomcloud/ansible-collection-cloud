@@ -1,54 +1,55 @@
 ---
-- module_defaults:
-    rds_instance_info:
+- name: RDS Instance Info tests
+  module_defaults:
+    opentelekomcloud.cloud.rds_instance_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: List instances without queries
-      rds_instance_info:
+      opentelekomcloud.cloud.rds_instance_info:
       register: rds
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - rds is success
           - rds is not changed
 
     - name: List pg instances
-      rds_instance_info:
+      opentelekomcloud.cloud.rds_instance_info:
         datastore_type: postgresql
 
     - name: List mysql instances
-      rds_instance_info:
+      opentelekomcloud.cloud.rds_instance_info:
         datastore_type: mysql
 
     - name: List sqlserver instances
-      rds_instance_info:
+      opentelekomcloud.cloud.rds_instance_info:
         datastore_type: sqlserver
 
     - name: List instances with name filter
-      rds_instance_info:
+      opentelekomcloud.cloud.rds_instance_info:
         name: some_name
 
     - name: List instances with single type filter
-      rds_instance_info:
+      opentelekomcloud.cloud.rds_instance_info:
         instance_type: single
 
     - name: List instances with ha type filter
-      rds_instance_info:
+      opentelekomcloud.cloud.rds_instance_info:
         instance_type: ha
 
     - name: List instances with replica type filter
-      rds_instance_info:
+      opentelekomcloud.cloud.rds_instance_info:
         instance_type: replica
 
     - name: List instances with net filters
-      rds_instance_info:
+      opentelekomcloud.cloud.rds_instance_info:
         network: admin_external_net
         router: some_fake_router
       register: rds
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - rds is success
           - rds is not changed

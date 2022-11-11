@@ -116,6 +116,9 @@ all dependencies:
       debug:
         var: gw.nat_gateways
 ```
+[Here](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/examples) you can 
+find some [examples](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/examples) of using OTC collection. All 
+the examples are based on real usecases, and contains some tips and tricks.
 
 Run the playbook to verify the functionality:
 

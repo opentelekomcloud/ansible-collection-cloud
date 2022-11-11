@@ -53,7 +53,7 @@ options:
         2 (medium 50.000 connections), 3 (large 200.000 connections), 4
         (extra-large 1.000.000 connections)
     type: str
-    default: 1
+    default: "1"
     choices: ["1", "2", "3", "4"]
   state:
     choices: [present, absent]

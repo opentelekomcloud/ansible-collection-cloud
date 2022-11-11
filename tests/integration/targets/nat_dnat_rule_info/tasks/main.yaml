@@ -1,16 +1,17 @@
 ---
-- block:
+- name: Nat DNAT Rule Info tests
+  block:
     - name: Get DNAT rule info
-      nat_dnat_rule_info:
+      opentelekomcloud.cloud.nat_dnat_rule_info:
         cloud: "{{ test_cloud }}"
       register: dn
 
     - name: debug configs
-      debug:
+      ansible.builtin.debug:
         var: dn.dnat_rules
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dn is success
           - dn is not changed

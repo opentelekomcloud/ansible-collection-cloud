@@ -10,3 +10,10 @@ importer_result.json
 **.swp
 
 *.tar.gz
+doc/build
+tmp
+
+#idea
+.idea/**
+*/.idea/**
+

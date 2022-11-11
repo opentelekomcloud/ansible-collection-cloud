@@ -1,0 +1,17 @@
+---
+- name: DDS Datastore Info tests
+  module_defaults:
+    opentelekomcloud.cloud.dds_datastore_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get info about datastore
+      opentelekomcloud.cloud.dds_datastore_info:
+        datastore_name: "DDS-Community"
+      register: result
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - result is success
+          - result is not changed
+          - result.datastores is defined

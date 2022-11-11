@@ -1,14 +1,14 @@
 namespace: opentelekomcloud
 name: cloud
-version: 0.0.1
+version: 0.12.4
 readme: README.md
 authors:
-- Artem Goncharov <artem.goncharov@gmail.com>
+  - Artem Goncharov <artem.goncharov@gmail.com>
 
 description: Modules for working with OpenTelekomCloud (base on OpenStack modules, adding proprietary services)
 license:
-- Apache-2.0
-tags: 
+  - Apache-2.0
+tags:
   - cloud
   - openstack
   - opentelekomcloud

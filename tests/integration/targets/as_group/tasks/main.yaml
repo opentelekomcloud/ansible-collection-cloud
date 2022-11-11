@@ -1,33 +1,47 @@
 ---
-- module_defaults:
+- name: AS Group tests
+  module_defaults:
     opentelekomcloud.cloud.as_group:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.as_instance_info:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.keypair:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.network:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.subnet:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.router:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.as_config:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         as_group_name: "{{ ( prefix + '_as_group') }}"
         new_name: "{{ ( prefix + 'new_name') }}"
         key_name: "{{ ( prefix + '_key') }}"
+        config_name: "{{ ( prefix + '_as_conf' ) }}"
         network_name: "{{ ( prefix + '_network') }}"
         subnet_name: "{{ ( prefix + '_subnet') }}"
-        router_name:  "{{ ( prefix + '_router') }}"
+        router_name: "{{ ( prefix + '_router') }}"
 
     - name: Create keypair
-      openstack.cloud.os_keypair:
-          name: "{{ key_name }}"
+      openstack.cloud.keypair:
+        name: "{{ key_name }}"
 
     - name: Create network
-      openstack.cloud.os_network:
+      openstack.cloud.network:
         name: "{{ network_name }}"
         state: present
       register: network
 
     - name: Create subnet
-      openstack.cloud.os_subnet:
+      openstack.cloud.subnet:
         name: "{{ subnet_name }}"
         state: present
         network_name: "{{ network.network.name }}"
@@ -36,87 +50,221 @@
       register: subnet
 
     - name: Create router
-      openstack.cloud.os_router:
+      openstack.cloud.router:
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ network.network.name }}"
             subnet: "{{ subnet.subnet.name }}"
       register: router
 
-    - name: Create as group - check_mode
+    - name: Create AS Config
+      opentelekomcloud.cloud.as_config:
+        scaling_configuration: "{{ config_name }}"
+        key_name: "{{ key_name }}"
+        image: "Standard_Debian_10_latest"
+        flavor: "c4.2xlarge.2"
+        disk:
+          - size: 10
+            volume_type: 'SAS'
+            disk_type: 'SYS'
+      register: as_config
+
+    - name: Create AS Group - check_mode
       opentelekomcloud.cloud.as_group:
-        scaling_group_name: "{{ as_group_name }}"
+        scaling_group:
+          name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
-      check_mode: yes
+      check_mode: true
       register: as_group_check
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_group_check is changed
-          -
-    - name: Create as group
+
+    - name: Create AS Group
       opentelekomcloud.cloud.as_group:
-        scaling_group_name: "{{ as_group_name }}"
+        scaling_group:
+          name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
       register: as_group
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_group is success
           - as_group is changed
+          - 'as_group.msg == "AS Group {{ as_group_name }} was created"'
+
+    - name: Create AS Group when it already exists
+      opentelekomcloud.cloud.as_group:
+        scaling_group:
+          name: "{{ as_group_name }}"
+        networks: [{'id': "{{ network.network.id }}"}]
+        router: "{{ router.router.id }}"
+      register: as_group_err
+      failed_when: 'as_group_err is changed or as_group_err.msg != "AS Group {{ as_group.as_group.id }} exists"'
+
+    - name: Update as group - check mode
+      opentelekomcloud.cloud.as_group:
+        scaling_group:
+          id: "{{ as_group.as_group.id }}"
+          name: "{{ new_name }}"
+        max_instance_number: 10
+      check_mode: true
+      register: as_group_check
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - as_group_check is success
+          - as_group_check is changed
 
     - name: Update as group
       opentelekomcloud.cloud.as_group:
-        scaling_group_id: "{{ as_group.as_group.id }}"
-        scaling_group_name: "{{ new_name }}"
+        scaling_group:
+          id: "{{ as_group.as_group.id }}"
+          name: "{{ new_name }}"
         max_instance_number: 10
       register: as_group
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
+        that:
+          - as_group is success
+          - as_group is changed
+          - 'as_group.msg == "AS Group {{ as_group.as_group.id }} was updated"'
+
+    - name: Delete AS Group - check_mode
+      opentelekomcloud.cloud.as_group:
+        scaling_group:
+          id: "{{ as_group.as_group.id }}"
+        state: absent
+      check_mode: true
+      register: as_group_check
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - as_group_check is changed
+          - as_group_check is success
+
+    - name: Delete AS Group
+      opentelekomcloud.cloud.as_group:
+        scaling_group:
+          id: "{{ as_group.as_group.id }}"
+        state: absent
+        wait: true
+        timeout: 360
+      register: as_gr_del
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - as_gr_del is success
+          - as_gr_del is changed
+          - 'as_gr_del.msg == "AS Group {{ as_group.as_group.id }} was deleted"'
+
+    - name: Delete AS Group that already deleted
+      opentelekomcloud.cloud.as_group:
+        scaling_group:
+          id: "{{ as_group.as_group.id }}"
+        state: absent
+        wait: true
+        timeout: 360
+      register: as_gr_err
+      failed_when: 'as_gr_err.msg != "AS Group {{ as_group.as_group.id }} not found"'
+
+    - name: Create AS Group with instances
+      opentelekomcloud.cloud.as_group:
+        scaling_group:
+          name: "{{ as_group_name }}"
+        scaling_configuration: "{{ as_config.as_config.id }}"
+        networks: [{'id': "{{ network.network.id }}"}]
+        router: "{{ router.router.id }}"
+        desire_instance_number: 1
+        max_instance_number: 1
+        action: "resume"
+        state: "present"
+        wait: true
+        timeout: 360
+      register: as_group
+
+    - name: assert result
+      ansible.builtin.assert:
         that:
           - as_group is success
           - as_group is changed
 
+    - name: Get list of AS instances using as group id
+      opentelekomcloud.cloud.as_instance_info:
+        scaling_group: "{{ as_group.as_group.id }}"
+      register: as_instances
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - as_instances is success
+          - as_instances is not changed
+          - as_instances['scaling_instances']|length == 1
+
+    - name: Delete AS Group with instances without force_delete
+      opentelekomcloud.cloud.as_group:
+        scaling_group:
+          id: "{{ as_group.as_group.id }}"
+        state: absent
+        force_delete: false
+        wait: true
+        timeout: 360
+      register: as_group_err
+      failed_when: "as_group_err is changed"
+
   always:
-    - block:
-      # Cleanup
-      - name: Delete as group
-        opentelekomcloud.cloud.as_group:
-          scaling_group_name: "{{ new_name }}"
-          state: absent
-        register: dropped_as_group
+    - name: Cleanup
+      block:
+        - name: Delete as group
+          opentelekomcloud.cloud.as_group:
+            scaling_group:
+              id: "{{ as_group.as_group.id }}"
+            state: absent
+            force_delete: true
+            wait: true
+            timeout: 360
+          register: dropped_as_group
+          failed_when: "dropped_as_group is not changed"
 
-      - name: assert result
-        assert:
-          that:
-            - dropped_as_group is success
-            - dropped_as_group is changed
+        - name: Delete as config
+          opentelekomcloud.cloud.as_config:
+            scaling_configuration: "{{ config_name }}"
+            state: absent
+          register: dropped_as_config
+          failed_when: "dropped_as_config is not changed"
 
-      - name: Delete keypair
-        openstack.cloud.os_keypair:
+        - name: Delete keypair
+          openstack.cloud.keypair:
             name: "{{ key_name }}"
             state: absent
+          failed_when: false
 
-      - name: Drop existing router
-        openstack.cloud.os_router:
-          name: "{{ router.router.name }}"
-          state: absent
+        - name: Drop existing router
+          openstack.cloud.router:
+            name: "{{ router.router.name }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop existing subnet
-        openstack.cloud.os_subnet:
-          name: "{{ subnet.subnet.name }}"
-          state: absent
+        - name: Drop existing subnet
+          openstack.cloud.subnet:
+            name: "{{ subnet.subnet.name }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop existing network
-        openstack.cloud.os_network:
-          name: "{{ network.network.name }}"
-          state: absent
-      ignore_errors: true
+        - name: Drop existing network
+          openstack.cloud.network:
+            name: "{{ network.network.name }}"
+            state: absent
+          ignore_errors: false

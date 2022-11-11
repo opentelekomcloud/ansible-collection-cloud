@@ -112,7 +112,11 @@ options:
   storage_spec_code:
     description:
       - Indicates I/O specification of a Kafka instance.
+      - When specification is 100MB or 300MB, the storage I/O is
+      - dms.physical.storage.high or dms.physical.storage.ultra
+      - When specification is 600MB or 1200MB, the storage I/O is dms.physical.storage.ultra.
       - Required for creation
+    choices: [dms.physical.storage.high, dms.physical.storage.ultra]
     type: str
   state:
     choices: [present, absent]
@@ -181,7 +185,7 @@ class DmsInstanceModule(OTCModule):
         engine_version=dict(required=False, default='2.3.0'),
         storage_space=dict(required=False, type='int'),
         access_user=dict(required=False),
-        password=dict(required=False),
+        password=dict(required=False, no_log=True),
         vpc_id=dict(required=False),
         security_group_id=dict(required=False),
         subnet_id=dict(required=False),
@@ -193,7 +197,8 @@ class DmsInstanceModule(OTCModule):
         enable_publicip=dict(required=False, type='bool'),
         public_bandwidth=dict(required=False),
         retention_policy=dict(required=False),
-        storage_spec_code=dict(required=False),
+        storage_spec_code=dict(required=False, choices=['dms.physical.storage.high',
+                                                        'dms.physical.storage.ultra']),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(

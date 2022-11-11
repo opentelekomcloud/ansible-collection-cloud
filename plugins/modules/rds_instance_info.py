@@ -58,6 +58,8 @@ rds_instance_info:
 EXAMPLES = '''
 # Get Instances.
 - rds_instance_info:
+    datastore_type: "mysql"
+    router: "7ea09482-793a-4aed-b4ce-447113d10d69"
   register: rds
 
 - rds_instance_info:

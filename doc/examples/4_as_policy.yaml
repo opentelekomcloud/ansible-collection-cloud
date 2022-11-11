@@ -1,0 +1,64 @@
+---
+
+# There are many services interconnected with Cloud eye. All the services are logically united
+# into groups named Namespaces. Every Namespace supports plenty of metrics, and each of them can
+# be monitored. Besides particular metric you want to check up, you need to know Dimension -
+# this entity pecifies the metric dimension of the selected resource type. In this
+# example we want to monitor inbound bandwidth of public IP connected to our VPC. So first of
+# all we will assign a new public IP for further monitoring.
+- name: Assign Floating IP
+  opentelekomcloud.cloud.floating_ip:
+    network: admin_external_net
+  register: fl
+
+# First we need to create an Alarm, which will be included in AS Policy.
+- name: Create Cloud Eye Alarm
+  opentelekomcloud.cloud.ces_alarms:
+    alarm_name: "{{ alarm_name }}"
+    state: present
+    metric:
+      namespace: "SYS.VPC"
+      dimensions:
+        - name: "publicip_id"
+          value: "{{ fl.floating_ip.id }}"
+      metric_name: "down_stream"
+    condition:
+      period: 300
+      filter: average
+      comparison_operator: ">="
+      value: 6
+      unit: "B"
+      count: 1
+    alarm_enabled: true
+    alarm_action_enabled: false
+  register: alarm
+
+- name: Create AS policy
+  opentelekomcloud.cloud.as_policy:
+    scaling_group: "{{ as_group_name }}"
+    scaling_policy: "{{ as_policy_name }}"
+    scaling_policy_type: "alarm"
+    alarm: "{{ alarm_name }}"
+    state: "present"
+  register: as_policy
+
+- name: Get list of AS Policies
+  opentelekomcloud.cloud.as_policy_info:
+    scaling_group: "{{ as_group_name }}"
+  register: as_policies
+
+- name: Update AS policy (add scaling_policy_action)
+  opentelekomcloud.cloud.as_policy:
+    scaling_group: "{{ as_group_name }}"
+    scaling_policy: "{{ as_policy_name }}"
+    scaling_policy_type: "alarm"
+    alarm: "{{ alarm_name }}"
+    state: "present"
+    scaling_policy_action:
+      operation: "add"
+      instance_number: 1
+  register: as_policy
+
+- name: Check AS group quotas
+  opentelekomcloud.cloud.as_quota_info:
+    scaling_group_id: "{{ scaling_group_id }}"
