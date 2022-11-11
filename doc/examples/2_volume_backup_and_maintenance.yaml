@@ -1,0 +1,30 @@
+---
+
+# You're able to backup both types of disks: system and additionally attached. Cloud Server
+# Backups will be cover in a next examples
+- name: Create a backup of the system volume
+  opentelekomcloud.cloud.volume_backup:
+    display_name: "{{ backup_name }}"
+    display_description: "Full backup of the test instance"
+    state: absent
+    volume: "{{ ecs_1_vol }}"
+    force: true
+    wait: true
+    timeout: 123
+  register: bckp
+  tags:
+    - volume_backup
+
+- name: Let's check whether we have a backup of the ECS volume
+  opentelekomcloud.cloud.volume_backup_info:
+    volume: "{{ ecs_1_vol }}"
+  tags: backup_info
+
+# Snapshot is mandatory for any kind of backup, both full or incremental. If there are no any
+# backups created before, and current backup is the first one for this volume, snapshot will be
+# create automatically.
+- name: Check if we have a snapshot
+  opentelekomcloud.cloud.volume_snapshot_info:
+    name: "yet_another**"
+  tags:
+    - snapshot_info

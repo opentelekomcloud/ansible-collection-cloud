@@ -136,6 +136,7 @@ dnat_rules:
 EXAMPLES = '''
 # Get configs versions.
 - nat_dnat_rule_info:
+    floating_ip: "123.1.2.3"
   register: dn
 
 - nat_dnat_rule_info:

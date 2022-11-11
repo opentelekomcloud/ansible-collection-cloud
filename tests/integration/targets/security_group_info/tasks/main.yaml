@@ -1,15 +1,16 @@
 ---
 # author: @tischrei
-- module_defaults:
+- name: Security Group Info tests
+  module_defaults:
     opentelekomcloud.cloud.security_group_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: List security groups
-      security_group_info:
+      opentelekomcloud.cloud.security_group_info:
       register: sg
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - sg is success
           - sg.security_groups is defined

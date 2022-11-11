@@ -1,0 +1,17 @@
+---
+- name: VPC Route Info tests
+  block:
+    - name: Get vpc routes info
+      opentelekomcloud.cloud.vpc_route_info:
+      register: vpc_routes
+
+    - name: Debug vpc route
+      ansible.builtin.debug:
+        var: vpc_routes
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - vpc_routes is success
+          - vpc_routes is not changed
+          - vpc_routes.vpc_routes is defined

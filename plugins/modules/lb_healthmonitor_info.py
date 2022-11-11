@@ -132,6 +132,12 @@ EXAMPLES = '''
 - lb_healthmonitor_info:
     name: hm-test
   register: healthmonitor
+
+- opentelekomcloud.cloud.lb_healthmonitor_info:
+    type: "http"
+    admin_state_up: False
+    expected_codes: "200,202,401"
+  register: healthmonitor
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

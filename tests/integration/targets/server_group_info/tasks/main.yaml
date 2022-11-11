@@ -1,15 +1,16 @@
 ---
 # author: @tischrei
-- module_defaults:
+- name: Server Group Info tests
+  module_defaults:
     opentelekomcloud.cloud.server_group_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: List server groups
-      server_group_info:
+      opentelekomcloud.cloud.server_group_info:
       register: sg
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - sg is success
           - sg.server_groups is defined

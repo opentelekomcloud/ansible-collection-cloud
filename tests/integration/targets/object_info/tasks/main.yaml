@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: Object Info tests
+  module_defaults:
     opentelekomcloud.cloud.object_info:
       cloud: "{{ test_cloud }}"
   block:
@@ -8,7 +9,7 @@
       register: containers
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - containers is success
           - containers.swift.containers is defined

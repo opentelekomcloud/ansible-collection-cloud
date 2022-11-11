@@ -1,0 +1,68 @@
+---
+- name: VPC Tests
+  module_defaults:
+    opentelekomcloud.cloud.vpc:
+      cloud: "{{ test_cloud }}"
+
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        vpc_name: "{{ ( prefix + '_vpc') }}"
+        cidr: "192.168.0.0/24"
+
+    - name: Create VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        cidr: "{{ cidr }}"
+        state: present
+      check_mode: true
+      register: vpc_check_mode
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - vpc_check_mode is success
+          - vpc_check_mode is not changed
+
+    - name: Create VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        cidr: "{{ cidr }}"
+        enable_shared_snat: true
+        state: present
+      register: vpc
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - vpc is success
+          - vpc is changed
+          - vpc.vpc.enable_shared_snat is true
+
+    - name: Update VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        description: "Test vpc"
+      register: updated_vpc
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - updated_vpc is success
+          - updated_vpc is defined
+
+    - name: Delete VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        state: "absent"
+      register: deleted_vpc
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - deleted_vpc is success
+          - deleted_vpc is changed

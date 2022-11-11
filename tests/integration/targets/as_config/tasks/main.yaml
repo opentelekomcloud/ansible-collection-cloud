@@ -1,20 +1,21 @@
 ---
-- module_defaults:
+- name: AS Config tests
+  module_defaults:
     opentelekomcloud.cloud.loadbalancer:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         config_name: "{{ ( prefix + '_config') }}"
         key_name: "{{ ( prefix + '_key') }}"
 
     - name: Create keypair
-      openstack.cloud.os_keypair:
-          name: "{{ key_name }}"
+      openstack.cloud.keypair:
+        name: "{{ key_name }}"
 
     - name: Create as config - check_mode
       opentelekomcloud.cloud.as_config:
@@ -27,10 +28,10 @@
             volume_type: 'SAS'
             disk_type: 'SYS'
       register: as_config_check
-      check_mode: yes
+      check_mode: true
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_config_check is changed
 
@@ -38,7 +39,7 @@
       opentelekomcloud.cloud.as_config:
         scaling_configuration: "{{ config_name }}"
         key_name: "{{ key_name }}"
-        image: "Standard_Debian_9_latest"
+        image: "Standard_Debian_10_latest"
         flavor: "c4.2xlarge.2"
         disk:
           - size: 10
@@ -47,15 +48,14 @@
       register: as_config
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_config is changed
           - as_config is success
 
   always:
-    - block:
-      # Cleanup
-
+    - name: Cleanup
+      block:
         - name: Delete as config
           opentelekomcloud.cloud.as_config:
             scaling_configuration: "{{ config_name }}"
@@ -64,13 +64,12 @@
           ignore_errors: true
 
         - name: assert result
-          assert:
+          ansible.builtin.assert:
             that:
               - dropped_as_config is success
               - dropped_as_config is changed
 
         - name: Delete keypair
-          openstack.cloud.os_keypair:
-              name: "{{ key_name }}"
-              state: absent
-          ignore_errors: true
+          openstack.cloud.keypair:
+            name: "{{ key_name }}"
+            state: absent

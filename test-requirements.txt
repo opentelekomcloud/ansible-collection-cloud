@@ -1,11 +1,10 @@
 openstacksdk
-ansible-base
-pycodestyle==2.6.0
-flake8==3.8.4
+ansible-lint>=6.0.0
+pycodestyle==2.8.0
+flake8>=4.0.0
 pylint
 voluptuous
 yamllint
 rstcheck
 ruamel.yaml
-tox
 otcextensions>=0.10.0

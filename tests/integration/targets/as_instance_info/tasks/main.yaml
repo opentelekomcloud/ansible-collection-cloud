@@ -1,35 +1,36 @@
 ---
-- module_defaults:
+- name: AS Instance Info tests
+  module_defaults:
     opentelekomcloud.cloud.as_instance_info:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.as_group:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_network:
+    openstack.cloud.network:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_subnet:
+    openstack.cloud.subnet:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.os_router:
+    openstack.cloud.router:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         as_group_name: "{{ ( prefix + '_as_group') }}"
         network_name: "{{ ( prefix + '_network') }}"
         subnet_name: "{{ ( prefix + '_subnet') }}"
-        router_name:  "{{ ( prefix + '_router') }}"
+        router_name: "{{ ( prefix + '_router') }}"
 
     - name: Create network
-      openstack.cloud.os_network:
+      openstack.cloud.network:
         name: "{{ network_name }}"
         state: present
       register: network
 
     - name: Create subnet
-      openstack.cloud.os_subnet:
+      openstack.cloud.subnet:
         name: "{{ subnet_name }}"
         state: present
         network_name: "{{ network.network.name }}"
@@ -38,11 +39,11 @@
       register: subnet
 
     - name: Create router
-      openstack.cloud.os_router:
+      openstack.cloud.router:
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: True
+        enable_snat: true
         interfaces:
           - net: "{{ network.network.name }}"
             subnet: "{{ subnet.subnet.name }}"
@@ -50,7 +51,8 @@
 
     - name: Create as group
       opentelekomcloud.cloud.as_group:
-        scaling_group_name: "{{ as_group_name }}"
+        scaling_group:
+          name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
       register: as_group
@@ -61,7 +63,7 @@
       register: as_instances
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_instances is success
           - as_instances is not changed
@@ -73,7 +75,7 @@
       register: as_instances
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - as_instances is success
           - as_instances is not changed
@@ -82,48 +84,41 @@
     - name: Get error message that required parameter is missing
       opentelekomcloud.cloud.as_instance_info:
       register: as_instances
-      ignore_errors: yes
-
-    - name: assert result
-      assert:
-        that:
-          - as_instances is not success
-          - as_instances is not changed
-          - 'as_instances.msg == "missing required arguments: scaling_group"'
+      failed_when: 'as_instances.msg != "missing required arguments: scaling_group"'
 
     - name: Get error when AS group id is missing
       opentelekomcloud.cloud.as_instance_info:
         scaling_group:
       register: as_instances
-      ignore_errors: yes
-
-    - name: assert result
-      assert:
-        that:
-          - as_instances is not success
-          - as_instances is not changed
+      failed_when: "as_instances is changed"
 
   always:
-    - block:
-      # Cleanup
-      - name: Delete as group
-        opentelekomcloud.cloud.as_group:
-          scaling_group_name: "{{ as_group_name }}"
-          state: absent
-        register: dropped_as_group
+    - name: Cleanup
+      block:
+        - name: Delete as group
+          opentelekomcloud.cloud.as_group:
+            scaling_group:
+              name: "{{ as_group_name }}"
+            state: absent
+            force_delete: true
+            wait: true
+          register: dropped_as_group
+          failed_when: false
 
-      - name: Drop existing router
-        openstack.cloud.os_router:
-          name: "{{ router.router.name }}"
-          state: absent
+        - name: Drop existing router
+          openstack.cloud.router:
+            name: "{{ router.router.name }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop existing subnet
-        openstack.cloud.os_subnet:
-          name: "{{ subnet.subnet.name }}"
-          state: absent
+        - name: Drop existing subnet
+          openstack.cloud.subnet:
+            name: "{{ subnet.subnet.name }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop existing network
-        openstack.cloud.os_network:
-          name: "{{ network.network.name }}"
-          state: absent
-      ignore_errors: true
+        - name: Drop existing network
+          openstack.cloud.network:
+            name: "{{ network.network.name }}"
+            state: absent
+          failed_when: false

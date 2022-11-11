@@ -94,6 +94,15 @@ backup:
 '''
 
 EXAMPLES = '''
+
+# Add volume backup
+- opentelekomcloud.cloud.volume_backup:
+    name: "test_vbs_backup"
+    description: "my test backup"
+    state: present
+    volume: ecs-7b0
+    force: True
+    incremental: True
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -200,13 +209,12 @@ class VolumeBackupModule(OTCModule):
         # so search this was
         backup = self.find_backup(name)
 
-        if self.check_mode:
+        if self.ansible.check_mode:
             self.exit_json(changed=self._system_state_change(backup))
 
         if self.params['state'] == 'present':
             if not backup:
                 cloud_volume = self.find_volume(volume)
-                cloud_snapshot_id = None
 
                 attrs = {
                     'name': name,
@@ -215,10 +223,21 @@ class VolumeBackupModule(OTCModule):
                     'is_incremental': is_incremental
                 }
 
+                volume = self.conn.get_volume(self.params['volume'])
                 if snapshot:
-                    cloud_snapshot_id = self.find_snapshot(snapshot,
-                                                           ignore_missing=False).id
-                    attrs['snapshot_id'] = cloud_snapshot_id
+                    snapshot = self.conn.get_volume_snapshot(
+                        self.params['display_name'], filters={'volume_id': volume.id})
+                    attrs['snapshot_id'] = snapshot.id
+                else:
+                    snapshot = self.conn.create_volume_snapshot(
+                        volume.id,
+                        force=self.params['force'],
+                        wait=self.params['wait'],
+                        timeout=self.params['timeout'],
+                        name=self.params['display_name'] + '_snapshot',
+                        description=self.params.get('display_description')
+                    )
+                    attrs['snapshot_id'] = snapshot.id
 
                 if metadata:
                     attrs['metadata'] = metadata

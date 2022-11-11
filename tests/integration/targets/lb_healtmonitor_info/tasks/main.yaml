@@ -1,18 +1,19 @@
 ---
-- module_defaults:
-    lb_healthmonitor_info:
+- name: LoadBalancer HealthMonitor Info tests
+  module_defaults:
+    opentelekomcloud.cloud.lb_healthmonitor_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: Get health checks info
-      lb_healthmonitor_info:
+      opentelekomcloud.cloud.lb_healthmonitor_info:
       register: hm
 
     - name: debug configs
-      debug:
+      ansible.builtin.debug:
         var: hm.healthmonitors
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - hm is success
           - hm is not changed

@@ -1,5 +1,6 @@
 ---
-- block:
+- name: CCE Node Pool Info tests
+  block:
     - name: Get all Node Pools of a cluster
       cce_node_pool_info:
         cloud: "{{ test_cloud }}"
@@ -7,11 +8,11 @@
       register: pools
 
     - name: debug pools
-      debug:
+      ansible.builtin.debug:
         var: pools.cce_node_pools
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - pools is success
           - pools is not changed

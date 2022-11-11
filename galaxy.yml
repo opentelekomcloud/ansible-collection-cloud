@@ -1,0 +1,34 @@
+namespace: opentelekomcloud
+name: cloud
+version: 0.12.4
+readme: README.md
+authors:
+  - Artem Goncharov <artem.goncharov@gmail.com>
+
+description: Modules for working with OpenTelekomCloud (base on OpenStack modules, adding proprietary services)
+license:
+  - Apache-2.0
+tags:
+  - cloud
+  - openstack
+  - opentelekomcloud
+dependencies:
+  "openstack.cloud": "*"
+repository: http://github.com/OpenTelekomCloud/ansible_collections
+documentation: http://docs.otc.t-systems.com
+homepage: https://open-telekom-cloud.com
+issues: http://github.com/OpenTelekomCloud/ansible_collections/issue/tracker
+build_ignore:
+  - "*.tar.gz"
+  - build_artifact/
+  - ci/
+  - galaxy.yml.in
+  - setup.cfg
+  - setup.py
+  - tools
+  - tox.ini
+  - .gitignore
+  - .gitreview
+  - .zuul.yaml
+  - .pytest_cache
+  - importer_result.json

@@ -1,12 +1,13 @@
 ---
-- module_defaults:
-    waf_certificate:
+- name: WAF Certificate tests
+  module_defaults:
+    opentelekomcloud.cloud.waf_certificate:
       cloud: "{{ test_cloud }}"
-    waf_certificate_info:
+    opentelekomcloud.cloud.waf_certificate_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         cert_name: test_cert_ansible_collection
         content: |
           -----BEGIN CERTIFICATE-----
@@ -59,30 +60,30 @@
           -----END PRIVATE KEY-----
 
     - name: Ensure cert does not exists
-      waf_certificate:
+      opentelekomcloud.cloud.waf_certificate:
         name: "{{ cert_name }}"
         state: absent
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
 
     - name: Create cert
-      waf_certificate:
+      opentelekomcloud.cloud.waf_certificate:
         name: "{{ cert_name }}"
         content: "{{ content }}"
         private_key: "{{ key }}"
       register: result
 
     - name: Get cert info
-      waf_certificate_info:
+      opentelekomcloud.cloud.waf_certificate_info:
         name: "{{ cert_name }}"
       register: result_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is changed
@@ -90,24 +91,24 @@
           - result_info.waf_certificates[0].name == cert_name
 
     - name: Drop cert
-      waf_certificate:
+      opentelekomcloud.cloud.waf_certificate:
         name: "{{ cert_name }}"
         state: absent
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is changed
 
     - name: Get cert info
-      waf_certificate_info:
+      opentelekomcloud.cloud.waf_certificate_info:
         name: "{{ cert_name }}"
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is not changed

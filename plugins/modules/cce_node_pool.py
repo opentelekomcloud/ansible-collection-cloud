@@ -67,7 +67,7 @@ options:
       - Name of the CCE Node Pool
     required: true
     type: str
-  network_id:
+  network:
     description:
       - ID of the network to which the CCE node pool belongs to.
     type: str
@@ -248,7 +248,7 @@ EXAMPLES = '''
     flavor: s2.large.2
     os: 'CentOS 7.7'
     name: my-nodepool
-    network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
+    network: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
     ssh_key: 'ssh-pub'
     state: present
   register: pool
@@ -274,7 +274,7 @@ EXAMPLES = '''
     min_node_count: 1
     max_node_count: 3
     name: test-ansible2
-    network_id: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
+    network: '25d24fc8-d019-4a34-9fff-0a09fde6a123'
     priority: 2
     os: 'CentOS 7.7'
     scale_down_cooldown_time: 5
@@ -329,7 +329,7 @@ class CceNodePoolModule(OTCModule):
         max_node_count=dict(required=False, type='int'),
         max_pods=dict(required=False, type='int'),
         name=dict(required=True),
-        network_id=dict(required=False),
+        network=dict(required=False),
         node_image_id=dict(required=False),
         os=dict(required=False),
         postinstall_script=dict(required=False),
@@ -342,7 +342,7 @@ class CceNodePoolModule(OTCModule):
             choices=['SATA', 'SAS', 'SSD'],
             default='SATA'),
         scale_down_cooldown_time=dict(required=False, type='int'),
-        ssh_key=dict(required=False),
+        ssh_key=dict(required=False, no_log=False),
         state=dict(default='present', choices=['absent', 'present']),
         tags=dict(required=False, type='list', elements='dict'),
         taints=dict(required=False, type='list', elements='dict'),
@@ -356,7 +356,7 @@ class CceNodePoolModule(OTCModule):
                     'flavor',
                     'os',
                     'name',
-                    'network_id',
+                    'network',
                     'ssh_key'
                 ]),
             ('state', 'absent', ['cluster', 'name']),

@@ -1,17 +1,18 @@
 ---
-- block:
+- name: DeH Host Type Info tests
+  block:
     - name: Get DeH host types in AZ
-      deh_host_type_info:
+      opentelekomcloud.cloud.deh_host_type_info:
         cloud: "{{ test_cloud }}"
         az: eu-de-01
       register: deh
 
     - name: debug deh
-      debug:
+      ansible.builtin.debug:
         var: deh.deh_host_types
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - deh is success
           - deh is not changed

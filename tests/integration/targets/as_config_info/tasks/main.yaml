@@ -1,16 +1,17 @@
 ---
-- block:
+- name: AS Config Info tests
+  block:
     - name: Get AS config info
-      as_config_info:
+      opentelekomcloud.cloud.as_config_info:
         cloud: "{{ test_cloud }}"
       register: auto_scale
 
     - name: debug configs
-      debug:
+      ansible.builtin.debug:
         var: auto_scale.as_configs
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - auto_scale is success
           - auto_scale is not changed

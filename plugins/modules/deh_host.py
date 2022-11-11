@@ -24,9 +24,8 @@ options:
     description:
       - Specifies whether to allow an ECS to be placed on any available DeH if
       - its DeH ID is not specified during its creation.
-    type: str
-    default: 'on'
-    choices: ['on', 'off']
+    type: bool
+    default: true
   availability_zone:
     description:
       - Specifies the Availability zone to which the Dedicated host belongs.
@@ -73,7 +72,7 @@ deh_host:
     sample: {
         deh_host: {
           "allocated_at": null,
-          "auto_placement": "on",
+          "auto_placement": "true",
           "availability_zone": "eu-de-01",
           "available_memory": null,
           "available_vcpus": null,
@@ -124,7 +123,7 @@ EXAMPLES = '''
 - opentelekomcloud.cloud.deh_host:
     cloud: otc
     id: "{{ deh.deh_host.dedicated_host_ids[0] }}"
-    auto_placement: off
+    auto_placement: false
   when:
     - deh is defined
   register: deh
@@ -135,9 +134,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class DehHostModule(OTCModule):
     argument_spec = dict(
-        auto_placement=dict(required=False,
-                            default='on',
-                            choices=['on', 'off']),
+        auto_placement=dict(required=False, type='bool', default=True),
         availability_zone=dict(required=False),
         host_type=dict(required=False),
         id=dict(required=False),
@@ -196,12 +193,17 @@ class DehHostModule(OTCModule):
             changed = False
             attrs = {}
 
+            if self.params['auto_placement']:
+                attrs['auto_placement'] = 'on'
+            else:
+                attrs['auto_placement'] = 'off'
+
             if host:
                 # DeH host modification
                 if self.ansible.check_mode:
                     self.exit(changed=True)
-                if self.params['auto_placement'] and (self.params['auto_placement'] != host.auto_placement):
-                    attrs['auto_placement'] = self.params['auto_placement']
+                if attrs['auto_placement'] == host.auto_placement:
+                    attrs.pop('auto_placement')
                 if self.params['name'] and (self.params['name'] != host.name):
                     attrs['name'] = self.params['name']
                 if attrs:
@@ -222,8 +224,6 @@ class DehHostModule(OTCModule):
                 if self.ansible.check_mode:
                     self.exit(changed=True)
                 attrs['name'] = self.params['name']
-                if self.params['auto_placement']:
-                    attrs['auto_placement'] = self.params['auto_placement']
                 attrs['availability_zone'] = self.params['availability_zone']
                 attrs['host_type'] = self.params['host_type']
                 if self.params['quantity']:

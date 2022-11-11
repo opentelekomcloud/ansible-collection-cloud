@@ -1,5 +1,6 @@
 ---
-- block:
+- name: Floating IP tests
+  block:
     - name: Allocate floating ip
       opentelekomcloud.cloud.floating_ip:
         cloud: "{{ test_cloud }}"
@@ -7,15 +8,15 @@
       register: fip
 
     - name: assert allocation
-      assert:
+      ansible.builtin.assert:
         that:
           - fip is changed
           - fip is success
           - fip.floating_ip.floating_ip_address is defined
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop fip
           opentelekomcloud.cloud.floating_ip:
             cloud: "{{ test_cloud }}"
@@ -25,7 +26,7 @@
           register: drop
 
         - name: assert check
-          assert:
+          ansible.builtin.assert:
             that:
               - drop is changed
               - drop is success

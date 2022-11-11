@@ -1,17 +1,18 @@
 ---
-- block:
+- name: CCE Node Pool tests
+  block:
     - name: Create Node Pool
       cce_node_pool:
         cloud: "{{ test_cloud }}"
         availability_zone: "random"
-        autoscaling_enabled: True
+        autoscaling_enabled: true
         cluster: test-cluster
         data_volumes:
           - volumetype: SSD
             size: 120
           - volumetype: SATA
             size: 100
-            encrypted: False
+            encrypted: false
             cmk_id: ''
         flavor: s2.large.2
         initial_node_count: 0
@@ -42,10 +43,10 @@
       register: pool
 
     - name: debug pool
-      debug:
+      ansible.builtin.debug:
         var: pool.cce_node_pool
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - pool.cce_node_pool is defined

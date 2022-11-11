@@ -157,6 +157,10 @@ class SwiftInfoModule(OTCModule):
         object_name=dict(type='str', required=False),
     )
 
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
+
     def run(self):
         container = self.params['container']
         object_name = self.params['object_name']

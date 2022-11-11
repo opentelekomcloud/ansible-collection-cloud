@@ -1,0 +1,46 @@
+---
+- name: Security Group tests
+  module_defaults:
+    opentelekomcloud.cloud.security_group:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        security_group_name: "{{ ( prefix + 'security_group') }}"
+
+    - name: Create security group
+      opentelekomcloud.cloud.security_group:
+        state: present
+        name: "{{ security_group_name }}"
+        description: security group for foo servers
+        exclusive: true
+        security_group_rules:
+          - "direction": "egress"
+            "ethertype": "IPv4"
+            "port_range_min": "1"
+            "port_range_max": "50000"
+            "protocol": "tcp"
+          - "direction": "egress"
+            "ethertype": "IPv6"
+          - "direction": "ingress"
+            "ethertype": "IPv4"
+            "protocol": "icmp"
+      register: sg
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - sg is success
+          - sg is changed
+
+  always:
+    - name: Cleanup
+      block:
+        - name: Drop security group
+          opentelekomcloud.cloud.security_group:
+            name: "{{ security_group_name }}"
+            state: "absent"

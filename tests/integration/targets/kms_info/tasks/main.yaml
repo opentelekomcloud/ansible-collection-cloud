@@ -1,0 +1,13 @@
+---
+- name: KMS Info test
+  block:
+    - name: Get AS config info
+      opentelekomcloud.cloud.kms_info:
+      register: key
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - key is success
+          - key is not changed
+          - key is defined

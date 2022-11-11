@@ -1,6 +1,7 @@
 ---
 # author: Tino Schreiber (@tischrei)
-- module_defaults:
+- name: CCE Lifecycle tests
+  module_defaults:
     opentelekomcloud.cloud.cce_cluster:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.cce_cluster_node:
@@ -12,11 +13,11 @@
 
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ (99999999 | random | to_uuid | hash('md5')) }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         network_name: "{{ ( prefix + '-cce-network') }}"
         subnet_name: "{{ ( prefix + '-ccc-subnet') }}"
         router_name: "{{ ( prefix + '-cce-router') }}"
@@ -68,7 +69,7 @@
       register: cluster
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - cluster is success
           - cluster is changed
@@ -79,7 +80,7 @@
       register: cluster_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - cluster_info is success
           - cluster_info.cce_clusters is defined
@@ -91,29 +92,34 @@
       register: keypair
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - keypair is success
           - keypair.key.private_key is defined
 
-    - name: Create CCE cluster node 1, reserved for cluster deletion
+    - name: Create CCE Cluster Node
       opentelekomcloud.cloud.cce_cluster_node:
         annotations:
-          annotation1: 'annoval1'
-        availability_zone: 'eu-de-02'
+          annotation1: 'abc'
+        availability_zone: 'eu-de-01'
         cluster: "{{ cce_cluster_name }}"
         count: 1
         data_volumes:
-          - SATA: 150
-          - SAS: 100
+          - volumetype: 'SATA'
+            size: 100
+            encrypted: false
+            cmk_id: ''
+          - volumetype: 'SAS'
+            size: 120
         flavor: "{{ cce_node_flavor }}"
         k8s_tags:
-          testk8stag: 'value1'
-        keypair: "{{ keypair_name }}"
+          testtag: 'value'
+        ssh_key: "{{ keypair_name }}"
         labels:
-          my: 'label'
+          mein: 'label'
         max_pods: 16
         name: "{{ cce_node_name }}"
+        network: "{{ network_name }}"
         root_volume_size: 40
         root_volume_type: SATA
         tags:
@@ -122,10 +128,17 @@
           - key: 'key2'
             value: 'value2'
         wait: true
+        state: present
       register: node
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
+        that:
+          - node is success
+          - node is changed
+
+    - name: assert result
+      ansible.builtin.assert:
         that:
           - node is success
           - node.cce_cluster_node.id is defined
@@ -146,7 +159,7 @@
       register: node2
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - node2 is success
           - node2.cce_cluster_node.id is defined
@@ -157,48 +170,53 @@
       register: node_info
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - node_info is success
           - node_info.cce_cluster_nodes is defined
 
   always:
-    - block:
-      # Cleanup
-      - name: Drop node 2
-        opentelekomcloud.cloud.cce_cluster_node:
-          cluster: "{{ cce_cluster_name }}"
-          name: "{{ cce_node_name2 }}"
-          state: absent
-          wait: true
-        register: node2
+    - name: Cleanup
+      block:
+        - name: Drop node 2
+          opentelekomcloud.cloud.cce_cluster_node:
+            cluster: "{{ cce_cluster_name }}"
+            name: "{{ cce_node_name2 }}"
+            state: absent
+            wait: true
+          register: node2
+          failed_when: false
 
-      - name: Drop cluster
-        opentelekomcloud.cloud.cce_cluster:
-          name: "{{ cce_cluster_name }}"
-          timeout: 3000
-          state: "absent"
+        - name: Drop cluster
+          opentelekomcloud.cloud.cce_cluster:
+            name: "{{ cce_cluster_name }}"
+            timeout: 3000
+            state: "absent"
+          failed_when: false
 
-      - name: Drop Keypair
-        openstack.cloud.keypair:
-          state: "absent"
-          name: "{{ keypair_name }}"
+        - name: Drop Keypair
+          openstack.cloud.keypair:
+            state: "absent"
+            name: "{{ keypair_name }}"
+          failed_when: false
 
-      - name: Drop router
-        openstack.cloud.router:
-          cloud: "{{ test_cloud }}"
-          name: "{{ router_name }}"
-          state: absent
+        - name: Drop router
+          openstack.cloud.router:
+            cloud: "{{ test_cloud }}"
+            name: "{{ router_name }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop subnet
-        openstack.cloud.subnet:
-          cloud: "{{ test_cloud }}"
-          name: "{{ subnet_name }}"
-          state: absent
+        - name: Drop subnet
+          openstack.cloud.subnet:
+            cloud: "{{ test_cloud }}"
+            name: "{{ subnet_name }}"
+            state: absent
+          failed_when: false
 
-      - name: Drop network
-        openstack.cloud.network:
-          cloud: "{{ test_cloud }}"
-          name: "{{ network_name }}"
-          state: absent
-      ignore_errors: yes
+        - name: Drop network
+          openstack.cloud.network:
+            cloud: "{{ test_cloud }}"
+            name: "{{ network_name }}"
+            state: absent
+          failed_when: false
