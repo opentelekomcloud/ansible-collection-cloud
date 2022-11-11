@@ -47,13 +47,24 @@ options:
     description:
       - Cache duration (in second) on a local DNS server
     type: int
-  zone_type:
+  type:
     description:
       - Zone Type, either public or private
     type: str
     choices: [public, private]
     default: public
-
+  type:
+    description:
+       - Primary or secondary type.
+       - This parameter is disabled, it only provides compatibility with openstack.cloud colection.
+    choices: [primary, secondary]
+    type: str
+  masters:
+    description:
+       - Master nameservers (only applies if type is secondary).
+       - This parameter is disabled, it only provides compatibility with openstack.cloud colection.
+    type: list
+    elements: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -95,8 +106,8 @@ zone:
       description: Cache duration (in second) on a local DNS server
       type: int
       sample: 300
-    zone_type:
-      description: Zone Type, either public or private
+    type:
+      description: Zone Type, either public or private.
       type: str
       sample: "private"
 '''
@@ -107,7 +118,7 @@ EXAMPLES = '''
   opentelekomcloud.cloud.dns_zone:
     name: "test.com."
     state: present
-    zone_type: private
+    type: private
     router: 79c32783-e560-4e3a-95b1-5a0756441e12
     description: test2
     ttl: 5000
@@ -120,12 +131,14 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class DNSZonesModule(OTCModule):
     argument_spec = dict(
         description=dict(required=False),
+        type=dict(type='str', choices=['public', 'private'], default='public'),
         email=dict(required=False),
         name=dict(required=True),
         router=dict(required=False),
         state=dict(type='str', choices=['present', 'absent'], default='present'),
         ttl=dict(required=False, type='int'),
-        zone_type=dict(type='str', choices=['public', 'private'], default='public')
+        masters=dict(required=False, type='list', elements='str'),
+        type=dict(required=False, choices=['primary', 'secondary'], type='str')
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -135,7 +148,7 @@ class DNSZonesModule(OTCModule):
         changed = False
         attrs = {}
         query = {
-            'type': self.params['zone_type'],
+            'type': self.params['type'],
             'name_or_id': self.params['name']
         }
 
@@ -170,7 +183,7 @@ class DNSZonesModule(OTCModule):
                 self.exit_json(changed=True)
             if not needs_update:
                 # Check if VPC exists
-                if self.params['zone_type'] == 'private':
+                if self.params['type'] == 'private':
                     if not self.params['router']:
                         self.exit(
                             changed=False,
@@ -192,8 +205,9 @@ class DNSZonesModule(OTCModule):
                             message=('No Router found with name or id: %s' %
                                      self.params['router'])
                         )
-                if self.params['zone_type']:
-                    attrs['zone_type'] = self.params['zone_type']
+
+                if self.params['type']:
+                    attrs['type'] = self.params['type']
                 if self.params['description']:
                     attrs['description'] = self.params['description']
                 if self.params['email']:
