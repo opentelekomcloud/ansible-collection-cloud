@@ -1,2 +1,2 @@
-otcextensions
-openstacksdk
+otcextensions<=0.26.3
+openstacksdk<=0.61.0
