@@ -94,7 +94,7 @@ options:
                          or 1 (encryption enabled).
                     type: str
                     choices: [ '0', '1' ]
-                    default: 0
+                    default: '0'
                 __system__cmkid:
                     description:
                         - Specifies the CMK ID, which indicates encryption in metadata.\

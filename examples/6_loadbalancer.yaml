@@ -1,0 +1,78 @@
+---
+# This loadbalancer would be attached to the couple of ECSs united into one backend server group.
+- name: Create loadbalancer for cluster
+  opentelekomcloud.cloud.loadbalancer:
+    state: present
+    auto_public_ip: true
+    name: "{{ lb_name }}"
+    vip_subnet: "{{ vpc_subnet_name }}"
+  register: lb
+
+# This module just integrate public and private keys into certificate for listener. Both public
+#  and private keys you should obtain before on third-party resources, for instance, Letsencrypt,
+#  and put in available for Ansible engine place.
+- name: Create certificate for HTTPS connections
+  opentelekomcloud.cloud.lb_certificate:
+    name: "elb_https_cert"
+    type: "server"
+    content: "/home/user/files/rootCA.pem"
+    private_key: "/home/user/files/rootCA.key"
+  register: elb_cert
+
+# For every type of protocol you can create its own listener. In case of HTTP listener, please pay
+#  attention on your subnet addresses pool, it must be sufficient for all the instances including
+#  listener itself.
+- name: Create listener for HTTPS traffic
+  opentelekomcloud.cloud.lb_listener:
+    name: "{{ listener_https_name }}"
+    protocol: terminated_https
+    protocol_port: 443
+    loadbalancer: "{{ lb.loadbalancer.id }}"
+    default_tls_container_ref: "{{ elb_cert.elb_certificate.id }}"
+  register: listener_https
+
+# This backend server group will contain multiple ECSs. Here we use roundrobin algorithm, as we use http protocol,
+# but you can choose source_ip or least_connection.
+- name: Create backend server group
+  opentelekomcloud.cloud.lb_pool:
+    state: present
+    name: "{{ backend_server_name }}"
+    protocol: http
+    lb_algorithm: round_robin
+    listener: "{{ listener_https }}"
+    loadbalancer: "{{ lb.loadbalancer.id }}"
+  register: backend
+
+- name: Add first to the backend server group
+  opentelekomcloud.cloud.lb_member:
+    name: "{{ ecs1_name }}"
+    address: "10.10.0.18"
+    protocol_port: 443
+    subnet: "{{ vpc_subnet_name }}"
+    pool: "{{ backend.server_group.id }}"
+  register: bcknd_1
+
+- name: Add second server to the backend server group
+  opentelekomcloud.cloud.lb_member:
+    name: "{{ ecs2_name }}"
+    address: "10.10.0.23"
+    protocol_port: 443
+    subnet: "{{ vpc_subnet_name }}"
+    pool: "{{ backend_group_id }}"
+  register: bcknd_2
+
+# After setting up an backend server group, it's highly recommend that you attach health check
+#  monitoring to it.
+- name: Add HTTPS health check for the backend server group
+  opentelekomcloud.cloud.lb_healthmonitor:
+    name: "{{ health_https_name }}"
+    state: present
+    delay: 9
+    max_retries: 3
+    pool: "{{ backend_group_id }}"
+    monitor_timeout: 5
+    type: http
+    monitor_port: 443
+    expected_codes: 200
+    http_method: get
+  register: https_health

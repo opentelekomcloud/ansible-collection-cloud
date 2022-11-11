@@ -1,15 +1,16 @@
 ---
-- module_defaults:
+- name: DDS Instance tests
+  module_defaults:
     opentelekomcloud.cloud.dds_instance:
       cloud: "{{ test_cloud }}"
 
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         network_name: "{{ ( prefix + 'dds_test-network') }}"
         subnet_name: "{{ ( prefix + 'dds_test-subnet') }}"
         router_name: "{{ ( prefix + 'dds_test-router') }}"
@@ -23,7 +24,7 @@
       register: dds
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - dds is success
           - dds is not changed
@@ -80,34 +81,37 @@
         state: present
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - obj is success
           - obj is changed
 
   always:
-    - block:
-        # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop instance
           opentelekomcloud.cloud.dds_instance:
             name: "{{ instance_name }}"
             state: "absent"
+          failed_when: false
 
         - name: Drop router
           openstack.cloud.router:
             cloud: "{{ test_cloud }}"
             name: "{{ router_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop subnet
           openstack.cloud.subnet:
             cloud: "{{ test_cloud }}"
             name: "{{ subnet_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop network
           openstack.cloud.network:
             cloud: "{{ test_cloud }}"
             name: "{{ network_name }}"
             state: absent
-      ignore_errors: true
+          failed_when: false

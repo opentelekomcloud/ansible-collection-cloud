@@ -1,0 +1,31 @@
+---
+# This playbook contains examples with info modules related with load balancer infrastructure.
+- name: Get info about specified load balancer
+  opentelekomcloud.cloud.loadbalancer_info:
+    name: "{{ lb_name }}"
+  register: lb_info
+
+- name: Get info about specified certificate
+  opentelekomcloud.cloud.lb_certificate:
+    name: "elb_https_cert"
+  register: elb_cert_info
+
+- name: Get info about specified litener
+  opentelekomcloud.cloud.lb_listener_info:
+    name: "{{ listener_https_name }}"
+  register: listener_https_info
+
+- name: Get info about specified backend server group
+  opentelekomcloud.cloud.lb_pool:
+    name: "{{ backend_server_name }}"
+  register: backend_group_info
+
+- name: Get info about specified pool members
+  opentelekomcloud.cloud.lb_member_info:
+    pool: "{{ backend_server_name }}"
+  register: bcknd_members_info
+
+- name: Get info about health checks for HTTP protocol
+  opentelekomcloud.cloud.lb_healthmonitor_info:
+    type: http
+  register: https_health_info

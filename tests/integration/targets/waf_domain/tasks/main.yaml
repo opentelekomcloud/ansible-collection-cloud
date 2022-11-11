@@ -1,18 +1,19 @@
 ---
-- module_defaults:
-    waf_domain:
+- name: WAF Domain tests
+  module_defaults:
+    opentelekomcloud.cloud.waf_domain:
       cloud: "{{ test_cloud }}"
-    waf_domain_info:
+    opentelekomcloud.cloud.waf_domain_info:
       cloud: "{{ test_cloud }}"
-    waf_certificate:
+    opentelekomcloud.cloud.waf_certificate:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         cert_name: "{{ ( prefix + '-test_cert_ansible_collection') }}"
         cert2_name: "{{ ( prefix + '-test_cert_ansible_collection_2') }}"
         domain_name: "{{ ( prefix + '.example.com') }}"
@@ -67,21 +68,21 @@
           -----END PRIVATE KEY-----
 
     - name: Create cert
-      waf_certificate:
+      opentelekomcloud.cloud.waf_certificate:
         name: "{{ cert_name }}"
         content: "{{ content }}"
         private_key: "{{ key }}"
       register: cert
 
     - name: Create 2nd cert
-      waf_certificate:
+      opentelekomcloud.cloud.waf_certificate:
         name: "{{ cert2_name }}"
         content: "{{ content }}"
         private_key: "{{ key }}"
       register: cert2
 
     - name: Create domain - check mode
-      waf_domain:
+      opentelekomcloud.cloud.waf_domain:
         state: present
         name: "{{ domain_name }}"
         server:
@@ -97,12 +98,12 @@
       check_mode: true
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - domain_check is changed
 
     - name: Create domain
-      waf_domain:
+      opentelekomcloud.cloud.waf_domain:
         state: present
         name: "{{ domain_name }}"
         # here we pass cert id explicitly
@@ -119,7 +120,7 @@
       register: domain
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - domain is success
           - domain is changed
@@ -127,7 +128,7 @@
           - domain.waf_domain.id is defined
 
     - name: Update domain server list
-      waf_domain:
+      opentelekomcloud.cloud.waf_domain:
         state: present
         name: "{{ domain_name }}"
         server:
@@ -142,7 +143,7 @@
       register: domain_modified
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - domain_modified is success
           - domain_modified is changed
@@ -150,18 +151,18 @@
           - domain.waf_domain.id is defined
 
     - name: Update certificate reference in the domain
-      waf_domain:
+      opentelekomcloud.cloud.waf_domain:
         name: "{{ domain_name }}"
         # we want to support cert_id and name
         certificate: "{{ cert2_name }}"
 
     - name: Get WAF Domain with name filter info
-      waf_domain_info:
+      opentelekomcloud.cloud.waf_domain_info:
         name: "{{ domain_name }}"
       register: res
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - res is success
           - res.waf_domains is defined
@@ -169,57 +170,59 @@
           - res.waf_domains[0].certificate_id == cert2.waf_certificate.id
 
     - name: Get WAF Domain by ID
-      waf_domain_info:
+      opentelekomcloud.cloud.waf_domain_info:
         name: "{{ domain.waf_domain.id }}"
       register: res
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - res is success
           - res.waf_domains is defined
           - res.waf_domains[0].id is defined
 
     - name: Drop existing domain
-      waf_domain:
+      opentelekomcloud.cloud.waf_domain:
         # pass ID as name
         name: "{{ domain.waf_domain.id }}"
         state: absent
       register: domain
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - domain is success
           - domain is changed
 
     - name: Drop not more existing domain
-      waf_domain:
+      opentelekomcloud.cloud.waf_domain:
         name: "{{ domain_name }}"
         state: absent
       register: domain
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - domain is success
           - domain is not changed
 
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop perhaps existing domain
-          waf_domain:
+          opentelekomcloud.cloud.waf_domain:
             name: "{{ domain_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop certificate
-          waf_certificate:
+          opentelekomcloud.cloud.waf_certificate:
             name: "{{ cert_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop 2nd certificate
-          waf_certificate:
+          opentelekomcloud.cloud.waf_certificate:
             name: "{{ cert2_name }}"
             state: absent
-      ignore_errors: true
+          failed_when: false

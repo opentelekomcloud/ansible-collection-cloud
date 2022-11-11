@@ -8,6 +8,10 @@ plugins/modules/as_policy.py validate-modules:missing-gplv3-license
 plugins/modules/as_policy_info.py validate-modules:missing-gplv3-license
 plugins/modules/as_quota_info.py validate-modules:missing-gplv3-license
 plugins/modules/availability_zone_info.py validate-modules:missing-gplv3-license
+plugins/modules/cbr_backup.py validate-modules:missing-gplv3-license
+plugins/modules/cbr_backup_info.py validate-modules:missing-gplv3-license
+plugins/modules/cbr_restore_point.py validate-modules:missing-gplv3-license
+plugins/modules/cbr_vault.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_cert_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_info.py validate-modules:missing-gplv3-license
@@ -95,3 +99,4 @@ plugins/modules/anti_ddos_optional_policies_info.py validate-modules:missing-gpl
 plugins/modules/server_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/object_info.py validate-modules:missing-gplv3-license
 plugins/modules/dns_nameserver_info.py validate-modules:missing-gplv3-license
+plugins/modules/kms_info.py validate-modules:missing-gplv3-license

@@ -1,8 +1,8 @@
 ---
-- name: Doing Integration test
+- name: CES tests
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Assigning Floating IP
@@ -11,11 +11,11 @@
       register: fl
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: fl.floating_ip
 
     - name: Set facts
-      set_fact:
+      ansible.builtin.set_fact:
         alarm_name: "{{ ( prefix + '-alarm-ces' ) }}"
         fl_ip: "{{ fl.floating_ip.floating_ip_address }}"
         fl_ip_id: "{{ fl.floating_ip.id }}"
@@ -43,7 +43,7 @@
       register: ces_al_ch
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - ces_al_ch is success
           - ces_al_ch is changed
@@ -70,11 +70,11 @@
       register: ces_al
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: ces_al.alarms
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - ces_al is success
           - ces_al.alarms is defined
@@ -85,11 +85,11 @@
       register: ces_al_info
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: ces_al_info.alarms
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - ces_al_info is success
           - ces_al_info.alarms is defined
@@ -104,11 +104,11 @@
       register: ces_ed_info
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: ces_ed_info.events
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - ces_ed_info is success
           - ces_ed_info.events is defined
@@ -125,11 +125,11 @@
       register: ces_md_info
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: ces_md_info.metricdata
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - ces_al_info is success
 
@@ -140,11 +140,11 @@
       register: ces_me_info
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: ces_me_info.metrics
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - ces_me_info is success
           - ces_me_info.metrics is defined
@@ -154,27 +154,29 @@
       register: ces_qu_info
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         var: ces_qu_info.quotas
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - ces_qu_info is success
           - ces_qu_info.quotas is defined
 
   always:
-    - block:
+    - name: Cleanup
+      block:
         - name: Drop dns_floating_ip entry
           opentelekomcloud.cloud.floating_ip:
             floating_ip_address: "{{ fl_ip }}"
             state: absent
             purge: true
           register: dns_fl_dr
+          failed_when: false
 
         - name: Drop Alarm
           opentelekomcloud.cloud.ces_alarms:
             alarm_name: "{{ alarm_name }}"
             state: absent
           register: dns_rs_dr
-      ignore_errors: true
+          failed_when: false

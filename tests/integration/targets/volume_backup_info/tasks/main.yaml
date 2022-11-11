@@ -1,15 +1,16 @@
 ---
-- block:
+- name: Volume Backup Info tests
+  block:
     - name: Get backup info
-      volume_backup_info:
+      opentelekomcloud.cloud.volume_backup_info:
       register: backup
 
     - name: Debug backup
-      debug:
+      ansible.builtin.debug:
         var: backup
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - backup is success
           - backup is not changed

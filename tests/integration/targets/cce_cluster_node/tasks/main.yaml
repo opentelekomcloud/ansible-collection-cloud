@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: CCE Cluster Node tests
+  module_defaults:
     opentelekomcloud.cloud.cce_cluster:
       cloud: "{{ test_cloud }}"
     openstack.cloud.network:
@@ -16,11 +17,11 @@
     prefix: scenario00a-
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         keypair_name: "{{ ( prefix + '-key') }}"
         network_name: "{{ ( prefix + '-test-network') }}"
         subnet_name: "{{ ( prefix + '-test-subnet') }}"
@@ -68,7 +69,7 @@
       register: cluster
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - cluster is success
           - cluster is changed
@@ -80,7 +81,7 @@
       register: ssh_key
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - ssh_key is success
           - ssh_key is changed
@@ -121,42 +122,47 @@
       register: node
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - node is success
           - node is changed
 
   always:
-    - block:
-        # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop CCE cluster node
           opentelekomcloud.cloud.cce_cluster_node:
             cluster: "{{ cce_cluster_name }}"
             name: "{{ cce_node_name }}"
             state: "absent"
+          failed_when: false
 
         - name: Drop keypair
           openstack.cloud.keypair:
             name: "{{ keypair_name }}"
             state: "absent"
+          failed_when: false
 
         - name: Drop cluster
           opentelekomcloud.cloud.cce_cluster:
             name: "{{ cce_cluster_name }}"
             state: "absent"
+          failed_when: false
 
         - name: Drop router
           openstack.cloud.router:
             name: "{{ router_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
+          failed_when: false
 
         - name: Drop network
           openstack.cloud.network:
             name: "{{ network_name }}"
             state: absent
-      ignore_errors: true
+          failed_when: false

@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: Volume Backup tests
+  module_defaults:
     openstack.cloud.volume:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.volume_backup:
@@ -8,14 +9,13 @@
       cloud: "{{ test_cloud }}"
     openstack.cloud.volume_snapshot:
       cloud: "{{ test_cloud }}"
-
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         display_name: "{{ ( prefix + '-test-volume') }}"
         backup_name: "{{ ( prefix + '-test-backup') }}"
         availability_zone: "eu-de-01"
@@ -29,7 +29,7 @@
       register: vol
 
     - name: 2 assert result of volume creating
-      assert:
+      ansible.builtin.assert:
         that:
           - vol is success
           - vol is changed
@@ -43,7 +43,7 @@
       register: bckp
 
     - name: 4 assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - bckp is success
           - bckp is changed
@@ -56,39 +56,36 @@
       register: snapshot
 
     - name: 6 assert result for snapshot
-      assert:
+      ansible.builtin.assert:
         that:
           - snapshot is success
           - snapshot.volume_snapshots is defined
           - snapshot.volume_snapshots | length > 0
 
     - name: 7 set fact to found proper snapshot
-      set_fact:
+      ansible.builtin.set_fact:
         snapshot_name: "{{ snapshot['volume_snapshots'][0]['name'] }}"
 
   always:
-    - block:
+    - name: Cleanup
+      block:
         - name: 8 delete snapshot
           openstack.cloud.volume_snapshot:
             volume: "{{ display_name }}"
             name: "{{ snapshot_name }}"
             state: absent
           register: delsh
-
-        - name: 9 assert result of deliting snapshot
-          assert:
-            that:
-              - delsh is success
-              - delsh is changed
+          when: "snapshot_name is defined"
 
         - name: 10 delete backup
           opentelekomcloud.cloud.volume_backup:
             name: "{{ backup_name }}"
             state: absent
           register: delbckp
+          when: "backup_name is defined"
 
         - name: 11 assert result of deliting
-          assert:
+          ansible.builtin.assert:
             that:
               - delbckp is success
               - delbckp is not changed
@@ -100,8 +97,7 @@
           register: delvol
 
         - name: 13 assert result of deleting volume
-          assert:
+          ansible.builtin.assert:
             that:
               - delvol is success
               - delvol is changed
-      ignore_errors: true

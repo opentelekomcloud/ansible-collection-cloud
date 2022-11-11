@@ -1,0 +1,96 @@
+---
+# Here we'll allocate Document Database cluster. First, check what are flavors are available in
+# chosen region.
+- name: Query info about flavors in region
+  opentelekomcloud.cloud.dds_flavor_info:
+    region: "eu-de"
+  register: dds_flavor
+
+# Also query supporting datastore versions. Datastore name is the constant: DDS-Community.
+- name: Query database version
+  opentelekomcloud.cloud.dds_datastore_info:
+    datastore_name: "DDS-Community"
+  register: dds_ds
+
+# Now we're ready to create DDS cluster. Each cluster consists of mongos, config and shard nodes.
+# First config node should be allocated. For this kind of node storage size is fixed and equals 20 GB.
+# Spec code you can find in dds_flavor_info module's output. Please mind that you cannot connect
+# to config node.
+- name: Create config node for DDS cluster
+  opentelekomcloud.cloud.dds_instance:
+    name: "{{ dds_instance_name }}"
+    state: present
+    region: "eu-de"
+    availability_zone: "eu-de-01"
+    datastore_version: "{{ dds_ds.datastores[1].version }}"
+    router: "{{ router }}"
+    network: "{{ network_id }}"
+    security_group: "{{ secgroup_id }}"
+    password: "{{ password }}"
+    disk_encryption: "{{ cmk_id }}"
+    mode: "Sharding"
+    flavors:
+      - type: "config"
+        num: 1
+        size: 20
+        spec_code: "dds.mongodb.s2.large.2.config"
+    backup_timeframe: "18:00 GMT+03:00"
+    backup_keepdays: 3
+    ssl_option: 1
+  register: dds_conf
+
+# Now let's create shards. Each DDS cluster supports from 2 to 16 shards. Storage size varies
+# from 10 to 1000 GB. Spec code you can find in dds_flavor_info module's output. Please mind that
+# you cannot connect to a shard node.
+- name: Create shard instances for DDS cluster
+  opentelekomcloud.cloud.dds_instance:
+    name: "{{ dds_instance_name }}"
+    state: present
+    region: "eu-de"
+    availability_zone: "eu-de-01"
+    datastore_version: "{{ dds_ds.datastores[1].version }}"
+    router: "{{ router }}"
+    network: "{{ network_id }}"
+    security_group: "{{ secgroup_id }}"
+    password: "{{ password }}"
+    disk_encryption: "{{ cmk_id }}"
+    mode: "Sharding"
+    flavors:
+      - type: "shard"
+        num: 2
+        size: "10"
+        spec_code: "dds.mongodb.s2.medium.4.shard"
+    backup_timeframe: "20:00"
+    backup_keepdays: 1
+    ssl_option: 1
+  register: dds_shard
+
+# For mongos instances storage size is invalid parameter. Mongos instances are the only one which
+# you could be connect to.
+- name: Create mongos instances for DDS cluster
+  opentelekomcloud.cloud.dds_instance:
+    name: "{{ dds_instance_name }}"
+    state: present
+    region: "eu-de"
+    availability_zone: "eu-de-01"
+    datastore_version: "{{ dds_ds.datastores[1].version }}"
+    router: "{{ router }}"
+    network: "{{ network_id }}"
+    security_group: "{{ secgroup_id }}"
+    password: "{{ password }}"
+    disk_encryption: "{{ cmk_id }}"
+    mode: "Sharding"
+    flavors:
+      - type: "mongos"
+        num: 2
+        spec_code: "dds.mongodb.s2.medium.4.mongos"
+    backup_timeframe: "22:00"
+    backup_keepdays: 1
+    ssl_option: 1
+  register: dds_mng
+
+# Now we're all set. Creating of cluster takes 15 minutes approximately. After that, you can get
+# info about your cluster.
+- name: Get info about DDS cluster
+  opentelekomcloud.cloud.dds_instance_info:
+    instance: "{{ dds_instance_name }}"

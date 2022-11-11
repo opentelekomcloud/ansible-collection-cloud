@@ -183,6 +183,10 @@ class ASInstanceInfoModule(OTCModule):
         limit=dict(type='int', required=False, default=20)
     )
 
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
+
     def run(self):
         as_group = self.params['scaling_group']
         lifecycle_state = self.params['lifecycle_state']

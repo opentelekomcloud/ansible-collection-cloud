@@ -262,8 +262,9 @@ class SubnetModule(OTCModule):
                     if val is not None:
                         err_fields[field] = val
                 if err_fields:
-                    self.fail('updating subnet fields {} is not supported (subnet: {})'
-                              .format(err_fields, subnet))
+                    self.fail(
+                        f'updating subnet fields {err_fields} is not '
+                        f'supported (subnet: {subnet})')
                 update_data = {}
                 for field in self._update_fields:
                     if data[field] is not None:
@@ -306,8 +307,9 @@ class SubnetModule(OTCModule):
             if field in ['vpc', 'vpc_id']:
                 field = 'vpc_id'  # as `vpc` should be an ID too at this place
             if state.get(field, None) != expected[field]:
-                self.log('There is a difference in field {}. Expected {}, got {}'
-                         .format(field, expected[field], state[field]))
+                self.log(
+                    f'There is a difference in field {field}. Expected '
+                    f'{expected[field]}, got {state[field]}')
                 return True
         return False
 
@@ -327,8 +329,10 @@ class SubnetModule(OTCModule):
                 return None
             if len(subnets) > 1:
                 self.fail(
-                    msg='More than one subnet with name {} is found in vpc {}.'
-                        'Please use ID instead.'.format(name, vpc_id)
+                    msg=(
+                        f'More than one subnet with name {name} is found '
+                        f'in vpc {vpc_id}. Please use ID instead.'
+                    )
                 )
             return subnets[0]
 

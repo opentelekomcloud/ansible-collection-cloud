@@ -1,5 +1,6 @@
 ---
-- module_defaults:
+- name: DNS Recordset Info tests
+  module_defaults:
     opentelekomcloud.cloud.dns_recordset:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.dns_recordset_info:
@@ -9,11 +10,11 @@
 
   block:
     - name: Set random prefix
-      set_fact:
+      ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
     - name: Set initial facts
-      set_fact:
+      ansible.builtin.set_fact:
         zone_name: "{{ ( prefix + 'test.zone') }}"
         recordset_random_name: "{{ ( prefix + 'recordset.' + prefix + 'test.zone') }}"
 
@@ -40,7 +41,7 @@
       register: recordsets
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - recordsets is success
           - recordsets is not changed
@@ -53,24 +54,24 @@
       register: rs
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - rs is success
           - rs is not changed
           - rs | length > 0
 
-
   always:
-    - block:
-      # Cleanup
+    - name: Cleanup
+      block:
         - name: Drop created recordset
           opentelekomcloud.cloud.dns_recordset:
             recordset_name: "{{ recordset_random_name }}"
             state: absent
             zone_id: "{{ dns_zo.zone.id }}"
+          failed_when: false
 
         - name: Drop created DNS zone
           opentelekomcloud.cloud.dns_zone:
             name: "{{ dns_zo.zone.name }}"
             state: absent
-      ignore_errors: true
+          failed_when: false

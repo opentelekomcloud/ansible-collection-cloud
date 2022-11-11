@@ -83,6 +83,10 @@ class ASQuotaInfoModule(OTCModule):
         scaling_group=dict(required=False)
     )
 
+    module_kwargs = dict(
+        supports_check_mode=True
+    )
+
     def run(self):
         data = []
 

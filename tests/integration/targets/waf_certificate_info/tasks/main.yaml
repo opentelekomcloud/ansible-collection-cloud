@@ -1,26 +1,27 @@
 ---
-- module_defaults:
-    waf_certificate_info:
+- name: WAF Certificate tests
+  module_defaults:
+    opentelekomcloud.cloud.waf_certificate_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: Get WAF Cert info
-      waf_certificate_info:
+      opentelekomcloud.cloud.waf_certificate_info:
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is not changed
           - result.waf_certificates is defined
 
     - name: Get WAF Cert with name filter info
-      waf_certificate_info:
+      opentelekomcloud.cloud.waf_certificate_info:
         name: some_fake
       register: result
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - result is success
           - result is not changed

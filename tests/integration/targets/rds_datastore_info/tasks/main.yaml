@@ -1,14 +1,14 @@
 ---
-- module_defaults:
+- name: RDS Datastore Info tests
   block:
     - name: Get datastore info
-      rds_datastore_info:
+      opentelekomcloud.cloud.rds_datastore_info:
         cloud: "{{ test_cloud }}"
         datastore: "postgresql"
       register: rds
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - rds is success
           - rds is not changed

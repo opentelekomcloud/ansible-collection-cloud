@@ -1,18 +1,18 @@
 ---
-- module_defaults:
-    group/otc:
-      cloud: otc
+- name: RDS Flavor Info tests
+  module_defaults:
+    opentelekomcloud.cloud.rds_flavor_info:
+      cloud: "{{ test_cloud }}"
   block:
     - name: Get flavor info
-      rds_flavor_info:
-        cloud: "{{ test_cloud }}"
+      opentelekomcloud.cloud.rds_flavor_info:
         datastore: "postgresql"
         version: "10"
         instance_mode: "single"
       register: rds
 
     - name: assert result
-      assert:
+      ansible.builtin.assert:
         that:
           - rds is success
           - rds is not changed
@@ -24,17 +24,9 @@
           - rds.rds_flavors[0]['vcpus'] is defined
 
     - name: Get flavor info for wrong ds
-      rds_flavor_info:
-        cloud: "{{ test_cloud }}"
+      opentelekomcloud.cloud.rds_flavor_info:
         datastore: "postgresql1"
         version: "10"
         instance_mode: "single"
       register: rds
-      ignore_errors: true
-
-    - name: assert result
-      assert:
-        that:
-          - rds is not success
-          - rds is not changed
-          - 'rds.msg == "value of datastore must be one of: mysql, postgresql, sqlserver, got: postgresql1"'
+      failed_when: 'rds.msg != "value of datastore must be one of: mysql, postgresql, sqlserver, got: postgresql1"'
