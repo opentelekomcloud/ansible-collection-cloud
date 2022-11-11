@@ -25,6 +25,14 @@ plugins/modules/ces_metrics_info.py validate-modules:missing-gplv3-license
 plugins/modules/ces_quotas_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_node_info.py validate-modules:missing-gplv3-license
 plugins/modules/cce_cluster_node.py validate-modules:missing-gplv3-license
+plugins/modules/dcs_instance_backup_info.py validate-modules:missing-gplv3-license
+plugins/modules/dcs_instance_backup.py validate-modules:missing-gplv3-license
+plugins/modules/dcs_instance_info.py validate-modules:missing-gplv3-license
+plugins/modules/dcs_instance_params_info.py validate-modules:missing-gplv3-license
+plugins/modules/dcs_instance_password.py validate-modules:missing-gplv3-license
+plugins/modules/dcs_instance_restore_info.py validate-modules:missing-gplv3-license
+plugins/modules/dcs_instance_statistics_info.py validate-modules:missing-gplv3-license
+plugins/modules/dcs_instance.py validate-modules:missing-gplv3-license
 plugins/modules/css_cluster.py validate-modules:missing-gplv3-license
 plugins/modules/css_cluster_info.py validate-modules:missing-gplv3-license
 plugins/modules/css_snapshot_info.py validate-modules:missing-gplv3-license
