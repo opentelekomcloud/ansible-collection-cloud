@@ -408,6 +408,8 @@ class CBRVaultModule(OTCModule):
         parsed_billing = {}
         if billing.get('cloud_type'):
             parsed_billing['cloud_type'] = billing['cloud_type']
+        else:
+            parsed_billing['cloud_type'] = 'public'
         if billing.get('consistent_level'):
             parsed_billing['consistent_level'] = billing['consistent_level']
         else:
@@ -416,6 +418,8 @@ class CBRVaultModule(OTCModule):
             parsed_billing['object_type'] = billing['object_type']
         if billing.get('protect_type'):
             parsed_billing['protect_type'] = billing['protect_type']
+        else:
+            parsed_billing['protect_type'] = 'backup'
         if billing.get('size'):
             parsed_billing['size'] = billing['size']
         if billing.get('charging_mode'):
@@ -455,11 +459,7 @@ class CBRVaultModule(OTCModule):
             if self.params['auto_expand']:
                 if self.params['auto_expand'] != vault['auto_expand']:
                     require_update = True
-            if self.params['name']:
-                if self.params['name'] != vault['name']:
-                    require_update = True
-            if self.params['smn_notify'] is not None \
-                    or self.params['threshold'] is not None:
+            if self.params['smn_notify'] is not None or self.params['threshold'] is not None:
                 require_update = True
         return require_update
 
@@ -472,27 +472,21 @@ class CBRVaultModule(OTCModule):
             attrs['description'] = self.params['description']
         if self.params['auto_bind']:
             attrs['auto_bind'] = self.params['auto_bind']
-        if self.params['auto_expand']:
-            attrs['auto_expand'] = self.params['auto_expand']
         if self.params['policy']:
             policy = self.conn.cbr.find_policy(name_or_id=self.params['policy'])
             if policy:
-                attrs['policy_id'] = policy.id
+                attrs['backup_policy_id'] = policy.id
             else:
                 self.fail_json("'policy' not found")
-        if self.params['tags']:
-            attrs['tags'] = self._parse_tags()
         if self.params['action']:
             action = self.params['action']
 
         vault = self.conn.cbr.find_vault(name_or_id=self.params['name'],
                                          ignore_missing=True)
-        require_update = self._require_update(vault)
-        if self.ansible.check_mode:
-            if self._system_state_change(vault) or require_update:
-                self.exit_json(changed=True)
-            self.exit_json(changed=False)
 
+        if self.ansible.check_mode:
+            if self._system_state_change(vault):
+                self.exit_json(changed=True)
         if vault:
             if action == 'associate_resources':
                 resources = self._parse_resources()
@@ -515,8 +509,11 @@ class CBRVaultModule(OTCModule):
                 self.exit(changed=True)
 
             if state == 'present':
-                if not require_update:
-                    self.exit_json(changed=False)
+                if self.params['billing']:
+                    if self.params['billing'].get('size'):
+                        attrs['billing'] = {'size': self.params['billing']['size']}
+                if self.params['auto_expand']:
+                    attrs['auto_expand'] = self.params['auto_expand']
                 if self.params['smn_notify']:
                     attrs['smn_notify'] = self.params['smn_notify']
                 else:
@@ -525,9 +522,13 @@ class CBRVaultModule(OTCModule):
                     attrs['threshold'] = self.params['threshold']
                 else:
                     attrs['threshold'] = 80
-                if self.params['billing']:
-                    if self.params['billing'].get('size'):
-                        attrs['billing'] = {'size': self.params['billing']['size']}
+                require_update = self._require_update(vault)
+                if self.ansible.check_mode:
+                    if require_update:
+                        self.exit_json(changed=True)
+                    self.exit_json(changed=False)
+                if not require_update:
+                    self.exit_json(changed=False)
                 self.conn.cbr.update_vault(vault=vault, **attrs)
                 self.exit(changed=True)
 
@@ -555,7 +556,9 @@ class CBRVaultModule(OTCModule):
         if self.params['billing']:
             attrs['billing'] = self._parse_billing()
         else:
-            self.exit_json("'billing is mandatory for creation'")
+            self.fail_json(msg="billing is mandatory for creation")
+        if self.params['tags']:
+            attrs['tags'] = self._parse_tags()
 
         if self.ansible.check_mode:
             self.exit_json(changed=True)
