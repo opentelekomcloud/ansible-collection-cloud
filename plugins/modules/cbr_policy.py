@@ -23,74 +23,77 @@ options:
     description: Specifies the policy name or id.
     type: str
     required: true
-  enabled:
+  is_enabled:
     description: Whether to enable the policy. By default 'true'.
     type: bool
-  day_backups:
+  count_day_backups:
     description:
         - Specifies the number of retained daily backups.\
-        The latest backup of each day is saved in the long term.\
-        This parameter can be effective together with the maximum number\
-        of retained backups specified by max_backups.
+          This parameter can be effective together with the maximum number\
+          of retained backups specified by max_backups.
         - If this parameter is configured, timezone is mandatory.
     type: int
-  max_backups:
+  count_max_backups:
     description:
         - Maximum number of retained backups.
         - If the value is set to -1, the backups will\
-        not be cleared even though the configured retained backup\
-        quantity is exceeded. If this parameter and retention_duration_days\
-        are both left blank, the backups will be retained permanently.\
-        By default -1.
+          not be cleared even though the configured retained backup\
+          quantity is exceeded. If this parameter and retention_duration_days\
+          are both left blank, the backups will be retained permanently.\
+          By default -1.
     type: int
-  month_backups:
+  count_month_backups:
     description:
      - Specifies the number of retained monthly backups.\
-     The latest backup of each month is saved in the long term.\
-     This parameter can be effective together with the maximum\
-     number of retained backups specified by max_backups.
+       The latest backup of each month is saved in the long term.\
+       This parameter can be effective together with the maximum\
+       number of retained backups specified by max_backups.
      - If this parameter is configured, timezone is mandatory.
     type: int
   retention_duration_days:
     description:
         - ID of the target disk to be restored.\
-        This parameter is mandatory for disk restoration. By default -1.
+          This parameter is mandatory for disk restoration. By default -1.
     type: int
   timezone:
     description:
-     - Time zone where the user is located.\
-     Set this parameter only after you have configured any of the\
-     parameters day_backups, week_backups, month_backups, year_backups.
+     - Time zone where the user is located, for example, UTC+08:00.\
+       Set this parameter only after you have configured any of the\
+       parameters day_backups, week_backups, month_backups, year_backups.
     type: str
-  week_backups:
+  count_week_backups:
     description:
         - Specifies the number of retained weekly backups.\
-        The latest backup of each week is saved in the long term.\
-        This parameter can be effective together with the maximum number\
-        of retained backups specified by max_backups. The value ranges from 0\
-        to 100. If this parameter is configured, timezone is mandatory.
+          The latest backup of each week is saved in the long term.\
+          This parameter can be effective together with the maximum number\
+          of retained backups specified by max_backups. The value ranges from 0\
+          to 100. If this parameter is configured, timezone is mandatory.
     type: int
   year_backups:
     description:
      - Specifies the number of retained yearly backups.\
-     The latest backup of each year is saved in the long term.\
-     This parameter can be effective together with the maximum\
-     number of retained backups specified by max_backups.\
-     The value ranges from 0 to 100. If this parameter is configured,\
-     timezone is mandatory.
+       The latest backup of each year is saved in the long term.\
+       This parameter can be effective together with the maximum\
+       number of retained backups specified by max_backups.\
+       The value ranges from 0 to 100. If this parameter is configured,\
+       timezone is mandatory.
     type: int
   operation_type:
-    description: Protection type, which is backup.
+    description:
+        - Protection type of the policy, 'backup' by default.
+        - For now, value 'backup' is only possible.
     type: str
   pattern:
     description:
-      - Scheduling rule. It supports only parameters FREQ,\
-      BYDAY, BYHOUR, BYMINUTE, and INTERVAL. FREQ can be set only to\
-      WEEKLY or DAILY. BYDAY can be set to MO, TU, WE, TH, FR, SA,\
-      and SU (seven days of a week). BYHOUR ranges from 0 to 23 hours.\
-      BYMINUTE ranges from 0 minutes to 59 minutes.\
-      The scheduling interval must not be less than 1 hour.\
-      A maximum of 24 time points are allowed in a day.
+      - Scheduling rule. A maximum of 24 rules can be configured. The scheduling rule complies with iCalendar RFC 2445,\
+        but it supports only parameters FREQ, BYDAY, BYHOUR, BYMINUTE, and INTERVAL. FREQ can be set only to WEEKLY\
+        or DAILY. BYDAY can be set to MO, TU, WE, TH, FR, SA, and SU (seven days of a week). BYHOUR ranges from 0 to 23\
+        hours. BYMINUTE ranges from 0 minutes to 59 minutes. The scheduling interval must not be less than 1 hour.\
+        A maximum of 24 time points are allowed in a day. For example, if the scheduling time is 14:00 from Monday\
+        to Sunday, set the scheduling rule as follows: FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00\
+        If the scheduling time is 14:00 every day, set the scheduling rule\
+        as follows: FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00' If the scheduling time is 14:00 every day, set the\
+        scheduling rule as follows: FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00'
     type: list
     elements: str
   state:
@@ -199,7 +202,7 @@ EXAMPLES = '''
 # Create policy:
 opentelekomcloud.cloud.cbr_policy:
   name: "newpolicy"
-  day_backups: 0
+  count_day_backups: 0
   month_backups: 0
   retention_duration_days: 5
   year_backups: 0
@@ -209,8 +212,8 @@ opentelekomcloud.cloud.cbr_policy:
 # Update policy:
 opentelekomcloud.cloud.cbr_policy:
   name: "newpolicy"
-  day_backups: 5
-  enabled: False
+  count_day_backups: 5
+  is_enabled: False
 
 # Delete policy:
 opentelekomcloud.cloud.cbr_policy:
@@ -224,13 +227,13 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class CBRPolicyModule(OTCModule):
     argument_spec = dict(
         name=dict(required=True),
-        enabled=dict(type='bool', required=False),
-        day_backups=dict(type='int', required=False),
-        max_backups=dict(type='int', required=False),
-        month_backups=dict(type='int', required=False),
+        is_enabled=dict(type='bool', required=False),
+        count_day_backups=dict(type='int', required=False),
+        count_max_backups=dict(type='int', required=False),
+        count_month_backups=dict(type='int', required=False),
         retention_duration_days=dict(type='int', required=False),
         timezone=dict(type='str', required=False),
-        week_backups=dict(type='int', required=False),
+        count_week_backups=dict(type='int', required=False),
         year_backups=dict(type='int', required=False),
         operation_type=dict(type='str', required=False),
         pattern=dict(type='list', required=False, elements='str'),
@@ -243,14 +246,36 @@ class CBRPolicyModule(OTCModule):
     def _require_update(self, policy):
         require_update = False
         if policy:
-            if self.params['enabled'] is not None:
-                if self.params['enabled'] != policy.enabled:
+            if self.params['is_enabled'] is not None:
+                if self.params['is_enabled'] != policy.enabled:
                     require_update = True
             if self.params['pattern']:
-                require_update = True
-            for param_key in ['day_backups', 'max_backups', 'month_backups',
-                              'retention_duration_days', 'timezone',
-                              'week_backups', 'year_backups']:
+                new_pattern = []
+                for pattern in self.params['pattern']:
+                    new_pattern.append(set(pattern.split(";")))
+                new_pattern_ordered = set(new_pattern)
+                current_pattern = []
+                for pattern in policy['trigger']['properties']['pattern']:
+                    current_pattern.append(set(pattern.split(";")))
+                current_pattern_ordered = set(new_pattern)
+                if new_pattern_ordered==current_pattern_ordered:
+                    require_update = True
+            if self.params['count_day_backups']:
+                if self.params['count_day_backups'] != policy.operation_definition['day_backups']:
+                    require_update = True
+            if self.params['count_max_backups']:
+                if self.params['count_max_backups'] != policy.operation_definition['max_backups']:
+                    require_update = True
+            if self.params['count_month_backups']:
+                if self.params['count_month_backups'] != policy.operation_definition['month_backups']:
+                    require_update = True
+            if self.params['count_week_backups']:
+                if self.params['count_week_backups'] != policy.operation_definition['week_backups']:
+                    require_update = True
+            if self.params['count_year_backups']:
+                if self.params['count_year_backups'] != policy.operation_definition['year_backups']:
+                    require_update = True
+            for param_key in ['retention_duration_days', 'timezone']:
                 if self.params[param_key]:
                     if self.params[param_key] != policy.operation_definition[param_key]:
                         require_update = True
@@ -277,8 +302,12 @@ class CBRPolicyModule(OTCModule):
             require_update = self._require_update(policy)
             state_change = self._system_state_change(policy)
             if state_change or require_update:
-                self.exit_json(changed=True)
-            self.exit_json(changed=False)
+                changed=True
+            else:
+                changed=False
+            if policy:
+                self.exit_json(changed=changed, policy=policy)
+            self.exit_json(changed=changed)
 
         if state == 'absent':
             if policy:
@@ -292,27 +321,28 @@ class CBRPolicyModule(OTCModule):
 
         if self.params['operation_type']:
             query['operation_type'] = self.params['operation_type']
-
+        else:
+            query['operation_type'] = 'backup'
         query['trigger'] = {'trigger': {'properties': {'pattern': []}}}
         if self.params['pattern']:
             query['trigger']['properties']['pattern'] = self.params['pattern']
 
-        if self.params['enabled']:
-            query['enabled'] = self.params['enabled']
+        if self.params['is_enabled']:
+            query['enabled'] = self.params['is_enabled']
 
         query['operation_definition'] = {}
-        if self.params['day_backups']:
-            query['operation_definition']['day_backups'] = self.params['day_backups']
-        if self.params['max_backups']:
-            query['operation_definition']['max_backups'] = self.params['max_backups']
-        if self.params['month_backups']:
-            query['operation_definition']['month_backups'] = self.params['month_backups']
+        if self.params['count_day_backups']:
+            query['operation_definition']['day_backups'] = self.params['count_day_backups']
+        if self.params['count_day_backups']:
+            query['operation_definition']['max_backups'] = self.params['count_day_backups']
+        if self.params['count_month_backups']:
+            query['operation_definition']['month_backups'] = self.params['count_month_backups']
         if self.params['retention_duration_days']:
             query['operation_definition']['retention_duration_days'] = self.params['retention_duration_days']
         if self.params['timezone']:
             query['operation_definition']['timezone'] = self.params['timezone']
-        if self.params['week_backups']:
-            query['operation_definition']['week_backups'] = self.params['week_backups']
+        if self.params['count_week_backups']:
+            query['operation_definition']['week_backups'] = self.params['count_week_backups']
         if self.params['year_backups']:
             query['operation_definition']['year_backups'] = self.params['year_backups']
 
@@ -323,9 +353,9 @@ class CBRPolicyModule(OTCModule):
                 self.fail_json(
                     msg="'pattern' is mandatory for creation"
                 )
-            if not self.params['enabled']:
+            if self.params['is_enabled'] is None:
                 query['enabled'] = True
-            if not self.params['max_backups']:
+            if not self.params['count_day_backups']:
                 query['operation_definition']['max_backups'] = -1
             if not self.params['retention_duration_days']:
                 query['operation_definition']['retention_duration_days'] = -1
