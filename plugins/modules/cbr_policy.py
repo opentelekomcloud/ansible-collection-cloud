@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 DOCUMENTATION = '''
 module: cbr_policy
 short_description: Manage CBR Policy
@@ -69,7 +70,7 @@ options:
           of retained backups specified by max_backups. The value ranges from 0\
           to 100. If this parameter is configured, timezone is mandatory.
     type: int
-  year_backups:
+  count_year_backups:
     description:
      - Specifies the number of retained yearly backups.\
        The latest backup of each year is saved in the long term.\
@@ -94,6 +95,7 @@ options:
         If the scheduling time is 14:00 every day, set the scheduling rule\
         as follows: FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00' If the scheduling time is 14:00 every day, set the\
         scheduling rule as follows: FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00'
+      - For update pattern all rules must be in the same order as existing policy has.
     type: list
     elements: str
   state:
@@ -203,9 +205,9 @@ EXAMPLES = '''
 opentelekomcloud.cloud.cbr_policy:
   name: "newpolicy"
   count_day_backups: 0
-  month_backups: 0
+  count_month_backups: 0
   retention_duration_days: 5
-  year_backups: 0
+  count_year_backups: 0
   pattern:
     - "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00"
 
@@ -234,12 +236,15 @@ class CBRPolicyModule(OTCModule):
         retention_duration_days=dict(type='int', required=False),
         timezone=dict(type='str', required=False),
         count_week_backups=dict(type='int', required=False),
-        year_backups=dict(type='int', required=False),
+        count_year_backups=dict(type='int', required=False),
         operation_type=dict(type='str', required=False),
         pattern=dict(type='list', required=False, elements='str'),
         state=dict(type='str', default='present', choices=['present', 'absent'])
     )
     module_kwargs = dict(
+        required_if=[
+            ('state', 'present', ['pattern'])
+        ],
         supports_check_mode=True
     )
 
@@ -253,33 +258,32 @@ class CBRPolicyModule(OTCModule):
                 new_pattern = []
                 for pattern in self.params['pattern']:
                     new_pattern.append(set(pattern.split(";")))
-                new_pattern_ordered = set(new_pattern)
                 current_pattern = []
                 for pattern in policy['trigger']['properties']['pattern']:
                     current_pattern.append(set(pattern.split(";")))
-                current_pattern_ordered = set(new_pattern)
-                if new_pattern_ordered==current_pattern_ordered:
+                if new_pattern != current_pattern:
                     require_update = True
-            if self.params['count_day_backups']:
+            if self.params['count_day_backups'] is not None:
                 if self.params['count_day_backups'] != policy.operation_definition['day_backups']:
                     require_update = True
-            if self.params['count_max_backups']:
+            if self.params['count_max_backups'] is not None:
                 if self.params['count_max_backups'] != policy.operation_definition['max_backups']:
                     require_update = True
-            if self.params['count_month_backups']:
+            if self.params['count_month_backups'] is not None:
                 if self.params['count_month_backups'] != policy.operation_definition['month_backups']:
                     require_update = True
-            if self.params['count_week_backups']:
+            if self.params['count_week_backups'] is not None:
                 if self.params['count_week_backups'] != policy.operation_definition['week_backups']:
                     require_update = True
-            if self.params['count_year_backups']:
+            if self.params['count_year_backups'] is not None:
                 if self.params['count_year_backups'] != policy.operation_definition['year_backups']:
                     require_update = True
-            for param_key in ['retention_duration_days', 'timezone']:
-                if self.params[param_key]:
-                    if self.params[param_key] != policy.operation_definition[param_key]:
-                        require_update = True
-                        break
+            if self.params['retention_duration_days'] is not None:
+                if self.params['retention_duration_days'] != policy.operation_definition['retention_duration_days']:
+                    require_update = True
+            if self.params['timezone'] is not None:
+                if self.params['timezone'] != policy.operation_definition['timezone']:
+                    require_update = True
         return require_update
 
     def _system_state_change(self, policy):
@@ -302,9 +306,9 @@ class CBRPolicyModule(OTCModule):
             require_update = self._require_update(policy)
             state_change = self._system_state_change(policy)
             if state_change or require_update:
-                changed=True
+                changed = True
             else:
-                changed=False
+                changed = False
             if policy:
                 self.exit_json(changed=changed, policy=policy)
             self.exit_json(changed=changed)
@@ -319,40 +323,34 @@ class CBRPolicyModule(OTCModule):
                 changed=changed
             )
 
-        if self.params['operation_type']:
-            query['operation_type'] = self.params['operation_type']
-        else:
-            query['operation_type'] = 'backup'
-        query['trigger'] = {'trigger': {'properties': {'pattern': []}}}
-        if self.params['pattern']:
-            query['trigger']['properties']['pattern'] = self.params['pattern']
+        query['trigger'] = {}
+        query['trigger']['properties'] = {}
+        query['trigger']['properties']['pattern'] = self.params['pattern']
 
-        if self.params['is_enabled']:
+        if self.params['is_enabled'] is not None:
             query['enabled'] = self.params['is_enabled']
 
         query['operation_definition'] = {}
-        if self.params['count_day_backups']:
+        if self.params['count_day_backups'] is not None:
             query['operation_definition']['day_backups'] = self.params['count_day_backups']
         if self.params['count_day_backups']:
             query['operation_definition']['max_backups'] = self.params['count_day_backups']
-        if self.params['count_month_backups']:
+        if self.params['count_month_backups'] is not None:
             query['operation_definition']['month_backups'] = self.params['count_month_backups']
-        if self.params['retention_duration_days']:
+        if self.params['retention_duration_days'] is not None:
             query['operation_definition']['retention_duration_days'] = self.params['retention_duration_days']
         if self.params['timezone']:
             query['operation_definition']['timezone'] = self.params['timezone']
-        if self.params['count_week_backups']:
+        if self.params['count_week_backups'] is not None:
             query['operation_definition']['week_backups'] = self.params['count_week_backups']
-        if self.params['year_backups']:
-            query['operation_definition']['year_backups'] = self.params['year_backups']
+        if self.params['count_year_backups'] is not None:
+            query['operation_definition']['year_backups'] = self.params['count_year_backups']
 
         if not policy:
-            if not self.params['operation_type']:
+            if self.params['operation_type']:
+                query['operation_type'] = self.params['operation_type']
+            else:
                 query['operation_type'] = 'backup'
-            if not self.params['pattern']:
-                self.fail_json(
-                    msg="'pattern' is mandatory for creation"
-                )
             if self.params['is_enabled'] is None:
                 query['enabled'] = True
             if not self.params['count_day_backups']:
@@ -367,10 +365,11 @@ class CBRPolicyModule(OTCModule):
             if not self.params['pattern']:
                 del query['trigger']
 
+            changed = self._require_update(policy)
             policy = self.conn.cbr.update_policy(policy=policy.id, **query)
         self.exit(
             policy=policy,
-            changed=True
+            changed=changed
         )
 
 
