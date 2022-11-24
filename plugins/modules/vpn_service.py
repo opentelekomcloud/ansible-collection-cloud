@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: vpn_service
 short_description: Manage VPN
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.8.0"
+version_added: "0.12.4"
 author: "Polina Gubina (@Polina-Gubina)"
 description:
     - Manage VPN from the OTC.
@@ -152,6 +152,26 @@ class VPNModule(OTCModule):
         ]
     )
 
+    def _require_update(self, existing_vpn, query):
+        require_update = False
+        if existing_vpn:
+            if self.params['description']:
+                if self.params['description'] != existing_vpn.description:
+                    require_update = True
+            if query['router_id'] != existing_vpn['router_id']:
+                require_update = True
+            if query['subnet_id'] != existing_vpn['subnet_id']:
+                require_update = True
+        return require_update
+
+    def _system_state_change(self, vpn):
+        state = self.params['state']
+        if state == 'present' and not vpn:
+            return True
+        if state == 'absent' and vpn:
+            return True
+        return False
+
     def run(self):
         query = {}
 
@@ -163,9 +183,6 @@ class VPNModule(OTCModule):
         state = self.params['state']
 
         existing_vpn = None
-        updated_vpn = None
-        created_vpn = None
-        recreated_vpn = None
 
         if project_id:
             query['project_id'] = project_id
@@ -182,9 +199,6 @@ class VPNModule(OTCModule):
 
         if state == 'present':
 
-            if self.ansible.check_mode:
-                self.exit(changed=True)
-
             subnet_id = None
             router_id = None
 
@@ -200,6 +214,12 @@ class VPNModule(OTCModule):
                 self.fail_json("Router not found")
             query['router_id'] = router_id
 
+            require_update = self._require_update(existing_vpn, query)
+            if self.ansible.check_mode:
+                if self._system_state_change(existing_vpn) or require_update:
+                    self.exit_json(changed=True)
+                self.exit_json(changed=False)
+
             if existing_vpn:
                 if query['router_id'] != existing_vpn.router_id:
                     self.conn.network.delete_vpn_service(vpn_service=existing_vpn)
@@ -209,17 +229,23 @@ class VPNModule(OTCModule):
                     self.conn.network.delete_vpn_service(vpn_service=existing_vpn)
                     recreated_vpn = self.conn.network.create_vpn_service(**query)
                     self.exit(changed=True, vpn=recreated_vpn)
-                updated_vpn = self.conn.network.update_vpn_service(existing_vpn, **query)
-                self.exit(changed=True, vpn=updated_vpn)
+                if require_update:
+                    updated_vpn = self.conn.network.update_vpn_service(existing_vpn, **query)
+                    self.exit(changed=True, vpn=updated_vpn)
+                self.exit(changed=False, vpn=existing_vpn)
 
             created_vpn = self.conn.network.create_vpn_service(**query)
             self.exit(changed=True, vpn=created_vpn)
 
         else:
+            if self.ansible.check_mode:
+                if self._system_state_change(existing_vpn):
+                    self.exit(changed=True)
+                self.exit(changed=False)
+
             if existing_vpn:
-                if not self.ansible.check_mode:
-                    self.conn.network.delete_vpn_service(vpn_service=existing_vpn, ignore_missing=False)
-                    self.exit_json(changed=True)
+                self.conn.network.delete_vpn_service(vpn_service=existing_vpn, ignore_missing=False)
+                self.exit_json(changed=True)
             self.exit_json(changed=False)
 
 
