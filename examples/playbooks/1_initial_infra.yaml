@@ -82,7 +82,7 @@
         - security_group
 
     - name: Create first ECS and attach it to the resources
-      openstack.cloud.os_server:
+      openstack.cloud.server:
         name: "{{ ecs1_name }}"
         image: "{{ ecs_image }}"
         network: "{{  newvpc.vpc.id  }}"

@@ -6,7 +6,7 @@
     # of accidental deleting of this entity, because in this case you'll lost control on your AS
     # entities.
     - name: Create new keypair for accessing AS config
-      openstack.cloud.os_keypair:
+      openstack.cloud.keypair:
         name: "{{ keypair_name }}"
       register: kp
       tags:
