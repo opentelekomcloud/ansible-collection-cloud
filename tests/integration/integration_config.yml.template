@@ -1,2 +1,3 @@
 ---
 test_cloud: ${OS_CLOUD}
+has_snat: ${has_snat:-false}

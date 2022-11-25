@@ -14,10 +14,14 @@
               - ^plugins/
               - ^tests/integration/
             vars: &vars-eu-de
+              ansible_test_integration_env:
+                has_snat: true
               ansible_test_exclude_tests: []
         - otc-ansible-collection-test-integration-eu-nl:
             files: *integration-files
             vars: &vars-eu-nl
+              ansible_test_integration_env:
+                has_snat: false
               ansible_test_exclude_tests:
                 - dns/public/
                 - storage/vbs/
