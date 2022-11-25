@@ -29,72 +29,76 @@ options:
     type: bool
   count_day_backups:
     description:
-        - Specifies the number of retained daily backups.\
-          This parameter can be effective together with the maximum number\
-          of retained backups specified by max_backups.
-        - If this parameter is configured, timezone is mandatory.
+      - Specifies the number of retained daily backups. This parameter can be
+        effective together with the maximum number of retained backups
+        specified by max_backups.
+      - If this parameter is configured, timezone is mandatory.
     type: int
   count_max_backups:
     description:
-        - Maximum number of retained backups.
-        - If the value is set to -1, the backups will\
-          not be cleared even though the configured retained backup\
-          quantity is exceeded. If this parameter and retention_duration_days\
-          are both left blank, the backups will be retained permanently.\
-          By default -1.
+      - Maximum number of retained backups.
+      - If the value is set to -1, the backups will not be cleared even though
+        the configured retained backup quantity is exceeded. If this parameter
+        and retention_duration_days are both left blank, the backups will be
+        retained permanently.  By default -1.
     type: int
   count_month_backups:
     description:
-     - Specifies the number of retained monthly backups.\
-       The latest backup of each month is saved in the long term.\
-       This parameter can be effective together with the maximum\
-       number of retained backups specified by max_backups.
+     - Specifies the number of retained monthly backups. The latest backup of
+       each month is saved in the long term. This parameter can be effective
+       together with the maximum number of retained backups specified by
+       max_backups.
      - If this parameter is configured, timezone is mandatory.
     type: int
   retention_duration_days:
     description:
-        - ID of the target disk to be restored.\
-          This parameter is mandatory for disk restoration. By default -1.
+      - ID of the target disk to be restored. This parameter is mandatory for
+        disk restoration. By default -1.
     type: int
   timezone:
     description:
-     - Time zone where the user is located, for example, UTC+08:00.\
-       Set this parameter only after you have configured any of the\
-       parameters day_backups, week_backups, month_backups, year_backups.
+     - Time zone where the user is located, for example, UTC+08:00.  Set this
+       parameter only after you have configured any of the parameters
+       day_backups, week_backups, month_backups, year_backups.
     type: str
   count_week_backups:
     description:
-        - Specifies the number of retained weekly backups.\
-          The latest backup of each week is saved in the long term.\
-          This parameter can be effective together with the maximum number\
-          of retained backups specified by max_backups. The value ranges from 0\
-          to 100. If this parameter is configured, timezone is mandatory.
+      - Specifies the number of retained weekly backups.  The latest backup of
+        each week is saved in the long term.  This parameter can be effective
+        together with the maximum number of retained backups specified by
+        max_backups. The value ranges from 0 to 100. If this parameter is
+        configured, timezone is mandatory.
     type: int
   count_year_backups:
     description:
-     - Specifies the number of retained yearly backups.\
-       The latest backup of each year is saved in the long term.\
-       This parameter can be effective together with the maximum\
-       number of retained backups specified by max_backups.\
-       The value ranges from 0 to 100. If this parameter is configured,\
-       timezone is mandatory.
+      - Specifies the number of retained yearly backups.  The latest backup of
+        each year is saved in the long term.  This parameter can be effective
+        together with the maximum number of retained backups specified by
+        max_backups.  The value ranges from 0 to 100. If this parameter is
+        configured, timezone is mandatory.
     type: int
   operation_type:
     description:
-        - Protection type of the policy, 'backup' by default.
-        - For now, value 'backup' is only possible.
+      - Protection type of the policy, 'backup' by default.
+      - For now, value 'backup' is only possible.
     type: str
   pattern:
     description:
-      - Scheduling rule. A maximum of 24 rules can be configured. The scheduling rule complies with iCalendar RFC 2445,\
-        but it supports only parameters FREQ, BYDAY, BYHOUR, BYMINUTE, and INTERVAL. FREQ can be set only to WEEKLY\
-        or DAILY. BYDAY can be set to MO, TU, WE, TH, FR, SA, and SU (seven days of a week). BYHOUR ranges from 0 to 23\
-        hours. BYMINUTE ranges from 0 minutes to 59 minutes. The scheduling interval must not be less than 1 hour.\
-        A maximum of 24 time points are allowed in a day. For example, if the scheduling time is 14:00 from Monday\
-        to Sunday, set the scheduling rule as follows: FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00\
-        If the scheduling time is 14:00 every day, set the scheduling rule\
-        as follows: FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00' If the scheduling time is 14:00 every day, set the\
-        scheduling rule as follows: FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00'
+      - Scheduling rule. A maximum of 24 rules can be configured. The
+        scheduling rule complies with iCalendar RFC 2445, but it supports only
+        parameters FREQ, BYDAY, BYHOUR, BYMINUTE, and INTERVAL. FREQ can be set
+        only to WEEKLY or DAILY. BYDAY can be set to MO, TU, WE, TH, FR, SA,
+        and SU (seven days of a week). BYHOUR ranges from 0 to 23 hours.
+        BYMINUTE ranges from 0 minutes to 59 minutes. The scheduling interval
+        must not be less than 1 hour.  A maximum of 24 time points are allowed
+        in a day. For example
+        - if the scheduling time is 14:00 from Monday to Sunday, set the
+          scheduling rule to
+          'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00'
+        - If the scheduling time is 14:00 every day, set the scheduling rule to
+          'FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00'
+        - If the scheduling time is 14:00 every day, set the scheduling rule to
+          'FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00'
       - For update pattern all rules must be in the same order as existing policy has.
     type: list
     elements: str
