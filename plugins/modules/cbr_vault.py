@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: cbr_vault
 short_description: Manage CBR Vault
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.1.2"
+version_added: "0.12.4"
 author: "Gubina Polina (@Polina-Gubina)"
 description:
     - Manage cbr vault from the OTC.
@@ -43,36 +43,29 @@ options:
         type: str
       consistent_level:
         description:
-          - Specification, which is crash_consistent\
-            by default (crash consistent backup).
+          - Specification, which is crash_consistent by default (crash consistent backup).
         type: str
-        default: "crash_consistent"
       object_type:
         description:
           - Object type, which can be server or disk.
         type: str
-        required: true
         choices: ['server', 'disk']
       protect_type:
         description:
           - Protection type, which is backup.
         type: str
-        required: true
       size:
         description:
           - Capacity, in GB. Minimum 1, maximum 10485760.
         type: int
-        required: true
       charging_mode:
         description:
           - Billing mode, which is post_paid.
-        default: "post_paid"
         type: str
       is_auto_renew:
         description:
           - Whether to automatically renew the subscription after expiration.\
             By default, it is not renewed.
-        default: False
         type: bool
       is_auto_pay:
         description:
@@ -80,7 +73,6 @@ options:
             customer's account balance after an order is submitted.\
             The non-automatic payment mode is used by default.
         type: bool
-        default: False
       console_url:
         description:
           - Redirection URL. Minimum 1, maximum 255.
@@ -163,16 +155,14 @@ options:
     type: bool
   smn_notify:
     description:
-      - Exception notification function.
+      - Exception notification function. True by default.
     type: bool
-    default: true
   threshold:
     description:
       - Vault capacity threshold. If the vault capacity usage exceeds this\
         threshold and smn_notify is true, an exception notification is sent.\
-        Can be set only in update.
+        Can be set only in update. 80 by default.
     type: int
-    default: 80
   state:
     description:
       - Whether resource should be present or absent.
@@ -342,15 +332,14 @@ class CBRVaultModule(OTCModule):
         policy=dict(required=False),
         billing=dict(required=False, type='dict', options=dict(
             cloud_type=dict(required=False, type='str'),
-            consistent_level=dict(required=False, type='str',
-                                  default='crash_consistent'),
-            object_type=dict(required=True, type='str',
+            consistent_level=dict(required=False, type='str'),
+            object_type=dict(required=False, type='str',
                              choices=['server', 'disk']),
-            protect_type=dict(required=True, type='str'),
-            size=dict(required=True, type='int'),
-            charging_mode=dict(required=False, type='str', default='post_paid'),
-            is_auto_renew=dict(required=False, type='bool', default=False),
-            is_auto_pay=dict(required=False, type='bool', default=False),
+            protect_type=dict(required=False, type='str'),
+            size=dict(required=False, type='int'),
+            charging_mode=dict(required=False, type='str'),
+            is_auto_renew=dict(required=False, type='bool'),
+            is_auto_pay=dict(required=False, type='bool'),
             console_url=dict(required=False, type='str'),)),
         description=dict(required=False, type='str'),
         resources=dict(type='list', elements='dict', options=dict(
@@ -369,8 +358,8 @@ class CBRVaultModule(OTCModule):
                                               type='str', no_log=False),
                                      value=dict(required=False, type='str'))),
         auto_expand=dict(type='bool', required=False),
-        smn_notify=dict(type='bool', default=True, required=False),
-        threshold=dict(type='int', default=80, required=False),
+        smn_notify=dict(type='bool', required=False),
+        threshold=dict(type='int', required=False),
         state=dict(type='str', required=False, choices=['present', 'absent'],
                    default='present'),
         action=dict(type='str', required=False, choices=['associate_resources',
@@ -419,20 +408,32 @@ class CBRVaultModule(OTCModule):
         parsed_billing = {}
         if billing.get('cloud_type'):
             parsed_billing['cloud_type'] = billing['cloud_type']
-        parsed_billing['consistent_level'] = billing['consistent_level']\
-            if billing.get('consistent_level') else self.fail_json(msg="'consistent_level' is required for 'billing'")
-        parsed_billing['object_type'] = billing['object_type'] \
-            if billing.get('object_type') else self.fail_json(msg="'object_type' is required for 'billing'")
-        parsed_billing['protect_type'] = billing['protect_type'] \
-            if billing.get('protect_type') else self.fail_json(msg="'protect_type' is required for 'billing'")
-        parsed_billing['size'] = billing['size'] \
-            if billing.get('size') else self.fail_json(msg="'size' is required for 'billing'")
+        else:
+            parsed_billing['cloud_type'] = 'public'
+        if billing.get('consistent_level'):
+            parsed_billing['consistent_level'] = billing['consistent_level']
+        else:
+            parsed_billing['consistent_level'] = 'crash_consistent'
+        if billing.get('object_type'):
+            parsed_billing['object_type'] = billing['object_type']
+        if billing.get('protect_type'):
+            parsed_billing['protect_type'] = billing['protect_type']
+        else:
+            parsed_billing['protect_type'] = 'backup'
+        if billing.get('size'):
+            parsed_billing['size'] = billing['size']
         if billing.get('charging_mode'):
             parsed_billing['charging_mode'] = billing['charging_mode']
+        else:
+            parsed_billing['charging_mode'] = 'post_paid'
         if billing.get('is_auto_renew'):
             parsed_billing['is_auto_renew'] = billing['is_auto_renew']
+        else:
+            parsed_billing['is_auto_renew'] = False
         if billing.get('is_auto_pay'):
             parsed_billing['is_auto_pay'] = billing['is_auto_pay']
+        else:
+            parsed_billing['is_auto_pay'] = False
         if billing.get('console_url'):
             parsed_billing['console_url'] = billing['console_url']
         return parsed_billing
@@ -448,11 +449,18 @@ class CBRVaultModule(OTCModule):
     def _require_update(self, vault):
         require_update = False
         if vault:
-            for param_key in ['name', 'auto_bind', 'bind_rules',
-                              'auto_expand', 'smn_notify', 'threshold']:
-                if self.params[param_key] != vault[param_key]:
+            if self.params.get('billing'):
+                if self.params['billing'].get('size'):
+                    if self.params['billing']['size'] != vault['billing']['size']:
+                        require_update = True
+            if self.params['auto_bind']:
+                if self.params['auto_bind'] != vault['auto_bind']:
                     require_update = True
-                    break
+            if self.params['auto_expand']:
+                if self.params['auto_expand'] != vault['auto_expand']:
+                    require_update = True
+            if self.params['smn_notify'] is not None or self.params['threshold'] is not None:
+                require_update = True
         return require_update
 
     def run(self):
@@ -464,34 +472,21 @@ class CBRVaultModule(OTCModule):
             attrs['description'] = self.params['description']
         if self.params['auto_bind']:
             attrs['auto_bind'] = self.params['auto_bind']
-        if self.params['auto_expand']:
-            attrs['auto_expand'] = self.params['auto_expand']
-        if self.params['smn_notify']:
-            attrs['smn_notify'] = self.params['smn_notify']
-        if self.params['threshold']:
-            attrs['threshold'] = self.params['threshold']
         if self.params['policy']:
             policy = self.conn.cbr.find_policy(name_or_id=self.params['policy'])
             if policy:
-                attrs['policy_id'] = policy.id
+                attrs['backup_policy_id'] = policy.id
             else:
                 self.fail_json("'policy' not found")
-        if self.params['billing']:
-            attrs['billing'] = self._parse_billing()
-        if self.params['tags']:
-            attrs['tags'] = self._parse_tags()
         if self.params['action']:
             action = self.params['action']
 
         vault = self.conn.cbr.find_vault(name_or_id=self.params['name'],
                                          ignore_missing=True)
 
-        require_update = self._require_update(vault)
         if self.ansible.check_mode:
-            if self._system_state_change(vault) or require_update:
+            if self._system_state_change(vault):
                 self.exit_json(changed=True)
-            self.exit_json(changed=False)
-
         if vault:
             if action == 'associate_resources':
                 resources = self._parse_resources()
@@ -514,6 +509,26 @@ class CBRVaultModule(OTCModule):
                 self.exit(changed=True)
 
             if state == 'present':
+                if self.params['billing']:
+                    if self.params['billing'].get('size'):
+                        attrs['billing'] = {'size': self.params['billing']['size']}
+                if self.params['auto_expand']:
+                    attrs['auto_expand'] = self.params['auto_expand']
+                if self.params['smn_notify']:
+                    attrs['smn_notify'] = self.params['smn_notify']
+                else:
+                    attrs['smn_notify'] = True
+                if self.params['threshold']:
+                    attrs['threshold'] = self.params['threshold']
+                else:
+                    attrs['threshold'] = 80
+                require_update = self._require_update(vault)
+                if self.ansible.check_mode:
+                    if require_update:
+                        self.exit_json(changed=True)
+                    self.exit_json(changed=False)
+                if not require_update:
+                    self.exit_json(changed=False)
                 self.conn.cbr.update_vault(vault=vault, **attrs)
                 self.exit(changed=True)
 
@@ -538,6 +553,13 @@ class CBRVaultModule(OTCModule):
         else:
             attrs['resources'] = []
         attrs['name'] = self.params['name']
+        if self.params['billing']:
+            attrs['billing'] = self._parse_billing()
+        else:
+            self.fail_json(msg="billing is mandatory for creation")
+        if self.params['tags']:
+            attrs['tags'] = self._parse_tags()
+
         if self.ansible.check_mode:
             self.exit_json(changed=True)
         created_vault = self.conn.cbr.create_vault(**attrs)
