@@ -24,7 +24,7 @@
               ansible_test_integration_env:
                 has_snat: false
                 region: eu-nl
-                deh_host_type: general
+                deh_host_type: s3
                 deh_az: eu-nl-01
               # CES is too slow in NL (used also in AS test)
               # no public DNS mgmt
