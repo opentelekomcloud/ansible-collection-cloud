@@ -1,9 +1,0 @@
-# yamllint disable
----
-- project:
-    merge-mode: squash-merge
-    templates:
-      - ansible-collection
-    vars:
-      ansible_collection_namespace: "opentelekomcloud"
-      ansible_collection_name: "cloud"
