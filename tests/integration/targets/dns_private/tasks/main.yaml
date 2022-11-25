@@ -1,0 +1,150 @@
+---
+- name: Private DNS tests
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set facts
+      ansible.builtin.set_fact:
+        ptrdname: "{{ ( prefix + 'dns.com.' ) }}"
+        description: "{{ ( prefix + 'description-dns' ) }}"
+        zone_public_name: "{{ ( prefix + '-dnszone.com.' ) }}"
+        zone_private_name: "{{ ( prefix + '-dnszone.com.' ) }}"
+        rs_name: "{{ ( prefix + '-rs.' + prefix + '-dnszone.com.' ) }}"
+        network_name: "{{ ( prefix + '-dnsnetwork' ) }}"
+        subnet_name: "{{ ( prefix + '-dnssubnet' ) }}"
+        router_name: "{{ ( prefix + '-dnsrouter' ) }}"
+
+    - name: Create network for DNS private Zone
+      openstack.cloud.network:
+        name: "{{ network_name }}"
+        state: present
+      register: zone_net
+
+    - name: Create subnet for DNS private Zone
+      openstack.cloud.subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ zone_net.network.name }}"
+        cidr: "192.168.110.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: zone_subnet
+
+    - name: Create Router for DNS private Zone
+      openstack.cloud.router:
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: false
+        interfaces:
+          - net: "{{ zone_net.network.name }}"
+            subnet: "{{ zone_subnet.subnet.name }}"
+      register: zone_router
+
+    - name: Creating a DNS private Zone - check mode
+      opentelekomcloud.cloud.dns_zone:
+        name: "{{ zone_private_name }}"
+        router: "{{ router_name }}"
+        zone_type: "private"
+        state: present
+      check_mode: true
+      register: dns_zo_pr_ch
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_zo_pr_ch is success
+          - dns_zo_pr_ch is changed
+
+    - name: Creating a DNS private Zone
+      opentelekomcloud.cloud.dns_zone:
+        name: "{{ zone_private_name }}"
+        router: "{{ router_name }}"
+        zone_type: "private"
+        state: present
+      register: dns_zo_pr
+
+    - name: debug
+      ansible.builtin.debug:
+        var: dns_zo_pr.zone
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_zo_pr is success
+          - dns_zo_pr.zone is defined
+
+    - name: Updating a private DNS Zone - check mode
+      opentelekomcloud.cloud.dns_zone:
+        name: "{{ zone_private_name }}"
+        state: present
+        description: "{{ description }}"
+      check_mode: true
+      register: dns_zo_pr_ch
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_zo_pr_ch is success
+          - dns_zo_pr_ch is changed
+
+    - name: Updating a private DNS Zone
+      opentelekomcloud.cloud.dns_zone:
+        name: "{{ zone_private_name }}"
+        state: present
+        description: "{{ description }}"
+      register: dns_zo_pr
+
+    - name: debug
+      ansible.builtin.debug:
+        var: dns_zo_pr.zone
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_zo_pr is success
+          - dns_zo_pr.zone.description is defined
+
+    - name: Get a DNS Nameservers info for private zone
+      opentelekomcloud.cloud.dns_nameserver_info:
+        zone: "{{ zone_private_name }}"
+      register: dns_ns
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_ns is success
+          - dns_ns.nameservers[0].address is defined
+
+  always:
+    - name: Cleanup
+      block:
+        - name: Drop DNS private Zone
+          opentelekomcloud.cloud.dns_zone:
+            name: "{{ zone_private_name }}"
+            zone_type: "private"
+            state: absent
+          register: dns_zo_pr_dr
+          failed_when: false
+
+        - name: Drop existing Router
+          openstack.cloud.router:
+            name: "{{ router_name }}"
+            state: absent
+          register: dns_rout_dr
+          failed_when: false
+
+        - name: Drop existing subnet
+          openstack.cloud.subnet:
+            name: "{{ subnet_name }}"
+            state: absent
+          register: dns_subnet_dr
+          failed_when: false
+
+        - name: Drop existing network
+          openstack.cloud.network:
+            name: "{{ network_name }}"
+            state: absent
+          register: dns_net_dr
+          failed_when: false
