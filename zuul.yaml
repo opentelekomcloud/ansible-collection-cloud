@@ -16,14 +16,27 @@
             vars: &vars-eu-de
               ansible_test_integration_env:
                 has_snat: true
+                region: eu-de
               ansible_test_exclude_tests: []
         - otc-ansible-collection-test-integration-eu-nl:
             files: *integration-files
             vars: &vars-eu-nl
               ansible_test_integration_env:
                 has_snat: false
+                region: eu-nl
+                deh_host_type: general
+                deh_az: eu-nl-01
+              # CES is too slow in NL (used also in AS test)
+              # no public DNS mgmt
+              # obs needs tweaks
+              # elbv2 not available
+              # no VBS
               ansible_test_exclude_tests:
+                - autoscaling/group1/
+                - ces/group1/
                 - dns/public/
+                - elb/group1/
+                - obs/group1/
                 - storage/vbs/
     gate:
       jobs:

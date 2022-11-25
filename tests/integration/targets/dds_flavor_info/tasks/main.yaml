@@ -6,7 +6,7 @@
   block:
     - name: Get info about flavor
       opentelekomcloud.cloud.dds_flavor_info:
-        region: "eu-de"
+        region: "{{ region | default('eu-de') }}"
       register: result
 
     - name: assert result

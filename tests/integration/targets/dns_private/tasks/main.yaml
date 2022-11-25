@@ -36,7 +36,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: false
+        enable_snat: "{{ has_snat | ternary(false, omit) }}"
         interfaces:
           - net: "{{ zone_net.network.name }}"
             subnet: "{{ zone_subnet.subnet.name }}"
