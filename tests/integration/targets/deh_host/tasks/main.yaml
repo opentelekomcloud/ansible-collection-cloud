@@ -18,7 +18,7 @@
 
     - name: Allocate DeH host - check_mode
       opentelekomcloud.cloud.deh_host:
-        availability_zone: eu-de-01
+        availability_zone: "{{ deh_az | default('eu-de-01') }}"
         host_type: "{{ deh_host_type | default('s2-medium') }}"
         name: "{{ deh_host_name }}"
         state: present
@@ -39,8 +39,8 @@
 
     - name: Allocate DeH host
       opentelekomcloud.cloud.deh_host:
-        availability_zone: eu-de-01
-        host_type: s2-medium
+        availability_zone: "{{ deh_az | default('eu-de-01') }}"
+        host_type: "{{ deh_host_type | default('s2-medium') }}"
         name: "{{ deh_host_name }}"
         state: present
         quantity: 1

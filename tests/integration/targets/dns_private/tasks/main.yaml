@@ -80,6 +80,7 @@
         name: "{{ zone_private_name }}"
         state: present
         description: "{{ description }}"
+        zone_type: "private"
       check_mode: true
       register: dns_zo_pr_ch
 
@@ -94,6 +95,7 @@
         name: "{{ zone_private_name }}"
         state: present
         description: "{{ description }}"
+        zone_type: "private"
       register: dns_zo_pr
 
     - name: debug
