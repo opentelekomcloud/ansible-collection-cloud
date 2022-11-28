@@ -17,3 +17,5 @@ tmp
 .idea/**
 */.idea/**
 
+# ansible-test inventory
+tests/integration/inventory

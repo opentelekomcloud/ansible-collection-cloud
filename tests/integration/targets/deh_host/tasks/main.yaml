@@ -16,10 +16,16 @@
       ansible.builtin.set_fact:
         deh_host_name: "{{ ( prefix + '_deh-host') }}"
 
+    - name: Get DeH host types in AZ
+      opentelekomcloud.cloud.deh_host_type_info:
+        cloud: "{{ test_cloud }}"
+        az: "{{ deh_az | default('eu-de-01') }}"
+      register: deh
+
     - name: Allocate DeH host - check_mode
       opentelekomcloud.cloud.deh_host:
-        availability_zone: eu-de-01
-        host_type: s2-medium
+        availability_zone: "{{ deh_az | default('eu-de-01') }}"
+        host_type: "{{ deh.deh_host_types[0]['host_type'] }}"
         name: "{{ deh_host_name }}"
         state: present
         quantity: 1
@@ -39,8 +45,8 @@
 
     - name: Allocate DeH host
       opentelekomcloud.cloud.deh_host:
-        availability_zone: eu-de-01
-        host_type: s2-medium
+        availability_zone: "{{ deh_az | default('eu-de-01') }}"
+        host_type: "{{ deh.deh_host_types[0]['host_type'] }}"
         name: "{{ deh_host_name }}"
         state: present
         quantity: 1

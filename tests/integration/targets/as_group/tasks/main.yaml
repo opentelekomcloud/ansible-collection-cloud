@@ -54,7 +54,7 @@
         name: "{{ router_name }}"
         state: present
         network: admin_external_net
-        enable_snat: true
+        enable_snat: "{{ has_snat | ternary(true, omit) }}"
         interfaces:
           - net: "{{ network.network.name }}"
             subnet: "{{ subnet.subnet.name }}"
@@ -64,8 +64,8 @@
       opentelekomcloud.cloud.as_config:
         scaling_configuration: "{{ config_name }}"
         key_name: "{{ key_name }}"
-        image: "Standard_Debian_10_latest"
-        flavor: "c4.2xlarge.2"
+        image: "{{ as_test_image }}"
+        flavor: "{{ as_test_flavor }}"
         disk:
           - size: 10
             volume_type: 'SAS'

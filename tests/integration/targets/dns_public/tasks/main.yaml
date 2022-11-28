@@ -1,0 +1,266 @@
+---
+- name: Public DNS tests
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Assigning Floating IP
+      opentelekomcloud.cloud.floating_ip:
+        network: admin_external_net
+      register: fl
+
+    - name: Set facts
+      ansible.builtin.set_fact:
+        fl_ip: "{{ fl.floating_ip.floating_ip_address }}"
+        ptrdname: "{{ ( prefix + 'dns.com.' ) }}"
+        description: "{{ ( prefix + 'description-dns' ) }}"
+        zone_public_name: "{{ ( prefix + '-dnszone.com.' ) }}"
+        rs_name: "{{ ( prefix + '-rs.' + prefix + '-dnszone.com.' ) }}"
+        network_name: "{{ ( prefix + '-dnsnetwork' ) }}"
+        subnet_name: "{{ ( prefix + '-dnssubnet' ) }}"
+        router_name: "{{ ( prefix + '-dnsrouter' ) }}"
+
+    - name: Creating a dns_floating_ip entry - check mode
+      opentelekomcloud.cloud.dns_floating_ip:
+        floating_ip: "{{ fl_ip }}"
+        ptrdname: "{{ ptrdname }}"
+        state: present
+      check_mode: true
+      register: dns_fl_ch
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_fl_ch is success
+          - dns_fl_ch is changed
+
+    - name: Creating a dns_floating_ip entry
+      opentelekomcloud.cloud.dns_floating_ip:
+        floating_ip: "{{ fl_ip }}"
+        ptrdname: "{{ ptrdname }}"
+        state: present
+      register: dns_fl
+
+    - name: debug
+      ansible.builtin.debug:
+        var: dns_fl.ptr
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_fl is success
+          - dns_fl.ptr is defined
+
+    - name: Updating a dns_floating_ip entry - check mode
+      opentelekomcloud.cloud.dns_floating_ip:
+        floating_ip: "{{ fl_ip }}"
+        ptrdname: "{{ ptrdname }}"
+        description: "{{ description }}"
+        state: present
+      check_mode: true
+      register: dns_fl_ch
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_fl_ch is success
+          - dns_fl_ch is changed
+
+    - name: Updating a dns_floating_ip entry
+      opentelekomcloud.cloud.dns_floating_ip:
+        floating_ip: "{{ fl_ip }}"
+        ptrdname: "{{ ptrdname }}"
+        description: "{{ description }}"
+        state: present
+      register: dns_fl
+
+    - name: debug
+      ansible.builtin.debug:
+        var: dns_fl.ptr
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_fl is success
+          - dns_fl.ptr.description is defined
+
+    - name: Creating a public DNS Zone - check mode
+      opentelekomcloud.cloud.dns_zone:
+        name: "{{ zone_public_name }}"
+        state: present
+      check_mode: true
+      register: dns_zo_ch
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_zo_ch is success
+          - dns_zo_ch is changed
+
+    - name: Creating a public DNS Zone
+      opentelekomcloud.cloud.dns_zone:
+        name: "{{ zone_public_name }}"
+        state: present
+      register: dns_zo
+
+    - name: debug
+      ansible.builtin.debug:
+        var: dns_zo.zone
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_zo is success
+          - dns_zo.zone is defined
+
+    - name: Updating a public DNS Zone - check mode
+      opentelekomcloud.cloud.dns_zone:
+        name: "{{ zone_public_name }}"
+        state: present
+        description: "{{ description }}"
+      check_mode: true
+      register: dns_zo_ch
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_zo_ch is success
+          - dns_zo_ch is changed
+
+    - name: Updating a public DNS Zone
+      opentelekomcloud.cloud.dns_zone:
+        name: "{{ zone_public_name }}"
+        state: present
+        description: "{{ description }}"
+      register: dns_zo
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_zo is success
+          - dns_zo.zone.description is defined
+
+    - name: Get a DNS Nameservers info for public zone
+      opentelekomcloud.cloud.dns_nameserver_info:
+        zone: "{{ zone_public_name }}"
+      register: dns_ns
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_ns is success
+          - dns_ns.nameservers[0].hostname is defined
+
+    - name: Creating a DNS Recordset - check mode
+      opentelekomcloud.cloud.dns_recordset:
+        zone_id: "{{ dns_zo.zone.id }}"
+        recordset_name: "{{ rs_name }}"
+        type: A
+        records:
+          - "1.1.1.1"
+          - "2.2.2.2"
+        state: present
+      check_mode: true
+      register: dns_rs_ch
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_rs_ch is success
+          - dns_rs_ch is changed
+
+    - name: Creating a DNS Recordset
+      opentelekomcloud.cloud.dns_recordset:
+        zone_id: "{{ dns_zo.zone.id }}"
+        recordset_name: "{{ rs_name }}"
+        type: A
+        records:
+          - "1.1.1.1"
+          - "2.2.2.2"
+        state: present
+      register: dns_rs
+
+    - name: debug
+      ansible.builtin.debug:
+        var: dns_rs.recordset
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_rs is success
+          - dns_rs.recordset is defined
+
+    - name: Updating a DNS Recordset - check mode
+      opentelekomcloud.cloud.dns_recordset:
+        zone_id: "{{ dns_zo.zone.id }}"
+        recordset_name: "{{ rs_name }}"
+        type: A
+        description: "{{ description }}"
+        records:
+          - "1.1.1.1"
+          - "2.2.2.2"
+        state: present
+      check_mode: true
+      register: dns_rs_ch
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_rs_ch is success
+          - dns_rs_ch is changed
+
+    - name: Updating a DNS Recordset
+      opentelekomcloud.cloud.dns_recordset:
+        zone_id: "{{ dns_zo.zone.id }}"
+        recordset_name: "{{ rs_name }}"
+        type: A
+        description: "{{ description }}"
+        records:
+          - "1.1.1.1"
+          - "2.2.2.2"
+        state: present
+      register: dns_rs
+
+    - name: debug
+      ansible.builtin.debug:
+        var: dns_rs.recordset
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - dns_rs is success
+          - dns_rs.recordset.description is defined
+
+  always:
+    - name: Cleanup
+      block:
+        - name: Drop dns_floating_ip entry
+          opentelekomcloud.cloud.dns_floating_ip:
+            floating_ip: "{{ fl_ip }}"
+            state: absent
+          register: dns_fl_dr
+          failed_when: false
+
+        - name: Dropping DNS Recordset
+          opentelekomcloud.cloud.dns_recordset:
+            zone_id: "{{ dns_zo.zone.id }}"
+            recordset_name: "{{ rs_name }}"
+            state: absent
+          register: dns_rs_dr
+          failed_when: false
+
+        - name: Drop DNS public Zone
+          opentelekomcloud.cloud.dns_zone:
+            name: "{{ zone_public_name }}"
+            state: absent
+          register: dns_zo_pu_dr
+          failed_when: false
+
+        - name: Drop Floating IP
+          opentelekomcloud.cloud.floating_ip:
+            floating_ip_address: "{{ fl_ip }}"
+            state: absent
+            purge: true
+          register: fl_dr
+          failed_when: false

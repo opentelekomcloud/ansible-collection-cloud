@@ -1,0 +1,69 @@
+# yamllint disable
+---
+- project:
+    merge-mode: squash-merge
+    templates:
+      - ansible-collection
+    vars:
+      ansible_collection_namespace: "opentelekomcloud"
+      ansible_collection_name: "cloud"
+    check:
+      jobs:
+        - otc-ansible-collection-test-integration-eu-de:
+            files: &integration-files
+              - ^plugins/
+              - ^tests/integration/
+            vars: &vars-eu-de
+              ansible_test_integration_env:
+                has_snat: true
+                region: eu-de
+              ansible_test_exclude_tests: []
+        - otc-ansible-collection-test-integration-eu-nl:
+            files: *integration-files
+            vars: &vars-eu-nl
+              ansible_test_integration_env:
+                has_snat: false
+                region: eu-nl
+                deh_host_type: s3
+                deh_az: eu-nl-01
+              # CES is too slow in NL (used also in AS test)
+              # no public DNS mgmt
+              # obs needs tweaks
+              # elbv2 not available
+              # no VBS
+              ansible_test_exclude_tests:
+                - autoscaling/group1/
+                - ces/group1/
+                - dns/public/
+                - elb/group1/
+                - obs/group1/
+                - storage/vbs/
+        - otc-ansible-collection-test-integration-eu-ch:
+            files: *integration-files
+            vars: &vars-eu-ch
+              ansible_test_integration_env:
+                has_snat: false
+                region: eu-ch2
+              ansible_test_exclude_tests:
+                - antiddos/group1/
+                - ces/group1/
+                - css/group1/
+                - dds/group1/
+                - deh/group1/
+                - dms/group1/
+                - dns/public/
+                - elb/group1/
+                - obs/group1/
+                - storage/vbs/
+                - waf/group1/
+    gate:
+      jobs:
+        - otc-ansible-collection-test-integration-eu-de:
+            files: *integration-files
+            vars: *vars-eu-de
+        - otc-ansible-collection-test-integration-eu-nl:
+            files: *integration-files
+            vars: *vars-eu-nl
+        - otc-ansible-collection-test-integration-eu-ch:
+            files: *integration-files
+            vars: *vars-eu-ch

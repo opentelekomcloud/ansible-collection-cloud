@@ -1,2 +1,6 @@
 ---
 test_cloud: ${OS_CLOUD}
+has_snat: ${has_snat:-false}
+region: ${region:-eu-de}
+deh_host_type: ${deh_host_type:-s2-medium}
+deh_az: ${deh_az:-eu-de-01}

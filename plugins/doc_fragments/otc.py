@@ -91,6 +91,15 @@ options:
     choices: [ admin, internal, public ]
     default: public
     aliases: [ endpoint_type ]
+  sdk_log_path:
+    description:
+      - Path to the logfile of the OpenStackSDK. If empty no log is written
+    type: str
+  sdk_log_level:
+    description: Log level of the OpenStackSDK
+    type: str
+    default: WARN
+    choices: [ERROR, WARN, INFO, DEBUG]
 requirements:
   - python >= 3.6
   - openstacksdk >= 0.36.0

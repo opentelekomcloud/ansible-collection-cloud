@@ -1,5 +1,5 @@
 openstacksdk
-ansible-lint>=6.0.0
+ansible-lint>=6.0.0,<6.6.0
 pycodestyle==2.8.0
 flake8>=4.0.0
 pylint
