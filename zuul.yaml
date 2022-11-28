@@ -38,6 +38,24 @@
                 - elb/group1/
                 - obs/group1/
                 - storage/vbs/
+        - otc-ansible-collection-test-integration-eu-ch:
+            files: *integration-files
+            vars: &vars-eu-ch
+              ansible_test_integration_env:
+                has_snat: false
+                region: eu-ch2
+              ansible_test_exclude_tests:
+                - antiddos/group1/
+                - ces/group1/
+                - css/group1/
+                - dds/group1/
+                - deh/group1/
+                - dms/group1/
+                - dns/public/
+                - elb/group1/
+                - obs/group1/
+                - storage/vbs/
+                - waf/group1/
     gate:
       jobs:
         - otc-ansible-collection-test-integration-eu-de:
@@ -46,3 +64,6 @@
         - otc-ansible-collection-test-integration-eu-nl:
             files: *integration-files
             vars: *vars-eu-nl
+        - otc-ansible-collection-test-integration-eu-ch:
+            files: *integration-files
+            vars: *vars-eu-ch
