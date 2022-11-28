@@ -16,7 +16,6 @@
         ptrdname: "{{ ( prefix + 'dns.com.' ) }}"
         description: "{{ ( prefix + 'description-dns' ) }}"
         zone_public_name: "{{ ( prefix + '-dnszone.com.' ) }}"
-        zone_private_name: "{{ ( prefix + '-dnszone.com.' ) }}"
         rs_name: "{{ ( prefix + '-rs.' + prefix + '-dnszone.com.' ) }}"
         network_name: "{{ ( prefix + '-dnsnetwork' ) }}"
         subnet_name: "{{ ( prefix + '-dnssubnet' ) }}"

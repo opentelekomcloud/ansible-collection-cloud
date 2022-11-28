@@ -4,7 +4,7 @@
     - name: Get DeH host types in AZ
       opentelekomcloud.cloud.deh_host_type_info:
         cloud: "{{ test_cloud }}"
-        az: eu-de-01
+        az: "{{ deh_az | default('eu-de-01') }}"
       register: deh
 
     - name: debug deh
