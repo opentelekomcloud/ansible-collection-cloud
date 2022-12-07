@@ -64,8 +64,8 @@
       opentelekomcloud.cloud.as_config:
         scaling_configuration: "{{ config_name }}"
         key_name: "{{ key_name }}"
-        image: "Standard_Debian_10_latest"
-        flavor: "c4.2xlarge.2"
+        image: "{{ as_test_image }}"
+        flavor: "{{ as_test_flavor }}"
         disk:
           - size: 10
             volume_type: 'SAS'

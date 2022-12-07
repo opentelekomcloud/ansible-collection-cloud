@@ -42,8 +42,8 @@
         secgroup_name: "{{ ( prefix + '_secgroup') }}"
         kp_name: "{{ ( prefix + '_kp') }}"
         server_name: "{{ ( prefix + '_ecs') }}"
-        server_flavor: "s3.medium.1"
-        image_name: Standard_Ubuntu_18.04_latest
+        server_flavor: "{{ as_test_flavor }}"
+        image_name: "{{ as_test_image }}"
         volume_type: "SATA"
         disk_type: "SYS"
         disk_size: 4
