@@ -44,11 +44,11 @@ options:
     type: int
   count_month_backups:
     description:
-     - Specifies the number of retained monthly backups. The latest backup of
-       each month is saved in the long term. This parameter can be effective
-       together with the maximum number of retained backups specified by
-       max_backups.
-     - If this parameter is configured, timezone is mandatory.
+      - Specifies the number of retained monthly backups. The latest backup of
+        each month is saved in the long term. This parameter can be effective
+        together with the maximum number of retained backups specified by
+        max_backups.
+      - If this parameter is configured, timezone is mandatory.
     type: int
   retention_duration_days:
     description:
@@ -57,9 +57,9 @@ options:
     type: int
   timezone:
     description:
-     - Time zone where the user is located, for example, UTC+08:00.  Set this
-       parameter only after you have configured any of the parameters
-       day_backups, week_backups, month_backups, year_backups.
+      - Time zone where the user is located, for example, UTC+08:00.  Set this
+        parameter only after you have configured any of the parameters
+        day_backups, week_backups, month_backups, year_backups.
     type: str
   count_week_backups:
     description:
@@ -101,7 +101,7 @@ options:
           'FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00'
       - For update pattern all rules must be in the same order as existing policy has.
     type: list
-    elements: str
+    elements: dict
   state:
     description:
       - Whether resource should be present or absent.
@@ -166,25 +166,20 @@ policy:
       type: complex
       contains:
         id:
-          description:
-            - Scheduler ID.
+          description: Scheduler ID.
           type: str
         name:
-          description:
-            - Scheduler name.
+          description: Scheduler name.
           type: str
         properties:
-          description:
-            - Scheduler attributes.
+          description: Scheduler attributes.
           type: complex
           contains:
             pattern:
-              description:
-                - Scheduling policy of the scheduler.
+              description: Scheduling policy of the scheduler.
               type: list
             start_time:
-              description:
-                - Start time of the scheduler.
+              description: Start time of the scheduler.
               type: str
         type:
           description:
@@ -213,7 +208,7 @@ opentelekomcloud.cloud.cbr_policy:
   retention_duration_days: 5
   count_year_backups: 0
   pattern:
-    - "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00"
+    - "FREQ=WEEKLY;BYHOUR=14;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYMINUTE=00"
 
 # Update policy:
 opentelekomcloud.cloud.cbr_policy:
@@ -242,7 +237,7 @@ class CBRPolicyModule(OTCModule):
         count_week_backups=dict(type='int', required=False),
         count_year_backups=dict(type='int', required=False),
         operation_type=dict(type='str', required=False),
-        pattern=dict(type='list', required=False, elements='str'),
+        pattern=dict(type='list', required=False, elements='dict'),
         state=dict(type='str', default='present', choices=['present', 'absent'])
     )
     module_kwargs = dict(
@@ -259,13 +254,8 @@ class CBRPolicyModule(OTCModule):
                 if self.params['is_enabled'] != policy.enabled:
                     require_update = True
             if self.params['pattern']:
-                new_pattern = []
-                for pattern in self.params['pattern']:
-                    new_pattern.append(set(pattern.split(";")))
-                current_pattern = []
-                for pattern in policy['trigger']['properties']['pattern']:
-                    current_pattern.append(set(pattern.split(";")))
-                if new_pattern != current_pattern:
+                if set(self.params['pattern']) != set(
+                        policy['trigger']['properties']['pattern']):
                     require_update = True
             if self.params['count_day_backups'] is not None:
                 if self.params['count_day_backups'] != policy.operation_definition['day_backups']:
@@ -303,7 +293,6 @@ class CBRPolicyModule(OTCModule):
         query = {}
 
         state = self.params['state']
-
         policy = self.conn.cbr.find_policy(name_or_id=self.params['name'])
 
         if self.ansible.check_mode:
