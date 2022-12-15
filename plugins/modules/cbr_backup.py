@@ -30,10 +30,9 @@ options:
     elements: dict
     suboptions:
         backup_id:
-            description:
-              - backup_id
-            type: str
-            required: true
+          description: Backup id.
+          type: str
+          required: true
         volume_id:
           description:
             - ID of the disk to which data is restored.
