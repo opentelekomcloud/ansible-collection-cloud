@@ -472,12 +472,6 @@ class CBRVaultModule(OTCModule):
             attrs['description'] = self.params['description']
         if self.params['auto_bind']:
             attrs['auto_bind'] = self.params['auto_bind']
-        if self.params['policy']:
-            policy = self.conn.cbr.find_policy(name_or_id=self.params['policy'])
-            if policy:
-                attrs['backup_policy_id'] = policy.id
-            else:
-                self.fail_json("'policy' not found")
         if self.params['action']:
             action = self.params['action']
 
@@ -557,6 +551,12 @@ class CBRVaultModule(OTCModule):
             attrs['billing'] = self._parse_billing()
         else:
             self.fail_json(msg="billing is mandatory for creation")
+        if self.params['policy']:
+            policy = self.conn.cbr.find_policy(name_or_id=self.params['policy'])
+            if policy:
+                attrs['backup_policy_id'] = policy.id
+            else:
+                self.fail_json("'policy' not found")
         if self.params['tags']:
             attrs['tags'] = self._parse_tags()
 
