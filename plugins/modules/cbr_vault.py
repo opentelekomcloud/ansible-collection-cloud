@@ -403,6 +403,21 @@ class CBRVaultModule(OTCModule):
             parsed_tags.append(parsed_tag)
         return parsed_tags
 
+    def _parse_bind_rules(self):
+        bind_rules = self.params['bind_rules']
+        parsed_bind_rules = []
+        for rule in bind_rules:
+            parsed_rule = {}
+            parsed_rule['key'] = rule.get('key')\
+                if rule.get('key') else self.fail_json(msg="'key' is required for 'tag'")
+            if rule.get('value'):
+                parsed_rule['value'] = rule.get('value')
+            else:
+                rule['value'] = None
+            parsed_bind_rules.append(parsed_rule)
+        parsed_bind_rules = {'tags': parsed_bind_rules}
+        return parsed_bind_rules
+
     def _parse_billing(self):
         billing = self.params['billing']
         parsed_billing = {}
@@ -459,7 +474,9 @@ class CBRVaultModule(OTCModule):
             if self.params['auto_expand']:
                 if self.params['auto_expand'] != vault['auto_expand']:
                     require_update = True
-            if self.params['smn_notify'] is not None or self.params['threshold'] is not None:
+            if self.params['threshold'] or self.params['smn_notify']:
+                require_update = True
+            if self.params['bind_rules']:
                 require_update = True
         return require_update
 
@@ -468,13 +485,14 @@ class CBRVaultModule(OTCModule):
         action = None
         policy = None
         state = self.params['state']
-        if self.params['description']:
-            attrs['description'] = self.params['description']
         if self.params['auto_bind']:
             attrs['auto_bind'] = self.params['auto_bind']
         if self.params['action']:
             action = self.params['action']
-
+        if self.params['bind_rules']:
+            attrs['bind_rules'] = self._parse_bind_rules()
+        if self.params['tags']:
+            attrs['tags'] = self._parse_tags()
         vault = self.conn.cbr.find_vault(name_or_id=self.params['name'],
                                          ignore_missing=True)
 
@@ -531,9 +549,8 @@ class CBRVaultModule(OTCModule):
                 self.exit(changed=True)
 
         if state == 'absent':
-            if self.ansible.check_mode:
-                self.exit_json(changed=False,
-                               msg="vault {0} not found".format(vault.id))
+            self.exit_json(changed=False,
+                           msg="vault {0} not found".format(self.params['name']))
 
         if action in ('associate_resources', 'dissociate_resources',
                       'bind_policy', 'unbind_policy') or state == 'absent':
@@ -557,8 +574,8 @@ class CBRVaultModule(OTCModule):
                 attrs['backup_policy_id'] = policy.id
             else:
                 self.fail_json("'policy' not found")
-        if self.params['tags']:
-            attrs['tags'] = self._parse_tags()
+        if self.params['description']:
+            attrs['description'] = self.params['description']
 
         if self.ansible.check_mode:
             self.exit_json(changed=True)
