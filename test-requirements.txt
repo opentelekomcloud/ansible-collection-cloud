@@ -8,3 +8,5 @@ yamllint
 rstcheck
 ruamel.yaml
 otcextensions>=0.10.0
+antsibull-docs
+

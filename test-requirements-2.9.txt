@@ -10,3 +10,4 @@ rstcheck
 ruamel.yaml
 tox
 otcextensions
+antsibull-docs

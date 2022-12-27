@@ -1,1 +1,2 @@
 otcdocstheme # Ansible-2.0
+antsibull-docs
