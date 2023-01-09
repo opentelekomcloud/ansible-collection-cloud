@@ -57,7 +57,7 @@ options:
     type: int
   timezone:
     description:
-      - Time zone where the user is located, for example, UTC+08:00.  Set this
+      - Time zone where the user is located, for example, UTC+08:00. Set this
         parameter only after you have configured any of the parameters
         day_backups, week_backups, month_backups, year_backups.
     type: str
@@ -101,7 +101,7 @@ options:
           'FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00'
       - For update pattern all rules must be in the same order as existing policy has.
     type: list
-    elements: dict
+    elements: str
   state:
     description:
       - Whether resource should be present or absent.
@@ -237,7 +237,7 @@ class CBRPolicyModule(OTCModule):
         count_week_backups=dict(type='int', required=False),
         count_year_backups=dict(type='int', required=False),
         operation_type=dict(type='str', required=False),
-        pattern=dict(type='list', required=False, elements='dict'),
+        pattern=dict(type='list', required=False, elements='str'),
         state=dict(type='str', default='present', choices=['present', 'absent'])
     )
     module_kwargs = dict(
@@ -294,6 +294,7 @@ class CBRPolicyModule(OTCModule):
 
         state = self.params['state']
         policy = self.conn.cbr.find_policy(name_or_id=self.params['name'])
+        changed = False
 
         if self.ansible.check_mode:
             require_update = self._require_update(policy)
@@ -316,10 +317,8 @@ class CBRPolicyModule(OTCModule):
                 changed=changed
             )
 
-        query['trigger'] = {}
-        query['trigger']['properties'] = {}
+        query['trigger'] = {'properties': {}}
         query['trigger']['properties']['pattern'] = self.params['pattern']
-
         if self.params['is_enabled'] is not None:
             query['enabled'] = self.params['is_enabled']
 
@@ -352,6 +351,7 @@ class CBRPolicyModule(OTCModule):
                 query['operation_definition']['retention_duration_days'] = -1
             query['name'] = self.params['name']
             policy = self.conn.cbr.create_policy(**query)
+            changed = True
         else:
             if not query['operation_definition']:
                 del query['operation_definition']
