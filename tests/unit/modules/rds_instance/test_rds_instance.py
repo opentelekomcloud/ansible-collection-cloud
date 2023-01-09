@@ -104,39 +104,42 @@ class RdsInstanceTest(TestCase):
             self.conn.rds.find_instance.return_value = None
             self.module().run()
         self.conn.create_rds_instance.assert_called_with(
-            api_timeout=None,
-            auth=None,
+            state='present',
+            name='test',
+            wait=True,
+            interface='public',
+            sdk_log_level='WARN',
+            datastore_type='postgresql',
+            region='eu-de',
+            cloud=None,
             auth_type=None,
-            availability_zone=None,
-            backup_keepdays=None,
-            backup_timeframe=None,
+            auth=None,
+            region_name=None,
+            validate_certs=None,
             ca_cert=None,
             client_cert=None,
             client_key=None,
-            cloud=None,
+            api_timeout=None,
+            sdk_log_path=None,
+            availability_zone=None,
+            backup_keepdays=None,
+            backup_timeframe=None,
             configuration=None,
-            datastore_type='postgresql',
             datastore_version=None,
             disk_encryption=None,
             flavor=None,
             ha_mode=None,
-            interface='public',
-            name='test',
             network=None,
             password=None,
             port=None,
-            region='eu-de',
-            region_name=None,
             replica_of=None,
             router=None,
             security_group=None,
-            state='present',
-            validate_certs=None,
-            volume_size=None,
             volume_type=None,
-            wait=True,
+            volume_size=None,
             wait_timeout=600)
         self.assertTrue(result.exception.args[0]['changed'])
+        self.conn.create_rds_instance.call_count = 0
 
     def test_ensure_not_created(self):
         """Ensure we do not send create request"""
@@ -166,6 +169,7 @@ class RdsInstanceTest(TestCase):
             wait=False
         )
         self.assertTrue(result.exception.args[0]['changed'])
+        self.conn.delete_rds_instance.call_count = 0
 
     def test_ensure_not_deleted(self):
         """Ensure we do not send delete request"""
