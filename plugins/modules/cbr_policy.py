@@ -200,26 +200,26 @@ policy:
 '''
 
 EXAMPLES = '''
-# Create policy:
-opentelekomcloud.cloud.cbr_policy:
-  name: "newpolicy"
-  count_day_backups: 0
-  count_month_backups: 0
-  retention_duration_days: 5
-  count_year_backups: 0
-  pattern:
-    - "FREQ=WEEKLY;BYHOUR=14;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYMINUTE=00"
+- name: Create policy
+  opentelekomcloud.cloud.cbr_policy:
+    name: "newpolicy"
+    count_day_backups: 0
+    count_month_backups: 0
+    retention_duration_days: 5
+    count_year_backups: 0
+    pattern:
+      - "FREQ=WEEKLY;BYHOUR=14;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYMINUTE=00"
 
-# Update policy:
-opentelekomcloud.cloud.cbr_policy:
-  name: "newpolicy"
-  count_day_backups: 5
-  is_enabled: False
+- name: Update policy
+  opentelekomcloud.cloud.cbr_policy:
+    name: "newpolicy"
+    count_day_backups: 5
+    is_enabled: False
 
-# Delete policy:
-opentelekomcloud.cloud.cbr_policy:
-  name: "newpolicy"
-  state: absent
+- name: Delete policy
+  opentelekomcloud.cloud.cbr_policy:
+    name: "newpolicy"
+    state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
