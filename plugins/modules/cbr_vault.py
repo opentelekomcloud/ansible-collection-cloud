@@ -130,6 +130,8 @@ options:
     description:
       - Rules for automatic association. Filters automatically associated\
         resources by tag.
+      - Updating this parameter will not affect the changed state (when\
+       value in updated, changed will be false anyway).
     type: list
     elements: dict
     suboptions:
@@ -156,12 +158,16 @@ options:
   smn_notify:
     description:
       - Exception notification function. True by default.
+      - Updating this parameter will not affect the changed state (when value\
+       in updated, changed will be false anyway).
     type: bool
   threshold:
     description:
       - Vault capacity threshold. If the vault capacity usage exceeds this\
         threshold and smn_notify is true, an exception notification is sent.\
         Can be set only in update. 80 by default.
+      - Updating this parameter will not affect the changed state (when value\
+       in updated, changed will be false anyway).
     type: int
   state:
     description:
@@ -395,7 +401,8 @@ class CBRVaultModule(OTCModule):
         for tag in tags:
             parsed_tag = {}
             parsed_tag['key'] = tag.get('key')\
-                if tag.get('key') else self.fail_json(msg="'key' is required for 'tag'")
+                if tag.get('key') else self.fail_json(msg="'key' is required\
+                                                                    for 'tag'")
             if tag.get('value'):
                 parsed_tag['value'] = tag.get('value')
             else:
@@ -409,7 +416,8 @@ class CBRVaultModule(OTCModule):
         for rule in bind_rules:
             parsed_rule = {}
             parsed_rule['key'] = rule.get('key')\
-                if rule.get('key') else self.fail_json(msg="'key' is required for 'tag'")
+                if rule.get('key') else self.fail_json(msg="'key' is required\
+                                                                    for 'tag'")
             if rule.get('value'):
                 parsed_rule['value'] = rule.get('value')
             else:
@@ -474,10 +482,10 @@ class CBRVaultModule(OTCModule):
             if self.params['auto_expand']:
                 if self.params['auto_expand'] != vault['auto_expand']:
                     require_update = True
-            if self.params['threshold'] or self.params['smn_notify']:
-                require_update = True
             if self.params['bind_rules']:
-                require_update = True
+                if self.params['bind_rules'] != vault['bind_rules']:
+                    self.fail_json(vault['bind_rules'])
+                    require_update = True
         return require_update
 
     def run(self):
@@ -541,8 +549,8 @@ class CBRVaultModule(OTCModule):
                     self.exit_json(changed=False)
                 if not require_update:
                     self.exit_json(changed=False)
-                self.conn.cbr.update_vault(vault=vault, **attrs)
-                self.exit(changed=True)
+                updated_vault = self.conn.cbr.update_vault(vault=vault, **attrs)
+                self.exit(changed=True, vault=updated_vault)
 
             if state == 'absent':
                 self.conn.cbr.delete_vault(vault=vault)

@@ -50,6 +50,21 @@
           - created_vault is success
           - created_vault is changed
 
+    - name: Update CBR vault
+      opentelekomcloud.cloud.cbr_vault:
+        name: "{{ (vault_name) }}"
+        billing:
+          size: 50
+        bind_rules: [ {"key": "key01", "value": "value01" } ]
+      register: updated_vault
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - updated_vault is success
+          - updated_vault is changed
+          - updated_vault.bind_rules.tags | length == 1
+
     - name: Associate resources CBR vault
       opentelekomcloud.cloud.cbr_vault:
         name: "{{ (vault_name) }}"
