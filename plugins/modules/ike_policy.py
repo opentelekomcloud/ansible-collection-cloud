@@ -186,14 +186,14 @@ class IkePolicyModule(OTCModule):
                 if self.params['encryption_algorithm'] != ike_policy['encryption_algorithm']:
                     require_update = True
             if self.params['pfs']:
-                 if self.params['pfs'] != ike_policy['pfs']:
-                     require_update = True
+                if self.params['pfs'] != ike_policy['pfs']:
+                    require_update = True
             if self.params['units']:
-                 if self.params['units'] != ike_policy['lifetime']['units']:
-                     require_update = True
+                if self.params['units'] != ike_policy['lifetime']['units']:
+                    require_update = True
             if self.params['value']:
-                 if self.params['value'] != ike_policy['lifetime']['value']:
-                     require_update = True
+                if self.params['value'] != ike_policy['lifetime']['value']:
+                    require_update = True
         return require_update
 
     def run(self):
@@ -213,8 +213,8 @@ class IkePolicyModule(OTCModule):
             attrs['pfs'] = self.params['pfs']
         if self.params['phase1_negotiation_mode']:
             attrs['phase1_negotiation_mode'] = self.params['phase1_negotiation_mode']
+        attrs['lifetime'] = {}
         if self.params['units'] or self.params['value']:
-            attrs['lifetime'] = {}
             if self.params['units']:
                 attrs['lifetime']['units'] = self.params['units']
             if self.params['value']:
@@ -254,11 +254,10 @@ class IkePolicyModule(OTCModule):
             attrs['pfs'] = 'group5'
         if not self.params['phase1_negotiation_mode']:
             attrs['phase1_negotiation_mode'] = 'main'
-        if attrs['lifetime']:
-            if not self.params['units']:
-                attrs['lifetime']['units'] = 'seconds'
-            if not self.params['value']:
-                attrs['lifetime']['value'] = 3600
+        if not self.params['units']:
+            attrs['lifetime']['units'] = 'seconds'
+        if not self.params['value']:
+            attrs['lifetime']['value'] = 3600
         if self.ansible.check_mode:
             self.exit_json(changed=True)
         created_ikepolicy = self.conn.network.create_vpn_ike_policy(**attrs)

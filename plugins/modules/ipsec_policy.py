@@ -153,8 +153,7 @@ class IpsecPolicyModule(OTCModule):
         project_id=dict(type='str', required=False),
         transform_protocol=dict(required=False, type='str'),
         state=dict(type='str', required=False, choices=['present', 'absent'],
-                   default='present'),
-        action=dict(type='str', required=False)
+                   default='present')
     )
 
     def _system_state_change(self, vault):
@@ -181,14 +180,14 @@ class IpsecPolicyModule(OTCModule):
                 if self.params['encryption_algorithm'] != ipsec_policy['encryption_algorithm']:
                     require_update = True
             if self.params['pfs']:
-                 if self.params['pfs'] != ipsec_policy['pfs']:
-                     require_update = True
+                if self.params['pfs'] != ipsec_policy['pfs']:
+                    require_update = True
             if self.params['units']:
-                 if self.params['units'] != ipsec_policy['lifetime']['units']:
-                     require_update = True
+                if self.params['units'] != ipsec_policy['lifetime']['units']:
+                    require_update = True
             if self.params['value']:
-                 if self.params['value'] != ipsec_policy['lifetime']['value']:
-                     require_update = True
+                if self.params['value'] != ipsec_policy['lifetime']['value']:
+                    require_update = True
         return require_update
 
     def run(self):
