@@ -151,7 +151,7 @@ class IpsecPolicyModule(OTCModule):
         value=dict(required=False, type='int'),
         units=dict(required=False, type='str'),
         project_id=dict(type='str', required=False),
-        transform_protocol=dict(required=False, type='str'),
+        transform_protocol=dict(required=False, type='str', choices=['esp', 'ah', 'ah-esp']),
         state=dict(type='str', required=False, choices=['present', 'absent'],
                    default='present')
     )
