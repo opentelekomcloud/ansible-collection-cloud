@@ -130,8 +130,7 @@ options:
     description:
       - Rules for automatic association. Filters automatically associated\
         resources by tag.
-      - Updating this parameter will not affect the changed state (when\
-       value in updated, changed will be false anyway).
+      - Updating this parameter will not affect the changed state (when value in updated, changed will be false anyway).
     type: list
     elements: dict
     suboptions:
@@ -158,16 +157,14 @@ options:
   smn_notify:
     description:
       - Exception notification function. True by default.
-      - Updating this parameter will not affect the changed state (when value\
-       in updated, changed will be false anyway).
+      - Updating this parameter will not affect the changed state (when value in updated, changed will be false anyway).
     type: bool
   threshold:
     description:
       - Vault capacity threshold. If the vault capacity usage exceeds this\
         threshold and smn_notify is true, an exception notification is sent.\
         Can be set only in update. 80 by default.
-      - Updating this parameter will not affect the changed state (when value\
-       in updated, changed will be false anyway).
+      - Updating this parameter will not affect the changed state (when value in updated, changed will be false anyway).
     type: int
   state:
     description:
@@ -266,6 +263,14 @@ vault:
       tags:
         description: Vault tags.
         type: list
+        elements: dict
+        contains:
+          key:
+            description: Key.
+            type: str
+          value:
+            description: Value.
+            type: str        
       auto_bind:
         description: Indicates whether automatic association is enabled.
         type: bool
@@ -401,8 +406,7 @@ class CBRVaultModule(OTCModule):
         for tag in tags:
             parsed_tag = {}
             parsed_tag['key'] = tag.get('key')\
-                if tag.get('key') else self.fail_json(msg="'key' is required\
-                                                                    for 'tag'")
+                if tag.get('key') else self.fail_json(msg="'key' is required for 'tag'")
             if tag.get('value'):
                 parsed_tag['value'] = tag.get('value')
             else:
@@ -416,8 +420,7 @@ class CBRVaultModule(OTCModule):
         for rule in bind_rules:
             parsed_rule = {}
             parsed_rule['key'] = rule.get('key')\
-                if rule.get('key') else self.fail_json(msg="'key' is required\
-                                                                    for 'tag'")
+                if rule.get('key') else self.fail_json(msg="'key' is required for 'tag'")
             if rule.get('value'):
                 parsed_rule['value'] = rule.get('value')
             else:
@@ -492,17 +495,15 @@ class CBRVaultModule(OTCModule):
         action = None
         policy = None
         state = self.params['state']
+        name_or_id = self.params['name']
         if self.params['auto_bind']:
             attrs['auto_bind'] = self.params['auto_bind']
         if self.params['action']:
             action = self.params['action']
         if self.params['bind_rules']:
             attrs['bind_rules'] = self._parse_bind_rules()
-        if self.params['tags']:
-            attrs['tags'] = self._parse_tags()
-        vault = self.conn.cbr.find_vault(name_or_id=self.params['name'],
-                                         ignore_missing=True)
 
+        vault = self.conn.cbr.find_vault(name_or_id=name_or_id, ignore_missing=True)
         if self.ansible.check_mode:
             if self._system_state_change(vault):
                 self.exit_json(changed=True)
@@ -541,7 +542,7 @@ class CBRVaultModule(OTCModule):
                     attrs['threshold'] = self.params['threshold']
                 else:
                     attrs['threshold'] = 80
-                require_update = self._require_update(vault)
+                require_update = self._require_update(vault, **attrs)
                 if self.ansible.check_mode:
                     if require_update:
                         self.exit_json(changed=True)
@@ -554,10 +555,6 @@ class CBRVaultModule(OTCModule):
             if state == 'absent':
                 self.conn.cbr.delete_vault(vault=vault)
                 self.exit(changed=True)
-
-        if state == 'absent':
-            self.exit_json(changed=False,
-                           msg="vault {0} not found".format(self.params['name']))
 
         if action in ('associate_resources', 'dissociate_resources',
                       'bind_policy', 'unbind_policy') or state == 'absent':
@@ -583,7 +580,8 @@ class CBRVaultModule(OTCModule):
                 self.fail_json("'policy' not found")
         if self.params['description']:
             attrs['description'] = self.params['description']
-
+        if self.params['tags']:
+            attrs['tags'] = self._parse_tags()
         if self.ansible.check_mode:
             self.exit_json(changed=True)
         created_vault = self.conn.cbr.create_vault(**attrs)
