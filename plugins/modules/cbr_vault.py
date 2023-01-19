@@ -484,7 +484,6 @@ class CBRVaultModule(OTCModule):
                     require_update = True
             if self.params['bind_rules']:
                 if self.params['bind_rules'] != vault['bind_rules']:
-                    self.fail_json(vault['bind_rules'])
                     require_update = True
         return require_update
 
