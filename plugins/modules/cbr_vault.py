@@ -270,7 +270,7 @@ vault:
             type: str
           value:
             description: Value.
-            type: str        
+            type: str
       auto_bind:
         description: Indicates whether automatic association is enabled.
         type: bool
