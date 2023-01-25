@@ -9,4 +9,9 @@ skip_list:
   - '301'  # Commands should not change things if nothing needs doing
   - '701'  # No 'galaxy_info' found\
   - 'var-spacing' # Jinja2 variables and filters should have spaces before and after.
-  - 'name[casing]' # All names should start with an uppercase letter.
+  - deprecated-module  # Deprecated module.
+  - experimental  # all rules tagged as experimental
+  - fqcn[action-core]  # Use FQCN for builtin actions.
+  - galaxy[no-changelog]  # Rule for checking collection version is greater than 1.0.0 and checking for changelog.
+  - galaxy[version-incorrect]  # Rule for checking collection version is greater than 1.0.0 and checking for changelog.
+  - name[missing]  # Rule for checking task and play names.
