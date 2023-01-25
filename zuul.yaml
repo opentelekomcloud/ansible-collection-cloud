@@ -10,6 +10,9 @@
     check:
       jobs:
         - otc-ansible-collection-test-integration-eu-de:
+            required-projects:
+              - name: opendev.org/openstack/ansible-collections-openstack
+                override-checkout: master
             files: &integration-files
               - ^plugins/
               - ^tests/integration/
@@ -19,6 +22,9 @@
                 region: eu-de
               ansible_test_exclude_tests: []
         - otc-ansible-collection-test-integration-eu-nl:
+            required-projects:
+              - name: opendev.org/openstack/ansible-collections-openstack
+                override-checkout: master
             files: *integration-files
             vars: &vars-eu-nl
               ansible_test_integration_env:
@@ -39,6 +45,9 @@
                 - obs/group1/
                 - storage/vbs/
         - otc-ansible-collection-test-integration-eu-ch:
+            required-projects:
+              - name: opendev.org/openstack/ansible-collections-openstack
+                override-checkout: master
             files: *integration-files
             vars: &vars-eu-ch
               ansible_test_integration_env:
