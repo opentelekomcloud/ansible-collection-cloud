@@ -89,7 +89,7 @@ requirements:
 EXAMPLES = '''
 ---
 - name: replace all tags with a single tag on a server
-  os_tag:
+  opentelekomcloud.cloud.tag:
     server: "{{ server_name }}"
     state: present
     tags:
@@ -97,7 +97,7 @@ EXAMPLES = '''
     mode: replace
 
 - name: replace all tags with a single tag on a network
-  os_tag:
+  opentelekomcloud.cloud.tag:
     network: "{{ network_name }}"
     state: present
     tags:
@@ -105,7 +105,7 @@ EXAMPLES = '''
     mode: replace
 
 - name: append tags on instance
-  os_tag:
+  opentelekomcloud.cloud.tag:
     server: "{{ server_name }}"
     state: present
     mode: set
@@ -114,13 +114,13 @@ EXAMPLES = '''
         - new_tag2
 
 - name: remove all tags
-  os_tag:
+  opentelekomcloud.cloud.tag:
     server: "{{ server_name }}"
     state: present
     tags:
 
 - name: remove only given tags
-  os_tag:
+  opentelekomcloud.cloud.tag:
     server: "{{ server_name }}"
     state: present
     tags:
