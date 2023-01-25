@@ -200,7 +200,6 @@ class CBRBackupModule(OTCModule):
 
     def run(self):
         query = {}
-
         if self.params['mappings']:
             query['mappings'] = self._parse_mappings()
         if self.params['power_on']:
