@@ -1,12 +1,12 @@
-ansible
+ansible==7.2.0
 ansible-lint
 openstacksdk
-pycodestyle==2.6.0
+pycodestyle==2.10.0
 flake8==3.8.4
 pylint
-voluptuous
+voluptuous==0.13.1
 yamllint
 rstcheck
 ruamel.yaml
 tox
-otcextensions
+otcextensions==0.29
