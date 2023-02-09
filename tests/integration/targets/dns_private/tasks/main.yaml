@@ -68,6 +68,11 @@
       ansible.builtin.debug:
         var: dns_zo_pr.zone
 
+    - name: check zone is created
+      openstack.cloud.dns_zone_info:
+        name: "{{ zone_private_name }}"
+      register: dns_zo_info
+
     - name: assert result
       ansible.builtin.assert:
         that:
