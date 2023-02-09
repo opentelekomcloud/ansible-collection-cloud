@@ -116,12 +116,12 @@
 
     - name: check zone is created
       opentelekomcloud.cloud.dns_zone_info:
-        name: "{{ zone_public_name }}"
+        name: "{{ dns_zo.zone.id }}"
       register: dns_zo_info
 
     - name: Updating a public DNS Zone - check mode
       opentelekomcloud.cloud.dns_zone:
-        name: "{{ zone_public_name }}"
+        name: "{{ dns_zo.zone.id }}"
         state: present
         description: "{{ description }}"
       check_mode: true
@@ -135,7 +135,7 @@
 
     - name: Updating a public DNS Zone
       opentelekomcloud.cloud.dns_zone:
-        name: "{{ zone_public_name }}"
+        name: "{{ dns_zo.zone.id }}"
         state: present
         description: "{{ description }}"
       register: dns_zo
