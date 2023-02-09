@@ -115,7 +115,7 @@
           - dns_zo.zone is defined
 
     - name: check zone is created
-      openstack.cloud.dns_zone_info:
+      opentelekomcloud.cloud.dns_zone_info:
         name: "{{ zone_public_name }}"
       register: dns_zo_info
 
