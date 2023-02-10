@@ -188,8 +188,8 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class CSSClusterInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(),
-        start=dict(required=False, type='int', default=1),
-        limit=dict(required=False, type='int')
+        start=dict(type='int', default=1),
+        limit=dict(type='int')
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -198,15 +198,19 @@ class CSSClusterInfoModule(OTCModule):
     otce_min_version = '0.24.1'
 
     def run(self):
-        kwargs = {k: self.params[k]
-                  for k in ['name', 'start', 'limit']
-                  if self.params[k] is not None}
+        name = self.params['name']
+        if name:
+            css_clusters = self.conn.css.find_cluster(name)
+        else:
+            kwargs = {k: self.params[k]
+                      for k in ['start', 'limit']
+                      if self.params[k] is not None}
 
-        css_clusters = self.conn.css.find_cluster(**kwargs)
+            raw = self.conn.css.clusters(**kwargs)
+            css_clusters = [c.to_dict(computed=False) for c in raw]
 
         self.exit_json(changed=False,
-                       css_clusters=[c.to_dict(computed=False)
-                                     for c in css_clusters])
+                       css_clusters=css_clusters)
 
 
 def main():
