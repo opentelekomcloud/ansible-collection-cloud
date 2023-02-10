@@ -13,12 +13,12 @@
 
 DOCUMENTATION = '''
 module: dns_zone_info
-short_description: Get DNS PTR Records
+short_description: Get DNS Zones info
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.1.2"
+version_added: "0.13.1"
 author: "Vladimir Vshivkov (@vladimirvshivkov)"
 description:
-    - Get DNS PTR Records from the OTC.
+    - Get DNS Zones info from the OTC.
 options:
   name:
     description:
