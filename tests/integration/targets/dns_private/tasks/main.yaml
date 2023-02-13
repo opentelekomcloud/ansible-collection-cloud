@@ -68,6 +68,11 @@
       ansible.builtin.debug:
         var: dns_zo_pr.zone
 
+    - name: check zone is created
+      opentelekomcloud.cloud.dns_zone_info:
+        name: "{{ dns_zo_pr.zone.id }}"
+      register: dns_zo_info
+
     - name: assert result
       ansible.builtin.assert:
         that:
@@ -76,7 +81,7 @@
 
     - name: Updating a private DNS Zone - check mode
       opentelekomcloud.cloud.dns_zone:
-        name: "{{ zone_private_name }}"
+        name: "{{ dns_zo_pr.zone.id }}"
         state: present
         description: "{{ description }}"
         zone_type: "private"
@@ -91,7 +96,7 @@
 
     - name: Updating a private DNS Zone
       opentelekomcloud.cloud.dns_zone:
-        name: "{{ zone_private_name }}"
+        name: "{{ dns_zo_pr.zone.id }}"
         state: present
         description: "{{ description }}"
         zone_type: "private"
@@ -123,7 +128,7 @@
       block:
         - name: Drop DNS private Zone
           opentelekomcloud.cloud.dns_zone:
-            name: "{{ zone_private_name }}"
+            name: "{{ dns_zo_pr.zone.id }}"
             zone_type: "private"
             state: absent
           register: dns_zo_pr_dr

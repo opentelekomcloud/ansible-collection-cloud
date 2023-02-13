@@ -16,7 +16,9 @@ module: css_cluster_info
 short_description: Get info about CSS clusters.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.9.0"
-author: "Yustina Kvrivishvili (@YustinaKvr)"
+author:
+    - "Yustina Kvrivishvili (@YustinaKvr)"
+    - "Vladimir Vshivkov (@vladimirvshivkov)"
 description:
   - Get CSS cluster info from the OTC.
 options:
@@ -184,11 +186,10 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 
 class CSSClusterInfoModule(OTCModule):
-
     argument_spec = dict(
-        name=dict(required=False),
-        start=dict(required=False, type='int', default=1),
-        limit=dict(required=False, type='int')
+        name=dict(),
+        start=dict(type='int', default=1),
+        limit=dict(type='int')
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -197,33 +198,19 @@ class CSSClusterInfoModule(OTCModule):
     otce_min_version = '0.24.1'
 
     def run(self):
-
-        data = []
-        query = {}
-
-        if self.params['start']:
-            query['start'] = self.params['start']
-        if self.params['limit']:
-            query['limit'] = self.params['limit']
-
-        if self.params['name']:
-            raw = self.conn.css.find_cluster(
-                name_or_id=self.params['name'],
-                ignore_missing=True)
-            if raw:
-                dt = raw.to_dict()
-                dt.pop('location')
-                data.append(dt)
+        name = self.params['name']
+        if name:
+            css_clusters = self.conn.css.find_cluster(name)
         else:
-            for raw in self.conn.css.clusters(**query):
-                dt = raw.to_dict()
-                dt.pop('location')
-                data.append(dt)
+            kwargs = {k: self.params[k]
+                      for k in ['start', 'limit']
+                      if self.params[k] is not None}
 
-        self.exit(
-            changed=False,
-            clusters=data
-        )
+            raw = self.conn.css.clusters(**kwargs)
+            css_clusters = [c.to_dict(computed=False) for c in raw]
+
+        self.exit_json(changed=False,
+                       css_clusters=css_clusters)
 
 
 def main():
