@@ -486,7 +486,7 @@ class CBRVaultModule(OTCModule):
                 if self.params['auto_expand'] != vault['auto_expand']:
                     require_update = True
             if self.params['bind_rules']:
-                if self.params['bind_rules'] != vault['bind_rules']:
+                if self._parse_bind_rules() != vault['bind_rules']:
                     require_update = True
         return require_update
 
@@ -531,7 +531,8 @@ class CBRVaultModule(OTCModule):
             if state == 'present':
                 if self.params['billing']:
                     if self.params['billing'].get('size'):
-                        attrs['billing'] = {'size': self.params['billing']['size']}
+                        attrs['billing'] = {
+                            'size': self.params['billing']['size']}
                 if self.params['auto_expand']:
                     attrs['auto_expand'] = self.params['auto_expand']
                 if self.params['smn_notify']:
@@ -542,7 +543,7 @@ class CBRVaultModule(OTCModule):
                     attrs['threshold'] = self.params['threshold']
                 else:
                     attrs['threshold'] = 80
-                require_update = self._require_update(vault, **attrs)
+                require_update = self._require_update(vault)
                 if self.ansible.check_mode:
                     if require_update:
                         self.exit_json(changed=True)

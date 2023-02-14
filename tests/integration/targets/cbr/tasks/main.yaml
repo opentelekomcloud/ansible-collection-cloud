@@ -55,7 +55,7 @@
         name: "{{ (vault_name) }}"
         billing:
           size: 50
-        bind_rules: [ {"key": "key01", "value": "value01" } ]
+        bind_rules: [{"key": "key01", "value": "value01"}]
       register: updated_vault
 
     - name: assert result
@@ -63,37 +63,37 @@
         that:
           - updated_vault is success
           - updated_vault is changed
-          - updated_vault.bind_rules.tags | length == 1
+          - updated_vault.vault.bind_rules.tags | length == 1
 
     - name: Associate resources CBR vault
       opentelekomcloud.cloud.cbr_vault:
         name: "{{ (vault_name) }}"
         resources: [{"id": '{{ vol2.volume.id }}', "type":"OS::Cinder::Volume"}]
         action: "associate_resources"
-      register: vault
+      register: result
 
     - name: assert result
       ansible.builtin.assert:
         that:
-          - vault is success
-          - vault is changed
+          - result is success
+          - result is changed
 
     - name: Dissociate resources CBR vault
       opentelekomcloud.cloud.cbr_vault:
         name: "{{ (vault_name) }}"
         resource_ids: ['{{ vol2.volume.id }}']
         action: "dissociate_resources"
-      register: vault
+      register: result
 
     - name: assert result
       ansible.builtin.assert:
         that:
-          - vault is success
-          - vault is changed
+          - result is success
+          - result is changed
 
     - name: Create a restore point
       opentelekomcloud.cloud.cbr_restore_point:
-        vault: "{{ vault.vault.id }}"
+        vault: "{{ updated_vault.vault.id }}"
       register: checkpoint
 
     - name: assert result
@@ -104,7 +104,7 @@
 
     - name: Getting backup list
       opentelekomcloud.cloud.cbr_backup_info:
-        vault: "{{ vault.vault.id }}"
+        vault: "{{ updated_vault.vault.id }}"
       register: backups_list
 
     - name: assert result
