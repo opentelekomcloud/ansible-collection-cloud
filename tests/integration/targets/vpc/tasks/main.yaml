@@ -62,10 +62,9 @@
           - created_bandwidth is defined
 
     - name: Add eip to bandwidth
-      opentelekomcloud.cloud.bandwidth:
+      opentelekomcloud.cloud.associate_bandwidth:
         name: "{{ bandwidth_name }}"
         publicip_id: "{{ fl.floating_ip.id }}"
-        action: add_eip
       register: bandwidth
 
     - name: assert result
@@ -76,12 +75,12 @@
           - bandwidth.bandwidth['publicip_info'] | length == 1
 
     - name: Remove eip from bandwidth
-      opentelekomcloud.cloud.bandwidth:
+      opentelekomcloud.cloud.associate_bandwidth:
         name: "{{ bandwidth_name }}"
         publicip_id: "{{ fl.floating_ip.id }}"
         size: 10
         charge_mode: "traffic"
-        action: remove_eip
+        state: absent
       register: bandwidth
 
     - name: assert result
