@@ -112,19 +112,19 @@ bandwidth:
 
 EXAMPLES = '''
 # Assign bandwidth:
-opentelekomcloud.cloud.bandwidth:
-  name: "test-bandwidth"
-  size: 15
+- opentelekomcloud.cloud.bandwidth:
+    name: "test-bandwidth"
+    size: 15
 
 # Update bandwidth:
-opentelekomcloud.cloud.bandwidth:
-  name: "test-bandwidth"
-  size: 10
+- opentelekomcloud.cloud.bandwidth:
+    name: "test-bandwidth"
+    size: 10
 
 # Delete bandwidth:
-opentelekomcloud.cloud.bandwidth:
-  name: "test-bandwidth"
-  state: absent
+- opentelekomcloud.cloud.bandwidth:
+    name: "test-bandwidth"
+    state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

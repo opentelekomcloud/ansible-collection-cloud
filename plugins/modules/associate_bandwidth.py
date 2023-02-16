@@ -127,23 +127,23 @@ bandwidth:
 
 EXAMPLES = '''
 # Add eip to bandwidth:
-opentelekomcloud.cloud.bandwidth:
-  name: "test-bandwidth"
-  publicip_id: "42d922af-18be-4e6d-804e-18f8c8871471"
+- opentelekomcloud.cloud.associate_bandwidth:
+    name: "test-bandwidth"
+    publicip_id: "42d922af-18be-4e6d-804e-18f8c8871471"
 
 # Remove eip from bandwidth:
-opentelekomcloud.cloud.bandwidth:
-  name: "new-bandwidth"
-  publicip_id: "42d922af-18be-4e6d-804e-18f8c8871471"
-  charge_mode: "traffic"
-  size: 10
-  state: absent
+- opentelekomcloud.cloud.associate_bandwidth:
+    name: "new-bandwidth"
+    publicip_id: "42d922af-18be-4e6d-804e-18f8c8871471"
+    charge_mode: "traffic"
+    size: 10
+    state: absent
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class Bandwidth(OTCModule):
+class AssociateBandwidth(OTCModule):
     argument_spec = dict(
         name=dict(required=True),
         size=dict(type='int', required=False),
@@ -216,7 +216,7 @@ class Bandwidth(OTCModule):
 
 
 def main():
-    module = Bandwidth()
+    module = AssociateBandwidth()
     module()
 
 
