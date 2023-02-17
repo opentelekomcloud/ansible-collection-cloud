@@ -239,12 +239,6 @@
             purge: true
           failed_when: false
 
-        - name: Drop existing router
-          openstack.cloud.router:
-            name: "{{ router.router.name }}"
-            state: absent
-          failed_when: false
-
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet.subnet.name }}"
@@ -254,5 +248,11 @@
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network.network.name }}"
+            state: absent
+          failed_when: false
+
+        - name: Drop existing router
+          openstack.cloud.router:
+            name: "{{ router.router.name }}"
             state: absent
           failed_when: false

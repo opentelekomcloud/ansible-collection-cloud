@@ -61,7 +61,6 @@
             scaling_configuration: "{{ config_name }}"
             state: absent
           register: dropped_as_config
-          ignore_errors: true
 
         - name: assert result
           ansible.builtin.assert:
