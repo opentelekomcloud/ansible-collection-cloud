@@ -235,30 +235,52 @@
             force_delete: true
             wait: true
             timeout: 360
-          register: dropped_as_group
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Delete as config
           opentelekomcloud.cloud.as_config:
             scaling_configuration: "{{ config_name }}"
             state: absent
-          register: dropped_as_config
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Delete keypair
           openstack.cloud.keypair:
             name: "{{ key_name }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet.subnet.name }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network.network.name }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing router
           openstack.cloud.router:
             name: "{{ router.router.name }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
