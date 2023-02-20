@@ -57,7 +57,7 @@
 
   always:
     - name: Cleanup
-      tasks:
+      block:
         - name: Delete VPC
           opentelekomcloud.cloud.vpc:
             name: "{{ vpc_name }}"
