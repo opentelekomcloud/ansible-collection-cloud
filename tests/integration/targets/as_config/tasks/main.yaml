@@ -68,8 +68,8 @@
         - name: Assert result
           ansible.builtin.assert:
             that:
-              - dropped_as_config is success
-              - dropped_as_config is changed
+              - removed is success
+              - removed is changed
 
         - name: Delete keypair
           openstack.cloud.keypair:
