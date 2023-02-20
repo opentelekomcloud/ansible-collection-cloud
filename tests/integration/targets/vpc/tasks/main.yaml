@@ -22,7 +22,7 @@
       check_mode: true
       register: vpc_check_mode
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - vpc_check_mode is success
@@ -36,7 +36,7 @@
         state: present
       register: vpc
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - vpc is success
@@ -49,7 +49,7 @@
         description: "Test vpc"
       register: updated_vpc
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - updated_vpc is success

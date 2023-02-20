@@ -25,7 +25,7 @@
       opentelekomcloud.cloud.vpc_info:
       register: all_vpcs
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - all_vpcs is success
@@ -37,7 +37,7 @@
         name_or_id: "{{ vpc_name }}"
       register: new_vpc
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - new_vpc is success

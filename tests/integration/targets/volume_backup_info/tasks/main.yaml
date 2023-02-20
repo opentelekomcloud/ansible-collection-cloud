@@ -9,7 +9,7 @@
       ansible.builtin.debug:
         var: backup
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - backup is success

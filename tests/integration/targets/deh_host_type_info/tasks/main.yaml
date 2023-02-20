@@ -7,11 +7,11 @@
         az: "{{ deh_az | default('eu-de-01') }}"
       register: deh
 
-    - name: debug deh
+    - name: Debug deh
       ansible.builtin.debug:
         var: deh.deh_host_types
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - deh is success

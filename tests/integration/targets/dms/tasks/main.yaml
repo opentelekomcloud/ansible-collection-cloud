@@ -1,4 +1,4 @@
- - name: DMS tests
+- name: DMS tests
   block:
     - name: Set random prefix
       ansible.builtin.set_fact:

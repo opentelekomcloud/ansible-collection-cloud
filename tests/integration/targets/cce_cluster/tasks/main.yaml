@@ -58,7 +58,7 @@
         container_network_mode: "{{ container_network_mode }}"
       register: cluster
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - cluster is success

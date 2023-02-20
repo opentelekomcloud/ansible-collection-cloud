@@ -37,7 +37,7 @@
       check_mode: true
       register: deh_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - deh_ch is success
@@ -57,7 +57,7 @@
             value: value2
       register: deh
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - deh is success
@@ -72,7 +72,7 @@
         - deh is defined
       register: deh_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - deh_ch is success
@@ -85,7 +85,7 @@
         - deh is defined
       register: deh
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - deh is success
@@ -97,7 +97,7 @@
         - deh is defined
       register: server
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - server is success

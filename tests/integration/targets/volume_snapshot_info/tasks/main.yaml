@@ -9,7 +9,7 @@
       ansible.builtin.debug:
         var: snapshot
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - snapshot is success

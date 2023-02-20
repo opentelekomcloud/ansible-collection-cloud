@@ -8,7 +8,7 @@
       opentelekomcloud.cloud.as_quota_info:
       register: as_quotas
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_quotas is success

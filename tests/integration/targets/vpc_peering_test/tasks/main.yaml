@@ -84,7 +84,7 @@
       register: vpc_peering_check
       check_mode: true
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - vpc_peering_check is changed
@@ -98,7 +98,7 @@
         remote_project: "{{ project_id }}"
       register: vpc_peering
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - vpc_peering is success
@@ -114,7 +114,7 @@
         remote_project: "{{ project_id }}"
       register: updated_vpc_peering
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - updated_vpc_peering is success

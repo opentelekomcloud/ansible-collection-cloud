@@ -6,11 +6,11 @@
         cloud: "{{ test_cloud }}"
       register: dn
 
-    - name: debug configs
+    - name: Debug configs
       ansible.builtin.debug:
         var: dn.dnat_rules
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dn is success

@@ -8,7 +8,7 @@
       opentelekomcloud.cloud.anti_ddos_optional_policies_info:
       register: anti_ddos_optional_policies_info
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - anti_ddos_optional_policies_info is success

@@ -9,7 +9,7 @@
       ansible.builtin.debug:
         var: vpc_routes
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - vpc_routes is success

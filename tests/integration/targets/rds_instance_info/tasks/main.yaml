@@ -8,7 +8,7 @@
       opentelekomcloud.cloud.rds_instance_info:
       register: rds
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - rds is success
@@ -48,7 +48,7 @@
         router: some_fake_router
       register: rds
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - rds is success

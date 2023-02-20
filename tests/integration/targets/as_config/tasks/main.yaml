@@ -30,7 +30,7 @@
       register: as_config_check
       check_mode: true
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_config_check is changed
@@ -47,7 +47,7 @@
             disk_type: 'SYS'
       register: as_config
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_config is changed
@@ -65,7 +65,7 @@
           ignore_errors: true
           retries: 10
 
-        - name: assert result
+        - name: Assert result
           ansible.builtin.assert:
             that:
               - dropped_as_config is success

@@ -7,7 +7,7 @@
         datastore: "postgresql"
       register: rds
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - rds is success

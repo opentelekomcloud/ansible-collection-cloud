@@ -106,7 +106,7 @@
       check_mode: true
       register: as_policy
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_policy is changed
@@ -120,7 +120,7 @@
         state: "present"
       register: as_policy
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_policy is success
@@ -142,7 +142,7 @@
         scaling_group: "{{ as_group.as_group.id }}"
       register: as_policies
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_policies is success
@@ -160,7 +160,7 @@
           instance_number: 1
       register: as_policy
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_policy is success
@@ -175,7 +175,7 @@
       register: as_policy
       check_mode: true
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_policy is changed
@@ -187,7 +187,7 @@
         state: "absent"
       register: as_policy
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_policy is success
@@ -199,7 +199,7 @@
         scaling_group: "{{ as_group.as_group.id }}"
       register: as_policies
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_policies is success

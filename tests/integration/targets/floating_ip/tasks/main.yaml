@@ -7,7 +7,7 @@
         network: admin_external_net
       register: fip
 
-    - name: assert allocation
+    - name: Assert allocation
       ansible.builtin.assert:
         that:
           - fip is changed

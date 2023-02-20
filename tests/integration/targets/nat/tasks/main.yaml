@@ -58,7 +58,7 @@
       check_mode: true
       register: nat_gw_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - nat_gw_ch is success
@@ -71,7 +71,7 @@
         router: "{{ router_name }}"
       register: nat_gw
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - nat_gw is success
@@ -84,7 +84,7 @@
       check_mode: true
       register: nat_gw_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - nat_gw_ch is success
@@ -96,7 +96,7 @@
         description: test-description
       register: nat_gw
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - nat_gw is success
@@ -107,7 +107,7 @@
         network: admin_external_net
       register: fip
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - fip is success
@@ -121,7 +121,7 @@
       check_mode: true
       register: snat_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - snat_ch is success
@@ -134,7 +134,7 @@
         floating_ip: "{{ fip.floating_ip.floating_ip_address }}"
       register: snat
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - snat is success
@@ -160,7 +160,7 @@
         network: admin_external_net
       register: fip2
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - fip2 is success
@@ -179,7 +179,7 @@
       check_mode: true
       register: dnat_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dnat_ch is success
@@ -197,7 +197,7 @@
         private_ip: "192.168.0.2"
       register: dnat
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dnat is success

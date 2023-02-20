@@ -68,7 +68,7 @@
         wait: true
       register: cluster
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - cluster is success
@@ -80,7 +80,7 @@
         name: "{{ keypair_name }}"
       register: ssh_key
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - ssh_key is success
@@ -121,7 +121,7 @@
         state: present
       register: node
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - node is success

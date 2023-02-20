@@ -18,12 +18,12 @@
         dds_flavor: "dds.mongodb.s2.medium.4.repset"
 
     - name: Delete missing instance
-      dds_instance:
+      opentelekomcloud.cloud.dds_instance:
         state: absent
         name: "definitely_missing_instance"
       register: dds
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dds is success
@@ -80,7 +80,7 @@
         ssl_option: 1
         state: present
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - obj is success

@@ -9,7 +9,7 @@
       opentelekomcloud.cloud.server_group_info:
       register: sg
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - sg is success

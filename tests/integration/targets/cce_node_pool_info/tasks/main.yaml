@@ -2,16 +2,16 @@
 - name: CCE Node Pool Info tests
   block:
     - name: Get all Node Pools of a cluster
-      cce_node_pool_info:
+      opentelekomcloud.cloud.cce_node_pool_info:
         cloud: "{{ test_cloud }}"
         cce_cluster: test-cluster
       register: pools
 
-    - name: debug pools
+    - name: Debug pools
       ansible.builtin.debug:
         var: pools.cce_node_pools
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - pools is success

@@ -81,7 +81,7 @@
         system_encrypted: 0
       register: cluster
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - cluster is success
