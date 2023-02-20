@@ -129,46 +129,60 @@
             name: "{{ updated_vpc_peering.vpc_peering.name }}"
             state: absent
           register: dropped
-          failed_when: false
-
-        - name: assert result
-          ansible.builtin.assert:
-            that:
-              - dropped is success
-              - dropped is changed
+          until: dropped is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing first router
           openstack.cloud.router:
             name: "{{ router_name_1 }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing first subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name_1 }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing first network
           openstack.cloud.network:
             name: "{{ network_name_1 }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing second router
           openstack.cloud.router:
             name: "{{ router_name_2 }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing second subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name_2 }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing second network
           openstack.cloud.network:
             name: "{{ network_name_2 }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

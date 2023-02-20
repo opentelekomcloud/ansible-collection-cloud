@@ -1,4 +1,4 @@
-- name: DMS tests
+ - name: DMS tests
   block:
     - name: Set random prefix
       ansible.builtin.set_fact:
@@ -112,42 +112,52 @@
             queue_name: '{{ queue_name }}'
             group_name: '{{ group_name }}'
             state: absent
-          register: dms_queue_group_rm
-          check_mode: false
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Delete Queue
           opentelekomcloud.cloud.dms_queue:
             name: '{{ queue_name }}'
             state: absent
-          register: dms_queue_rm
-          check_mode: false
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Delete Security Group
           openstack.cloud.security_group:
             name: "{{ sg_name }}"
             state: absent
-          register: dms_sg
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing Router
           openstack.cloud.router:
             name: "{{ router_name }}"
             state: absent
-          register: dns_rout_dr
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
-          register: dns_subnet_dr
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network_name }}"
             state: absent
-          register: dns_net_dr
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

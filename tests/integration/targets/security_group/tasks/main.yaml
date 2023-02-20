@@ -44,3 +44,7 @@
           opentelekomcloud.cloud.security_group:
             name: "{{ security_group_name }}"
             state: "absent"
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

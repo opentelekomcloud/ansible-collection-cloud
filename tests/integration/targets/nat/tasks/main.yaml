@@ -222,8 +222,10 @@
           when:
             - nat_gw.gateway.id is defined
             - snat_rules.snat_rules is defined
-          register: snat
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop EIP for snat rule
           opentelekomcloud.cloud.floating_ip:
@@ -231,16 +233,20 @@
             purge: true
             state: absent
           when: fip is defined
-          register: fip
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: List DNAT rules of gateway
           opentelekomcloud.cloud.nat_dnat_rule_info:
             gateway: "{{ nat_gateway_name }}"
           when:
             - nat_gw.gateway.id is defined
-          register: dnat_rules
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop DNAT rules
           opentelekomcloud.cloud.nat_dnat_rule:
@@ -250,8 +256,10 @@
           when:
             - nat_gw.gateway.id is defined
             - dnat_rules.dnat_rules is defined
-          register: dnat
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop EIP for dnat rule
           opentelekomcloud.cloud.floating_ip:
@@ -259,8 +267,10 @@
             purge: true
             state: absent
           when: fip2 is defined
-          register: fip2
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
           #        - name: Drop server instance
           #          openstack.cloud.server:
@@ -273,26 +283,34 @@
           opentelekomcloud.cloud.nat_gateway:
             name: "{{ nat_gateway_name }}"
             state: absent
-          register: nat_gw
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing Router
           openstack.cloud.router:
             name: "{{ router_name }}"
             state: absent
-          register: nat_router
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
-          register: nat_subnet
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network_name }}"
             state: absent
-          register: nat_net
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

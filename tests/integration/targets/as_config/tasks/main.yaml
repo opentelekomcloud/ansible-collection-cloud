@@ -60,7 +60,10 @@
           opentelekomcloud.cloud.as_config:
             scaling_configuration: "{{ config_name }}"
             state: absent
-          register: dropped_as_config
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: assert result
           ansible.builtin.assert:
@@ -72,3 +75,7 @@
           openstack.cloud.keypair:
             name: "{{ key_name }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

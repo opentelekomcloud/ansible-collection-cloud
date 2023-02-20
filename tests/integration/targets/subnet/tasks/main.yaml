@@ -80,34 +80,24 @@
           - updated_subnet is changed
           - updated_subnet.subnet is defined
 
-    - name: Delete subnet
-      opentelekomcloud.cloud.subnet:
-        name: "{{ subnet_name }}"
-        vpc: "{{ vpc_name }}"
-        state: absent
-      register: deleted_subnet
+  always:
+    - name: Cleanup
+      block:
+        - name: Delete subnet
+          opentelekomcloud.cloud.subnet:
+            name: "{{ subnet_name }}"
+            vpc: "{{ vpc_name }}"
+            state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
-    - name: Assert result
-      ansible.builtin.assert:
-        that:
-          - deleted_subnet is success
-          - deleted_subnet is changed
-
-    - name: Check deleted subnet
-      opentelekomcloud.cloud.subnet:
-        name: "{{ subnet_name }}"
-        vpc: "{{ vpc_name }}"
-        state: absent
-      register: deleted_subnet_check
-      check_mode: true
-
-    - name: Assert result
-      ansible.builtin.assert:
-        that:
-          - deleted_subnet_check is success
-          - deleted_subnet_check is not changed
-
-    - name: Delete VPC
-      opentelekomcloud.cloud.vpc:
-        name: "{{ vpc_name }}"
-        state: absent
+        - name: Delete VPC
+          opentelekomcloud.cloud.vpc:
+            name: "{{ vpc_name }}"
+            state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

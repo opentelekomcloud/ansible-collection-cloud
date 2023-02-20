@@ -135,34 +135,52 @@
             cluster: "{{ cce_cluster_name }}"
             name: "{{ cce_node_name }}"
             state: "absent"
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop keypair
           openstack.cloud.keypair:
             name: "{{ keypair_name }}"
             state: "absent"
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop cluster
           opentelekomcloud.cloud.cce_cluster:
             name: "{{ cce_cluster_name }}"
             state: "absent"
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop router
           openstack.cloud.router:
             name: "{{ router_name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop network
           openstack.cloud.network:
             name: "{{ network_name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

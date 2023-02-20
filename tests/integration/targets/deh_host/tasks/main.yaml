@@ -110,5 +110,7 @@
           opentelekomcloud.cloud.deh_host:
             name: "{{ deh.deh_host.name }}"
             state: absent
-          register: deh
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

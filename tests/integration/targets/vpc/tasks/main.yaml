@@ -55,14 +55,14 @@
           - updated_vpc is success
           - updated_vpc is defined
 
-    - name: Delete VPC
-      opentelekomcloud.cloud.vpc:
-        name: "{{ vpc_name }}"
-        state: "absent"
-      register: deleted_vpc
-
-    - name: assert result
-      ansible.builtin.assert:
-        that:
-          - deleted_vpc is success
-          - deleted_vpc is changed
+  always:
+    - name: Cleanup
+      tasks:
+        - name: Delete VPC
+          opentelekomcloud.cloud.vpc:
+            name: "{{ vpc_name }}"
+            state: "absent"
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

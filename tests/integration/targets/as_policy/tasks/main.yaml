@@ -223,36 +223,53 @@
             state: absent
             force_delete: true
             wait: true
-          register: dropped_as_group
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop alarm
           opentelekomcloud.cloud.ces_alarms:
             alarm_name: "{{ alarm_name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop floating ip
           opentelekomcloud.cloud.floating_ip:
             floating_ip_address: "{{ fl_ip }}"
             state: absent
             purge: true
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet.subnet.name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network.network.name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing router
           openstack.cloud.router:
             name: "{{ router.router.name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

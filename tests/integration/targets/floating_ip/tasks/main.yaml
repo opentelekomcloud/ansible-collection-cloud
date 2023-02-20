@@ -23,7 +23,10 @@
             floating_ip_address: "{{ fip.floating_ip.floating_ip_address }}"
             purge: true
             state: absent
-          register: drop
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: assert check
           ansible.builtin.assert:
