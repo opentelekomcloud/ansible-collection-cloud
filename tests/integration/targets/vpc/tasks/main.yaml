@@ -9,10 +9,16 @@
       ansible.builtin.set_fact:
         prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
+    - name: Assigning Floating IP
+      opentelekomcloud.cloud.floating_ip:
+        network: admin_external_net
+      register: fl
+
     - name: Set initial facts
       ansible.builtin.set_fact:
         vpc_name: "{{ ( prefix + '_vpc') }}"
         cidr: "192.168.0.0/24"
+        bandwidth_name: "{{ ( prefix + '_bandwidth') }}"
 
     - name: Create VPC
       opentelekomcloud.cloud.vpc:
@@ -43,6 +49,63 @@
           - vpc is changed
           - vpc.vpc.enable_shared_snat is true
 
+    - name: Assign bandwidth
+      opentelekomcloud.cloud.bandwidth:
+        name: "{{ bandwidth_name }}"
+        size: 15
+      register: created_bandwidth
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - created_bandwidth is success
+          - created_bandwidth is defined
+
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        bandwidth_id: "{{ created_bandwidth.bandwidth.id }}"
+
+    - name: Add eip to bandwidth
+      opentelekomcloud.cloud.associate_bandwidth:
+        name: "{{ bandwidth_name }}"
+        publicip_id: "{{ fl.floating_ip.id }}"
+      register: bandwidth
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - bandwidth is success
+          - bandwidth is defined
+          - bandwidth.bandwidth['publicip_info'] | length == 1
+
+    - name: Remove eip from bandwidth
+      opentelekomcloud.cloud.associate_bandwidth:
+        name: "{{ bandwidth_name }}"
+        publicip_id: "{{ fl.floating_ip.id }}"
+        size: 10
+        charge_mode: "traffic"
+        state: absent
+      register: bandwidth
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - bandwidth is success
+          - bandwidth is defined
+
+    - name: Update bandwidth
+      opentelekomcloud.cloud.bandwidth:
+        name: "{{ bandwidth_id }}"
+        size: 14
+      register: bandwidth
+
+    - name: assert result
+      ansible.builtin.assert:
+        that:
+          - bandwidth is success
+          - bandwidth is defined
+          - bandwidth.bandwidth['size'] == 14
+
     - name: Update VPC
       opentelekomcloud.cloud.vpc:
         name: "{{ vpc_name }}"
@@ -58,6 +121,15 @@
   always:
     - name: Cleanup
       block:
+        - name: Delete bandwidth
+          opentelekomcloud.cloud.bandwidth:
+            name: "{{ bandwidth_id }}"
+            state: absent
+          register: deleted_bandwidth
+          until: deleted_bandwidth is not failed
+          ignore_errors: true
+          retries: 10
+
         - name: Delete VPC
           opentelekomcloud.cloud.vpc:
             name: "{{ vpc_name }}"
