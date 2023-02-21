@@ -18,12 +18,12 @@
         dds_flavor: "dds.mongodb.s2.medium.4.repset"
 
     - name: Delete missing instance
-      dds_instance:
+      opentelekomcloud.cloud.dds_instance:
         state: absent
         name: "definitely_missing_instance"
       register: dds
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dds is success
@@ -80,7 +80,7 @@
         ssl_option: 1
         state: present
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - obj is success
@@ -93,25 +93,37 @@
           opentelekomcloud.cloud.dds_instance:
             name: "{{ instance_name }}"
             state: "absent"
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop router
           openstack.cloud.router:
             cloud: "{{ test_cloud }}"
             name: "{{ router_name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop subnet
           openstack.cloud.subnet:
             cloud: "{{ test_cloud }}"
             name: "{{ subnet_name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop network
           openstack.cloud.network:
             cloud: "{{ test_cloud }}"
             name: "{{ network_name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

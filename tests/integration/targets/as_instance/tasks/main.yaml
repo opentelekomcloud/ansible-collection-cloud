@@ -158,7 +158,7 @@
       ansible.builtin.set_fact:
         init_name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - init_id_list|length == desire_instance_number
@@ -173,7 +173,7 @@
       check_mode: true
       register: as_instances
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_instances is success
@@ -192,7 +192,7 @@
       ansible.builtin.set_fact:
         init_name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - init_id_list|length == desire_instance_number
@@ -211,7 +211,7 @@
       ansible.builtin.set_fact:
         name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - id_list|length == init_id_list|length
@@ -225,7 +225,7 @@
         state: present
       register: as_instances
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_instances is success
@@ -244,7 +244,7 @@
       ansible.builtin.set_fact:
         name_list: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - id_list|length == init_id_list|length + 2
@@ -259,7 +259,7 @@
       check_mode: true
       register: as_instances
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_instances is success
@@ -273,7 +273,7 @@
         state: present
       register: as_instances
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_instances is success
@@ -288,7 +288,7 @@
       check_mode: true
       register: as_instances
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_instances is success
@@ -302,7 +302,7 @@
         state: present
       register: as_instances
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_instances is success
@@ -317,7 +317,7 @@
       check_mode: true
       register: as_instances
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_instances is success
@@ -336,7 +336,7 @@
       ansible.builtin.set_fact:
         name_list_2: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - id_list_2|length == id_list|length
@@ -352,7 +352,7 @@
         timeout: 360
       register: as_instances
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_instances is success
@@ -371,7 +371,7 @@
       ansible.builtin.set_fact:
         name_list_after_remove: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - id_list_after_remove|length == id_list|length - 1
@@ -387,7 +387,7 @@
       check_mode: true
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success
@@ -406,7 +406,7 @@
       ansible.builtin.set_fact:
         name_list_after_remove: "{{ as_inst_list.scaling_instances | map(attribute='name') | list }}"
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - id_list_after_remove|length == id_list|length - 1
@@ -423,7 +423,7 @@
         timeout: 360
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success
@@ -434,7 +434,7 @@
         scaling_group: "{{ as_group.as_group.id }}"
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result.scaling_instances|length == {{ min_instance_number }}
@@ -447,7 +447,6 @@
             name: "{{ (as_instance_name + '_1') }}"
             delete_fip: true
             state: absent
-          failed_when: false
 
         - name: Delete ECS2
           openstack.cloud.server:
@@ -464,9 +463,8 @@
             wait: true
             timeout: 360
           register: dropped_as_group
-          failed_when: false
 
-        - name: assert result
+        - name: Assert result
           ansible.builtin.assert:
             that:
               - dropped_as_group is success
@@ -477,9 +475,8 @@
             scaling_configuration: "{{ as_config_name }}"
             state: absent
           register: dropped_as_config
-          failed_when: false
 
-        - name: assert result
+        - name: Assert result
           ansible.builtin.assert:
             that:
               - dropped_as_config is success
@@ -489,28 +486,23 @@
           openstack.cloud.security_group:
             name: "{{ secgroup_name }}"
             state: absent
-          failed_when: false
 
         - name: Delete existing router
           openstack.cloud.router:
             name: "{{ router.router.name }}"
             state: absent
-          failed_when: false
 
         - name: Delete existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet.subnet.name }}"
             state: absent
-          failed_when: false
 
         - name: Delete existing network
           openstack.cloud.network:
             name: "{{ network.network.name }}"
             state: absent
-          failed_when: false
 
         - name: Delete keypair
           openstack.cloud.keypair:
             name: "{{ kp_name }}"
             state: absent
-          failed_when: false

@@ -2,7 +2,7 @@
 - name: CCE Node Pool tests
   block:
     - name: Create Node Pool
-      cce_node_pool:
+      opentelekomcloud.cloud.cce_node_pool:
         cloud: "{{ test_cloud }}"
         availability_zone: "random"
         autoscaling_enabled: true
@@ -42,11 +42,11 @@
         state: present
       register: pool
 
-    - name: debug pool
+    - name: Debug pool
       ansible.builtin.debug:
         var: pool.cce_node_pool
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - pool.cce_node_pool is defined

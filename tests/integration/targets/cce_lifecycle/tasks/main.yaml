@@ -68,7 +68,7 @@
         container_network_mode: "{{ container_network_mode }}"
       register: cluster
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - cluster is success
@@ -79,7 +79,7 @@
       opentelekomcloud.cloud.cce_cluster_info:
       register: cluster_info
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - cluster_info is success
@@ -91,7 +91,7 @@
         name: "{{ keypair_name }}"
       register: keypair
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - keypair is success
@@ -131,13 +131,13 @@
         state: present
       register: node
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - node is success
           - node is changed
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - node is success
@@ -158,7 +158,7 @@
         wait: true
       register: node2
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - node2 is success
@@ -169,7 +169,7 @@
         cce_cluster: "{{ cce_cluster_name }}"
       register: node_info
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - node_info is success
@@ -184,39 +184,56 @@
             name: "{{ cce_node_name2 }}"
             state: absent
             wait: true
-          register: node2
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop cluster
           opentelekomcloud.cloud.cce_cluster:
             name: "{{ cce_cluster_name }}"
             timeout: 3000
             state: "absent"
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop Keypair
           openstack.cloud.keypair:
             state: "absent"
             name: "{{ keypair_name }}"
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop router
           openstack.cloud.router:
             cloud: "{{ test_cloud }}"
             name: "{{ router_name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop subnet
           openstack.cloud.subnet:
             cloud: "{{ test_cloud }}"
             name: "{{ subnet_name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop network
           openstack.cloud.network:
             cloud: "{{ test_cloud }}"
             name: "{{ network_name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

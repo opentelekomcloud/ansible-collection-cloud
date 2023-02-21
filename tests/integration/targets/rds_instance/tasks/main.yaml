@@ -22,7 +22,7 @@
         name: "definitely_missing_instance"
       register: rds
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - rds is success
@@ -74,7 +74,7 @@
         timeout: 600
       register: obj
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - obj is success

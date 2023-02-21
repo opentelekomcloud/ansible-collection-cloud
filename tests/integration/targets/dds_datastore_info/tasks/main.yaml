@@ -9,7 +9,7 @@
         datastore_name: "DDS-Community"
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success

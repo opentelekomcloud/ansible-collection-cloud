@@ -97,7 +97,7 @@
       register: domain_check
       check_mode: true
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - domain_check is changed
@@ -119,7 +119,7 @@
           - X-Forwarded-For
       register: domain
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - domain is success
@@ -142,7 +142,7 @@
           - X-Forwarded-For
       register: domain_modified
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - domain_modified is success
@@ -161,7 +161,7 @@
         name: "{{ domain_name }}"
       register: res
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - res is success
@@ -174,7 +174,7 @@
         name: "{{ domain.waf_domain.id }}"
       register: res
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - res is success
@@ -188,7 +188,7 @@
         state: absent
       register: domain
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - domain is success
@@ -200,7 +200,7 @@
         state: absent
       register: domain
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - domain is success

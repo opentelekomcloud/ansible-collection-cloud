@@ -31,7 +31,7 @@
             "protocol": "icmp"
       register: sg
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - sg is success
@@ -44,3 +44,7 @@
           opentelekomcloud.cloud.security_group:
             name: "{{ security_group_name }}"
             state: "absent"
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
