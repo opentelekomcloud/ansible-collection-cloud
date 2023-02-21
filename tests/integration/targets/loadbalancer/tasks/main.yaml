@@ -52,7 +52,7 @@
       register: loadbalancer_check
       check_mode: true
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - loadbalancer_check is changed
@@ -65,7 +65,7 @@
         timeout: 150
       register: lb
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - lb is success
@@ -85,7 +85,7 @@
         name: "{{ lb.loadbalancer.name }}"
       register: res
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - res is success
@@ -102,7 +102,7 @@
         name: "{{ listener_name }}"
       register: lstnr
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - lstnr is success
@@ -115,7 +115,7 @@
         name: "{{ listener_name }}"
       register: lstnr
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - lstnr is success
@@ -126,7 +126,7 @@
         name: "{{ lstnr.listener.name }}"
       register: res
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - res is success
@@ -143,7 +143,7 @@
         loadbalancer: "{{ lb.loadbalancer.id }}"
       register: pool
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - pool is success
@@ -158,7 +158,7 @@
           type: app_cookie
       register: pool
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - pool is success
@@ -169,7 +169,7 @@
         name: "{{ pool.server_group.name }}"
       register: res
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - res is success
@@ -182,7 +182,7 @@
         name: "{{ pool_name }}"
       register: dropped
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dropped is success
@@ -194,7 +194,7 @@
         name: "{{ listener_name }}"
       register: dropped
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dropped is success
@@ -208,7 +208,7 @@
         delete_public_ip: true
       register: dropped
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dropped is success
@@ -221,7 +221,7 @@
         state: absent
       register: dropped
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dropped is success
@@ -235,26 +235,34 @@
             name: "{{ lb.loadbalancer.id }}"
             state: absent
             delete_public_ip: true
-          register: lb
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing Router
           openstack.cloud.router:
             name: "{{ router_name }}"
             state: absent
-          register: lb_net_router
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
-          register: lb_net_subnet
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network_name }}"
             state: absent
-          register: lb_net
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

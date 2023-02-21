@@ -6,11 +6,11 @@
         cloud: "{{ test_cloud }}"
       register: auto_scale
 
-    - name: debug configs
+    - name: Debug configs
       ansible.builtin.debug:
         var: auto_scale.as_configs
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - auto_scale is success

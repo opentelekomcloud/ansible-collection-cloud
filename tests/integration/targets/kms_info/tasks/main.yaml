@@ -5,7 +5,7 @@
       opentelekomcloud.cloud.kms_info:
       register: key
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - key is success

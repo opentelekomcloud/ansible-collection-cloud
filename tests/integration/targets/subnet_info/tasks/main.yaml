@@ -45,7 +45,7 @@
         vpc: "{{ vpc_name }}"
       register: all_subnets
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - all_subnets is success
@@ -57,7 +57,7 @@
         name_or_id: "{{ subnet_name }}"
       register: new_subnet
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - new_subnet is success

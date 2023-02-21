@@ -65,7 +65,7 @@
         state: absent
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success
@@ -82,7 +82,7 @@
         name: "{{ cert_name }}"
       register: result_info
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success
@@ -96,7 +96,7 @@
         state: absent
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success
@@ -107,7 +107,7 @@
         name: "{{ cert_name }}"
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success

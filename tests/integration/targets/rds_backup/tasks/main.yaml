@@ -12,7 +12,7 @@
       check_mode: true
       ignore_errors: true
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - rds_backup is not success

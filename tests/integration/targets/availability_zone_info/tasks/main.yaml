@@ -13,7 +13,7 @@
       opentelekomcloud.cloud.availability_zone_info:
       register: az
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - az is success

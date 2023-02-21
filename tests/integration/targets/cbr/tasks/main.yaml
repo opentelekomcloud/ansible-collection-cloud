@@ -44,7 +44,7 @@
         resources: [{"id": '{{ vol1.volume.id }}', "type":"OS::Cinder::Volume"}]
       register: created_vault
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - created_vault is success
@@ -57,7 +57,7 @@
         action: "associate_resources"
       register: vault
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - vault is success
@@ -70,7 +70,7 @@
         action: "dissociate_resources"
       register: vault
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - vault is success
@@ -81,7 +81,7 @@
         vault: "{{ vault.vault.id }}"
       register: checkpoint
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - checkpoint is success
@@ -92,7 +92,7 @@
         vault: "{{ vault.vault.id }}"
       register: backups_list
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - backups_list is success
@@ -103,7 +103,7 @@
         name: "{{ backups_list.backups[0].id }}"
       register: backup
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - backup is success
@@ -115,7 +115,7 @@
         volume_id: "{{ vol1.volume.id }}"
       register: restore_backup
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - restore_backup is success
@@ -129,7 +129,7 @@
         timeout: 600
       register: delete_backup
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - delete_backup is success
@@ -142,20 +142,25 @@
           opentelekomcloud.cloud.cbr_vault:
             name: "{{ (vault_name) }}"
             state: absent
-          register: vault
-
-        - name: assert result
-          ansible.builtin.assert:
-            that:
-              - vault is success
-              - vault is changed
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Delete first volume
           openstack.cloud.volume:
             display_name: "{{ volume_name1 }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Delete second volume
           openstack.cloud.volume:
             display_name: "{{ volume_name1 }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

@@ -10,7 +10,7 @@
         network: admin_external_net
       register: fl
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: fl.floating_ip
 
@@ -42,7 +42,7 @@
       check_mode: true
       register: ces_al_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - ces_al_ch is success
@@ -69,11 +69,11 @@
         alarm_action_enabled: false
       register: ces_al
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: ces_al.alarms
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - ces_al is success
@@ -84,11 +84,11 @@
         name: "{{ alarm_name }}"
       register: ces_al_info
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: ces_al_info.alarms
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - ces_al_info is success
@@ -103,11 +103,11 @@
         time_to: "1605523441322"
       register: ces_ed_info
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: ces_ed_info.events
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - ces_ed_info is success
@@ -124,11 +124,11 @@
         dim0: "{{ ( 'publicip_id,' + fl_ip_id ) }}"
       register: ces_md_info
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: ces_md_info.metricdata
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - ces_al_info is success
@@ -139,11 +139,11 @@
         order: asc
       register: ces_me_info
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: ces_me_info.metrics
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - ces_me_info is success
@@ -153,11 +153,11 @@
       opentelekomcloud.cloud.ces_quotas_info:
       register: ces_qu_info
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: ces_qu_info.quotas
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - ces_qu_info is success

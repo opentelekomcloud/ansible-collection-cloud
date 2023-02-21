@@ -6,7 +6,21 @@
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.floating_ip:
       cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.nat_snat_rule:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.nat_dnat_rule:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.nat_snat_rule_info:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.nat_dnat_rule_info:
+      cloud: "{{ test_cloud }}"
     openstack.cloud.server:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.network:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.subnet:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.router:
       cloud: "{{ test_cloud }}"
 
   block:
@@ -58,7 +72,7 @@
       check_mode: true
       register: nat_gw_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - nat_gw_ch is success
@@ -71,7 +85,7 @@
         router: "{{ router_name }}"
       register: nat_gw
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - nat_gw is success
@@ -84,7 +98,7 @@
       check_mode: true
       register: nat_gw_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - nat_gw_ch is success
@@ -96,7 +110,7 @@
         description: test-description
       register: nat_gw
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - nat_gw is success
@@ -107,7 +121,7 @@
         network: admin_external_net
       register: fip
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - fip is success
@@ -121,7 +135,7 @@
       check_mode: true
       register: snat_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - snat_ch is success
@@ -134,7 +148,7 @@
         floating_ip: "{{ fip.floating_ip.floating_ip_address }}"
       register: snat
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - snat is success
@@ -160,7 +174,7 @@
         network: admin_external_net
       register: fip2
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - fip2 is success
@@ -179,7 +193,7 @@
       check_mode: true
       register: dnat_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dnat_ch is success
@@ -197,7 +211,7 @@
         private_ip: "192.168.0.2"
       register: dnat
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dnat is success
@@ -223,7 +237,9 @@
             - nat_gw.gateway.id is defined
             - snat_rules.snat_rules is defined
           register: snat
-          failed_when: false
+          until: snat is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop EIP for snat rule
           opentelekomcloud.cloud.floating_ip:
@@ -232,7 +248,9 @@
             state: absent
           when: fip is defined
           register: fip
-          failed_when: false
+          until: fip is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: List DNAT rules of gateway
           opentelekomcloud.cloud.nat_dnat_rule_info:
@@ -240,7 +258,6 @@
           when:
             - nat_gw.gateway.id is defined
           register: dnat_rules
-          failed_when: false
 
         - name: Drop DNAT rules
           opentelekomcloud.cloud.nat_dnat_rule:
@@ -251,7 +268,9 @@
             - nat_gw.gateway.id is defined
             - dnat_rules.dnat_rules is defined
           register: dnat
-          failed_when: false
+          until: dnat is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop EIP for dnat rule
           opentelekomcloud.cloud.floating_ip:
@@ -260,7 +279,9 @@
             state: absent
           when: fip2 is defined
           register: fip2
-          failed_when: false
+          until: fip2 is not failed
+          ignore_errors: true
+          retries: 10
 
           #        - name: Drop server instance
           #          openstack.cloud.server:
@@ -274,25 +295,33 @@
             name: "{{ nat_gateway_name }}"
             state: absent
           register: nat_gw
-          failed_when: false
+          until: nat_gw is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing Router
           openstack.cloud.router:
             name: "{{ router_name }}"
             state: absent
           register: nat_router
-          failed_when: false
+          until: nat_router is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
           register: nat_subnet
-          failed_when: false
+          until: nat_subnet is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network_name }}"
             state: absent
           register: nat_net
-          failed_when: false
+          until: nat_net is not failed
+          ignore_errors: true
+          retries: 10

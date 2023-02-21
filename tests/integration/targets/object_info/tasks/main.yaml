@@ -8,7 +8,7 @@
       opentelekomcloud.cloud.object_info:
       register: containers
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - containers is success

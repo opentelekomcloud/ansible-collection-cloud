@@ -6,11 +6,11 @@
         cloud: "{{ test_cloud }}"
       register: deh
 
-    - name: debug deh
+    - name: Debug deh
       ansible.builtin.debug:
         var: deh.deh_hosts
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - deh is success

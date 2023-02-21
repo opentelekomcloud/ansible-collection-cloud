@@ -81,7 +81,7 @@
       check_mode: true
       register: as_group_check
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_group_check is changed
@@ -94,7 +94,7 @@
         router: "{{ router.router.id }}"
       register: as_group
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_group is success
@@ -119,7 +119,7 @@
       check_mode: true
       register: as_group_check
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_group_check is success
@@ -133,7 +133,7 @@
         max_instance_number: 10
       register: as_group
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_group is success
@@ -148,7 +148,7 @@
       check_mode: true
       register: as_group_check
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_group_check is changed
@@ -163,7 +163,7 @@
         timeout: 360
       register: as_gr_del
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_gr_del is success
@@ -195,7 +195,7 @@
         timeout: 360
       register: as_group
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_group is success
@@ -206,7 +206,7 @@
         scaling_group: "{{ as_group.as_group.id }}"
       register: as_instances
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_instances is success
@@ -235,36 +235,52 @@
             force_delete: true
             wait: true
             timeout: 360
-          register: dropped_as_group
-          failed_when: "dropped_as_group is not changed"
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Delete as config
           opentelekomcloud.cloud.as_config:
             scaling_configuration: "{{ config_name }}"
             state: absent
-          register: dropped_as_config
-          failed_when: "dropped_as_config is not changed"
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Delete keypair
           openstack.cloud.keypair:
             name: "{{ key_name }}"
             state: absent
-          failed_when: false
-
-        - name: Drop existing router
-          openstack.cloud.router:
-            name: "{{ router.router.name }}"
-            state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet.subnet.name }}"
             state: absent
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network.network.name }}"
             state: absent
-          ignore_errors: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
+
+        - name: Drop existing router
+          openstack.cloud.router:
+            name: "{{ router.router.name }}"
+            state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

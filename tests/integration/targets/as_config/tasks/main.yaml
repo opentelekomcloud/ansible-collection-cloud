@@ -30,7 +30,7 @@
       register: as_config_check
       check_mode: true
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_config_check is changed
@@ -47,7 +47,7 @@
             disk_type: 'SYS'
       register: as_config
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_config is changed
@@ -60,16 +60,22 @@
           opentelekomcloud.cloud.as_config:
             scaling_configuration: "{{ config_name }}"
             state: absent
-          register: dropped_as_config
+          register: removed
+          until: removed is not failed
           ignore_errors: true
+          retries: 10
 
-        - name: assert result
+        - name: Assert result
           ansible.builtin.assert:
             that:
-              - dropped_as_config is success
-              - dropped_as_config is changed
+              - removed is success
+              - removed is changed
 
         - name: Delete keypair
           openstack.cloud.keypair:
             name: "{{ key_name }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

@@ -50,7 +50,7 @@
       check_mode: true
       register: dns_zo_pr_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_zo_pr_ch is success
@@ -64,16 +64,16 @@
         state: present
       register: dns_zo_pr
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: dns_zo_pr.zone
 
-    - name: check zone is created
+    - name: Check zone is created
       opentelekomcloud.cloud.dns_zone_info:
         name: "{{ dns_zo_pr.zone.id }}"
       register: dns_zo_info
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_zo_pr is success
@@ -88,7 +88,7 @@
       check_mode: true
       register: dns_zo_pr_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_zo_pr_ch is success
@@ -102,11 +102,11 @@
         zone_type: "private"
       register: dns_zo_pr
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: dns_zo_pr.zone
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_zo_pr is success
@@ -117,7 +117,7 @@
         zone: "{{ dns_zo_pr.zone.id }}"
       register: dns_ns
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_ns is success
@@ -131,26 +131,34 @@
             name: "{{ dns_zo_pr.zone.id }}"
             zone_type: "private"
             state: absent
-          register: dns_zo_pr_dr
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing Router
           openstack.cloud.router:
             name: "{{ router_name }}"
             state: absent
-          register: dns_rout_dr
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing subnet
           openstack.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
-          register: dns_subnet_dr
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop existing network
           openstack.cloud.network:
             name: "{{ network_name }}"
             state: absent
-          register: dns_net_dr
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

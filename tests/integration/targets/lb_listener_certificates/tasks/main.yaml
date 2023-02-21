@@ -150,7 +150,7 @@
         state: absent
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success
@@ -161,7 +161,7 @@
         state: absent
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success
@@ -179,7 +179,7 @@
         name: "{{ cert_name_srv_1 }}"
       register: cert_1_info
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - cert_1 is success
@@ -201,7 +201,7 @@
         name: "{{ cert_name_srv_2 }}"
       register: cert_2_info
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - cert_2 is success
@@ -218,7 +218,7 @@
         timeout: 150
       register: lb
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - lb is success
@@ -235,7 +235,7 @@
         sni_container_refs: ["{{ cert_1.elb_certificate.id }}"]
       register: listener
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - listener is success
@@ -252,7 +252,7 @@
         sni_container_refs: ["{{ cert_1.elb_certificate.id }}"]
       register: listener
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - listener is success
@@ -269,7 +269,7 @@
         sni_container_refs: ["{{ cert_2.elb_certificate.id }}"]
       register: listener
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - listener is success
@@ -281,7 +281,7 @@
         name: "{{ listener_name }}"
       register: listener_drop
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - listener_drop is success
@@ -294,7 +294,7 @@
         delete_public_ip: true
       register: loadbalancer_drop
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - loadbalancer_drop is success
@@ -306,7 +306,7 @@
         state: absent
       register: cert_drop_1
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - cert_drop_1 is success
@@ -318,7 +318,7 @@
         state: absent
       register: cert_drop_2
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - cert_drop_2 is success

@@ -10,7 +10,7 @@
       register: result
       ignore_errors: true
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is not success

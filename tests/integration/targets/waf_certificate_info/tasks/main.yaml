@@ -8,7 +8,7 @@
       opentelekomcloud.cloud.waf_certificate_info:
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success
@@ -20,7 +20,7 @@
         name: some_fake
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success
