@@ -62,7 +62,7 @@
         scaling_group: "{{ as_group.as_group.id }}"
       register: as_instances
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_instances is success
@@ -74,7 +74,7 @@
         scaling_group: "{{ as_group.as_group.name }}"
       register: as_instances
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - as_instances is success

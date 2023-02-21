@@ -8,7 +8,7 @@
       opentelekomcloud.cloud.anti_ddos_fip_statuses_info:
       register: anti_ddos
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - anti_ddos is success
@@ -19,7 +19,7 @@
         status: "notConfig"
       register: anti_ddos
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - anti_ddos is success
@@ -31,7 +31,7 @@
       register: anti_ddos
       ignore_errors: true
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - anti_ddos is not success

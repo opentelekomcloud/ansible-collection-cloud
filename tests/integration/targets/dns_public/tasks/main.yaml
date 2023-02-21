@@ -29,7 +29,7 @@
       check_mode: true
       register: dns_fl_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_fl_ch is success
@@ -42,11 +42,11 @@
         state: present
       register: dns_fl
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: dns_fl.ptr
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_fl is success
@@ -61,7 +61,7 @@
       check_mode: true
       register: dns_fl_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_fl_ch is success
@@ -75,11 +75,11 @@
         state: present
       register: dns_fl
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: dns_fl.ptr
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_fl is success
@@ -92,7 +92,7 @@
       check_mode: true
       register: dns_zo_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_zo_ch is success
@@ -104,17 +104,17 @@
         state: present
       register: dns_zo
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: dns_zo.zone
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_zo is success
           - dns_zo.zone is defined
 
-    - name: check zone is created
+    - name: Check zone is created
       opentelekomcloud.cloud.dns_zone_info:
         name: "{{ dns_zo.zone.id }}"
       register: dns_zo_info
@@ -127,7 +127,7 @@
       check_mode: true
       register: dns_zo_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_zo_ch is success
@@ -140,7 +140,7 @@
         description: "{{ description }}"
       register: dns_zo
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_zo is success
@@ -151,7 +151,7 @@
         zone: "{{ zone_public_name }}"
       register: dns_ns
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_ns is success
@@ -169,7 +169,7 @@
       check_mode: true
       register: dns_rs_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_rs_ch is success
@@ -186,11 +186,11 @@
         state: present
       register: dns_rs
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: dns_rs.recordset
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_rs is success
@@ -209,7 +209,7 @@
       check_mode: true
       register: dns_rs_ch
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_rs_ch is success
@@ -227,11 +227,11 @@
         state: present
       register: dns_rs
 
-    - name: debug
+    - name: Debug
       ansible.builtin.debug:
         var: dns_rs.recordset
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - dns_rs is success
@@ -244,28 +244,36 @@
           opentelekomcloud.cloud.dns_floating_ip:
             floating_ip: "{{ fl_ip }}"
             state: absent
-          register: dns_fl_dr
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Dropping DNS Recordset
           opentelekomcloud.cloud.dns_recordset:
             zone_id: "{{ dns_zo.zone.id }}"
             recordset_name: "{{ rs_name }}"
             state: absent
-          register: dns_rs_dr
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop DNS public Zone
           opentelekomcloud.cloud.dns_zone:
             name: "{{ zone_public_name }}"
             state: absent
-          register: dns_zo_pu_dr
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop Floating IP
           opentelekomcloud.cloud.floating_ip:
             floating_ip_address: "{{ fl_ip }}"
             state: absent
             purge: true
-          register: fl_dr
-          failed_when: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10

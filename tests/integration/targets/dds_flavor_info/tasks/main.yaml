@@ -9,7 +9,7 @@
         region: "{{ region | default('eu-de') }}"
       register: result
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - result is success

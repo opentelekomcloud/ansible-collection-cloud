@@ -8,7 +8,7 @@
       opentelekomcloud.cloud.waf_domain_info:
       register: domain
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - domain is success
@@ -20,7 +20,7 @@
         name: www.fakedomain.otc
       register: domain
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - domain is success

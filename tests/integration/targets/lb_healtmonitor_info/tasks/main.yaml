@@ -8,11 +8,11 @@
       opentelekomcloud.cloud.lb_healthmonitor_info:
       register: hm
 
-    - name: debug configs
+    - name: Debug configs
       ansible.builtin.debug:
         var: hm.healthmonitors
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - hm is success

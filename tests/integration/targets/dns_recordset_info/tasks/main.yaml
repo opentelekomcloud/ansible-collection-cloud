@@ -40,7 +40,7 @@
         zone: "{{ dns_zo.zone.id }}"
       register: recordsets
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - recordsets is success
@@ -53,7 +53,7 @@
         name: "{{ dns_rs.recordset.name }}"
       register: rs
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - rs is success

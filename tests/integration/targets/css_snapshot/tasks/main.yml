@@ -88,7 +88,7 @@
         name: "{{ snapshot_name }}"
       register: snapshot
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - snapshot is success
@@ -102,7 +102,7 @@
       register: created_snapshot
       check_mode: true
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - created_snapshot is success
@@ -114,7 +114,7 @@
         name: "{{ snapshot_name }}"
       register: created_snapshot
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - created_snapshot is success
@@ -129,7 +129,7 @@
       register: deleted_snapshot
       check_mode: true
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - deleted_snapshot is not changed
@@ -142,7 +142,7 @@
         state: "absent"
       register: deleted_snapshot
 
-    - name: assert result
+    - name: Assert result
       ansible.builtin.assert:
         that:
           - deleted_snapshot is changed
@@ -156,28 +156,47 @@
             cloud: "{{ test_cloud }}"
             name: "{{ css_cluster_name }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop router
           openstack.cloud.router:
             cloud: "{{ test_cloud }}"
             name: "{{ router_name }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop subnet
           openstack.cloud.subnet:
             cloud: "{{ test_cloud }}"
             name: "{{ subnet_name }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop network
           openstack.cloud.network:
             cloud: "{{ test_cloud }}"
             name: "{{ network_name }}"
             state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
 
         - name: Drop security group
           openstack.cloud.security_group:
             cloud: "{{ test_cloud }}"
             state: absent
             name: "{{ security_group_name }}"
-      ignore_errors: false
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
