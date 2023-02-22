@@ -110,9 +110,10 @@ vpc:
       sample: "OK"
     cidr:
       description:
-          - Specifies the available IP address ranges for subnets in the VPC.
-          - Possible values are 10.0.0.0/8~24, 172.16.0.0/12~24, 192.168.0.0/16~24.
-          - Must be in CIDR format.
+        - Specifies the available IP address ranges for subnets in the VPC.
+        - Possible values are 10.0.0.0/8~24, 172.16.0.0/12~24,\
+        192.168.0.0/16~24.
+        - Must be in CIDR format.
       type: str
       sample: "192.168.0.0/24"
     routes:
@@ -121,17 +122,17 @@ vpc:
       elements: dict
       contains:
         destination:
-           description:
-               - Specifies the destination network segment of a route.
-               - The value must be in the CIDR format. Currently, only the value \
-                  0.0.0.0/0 is supported.
-              type: str
-          nexthop:
-              description:
-                  - Specifies the next hop of a route.
-                  - The value must be an IP address and must belong to the subnet in the VPC.
-                   Otherwise, this value does not take effect.
-              type: str
+          description:
+            - Specifies the destination network segment of a route.
+            - The value must be in the CIDR format. Currently, only the value\
+            0.0.0.0/0 is supported.
+          type: str
+        nexthop:
+          description:
+            - Specifies the next hop of a route.
+            - The value must be an IP address and must belong to\
+            the subnet in the VPC. Otherwise, this value does not take effect.
+          type: str
 '''
 
 

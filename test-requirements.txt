@@ -8,4 +8,4 @@ voluptuous
 yamllint
 rstcheck
 ruamel.yaml
-otcextensions==0.29.1
+otcextensions
