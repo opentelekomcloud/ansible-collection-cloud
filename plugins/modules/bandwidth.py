@@ -162,7 +162,7 @@ class Bandwidth(OTCModule):
 
         state = self.params['state']
         bandwidth = self.conn.vpc.find_bandwidth(
-            name_or_id=self.params['name'])
+            name_or_id=self.params['name'], ignore_missing=True)
 
         if self.ansible.check_mode:
             changed = (self._system_state_change(bandwidth)
