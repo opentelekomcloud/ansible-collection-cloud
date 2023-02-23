@@ -11,11 +11,9 @@
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.floating_ip:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.network:
+    opentelekomcloud.cloud.vpc:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.subnet:
-      cloud: "{{ test_cloud }}"
-    openstack.cloud.router:
+    opentelekomcloud.cloud.subnet:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
@@ -27,15 +25,16 @@
         as_group_name: "{{ ( prefix + '_as_group') }}"
         as_policy_name: "{{ prefix + '_as_policy' }}"
         alarm_name: "{{ prefix + '_alarm' }}"
-        network_name: "{{ ( prefix + '_network') }}"
+        vpc_name: "{{ ( prefix + '_vpc') }}"
         subnet_name: "{{ ( prefix + '_subnet') }}"
-        router_name: "{{ ( prefix + '_router') }}"
+        cidr: "192.168.110.0/24"
+        gateway: "192.168.110.1"
 
-    - name: Create network
-      openstack.cloud.network:
-        name: "{{ network_name }}"
-        state: present
-      register: network
+    - name: Create VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        cidr: "{{ cidr }}"
+      register: vpc
 
     - name: Assign Floating IP
       opentelekomcloud.cloud.floating_ip:
@@ -69,31 +68,23 @@
       register: alarm
 
     - name: Create subnet
-      openstack.cloud.subnet:
+      opentelekomcloud.cloud.subnet:
         name: "{{ subnet_name }}"
         state: present
-        network_name: "{{ network.network.name }}"
-        cidr: "192.168.110.0/24"
-        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+        vpc: "{{ vpc_name }}"
+        cidr: "{{ cidr }}"
+        gateway_ip: "{{ gateway }}"
+        dns_list:
+          - 100.125.4.25
+          - 8.8.8.8
       register: subnet
-
-    - name: Create router
-      openstack.cloud.router:
-        name: "{{ router_name }}"
-        state: present
-        network: admin_external_net
-        enable_snat: "{{ has_snat | ternary(true, omit) }}"
-        interfaces:
-          - net: "{{ network.network.name }}"
-            subnet: "{{ subnet.subnet.name }}"
-      register: router
 
     - name: Create AS Group
       opentelekomcloud.cloud.as_group:
         scaling_group:
           name: "{{ as_group_name }}"
-        networks: [{'id': "{{ network.network.id }}"}]
-        router: "{{ router.router.id }}"
+        networks: [{'id': "{{ subnet.subnet.id }}"}]
+        router: "{{ vpc.vpc.id }}"
       register: as_group
 
     - name: Create AS Policy - check_mode
@@ -224,18 +215,14 @@
             force_delete: true
             wait: true
           register: removed
-          until: removed is not failed
           ignore_errors: true
-          retries: 10
 
         - name: Drop alarm
           opentelekomcloud.cloud.ces_alarms:
             alarm_name: "{{ alarm_name }}"
             state: absent
           register: removed
-          until: removed is not failed
           ignore_errors: true
-          retries: 10
 
         - name: Drop floating ip
           opentelekomcloud.cloud.floating_ip:
@@ -243,33 +230,19 @@
             state: absent
             purge: true
           register: removed
-          until: removed is not failed
           ignore_errors: true
-          retries: 10
 
-        - name: Drop existing subnet
-          openstack.cloud.subnet:
-            name: "{{ subnet.subnet.name }}"
+        - name: Delete subnet
+          opentelekomcloud.cloud.subnet:
+            name: "{{ subnet_name }}"
+            vpc: "{{ vpc_name }}"
             state: absent
           register: removed
-          until: removed is not failed
           ignore_errors: true
-          retries: 10
 
-        - name: Drop existing network
-          openstack.cloud.network:
-            name: "{{ network.network.name }}"
+        - name: Delete VPC
+          opentelekomcloud.cloud.vpc:
+            name: "{{ vpc_name }}"
             state: absent
           register: removed
-          until: removed is not failed
           ignore_errors: true
-          retries: 10
-
-        - name: Drop existing router
-          openstack.cloud.router:
-            name: "{{ router.router.name }}"
-            state: absent
-          register: removed
-          until: removed is not failed
-          ignore_errors: true
-          retries: 10
