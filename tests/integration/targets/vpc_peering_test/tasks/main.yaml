@@ -10,76 +10,33 @@
 
     - name: Set initial facts
       ansible.builtin.set_fact:
-        network_name_1: "{{ ( prefix + 'vpc_peering_test-network_1') }}"
-        subnet_name_1: "{{ ( prefix + 'vpc_peering_test-subnet_1') }}"
-        router_name_1: "{{ ( prefix + 'vpc_peering_test-router_1') }}"
-        cidr_block_1: "192.168.115"
-        network_name_2: "{{ ( prefix + 'vpc_peering_test-network_2') }}"
-        subnet_name_2: "{{ ( prefix + 'vpc_peering_test-subnet_2') }}"
-        router_name_2: "{{ ( prefix + 'vpc_peering_test-router_2') }}"
-        cidr_block_2: "192.168.116"
         vpc_peering_name: "{{ ( prefix + 'vpc_peering_test') }}"
-        new_peering_name: "{{ ( prefix + 'vpc_peering_test_2') }}"
+        vpc_name_1: "{{ ( prefix + 'vpc-test-peering-1') }}"
+        cidr_block_1: "192.168.115.0/24"
+        vpc_name_2: "{{ ( prefix + 'vpc-test-peering-2') }}"
+        cidr_block_2: "192.168.116.0/24"
         project_id: "76889f64a23945ab887012b180e95acf"
 
-    - name: Create first network for test
-      openstack.cloud.network:
-        name: "{{ network_name_1 }}"
+    - name: Create first VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name_1 }}"
+        cidr: "{{ cidr_block_1 }}"
         state: present
-      register: test_network_1
+      register: first_vpc
 
-    - name: Create first subnet for test
-      openstack.cloud.subnet:
-        name: "{{ subnet_name_1 }}"
+    - name: Create second VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name_2 }}"
+        cidr: "{{ cidr_block_2 }}"
         state: present
-        network_name: "{{ test_network_1.network.name }}"
-        cidr: "{{ cidr_block_1 }}.0/24"
-        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
-      register: test_subnet_1
-
-    - name: Create first router for test
-      openstack.cloud.router:
-        name: "{{ router_name_1 }}"
-        state: present
-        network: admin_external_net
-        enable_snat: "{{ has_snat | ternary(true, omit) }}"
-        interfaces:
-          - net: "{{ test_network_1.network.name }}"
-            subnet: "{{ test_subnet_1.subnet.name }}"
-      register: test_router_1
-
-    - name: Create second network for test
-      openstack.cloud.network:
-        name: "{{ network_name_2 }}"
-        state: present
-      register: test_network_2
-
-    - name: Create second subnet for test
-      openstack.cloud.subnet:
-        name: "{{ subnet_name_2 }}"
-        state: present
-        network_name: "{{ test_network_2.network.name }}"
-        cidr: "{{ cidr_block_2 }}.0/24"
-        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
-      register: test_subnet_2
-
-    - name: Create second router for test
-      openstack.cloud.router:
-        name: "{{ router_name_2 }}"
-        state: present
-        network: admin_external_net
-        enable_snat: "{{ has_snat | ternary(true, omit) }}"
-        interfaces:
-          - net: "{{ test_network_2.network.name }}"
-            subnet: "{{ test_subnet_2.subnet.name }}"
-      register: test_router_2
+      register: second_vpc
 
     - name: Create vpc peering - check mode
       opentelekomcloud.cloud.vpc_peering:
         name: "{{ vpc_peering_name }}"
-        local_router: "{{ test_router_1.router.id }}"
+        local_router: "{{ first_vpc.vpc.id }}"
         local_project: "{{ project_id }}"
-        remote_router: "{{ test_router_2.router.id }}"
+        remote_router: "{{ second_vpc.vpc.id }}"
         remote_project: "{{ project_id }}"
       register: vpc_peering_check
       check_mode: true
@@ -92,9 +49,9 @@
     - name: Create vpc peering
       opentelekomcloud.cloud.vpc_peering:
         name: "{{ vpc_peering_name }}"
-        local_router: "{{ test_router_1.router.id }}"
+        local_router: "{{ first_vpc.vpc.id }}"
         local_project: "{{ project_id }}"
-        remote_router: "{{ test_router_2.router.id }}"
+        remote_router: "{{ second_vpc.vpc.id }}"
         remote_project: "{{ project_id }}"
       register: vpc_peering
 
@@ -106,11 +63,11 @@
 
     - name: Modify existing vpc peering
       opentelekomcloud.cloud.vpc_peering:
-        id: "{{ vpc_peering.vpc_peering.id }}"
-        name: "{{ new_peering_name }}"
-        local_router: "{{ test_router_1.router.id }}"
+        name: "{{ vpc_peering_name }}"
+        description: "new description"
+        local_router: "{{ first_vpc.vpc.id }}"
         local_project: "{{ project_id }}"
-        remote_router: "{{ test_router_2.router.id }}"
+        remote_router: "{{ second_vpc.vpc.id }}"
         remote_project: "{{ project_id }}"
       register: updated_vpc_peering
 
@@ -133,55 +90,19 @@
           ignore_errors: true
           retries: 10
 
-        - name: Drop existing first router
-          openstack.cloud.router:
-            name: "{{ router_name_1 }}"
-            state: absent
+        - name: Delete first VPC
+          opentelekomcloud.cloud.vpc:
+            name: "{{ vpc_name_1 }}"
+            state: "absent"
           register: removed
           until: removed is not failed
           ignore_errors: true
           retries: 10
 
-        - name: Drop existing first subnet
-          openstack.cloud.subnet:
-            name: "{{ subnet_name_1 }}"
-            state: absent
-          register: removed
-          until: removed is not failed
-          ignore_errors: true
-          retries: 10
-
-        - name: Drop existing first network
-          openstack.cloud.network:
-            name: "{{ network_name_1 }}"
-            state: absent
-          register: removed
-          until: removed is not failed
-          ignore_errors: true
-          retries: 10
-
-        - name: Drop existing second router
-          openstack.cloud.router:
-            name: "{{ router_name_2 }}"
-            state: absent
-          register: removed
-          until: removed is not failed
-          ignore_errors: true
-          retries: 10
-
-        - name: Drop existing second subnet
-          openstack.cloud.subnet:
-            name: "{{ subnet_name_2 }}"
-            state: absent
-          register: removed
-          until: removed is not failed
-          ignore_errors: true
-          retries: 10
-
-        - name: Drop existing second network
-          openstack.cloud.network:
-            name: "{{ network_name_2 }}"
-            state: absent
+        - name: Delete second VPC
+          opentelekomcloud.cloud.vpc:
+            name: "{{ vpc_name_2 }}"
+            state: "absent"
           register: removed
           until: removed is not failed
           ignore_errors: true
