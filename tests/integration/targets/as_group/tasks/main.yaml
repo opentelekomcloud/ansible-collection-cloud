@@ -7,11 +7,9 @@
       cloud: "{{ test_cloud }}"
     openstack.cloud.keypair:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.network:
+    opentelekomcloud.cloud.vpc:
       cloud: "{{ test_cloud }}"
-    openstack.cloud.subnet:
-      cloud: "{{ test_cloud }}"
-    openstack.cloud.router:
+    opentelekomcloud.cloud.subnet:
       cloud: "{{ test_cloud }}"
     opentelekomcloud.cloud.as_config:
       cloud: "{{ test_cloud }}"
@@ -26,39 +24,32 @@
         new_name: "{{ ( prefix + 'new_name') }}"
         key_name: "{{ ( prefix + '_key') }}"
         config_name: "{{ ( prefix + '_as_conf' ) }}"
-        network_name: "{{ ( prefix + '_network') }}"
+        vpc_name: "{{ ( prefix + '_vpc') }}"
         subnet_name: "{{ ( prefix + '_subnet') }}"
-        router_name: "{{ ( prefix + '_router') }}"
+        cidr: "192.168.110.0/24"
+        gateway: "192.168.110.1"
 
     - name: Create keypair
       openstack.cloud.keypair:
         name: "{{ key_name }}"
 
-    - name: Create network
-      openstack.cloud.network:
-        name: "{{ network_name }}"
-        state: present
-      register: network
+    - name: Create VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        cidr: "{{ cidr }}"
+      register: vpc
 
     - name: Create subnet
-      openstack.cloud.subnet:
+      opentelekomcloud.cloud.subnet:
         name: "{{ subnet_name }}"
         state: present
-        network_name: "{{ network.network.name }}"
-        cidr: "192.168.110.0/24"
-        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+        vpc: "{{ vpc_name }}"
+        cidr: "{{ cidr }}"
+        gateway_ip: "{{ gateway }}"
+        dns_list:
+          - 100.125.4.25
+          - 8.8.8.8
       register: subnet
-
-    - name: Create router
-      openstack.cloud.router:
-        name: "{{ router_name }}"
-        state: present
-        network: admin_external_net
-        enable_snat: "{{ has_snat | ternary(true, omit) }}"
-        interfaces:
-          - net: "{{ network.network.name }}"
-            subnet: "{{ subnet.subnet.name }}"
-      register: router
 
     - name: Create AS Config
       opentelekomcloud.cloud.as_config:
@@ -76,8 +67,8 @@
       opentelekomcloud.cloud.as_group:
         scaling_group:
           name: "{{ as_group_name }}"
-        networks: [{'id': "{{ network.network.id }}"}]
-        router: "{{ router.router.id }}"
+        networks: [{'id': "{{ subnet.subnet.id }}"}]
+        router: "{{ vpc.vpc.id }}"
       check_mode: true
       register: as_group_check
 
@@ -90,23 +81,23 @@
       opentelekomcloud.cloud.as_group:
         scaling_group:
           name: "{{ as_group_name }}"
-        networks: [{'id': "{{ network.network.id }}"}]
-        router: "{{ router.router.id }}"
+        networks: [{'id': "{{ subnet.subnet.id }}"}]
+        router: "{{ vpc.vpc.id }}"
       register: as_group
 
     - name: Assert result
       ansible.builtin.assert:
         that:
-          - as_group is success
           - as_group is changed
+          - as_group is success
           - 'as_group.msg == "AS Group {{ as_group_name }} was created"'
 
     - name: Create AS Group when it already exists
       opentelekomcloud.cloud.as_group:
         scaling_group:
           name: "{{ as_group_name }}"
-        networks: [{'id': "{{ network.network.id }}"}]
-        router: "{{ router.router.id }}"
+        networks: [{'id': "{{ subnet.subnet.id }}"}]
+        router: "{{ vpc.vpc.id }}"
       register: as_group_err
       failed_when: 'as_group_err is changed or as_group_err.msg != "AS Group {{ as_group.as_group.id }} exists"'
 
@@ -185,8 +176,8 @@
         scaling_group:
           name: "{{ as_group_name }}"
         scaling_configuration: "{{ as_config.as_config.id }}"
-        networks: [{'id': "{{ network.network.id }}"}]
-        router: "{{ router.router.id }}"
+        networks: [{'id': "{{ subnet.subnet.id }}"}]
+        router: "{{ vpc.vpc.id }}"
         desire_instance_number: 1
         max_instance_number: 1
         action: "resume"
@@ -236,51 +227,33 @@
             wait: true
             timeout: 360
           register: removed
-          until: removed is not failed
           ignore_errors: true
-          retries: 10
 
         - name: Delete as config
           opentelekomcloud.cloud.as_config:
             scaling_configuration: "{{ config_name }}"
             state: absent
           register: removed
-          until: removed is not failed
           ignore_errors: true
-          retries: 10
 
         - name: Delete keypair
           openstack.cloud.keypair:
             name: "{{ key_name }}"
             state: absent
           register: removed
-          until: removed is not failed
           ignore_errors: true
-          retries: 10
 
-        - name: Drop existing subnet
-          openstack.cloud.subnet:
-            name: "{{ subnet.subnet.name }}"
+        - name: Delete subnet
+          opentelekomcloud.cloud.subnet:
+            name: "{{ subnet_name }}"
+            vpc: "{{ vpc_name }}"
             state: absent
           register: removed
-          until: removed is not failed
           ignore_errors: true
-          retries: 10
 
-        - name: Drop existing network
-          openstack.cloud.network:
-            name: "{{ network.network.name }}"
+        - name: Delete VPC
+          opentelekomcloud.cloud.vpc:
+            name: "{{ vpc_name }}"
             state: absent
           register: removed
-          until: removed is not failed
           ignore_errors: true
-          retries: 10
-
-        - name: Drop existing router
-          openstack.cloud.router:
-            name: "{{ router.router.name }}"
-            state: absent
-          register: removed
-          until: removed is not failed
-          ignore_errors: true
-          retries: 10
