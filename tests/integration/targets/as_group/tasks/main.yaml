@@ -88,8 +88,8 @@
     - name: Assert result
       ansible.builtin.assert:
         that:
-          - as_group is success
           - as_group is changed
+          - as_group is success
           - 'as_group.msg == "AS Group {{ as_group_name }} was created"'
 
     - name: Create AS Group when it already exists
