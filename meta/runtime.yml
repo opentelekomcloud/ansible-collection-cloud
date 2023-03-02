@@ -12,6 +12,7 @@ action_groups:
     - as_policy_info
     - as_quota_info
     - availability_zone_info
+    - bandwidth
     - cce_cluster
     - cce_cluster_cert_info
     - cce_cluster_info
@@ -23,7 +24,10 @@ action_groups:
     - css_cluster_info
     - css_snapshot
     - css_snapshot_info
-    - cbr
+    - cbr_backup
+    - cbr_backup_info
+    - cbr_policy
+    - cbr_vault
     - deh_host
     - deh_host_info
     - deh_host_type_info
