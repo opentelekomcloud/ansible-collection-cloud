@@ -130,6 +130,7 @@ options:
     description:
       - Rules for automatic association. Filters automatically associated\
         resources by tag.
+      - Updating this parameter will not affect the changed state (when value in updated, changed will be false anyway).
     type: list
     elements: dict
     suboptions:
@@ -156,12 +157,14 @@ options:
   smn_notify:
     description:
       - Exception notification function. True by default.
+      - Updating this parameter will not affect the changed state (when value in updated, changed will be false anyway).
     type: bool
   threshold:
     description:
       - Vault capacity threshold. If the vault capacity usage exceeds this\
         threshold and smn_notify is true, an exception notification is sent.\
         Can be set only in update. 80 by default.
+      - Updating this parameter will not affect the changed state (when value in updated, changed will be false anyway).
     type: int
   state:
     description:
@@ -260,6 +263,14 @@ vault:
       tags:
         description: Vault tags.
         type: list
+        elements: dict
+        contains:
+          key:
+            description: Key.
+            type: str
+          value:
+            description: Value.
+            type: str
       auto_bind:
         description: Indicates whether automatic association is enabled.
         type: bool
@@ -403,6 +414,21 @@ class CBRVaultModule(OTCModule):
             parsed_tags.append(parsed_tag)
         return parsed_tags
 
+    def _parse_bind_rules(self):
+        bind_rules = self.params['bind_rules']
+        parsed_bind_rules = []
+        for rule in bind_rules:
+            parsed_rule = {}
+            parsed_rule['key'] = rule.get('key')\
+                if rule.get('key') else self.fail_json(msg="'key' is required for 'tag'")
+            if rule.get('value'):
+                parsed_rule['value'] = rule.get('value')
+            else:
+                rule['value'] = None
+            parsed_bind_rules.append(parsed_rule)
+        parsed_bind_rules = {'tags': parsed_bind_rules}
+        return parsed_bind_rules
+
     def _parse_billing(self):
         billing = self.params['billing']
         parsed_billing = {}
@@ -459,8 +485,9 @@ class CBRVaultModule(OTCModule):
             if self.params['auto_expand']:
                 if self.params['auto_expand'] != vault['auto_expand']:
                     require_update = True
-            if self.params['smn_notify'] is not None or self.params['threshold'] is not None:
-                require_update = True
+            if self.params['bind_rules']:
+                if self._parse_bind_rules() != vault['bind_rules']:
+                    require_update = True
         return require_update
 
     def run(self):
@@ -468,22 +495,15 @@ class CBRVaultModule(OTCModule):
         action = None
         policy = None
         state = self.params['state']
-        if self.params['description']:
-            attrs['description'] = self.params['description']
+        name_or_id = self.params['name']
         if self.params['auto_bind']:
             attrs['auto_bind'] = self.params['auto_bind']
-        if self.params['policy']:
-            policy = self.conn.cbr.find_policy(name_or_id=self.params['policy'])
-            if policy:
-                attrs['backup_policy_id'] = policy.id
-            else:
-                self.fail_json("'policy' not found")
         if self.params['action']:
             action = self.params['action']
+        if self.params['bind_rules']:
+            attrs['bind_rules'] = self._parse_bind_rules()
 
-        vault = self.conn.cbr.find_vault(name_or_id=self.params['name'],
-                                         ignore_missing=True)
-
+        vault = self.conn.cbr.find_vault(name_or_id=name_or_id, ignore_missing=True)
         if self.ansible.check_mode:
             if self._system_state_change(vault):
                 self.exit_json(changed=True)
@@ -511,7 +531,8 @@ class CBRVaultModule(OTCModule):
             if state == 'present':
                 if self.params['billing']:
                     if self.params['billing'].get('size'):
-                        attrs['billing'] = {'size': self.params['billing']['size']}
+                        attrs['billing'] = {
+                            'size': self.params['billing']['size']}
                 if self.params['auto_expand']:
                     attrs['auto_expand'] = self.params['auto_expand']
                 if self.params['smn_notify']:
@@ -529,17 +550,12 @@ class CBRVaultModule(OTCModule):
                     self.exit_json(changed=False)
                 if not require_update:
                     self.exit_json(changed=False)
-                self.conn.cbr.update_vault(vault=vault, **attrs)
-                self.exit(changed=True)
+                updated_vault = self.conn.cbr.update_vault(vault=vault, **attrs)
+                self.exit(changed=True, vault=updated_vault)
 
             if state == 'absent':
                 self.conn.cbr.delete_vault(vault=vault)
                 self.exit(changed=True)
-
-        if state == 'absent':
-            if self.ansible.check_mode:
-                self.exit_json(changed=False,
-                               msg="vault {0} not found".format(vault.id))
 
         if action in ('associate_resources', 'dissociate_resources',
                       'bind_policy', 'unbind_policy') or state == 'absent':
@@ -557,9 +573,16 @@ class CBRVaultModule(OTCModule):
             attrs['billing'] = self._parse_billing()
         else:
             self.fail_json(msg="billing is mandatory for creation")
+        if self.params['policy']:
+            policy = self.conn.cbr.find_policy(name_or_id=self.params['policy'])
+            if policy:
+                attrs['backup_policy_id'] = policy.id
+            else:
+                self.fail_json("'policy' not found")
+        if self.params['description']:
+            attrs['description'] = self.params['description']
         if self.params['tags']:
             attrs['tags'] = self._parse_tags()
-
         if self.ansible.check_mode:
             self.exit_json(changed=True)
         created_vault = self.conn.cbr.create_vault(**attrs)
