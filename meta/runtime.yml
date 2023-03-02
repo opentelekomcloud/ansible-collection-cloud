@@ -26,6 +26,7 @@ action_groups:
     - cbr_backup
     - cbr_backup_info
     - cbr_restore_point
+    - cbr_policy
     - cbr_vault
     - deh_host
     - deh_host_info
