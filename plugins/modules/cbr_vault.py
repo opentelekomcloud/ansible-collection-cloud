@@ -490,6 +490,20 @@ class CBRVaultModule(OTCModule):
                     require_update = True
         return require_update
 
+    def _require_update_when_action(self, vault):
+        current_resources_ids = [resource.id for resource in vault.resources]
+        if self.params['action'] == 'associate_resources':
+            new_resources_ids = [resource['id'] for resource
+                                 in self.params['resources']]
+            if set(new_resources_ids) - set(current_resources_ids):
+                return True
+        if self.params['action'] == 'dissociate_resources':
+            if set(current_resources_ids) & set(self.params['resource_ids']):
+                return True
+        if self.params['action'] in ('bind_policy', 'unbind_policy'):
+            return True
+        return False
+
     def run(self):
         attrs = {}
         action = None
@@ -503,11 +517,21 @@ class CBRVaultModule(OTCModule):
         if self.params['bind_rules']:
             attrs['bind_rules'] = self._parse_bind_rules()
 
-        vault = self.conn.cbr.find_vault(name_or_id=name_or_id, ignore_missing=True)
+        vault = self.conn.cbr.find_vault(name_or_id=name_or_id,
+                                         ignore_missing=True)
         if self.ansible.check_mode:
             if self._system_state_change(vault):
                 self.exit_json(changed=True)
+            if action:
+                if self._require_update_when_action(vault):
+                    self.exit_json(changed=True)
+                self.exit_json(changed=False)
+            if self._require_update(vault):
+                self.exit_json(changed=True)
+            self.exit_json(changed=False)
+
         if vault:
+
             if action == 'associate_resources':
                 resources = self._parse_resources()
                 self.conn.cbr.associate_resources(
@@ -544,25 +568,25 @@ class CBRVaultModule(OTCModule):
                 else:
                     attrs['threshold'] = 80
                 require_update = self._require_update(vault)
-                if self.ansible.check_mode:
-                    if require_update:
-                        self.exit_json(changed=True)
-                    self.exit_json(changed=False)
                 if not require_update:
                     self.exit_json(changed=False)
-                updated_vault = self.conn.cbr.update_vault(vault=vault, **attrs)
+                updated_vault = self.conn.cbr.update_vault(vault=vault,
+                                                           **attrs)
                 self.exit(changed=True, vault=updated_vault)
 
             if state == 'absent':
                 self.conn.cbr.delete_vault(vault=vault)
                 self.exit(changed=True)
 
+        if state == 'absent':
+            self.exit_json(changed=False)
         if action in ('associate_resources', 'dissociate_resources',
-                      'bind_policy', 'unbind_policy') or state == 'absent':
+                      'bind_policy', 'unbind_policy'):
             if self.ansible.check_mode:
                 self.exit_json(changed=False)
             self.fail_json(
-                changed=False, msg="vault {0} not found".format(vault.id))
+                changed=False, msg="vault {0} not found".format(
+                    self.params['name']))
 
         if self.params['resources']:
             attrs['resources'] = self._parse_resources()
