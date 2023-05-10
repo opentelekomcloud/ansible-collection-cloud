@@ -550,7 +550,8 @@ class CBRVaultModule(OTCModule):
                     self.exit_json(changed=False)
                 if not require_update:
                     self.exit_json(changed=False)
-                updated_vault = self.conn.cbr.update_vault(vault=vault, **attrs)
+                updated_vault = self.conn.cbr.update_vault(
+                    vault=vault, **attrs)
                 self.exit(changed=True, vault=updated_vault)
 
             if state == 'absent':
