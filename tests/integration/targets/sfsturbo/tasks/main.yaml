@@ -1,0 +1,68 @@
+---
+- name: Sfs turbo test
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        vpc_name: "{{ ( prefix + '_vpc') }}"
+        subnet_name: "{{ ( prefix + '_subnet') }}"
+        cidr: "192.168.0.0/24"
+        gateway: "192.168.0.1"
+        share_name: "{{ ( prefix + '_share') }}"
+
+    - name: Create VPC
+      opentelekomcloud.cloud.vpc:
+        name: "{{ vpc_name }}"
+        cidr: "{{ cidr }}"
+      register: vpc
+
+    - name: Create subnet
+      opentelekomcloud.cloud.subnet:
+        name: "{{ subnet_name }}"
+        vpc: "{{ vpc_name }}"
+        cidr: "{{ cidr }}"
+        gateway_ip: "{{ gateway }}"
+        dns_list:
+          - "100.125.4.25"
+          - "100.125.129.199"
+      register: subnet
+
+    - name: Create security group
+      openstack.cloud.security_group:
+        name: "{{ secgroup_name }}"
+        state: present
+      register: secgroup
+
+    - name: Create sfsturbo share
+      opentelekomcloud.cloud.sfsturbo_share:
+        name: "{{ secgroup_name }}"
+        share_proto: "NFS"
+        share_type: "STANDARD"
+        size: 1
+        availability_zone: 'eu-de-01'
+        vpc_id: "{{ vpc.vpc.id }}"
+        subnet_id: "{{ subnet.subnet.id }}"
+        security_group_id: "{{ secgroup.security_group.id }}"
+      register: share
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - share is success
+          - share is changed
+          - share.share.id is true
+
+    - name: Delete sfsturbo share
+      opentelekomcloud.cloud.sfsturbo_share:
+        name: "{{ share_name }}"
+        state: absent
+      register: share
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - share is success
+          - share is changed

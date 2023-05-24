@@ -71,10 +71,7 @@ options:
     type: str
   metadata:
     description:
-      - Vault capacity threshold. If the vault capacity usage exceeds this\
-        threshold and smn_notify is true, an exception notification is sent.\
-        Can be set only in update. 80 by default.
-      - Updating this parameter will not affect the changed state (when value in updated, changed will be false anyway).
+      - Specifies the metadata information used to create the file system.
     type: dict
     suboptions:
       expand_type:
@@ -116,24 +113,22 @@ share:
 '''
 
 EXAMPLES = '''
-- name: Create share
+- name: Create sfs turbo share
   opentelekomcloud.cloud.sfsturbo_share:
-    name: "vault-namenew"
-    resources:
-      - id: '9f1e2203-f222-490d-8c78-23c01ca4f4b9'
-        type: "OS::Cinder::Volume"
-    billing:
-      consistent_level: "crash_consistent"
-      object_type: "disk"
-      protect_type: "backup"
-      size: 40
-  register: vault
+    name: "test_share_1"
+    share_proto: "NFS"
+    share_type: "STANDARD"
+    size: 100
+    availability_zone: 'eu-de-01'
+    vpc_id: "vpc_uuid"
+    subnet_id: "subnet_uuid"
+    security_group_id: "security_group_uuid"
+  register: share
 
-- name: Delete CBR vault
+- name: Delete sfs turbo share
   opentelekomcloud.cloud.sfsturbo_share:
-    name: "new-vault"
+    name: "test_share_1"
     state: absent
-  register: vault
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
@@ -145,16 +140,17 @@ class SfsTurboShareModule(OTCModule):
         id=dict(type='str'),
         name=dict(type='str'),
         share_proto=dict(type='str'),
-        share_type=dict(type='str'),
-        size=dict(type='str'),
+        share_type=dict(type='str', choices=['STANDARD', 'PERFORMANCE']),
+        size=dict(type='int'),
         availability_zone=dict(type='str'),
         vpc_id=dict(type='str'),
         subnet_id=dict(type='str'),
         security_group_id=dict(type='str'),
         description=dict(type='str'),
-        metadata=dict(type='dict'),
+        metadata=dict(type='dict', options=dict(expand_type=dict(type='str'),
+                                                crypt_key_id=dict(type='str')),
         state=dict(type='str', required=False, choices=['present', 'absent'],
-                   default='present')
+                   default='present'))
     )
 
     module_kwargs = dict(
@@ -162,10 +158,32 @@ class SfsTurboShareModule(OTCModule):
     )
 
     def run(self):
+        session = getattr(self.conn, 'network')
+
+        create_function = getattr(session, 'create_{0}'.
+                                  format('share'))
+        delete_function = getattr(session, 'delete_{0}'.
+                                  format('share'))
+        find_function = getattr(session, 'find_{0}'.
+                                format('share'))
+        get_function = getattr(session, 'get_{0}'.
+                               format('share'))
+        list_function = getattr(session, '{0}'.
+                                format('shares'))
+
+        crud_functions = dict(
+            create=create_function,
+            delete=delete_function,
+            find=find_function,
+            get=get_function,
+            list=list_function,
+            update=update_function
+        )
         sm = StateMachine(connection=self.conn,
                           service_name='sfsturbo',
                           type_name='share',
-                          sdk=self.sdk)
+                          sdk=self.sdk,
+                          crud_functions=crud_functions)
         kwargs = dict((k, self.params[k])
                       for k in ['state', 'timeout']
                       if self.params[k] is not None)
@@ -177,10 +195,10 @@ class SfsTurboShareModule(OTCModule):
                   'security_group_id', 'description', 'metadata']
                  if self.params[k] is not None)
         share, is_changed = sm(check_mode=self.ansible.check_mode,
-                                        updateable_attributes=None,
-                                        non_updateable_attributes=None,
-                                        wait=False,
-                                        **kwargs)
+                               updateable_attributes=None,
+                               non_updateable_attributes=None,
+                               wait=False,
+                               **kwargs)
 
         self.exit_json(share=share, changed=is_changed)
 
