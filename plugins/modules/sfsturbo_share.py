@@ -47,7 +47,7 @@ options:
       - For a common file system, the value of capacity ranges from 500 to
         32768 (in the unit of GB). For an enhanced file system where the
         expand_type field is specified for metadata, the capacity ranges
-        from 10240 to 327680. 
+        from 10240 to 327680.
     type: int
   availability_zone:
     description:
@@ -55,7 +55,7 @@ options:
     type: str
   vpc_id:
     description:
-      - Specifies the VPC ID of a tenant in a region. 
+      - Specifies the VPC ID of a tenant in a region.
     type: str
   subnet_id:
     description:
@@ -82,7 +82,7 @@ options:
       crypt_key_id:
         description:
           - Specifies the ID of a KMS professional key when an encrypted
-            file system is created. 
+            file system is created.
         type: str
   state:
     description:
@@ -106,7 +106,7 @@ share:
         description: Specifies the name of the SFS Turbo file system.
         type: str
       status:
-        description: Specifies the status of the SFS Turbo file system. 
+        description: Specifies the status of the SFS Turbo file system.
         type: str
         description: Creation time.
         type: str
@@ -147,10 +147,12 @@ class SfsTurboShareModule(OTCModule):
         subnet_id=dict(type='str'),
         security_group_id=dict(type='str'),
         description=dict(type='str'),
-        metadata=dict(type='dict', options=dict(expand_type=dict(type='str'),
-                                                crypt_key_id=dict(type='str')),
-        state=dict(type='str', required=False, choices=['present', 'absent'],
-                   default='present'))
+        metadata=dict(type='dict', options=dict(
+            expand_type=dict(type='str'),
+            crypt_key_id=dict(type='str'))),
+        state=dict(type='str', required=False,
+                   choices=['present', 'absent'],
+                   default='present')
     )
 
     module_kwargs = dict(
@@ -158,32 +160,10 @@ class SfsTurboShareModule(OTCModule):
     )
 
     def run(self):
-        session = getattr(self.conn, 'network')
-
-        create_function = getattr(session, 'create_{0}'.
-                                  format('share'))
-        delete_function = getattr(session, 'delete_{0}'.
-                                  format('share'))
-        find_function = getattr(session, 'find_{0}'.
-                                format('share'))
-        get_function = getattr(session, 'get_{0}'.
-                               format('share'))
-        list_function = getattr(session, '{0}'.
-                                format('shares'))
-
-        crud_functions = dict(
-            create=create_function,
-            delete=delete_function,
-            find=find_function,
-            get=get_function,
-            list=list_function,
-            update=update_function
-        )
         sm = StateMachine(connection=self.conn,
                           service_name='sfsturbo',
                           type_name='share',
-                          sdk=self.sdk,
-                          crud_functions=crud_functions)
+                          sdk=self.sdk)
         kwargs = dict((k, self.params[k])
                       for k in ['state', 'timeout']
                       if self.params[k] is not None)
@@ -196,7 +176,11 @@ class SfsTurboShareModule(OTCModule):
                  if self.params[k] is not None)
         share, is_changed = sm(check_mode=self.ansible.check_mode,
                                updateable_attributes=None,
-                               non_updateable_attributes=None,
+                               non_updateable_attributes=[
+                                   'name', 'share_proto', 'share_type',
+                                   'size', 'availability_zone', 'vpc_id',
+                                   'subnet_id', 'security_group_id',
+                                   'description', 'metadata'],
                                wait=False,
                                **kwargs)
 
