@@ -15,3 +15,5 @@ skip_list:
   - galaxy[no-changelog]  # Rule for checking collection version is greater than 1.0.0 and checking for changelog.
   - galaxy[version-incorrect]  # Rule for checking collection version is greater than 1.0.0 and checking for changelog.
   - name[missing]  # Rule for checking task and play names.
+  - name[casing]
+  - var-naming[no-role-prefix]
