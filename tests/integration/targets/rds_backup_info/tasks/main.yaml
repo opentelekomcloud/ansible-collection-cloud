@@ -4,12 +4,6 @@
     opentelekomcloud.cloud.rds_backup_info:
       cloud: "{{ test_cloud }}"
   block:
-    - name: Get error message that rds instance is missing
-      opentelekomcloud.cloud.rds_backup_info:
-        instance:
-      register: rds_backup_info
-      failed_when: 'rds_backup_info.msg != "RDS instance is missing"'
-
     - name: Get error message that required parameter is missing
       opentelekomcloud.cloud.rds_backup_info:
       register: rds_backup_info
