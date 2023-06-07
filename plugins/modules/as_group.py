@@ -48,16 +48,19 @@ options:
       - Specifies the expected number of instances.
       - The default value is the minimum number of instances.
     type: int
+    default: 0
   min_instance_number:
     description:
       - Specifies the minimum number of instances.
       - The default value is 0.
     type: int
+    default: 0
   max_instance_number:
     description:
       - Specifies the maximum number of instances.
       - The default value is 0.
     type: int
+    default: 0
   cool_down_time:
     description:
       - Specifies the cooldown period (in seconds).
