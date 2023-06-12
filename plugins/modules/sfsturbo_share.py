@@ -90,6 +90,11 @@ options:
     choices: ['present', 'absent']
     type: str
     default: 'present'
+  timeout:
+    description:
+      - Specifies the timeout.
+    type: int
+    default: 600
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -162,7 +167,8 @@ class SfsTurboShareModule(OTCModule):
             crypt_key_id=dict(type='str'))),
         state=dict(type='str', required=False,
                    choices=['present', 'absent'],
-                   default='present')
+                   default='present'),
+        timeout=dict(type='int', default=600),
     )
 
     module_kwargs = dict(
@@ -175,7 +181,7 @@ class SfsTurboShareModule(OTCModule):
                                type_name='share',
                                sdk=self.sdk)
         kwargs = dict((k, self.params[k])
-                      for k in ['state']
+                      for k in ['state', 'timeout']
                       if self.params[k] is not None)
 
         kwargs['attributes'] = \
@@ -192,7 +198,6 @@ class SfsTurboShareModule(OTCModule):
                                    'subnet_id', 'security_group_id',
                                    'description', 'metadata'],
                                wait=True,
-                               timeout=600,
                                **kwargs)
 
         self.exit_json(share=share, changed=is_changed)

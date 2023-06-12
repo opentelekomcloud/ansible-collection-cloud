@@ -38,6 +38,11 @@ options:
      description: Name or id of the security group.
      required: false
      type: str
+  timeout:
+    description:
+      - Specifies the timeout.
+    type: int
+    default: 350
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -76,8 +81,9 @@ class SFSTurboShareAction(OTCModule):
     argument_spec = dict(
         id=dict(required=False),
         name=dict(required=False),
-        new_size=dict(required=False, type=int),
-        security_group=dict(required=False)
+        new_size=dict(required=False, type='int'),
+        security_group=dict(required=False),
+        timoeut=dict(default=350, type='int')
     )
     module_kwargs = dict(
         required_if=[
@@ -102,6 +108,7 @@ class SFSTurboShareAction(OTCModule):
         id = self.params['id']
         new_size = self.params['new_size']
         security_group = self.params['security_group']
+        timeout = self.params['timeout']
         security_group_id = None
 
         changed = False
@@ -129,13 +136,15 @@ class SFSTurboShareAction(OTCModule):
             if new_size:
                 share = self.conn.sfsturbo.extend_capacity(share=share.id,
                                                            new_size=new_size)
-                self.conn.sfsturbo.wait_for_extend_capacity(share)
+                self.conn.sfsturbo.wait_for_extend_capacity(share,
+                                                            wait=timeout)
                 changed = True
 
             if security_group_id:
                 share = self.conn.sfsturbo.change_security_group(
                     share, security_group_id)
-                self.conn.sfsturbo.wait_for_change_security_group(share)
+                self.conn.sfsturbo.wait_for_change_security_group(share,
+                                                                  wait=timeout)
                 changed = True
 
         self.exit(share=share, changed=changed)
