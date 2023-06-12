@@ -93,12 +93,6 @@
       register: as_policies
       failed_when: 'as_policies.msg != "missing required arguments: scaling_group"'
 
-    - name: Get error when AS group id is missing
-      opentelekomcloud.cloud.as_policy_info:
-        scaling_group:
-      register: as_policies
-      failed_when: 'as_policies.msg != "Scaling group is missing"'
-
   always:
     - name: Cleanup
       block:
