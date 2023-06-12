@@ -63,10 +63,6 @@
           - share is changed
           - share.share.id is defined
 
-    - name: Assert result
-      ansible.builtin.wait_for:
-        timeout: 350
-
     - name: Extend capacity for share
       opentelekomcloud.cloud.sfsturbo_share_action:
         name: "{{ share_name }}"
@@ -74,8 +70,9 @@
       register: share
 
     - name: Assert result
-      ansible.builtin.wait_for:
-        timeout: 350
+      ansible.builtin.assert:
+        that:
+          - share is changed
 
     - name: Get share
       opentelekomcloud.cloud.sfsturbo_share:
@@ -85,7 +82,6 @@
     - name: Assert result
       ansible.builtin.assert:
         that:
-          - share is changed
           - share.share.avail_capacity == "200.00"
 
     - name: Change security group for share
@@ -95,8 +91,9 @@
       register: share
 
     - name: Assert result
-      ansible.builtin.wait_for:
-        timeout: 50
+      ansible.builtin.assert:
+        that:
+          - share is changed
 
     - name: Get share
       opentelekomcloud.cloud.sfsturbo_share:
@@ -106,7 +103,6 @@
     - name: Assert result
       ansible.builtin.assert:
         that:
-          - share is changed
           - share.share.security_group_id == "{{ secgroup2.security_group.id }}"
 
     - name: Delete sfsturbo share

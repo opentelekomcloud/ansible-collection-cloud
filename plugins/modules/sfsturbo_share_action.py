@@ -129,11 +129,13 @@ class SFSTurboShareAction(OTCModule):
             if new_size:
                 share = self.conn.sfsturbo.extend_capacity(share=share.id,
                                                            new_size=new_size)
+                self.conn.sfsturbo.wait_for_extend_capacity(share)
                 changed = True
 
             if security_group_id:
                 share = self.conn.sfsturbo.change_security_group(
                     share, security_group_id)
+                self.conn.sfsturbo.wait_for_change_security_group(share)
                 changed = True
 
         self.exit(share=share, changed=changed)

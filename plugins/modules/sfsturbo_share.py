@@ -135,6 +135,16 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 from ansible_collections.openstack.cloud.plugins.module_utils.resource import StateMachine
 
 
+class StateMachineShare(StateMachine):
+
+    def _create(self, attributes, timeout, wait, **kwargs):
+        resource = self.create_function(**attributes)
+        wait_function = getattr(self.session, 'wait_for_share')
+        if wait:
+            resource = wait_function(resource)
+        return resource
+
+
 class SfsTurboShareModule(OTCModule):
     argument_spec = dict(
         id=dict(type='str'),
@@ -160,12 +170,12 @@ class SfsTurboShareModule(OTCModule):
     )
 
     def run(self):
-        sm = StateMachine(connection=self.conn,
-                          service_name='sfsturbo',
-                          type_name='share',
-                          sdk=self.sdk)
+        sm = StateMachineShare(connection=self.conn,
+                               service_name='sfsturbo',
+                               type_name='share',
+                               sdk=self.sdk)
         kwargs = dict((k, self.params[k])
-                      for k in ['state', 'timeout']
+                      for k in ['state']
                       if self.params[k] is not None)
 
         kwargs['attributes'] = \
@@ -181,7 +191,8 @@ class SfsTurboShareModule(OTCModule):
                                    'size', 'availability_zone', 'vpc_id',
                                    'subnet_id', 'security_group_id',
                                    'description', 'metadata'],
-                               wait=False,
+                               wait=True,
+                               timeout=600,
                                **kwargs)
 
         self.exit_json(share=share, changed=is_changed)
