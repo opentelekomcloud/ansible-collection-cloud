@@ -149,7 +149,7 @@ class NatSnatModule(OTCModule):
         id=dict(required=False),
         nat_gateway=dict(required=False),
         network=dict(required=False),
-        source_type=dict(required=False, type='int', choices=[0, 1]),
+        source_type=dict(required=False, type='int', default=0, choices=[0, 1]),
         state=dict(type='str', choices=['present', 'absent'], default='present')
     )
     module_kwargs = dict(

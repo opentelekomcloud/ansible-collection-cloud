@@ -47,6 +47,7 @@ options:
   initial_node_count:
     description: Expected number of nodes in this node pool.
     type: int
+    default: 0
   k8s_tags:
     description: Dictionary of Kubernetes tags.
     type: dict
