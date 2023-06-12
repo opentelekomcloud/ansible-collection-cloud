@@ -124,22 +124,22 @@
           openstack.cloud.security_group:
             name: "{{ secgroup_name }}"
             state: absent
-          ignore_errors: true
+          failed_when: false
 
         - name: Delete second security group
           openstack.cloud.security_group:
             name: "{{ secgroup_name_2 }}"
             state: absent
-          ignore_errors: true
+          failed_when: false
 
         - name: Delete subnet
           opentelekomcloud.cloud.subnet:
             name: "{{ subnet_name }}"
             state: absent
-          ignore_errors: true
+          failed_when: false
 
         - name: Delete VPC
           opentelekomcloud.cloud.vpc:
             name: "{{ vpc_name }}"
             state: absent
-          ignore_errors: true
+          failed_when: false

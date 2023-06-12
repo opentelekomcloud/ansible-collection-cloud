@@ -38,11 +38,11 @@ options:
      description: Name or id of the security group.
      required: false
      type: str
-  timeout:
-    description:
-      - Specifies the timeout.
-    type: int
-    default: 350
+   timeout:
+     description:
+       - Specifies the timeout.
+     type: int
+     default: 350
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
