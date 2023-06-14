@@ -125,16 +125,18 @@
           opentelekomcloud.cloud.bandwidth:
             name: "{{ bandwidth_id }}"
             state: absent
-          register: deleted_bandwidth
-          until: deleted_bandwidth is not failed
-          ignore_errors: true
-          retries: 10
+          retries: 5
+          failed_when: false
+
+        - name: Drop floating ip
+          opentelekomcloud.cloud.floating_ip:
+            floating_ip_address: "{{ fl.floating_ip.floating_ip_address }}"
+            state: absent
+            purge: true
+          failed_when: false
 
         - name: Delete VPC
           opentelekomcloud.cloud.vpc:
             name: "{{ vpc_name }}"
             state: "absent"
-          register: removed
-          until: removed is not failed
-          ignore_errors: true
-          retries: 10
+          failed_when: false
