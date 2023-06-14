@@ -135,6 +135,7 @@
         - name: Delete subnet
           opentelekomcloud.cloud.subnet:
             name: "{{ subnet_name }}"
+            vpc: "{{ vpc_name }}"
             state: absent
           failed_when: false
 

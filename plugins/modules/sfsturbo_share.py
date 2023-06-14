@@ -113,8 +113,6 @@ share:
       status:
         description: Specifies the status of the SFS Turbo file system.
         type: str
-        description: Creation time.
-        type: str
 '''
 
 EXAMPLES = '''

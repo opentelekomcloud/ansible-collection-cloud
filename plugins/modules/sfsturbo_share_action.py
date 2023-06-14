@@ -83,7 +83,7 @@ class SFSTurboShareAction(OTCModule):
         name=dict(required=False),
         new_size=dict(required=False, type='int'),
         security_group=dict(required=False),
-        timoeut=dict(default=350, type='int')
+        timeout=dict(default=350, type='int')
     )
     module_kwargs = dict(
         required_if=[
