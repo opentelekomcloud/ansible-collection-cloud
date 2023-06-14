@@ -14,7 +14,7 @@
 DOCUMENTATION = '''
 ---
 module: sfsturbo_share_action
-short_description: Action on sfs turbo share from Open Telekom Cloud
+short_description: Extend capacity and security group change for share
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 author: "Polina Gubina (@polina-gubina)"
 version_added: "0.10.0"
@@ -47,12 +47,12 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 EXAMPLES = '''
-- name: Extend capacity vpc
+- name: Extend capacity for share
   opentelekomcloud.cloud.sfsturbo_share_action:
     name: "share-test"
     new_size: 200
 
-- name: Change security group
+- name: Change security group for share
   opentelekomcloud.cloud.vpc:
     name: "share-test"
     security_group: default
