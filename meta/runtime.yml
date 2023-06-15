@@ -59,7 +59,6 @@ action_groups:
     - subnet
     - subnet_info
     - sfsturbo_share
-    - sfsturbo_share_action
     - tag
     - volume_backup
     - waf_certificate

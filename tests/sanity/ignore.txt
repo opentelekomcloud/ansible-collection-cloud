@@ -89,7 +89,6 @@ plugins/modules/security_group.py validate-modules:missing-gplv3-license
 plugins/modules/security_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/server_group_info.py validate-modules:missing-gplv3-license
 plugins/modules/sfsturbo_share.py validate-modules:missing-gplv3-license
-plugins/modules/sfsturbo_share_action.py validate-modules:missing-gplv3-license
 plugins/modules/tag.py validate-modules:missing-gplv3-license
 plugins/modules/vpc.py validate-modules:missing-gplv3-license
 plugins/modules/vpc_info.py validate-modules:missing-gplv3-license

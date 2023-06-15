@@ -64,7 +64,7 @@
           - share.share.id is defined
 
     - name: Extend capacity for share
-      opentelekomcloud.cloud.sfsturbo_share_action:
+      opentelekomcloud.cloud.sfsturbo_share:
         name: "{{ share_name }}"
         new_size: 200
       register: share
@@ -85,7 +85,7 @@
           - share.share.avail_capacity == "200.00"
 
     - name: Change security group for share
-      opentelekomcloud.cloud.sfsturbo_share_action:
+      opentelekomcloud.cloud.sfsturbo_share:
         name: "{{ share_name }}"
         security_group: "{{ secgroup2.security_group.id }}"
       register: share

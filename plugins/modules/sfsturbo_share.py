@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: sfsturbo_share
 short_description: Manage SFS Turbo file system.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.12.4"
+version_added: "0.15.0"
 author: "Gubina Polina (@Polina-Gubina)"
 description:
     - Manage SFS Turbo file system from the OTC.
@@ -48,6 +48,8 @@ options:
         32768 (in the unit of GB). For an enhanced file system where the
         expand_type field is specified for metadata, the capacity ranges
         from 10240 to 327680.
+      -  Can be extended, but it is possible only to set size bigger
+         than current one.
     type: int
   availability_zone:
     description:
@@ -64,6 +66,7 @@ options:
   security_group_id:
     description:
       - Specifies the security group ID of a tenant in a region.
+        Can be updated.
     type: str
   description:
     description:
@@ -128,6 +131,20 @@ EXAMPLES = '''
     security_group_id: "security_group_uuid"
   register: share
 
+- name: Extend capacity sfs turbo share
+  opentelekomcloud.cloud.sfsturbo_share:
+    name: "test_share_1"
+    size: 200
+    security_group_id: "security_group_uuid"
+  register: share
+
+- name: Change security group
+  opentelekomcloud.cloud.sfsturbo_share:
+    name: "test_share_1"
+    size: 200
+    security_group_id: "security_group_uuid"
+  register: share
+
 - name: Delete sfs turbo share
   opentelekomcloud.cloud.sfsturbo_share:
     name: "test_share_1"
@@ -146,6 +163,49 @@ class StateMachineShare(StateMachine):
         if wait:
             resource = wait_function(resource)
         return resource
+
+    def _update(self, resource, timeout, update, wait, **kwargs):
+        resource_attributes = update.get('resource_attributes')
+        extend_capacity = getattr(self.session, 'extend_capacity')
+        change_security_group = getattr(self.session, 'change_security_group')
+        wait_extend_capacity = getattr(self.session,
+                                       'wait_for_extend_capacity')
+        wait_change_sec_group= getattr(self.session,
+                                       'wait_for_change_security_group')
+        if resource_attributes.get('size'):
+            if resource_attributes.get('size') != int(float(
+                    resource.avail_capacity)) and \
+                    resource_attributes.get('size') > int(float(
+                    resource.avail_capacity)):
+                resource = extend_capacity(resource,
+                                           resource_attributes['size'])
+                wait_extend_capacity(resource, wait=timeout)
+        if resource_attributes.get('security_group_id'):
+            resource = change_security_group(
+                resource, resource_attributes['security_group_id'])
+            wait_change_sec_group(resource, wait=timeout)
+        return resource
+
+    def _build_update(self, resource, attributes, updateable_attributes,
+                      non_updateable_attributes, **kwargs):
+        update = {}
+        resource = self.find_function(name_or_id=resource['id'])
+
+        resource_attributes = {}
+
+        if attributes.get('size'):
+            if attributes['size'] != int(float(resource['size'])):
+                resource_attributes['size'] = attributes['size']
+
+        if attributes.get('security_group_id'):
+            if attributes['security_group_id'] != resource['security_group_id']:
+                resource_attributes['security_group_id'] =\
+                    attributes['security_group_id']
+
+        if resource_attributes:
+            update['resource_attributes'] = resource_attributes
+
+        return update
 
 
 class SfsTurboShareModule(OTCModule):
@@ -189,12 +249,12 @@ class SfsTurboShareModule(OTCModule):
                   'security_group_id', 'description', 'metadata']
                  if self.params[k] is not None)
         share, is_changed = sm(check_mode=self.ansible.check_mode,
-                               updateable_attributes=None,
+                               updateable_attributes=['size',
+                                                      'security_group_id'],
                                non_updateable_attributes=[
                                    'name', 'share_proto', 'share_type',
-                                   'size', 'availability_zone', 'vpc_id',
-                                   'subnet_id', 'security_group_id',
-                                   'description', 'metadata'],
+                                   'availability_zone', 'vpc_id',
+                                   'subnet_id', 'description', 'metadata'],
                                wait=True,
                                **kwargs)
 
