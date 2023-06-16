@@ -13,7 +13,7 @@
         secgroup_name_2: "{{ ( prefix + '_secgroup2') }}"
         cidr: "192.168.0.0/24"
         gateway: "192.168.0.1"
-        share_name: "test_sfsturbo_share"
+        share_name: "sfsturbo_share_test"
 
     - name: Create VPC
       opentelekomcloud.cloud.vpc:
@@ -66,7 +66,7 @@
     - name: Extend capacity for share
       opentelekomcloud.cloud.sfsturbo_share:
         name: "{{ share_name }}"
-        new_size: 200
+        size: 200
       register: share
 
     - name: Assert result
@@ -87,7 +87,7 @@
     - name: Change security group for share
       opentelekomcloud.cloud.sfsturbo_share:
         name: "{{ share_name }}"
-        security_group: "{{ secgroup2.security_group.id }}"
+        security_group_id: "{{ secgroup2.security_group.id }}"
       register: share
 
     - name: Assert result
@@ -120,6 +120,12 @@
   always:
     - name: Cleanup
       block:
+        - name: Delete sfsturbo share
+          opentelekomcloud.cloud.sfsturbo_share:
+            name: "{{ share_name }}"
+            state: absent
+          failed_when: false
+
         - name: Delete security group
           openstack.cloud.security_group:
             name: "{{ secgroup_name }}"
