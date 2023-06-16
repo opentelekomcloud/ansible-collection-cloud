@@ -170,7 +170,7 @@ class StateMachineShare(StateMachine):
         change_security_group = getattr(self.session, 'change_security_group')
         wait_extend_capacity = getattr(self.session,
                                        'wait_for_extend_capacity')
-        wait_change_sec_group= getattr(self.session,
+        wait_change_sec_group = getattr(self.session,
                                        'wait_for_change_security_group')
         if resource_attributes.get('size'):
             if resource_attributes.get('size') != int(float(
