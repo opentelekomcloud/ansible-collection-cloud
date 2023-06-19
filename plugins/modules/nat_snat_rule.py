@@ -219,6 +219,7 @@ class NatSnatModule(OTCModule):
                     if self.ansible.check_mode:
                         self.exit_json(changed=True)
                     self.conn.nat.delete_snat_rule(snat_rule.id)
+                    self.conn.nat.wait_for_delete_snat(snat_rule.id)
                     self.exit(changed=True)
                 else:
                     self.exit(
@@ -232,6 +233,7 @@ class NatSnatModule(OTCModule):
                     self.exit_json(changed=True)
                 if rule.id:
                     self.conn.nat.delete_snat_rule(rule.id)
+                    self.conn.nat.wait_for_delete_snat(snat_rule.id)
                     changed = True
                     break
 
@@ -262,6 +264,7 @@ class NatSnatModule(OTCModule):
                     )
 
             snat_rule = self.conn.nat.create_snat_rule(**attrs)
+            snat_rule = self.conn.nat.wait_for_snat(snat_rule)
             self.exit(changed=True, snat_rule=snat_rule.to_dict())
 
         self.exit(changed=changed)

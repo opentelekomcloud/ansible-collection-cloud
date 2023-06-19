@@ -176,6 +176,7 @@ class NatDnatModule(OTCModule):
                 )
                 if dnat_rule:
                     self.conn.nat.delete_dnat_rule(dnat_rule)
+                    self.conn.nat.wait_for_delete_dnat(dnat_rule.id)
                     changed = True
                 else:
                     self.exit(
@@ -227,7 +228,8 @@ class NatDnatModule(OTCModule):
                     failed=True
                 )
             if self.params['external_service_port']:
-                attrs['external_service_port'] = self.params['external_service_port']
+                attrs['external_service_port'] = \
+                    self.params['external_service_port']
             else:
                 self.exit(
                     changed=False,
@@ -306,6 +308,7 @@ class NatDnatModule(OTCModule):
                     )
 
             dnat_rule = self.conn.nat.create_dnat_rule(**attrs)
+            dnat_rule = self.conn.nat.wait_for_dnat(dnat_rule)
             self.exit(changed=True, dnat_rule=dnat_rule.to_dict())
 
         self.exit(changed=changed)
