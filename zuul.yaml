@@ -54,6 +54,7 @@
                 - dns/public/
                 - elb/group1/
                 - obs/group1/
+                - rds_flavor_info/group1/
                 - storage/vbs/
                 - waf/group1/
     gate:
