@@ -513,7 +513,6 @@ class CBRVaultModule(OTCModule):
                 self.conn.cbr.associate_resources(
                     vault=vault.id, resources=resources)
                 self.exit(changed=True)
-
             if action == 'dissociate_resources':
                 resource_ids = self.params['resource_ids']
                 self.conn.cbr.dissociate_resources(
