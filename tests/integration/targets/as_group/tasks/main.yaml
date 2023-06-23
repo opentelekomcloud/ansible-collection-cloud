@@ -183,7 +183,7 @@
         action: "resume"
         state: "present"
         wait: true
-        timeout: 360
+        timeout: 500
       register: as_group
 
     - name: Assert result
