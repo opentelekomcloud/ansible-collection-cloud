@@ -222,6 +222,7 @@ class CBRRestorePointModule(OTCModule):
             attrs['resource_details'] = self._parse_resource_details()
 
         checkpoint = self.conn.cbr.create_checkpoint(**attrs)
+        self.conn.cbr.wait_for_checkpoint(checkpoint)
         self.exit(changed=True, checkpoint=checkpoint)
 
 
