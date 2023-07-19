@@ -23,8 +23,7 @@ description:
     service(ELB).
 options:
   name:
-    description:
-      - Name that has to be given to the load balancer
+    description: Name that has to be given to the load balancer
     required: true
     type: str
   state:
