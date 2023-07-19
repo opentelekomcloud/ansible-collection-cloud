@@ -63,6 +63,7 @@ action_groups:
     - volume_backup
     - waf_certificate
     - waf_certificate_info
+    - vlb_loadbalancer_info
     - vpc
     - vpc_info
     - volume_backup_info
