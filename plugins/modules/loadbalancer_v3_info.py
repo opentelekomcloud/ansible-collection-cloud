@@ -52,7 +52,7 @@ options:
     description:
       - Specifies the virtual IP address bound to the load balancer.
     type: str
-  subnet_cidr_id:
+  subnet_id:
     description:
       - Specifies the ID of the subnet where the load balancer works.
     type: str
@@ -318,7 +318,7 @@ class LoadbalancerV3InfoModule(OTCModule):
         vpc=dict(required=False),
         port_id=dict(required=False),
         ip_address=dict(required=False),
-        subnet_cidr_id=dict(required=False),
+        subnet_id=dict(required=False),
         l4_flavor_id=dict(required=False),
         l4_scale_flavor_id=dict(required=False),
         availability_zones=dict(required=False, type='list'),
@@ -362,8 +362,8 @@ class LoadbalancerV3InfoModule(OTCModule):
                 kwargs['vip_port_id'] = self.params['port_id']
             if self.params['ip_address']:
                 kwargs['vip_address'] = self.params['ip_address']
-            if self.params['subnet_cidr_id']:
-                kwargs['vip_subnet_cidr_id'] = self.params['subnet_cidr_id']
+            if self.params['subnet_id']:
+                kwargs['vip_subnet_cidr_id'] = self.params['subnet_id']
             if self.params['availability_zones']:
                 kwargs['availability_zone_list'] = \
                     self.params['availability_zones']
