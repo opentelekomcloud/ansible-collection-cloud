@@ -41,6 +41,7 @@ action_groups:
     - floating_ip
     - loadbalancer
     - loadbalancer_info
+    - loadbalancer_v3_info
     - nat_dnat_info
     - nat_dnat_rule
     - nat_gateway_info
@@ -63,7 +64,6 @@ action_groups:
     - volume_backup
     - waf_certificate
     - waf_certificate_info
-    - vlb_loadbalancer_info
     - vpc
     - vpc_info
     - volume_backup_info
