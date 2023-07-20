@@ -81,7 +81,7 @@
         timeout: 600
 
     - name: Get loadbalancers list through vlb provider
-      opentelekomcloud.cloud.vlb_loadbalancer_info:
+      opentelekomcloud.cloud.loadbalancer_v3_info:
       register: loadbalancers
 
     - name: Assert result
@@ -105,7 +105,7 @@
           - res.loadbalancers.vip_address is defined
 
     - name: Get loadbalancer by Name through vlb provider
-      opentelekomcloud.cloud.vlb_loadbalancer_info:
+      opentelekomcloud.cloud.loadbalancer_v3_info:
         name: "{{ lb.loadbalancer.name }}"
       register: res
 

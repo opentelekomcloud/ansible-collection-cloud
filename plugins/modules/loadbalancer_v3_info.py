@@ -180,18 +180,18 @@ loadbalancers:
         - Specifies the operating status of the load balancer.
           The value can only be ONLINE.
       type: str
-    vip_address:
+    ip_address:
       description:
         - Specifies the private IPv4 address bound to the load balancer.
       type: str
-    vip_subnet_cidr_id:
+    subnet_id:
       description:
         - Specifies the ID of the IPv4 subnet where the load balancer works.
       type: str
     project_id:
       description: Specifies the project ID of the load balancer.
       type: str
-    vip_port_id:
+    port_id:
       description:
         - Specifies the ID of the port bound to the virtual IP address
           (the value of vip_address) of the load balancer.
@@ -225,7 +225,7 @@ loadbalancers:
     vpc_id:
       description: Specifies the ID of the VPC where the load balancer works.
       type: str
-    availability_zone_list:
+    availability_zones:
       description:
         - Specifies the list of AZs where the load balancer is created.
       type: list
@@ -378,6 +378,11 @@ class LoadbalancerV3InfoModule(OTCModule):
             for raw in self.conn.vlb.load_balancers(**kwargs):
                 dt = raw.to_dict()
                 dt.pop('location')
+                dt['ip_address'] = dt['vip_address']
+                dt['subnet_id'] = dt['vip_subnet_id']
+                dt['port_id'] = dt['vip_port_id']
+                for key in ['vip_address', 'vip_subnet_id', 'vip_port_id']:
+                    del dt[key]
                 data.append(dt)
 
         self.exit_json(
