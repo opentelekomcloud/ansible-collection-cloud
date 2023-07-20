@@ -13,7 +13,7 @@
 
 DOCUMENTATION = '''
 ---
-module: vlb_loadbalancer_info
+module: loadbalancer_v3_info
 short_description: Get load balancer (VLB) from OpenTelekomCloud
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.14.0"
@@ -21,8 +21,7 @@ author: "Polina Gubina (@polina-gubina)"
 description: Get info about Dedicated Load Balancer from the OTC service (VLB).
 options:
   name_or_id:
-    description:
-      - Specifies the load balancer name or ID.
+    description: Specifies the load balancer name or ID.
     type: str
   description:
     description:
@@ -40,20 +39,20 @@ options:
         The value can only be ONLINE, indicating that the load balancer
         is working normally.
     type: str
-  vpc_id:
+  vpc:
     description:
-      - Specifies the ID of the VPC where the load balancer works.
+      - Specifies the name or ID of the VPC where the load balancer works.
     type: str
-  vip_port_id:
+  port_id:
     description:
       - Specifies the ID of the port bound to the virtual IP address of the
         load balancer.
     type: str
-  vip_address:
+  ip_address:
     description:
       - Specifies the virtual IP address bound to the load balancer.
     type: str
-  vip_subnet_cidr_id:
+  subnet_cidr_id:
     description:
       - Specifies the ID of the subnet where the load balancer works.
     type: str
@@ -65,7 +64,7 @@ options:
     description:
       - Specifies the elastic flavor that is reserved for now.
     type: str
-  availability_zone_list:
+  availability_zones:
     description:
       - Specifies the list of AZs where the load balancer is created.
     type: list
@@ -285,26 +284,22 @@ loadbalancers:
           in the subnet.
       type: list
     elb_virsubnet_type:
-      description:
-        - Specifies the type of the subnet on the downstream plane.
-        - ipv4 IPv4 subnets.
-        - dualstack: subnets that support IPv4/IPv6 dual stack.
+      description:  Specifies the type of the subnet on the downstream plane.
       type: str
-
 '''
 
 EXAMPLES = '''
 # Get all loadbalancers
-- opentelekomcloud.cloud.vlb_loadbalancer_info:
+- opentelekomcloud.cloud.loadbalancer_v3_info:
   register: loadbalancers
 
 # Get filtered loadbalancers
-- opentelekomcloud.cloud.loadbalancer:
+- opentelekomcloud.cloud.loadbalancer_v3_info:
     vpc_id: 16dbd25d-c55c-405b-9e56-11b03e7e7dc1
     eips: []
 
 # Get one loadbalancer by name or id
-- opentelekomcloud.cloud.loadbalancer:
+- opentelekomcloud.cloud.loadbalancer_v3_info:
     name_or_id: 16dbd25d-c55c-405b-9e56-11b03e7e7dc1
   register: loadbalancer
 '''
@@ -313,20 +308,20 @@ EXAMPLES = '''
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
-class VLBLoadbalancerInfoModule(OTCModule):
+class LoadbalancerV3InfoModule(OTCModule):
     argument_spec = dict(
         name_or_id=dict(required=False),
         name=dict(required=False),
         description=dict(required=False),
         provisioning_status=dict(required=False),
         operating_status=dict(required=False),
-        vpc_id=dict(required=False),
-        vip_port_id=dict(required=False),
-        vip_address=dict(required=False),
-        vip_subnet_cidr_id=dict(required=False),
+        vpc=dict(required=False),
+        port_id=dict(required=False),
+        ip_address=dict(required=False),
+        subnet_cidr_id=dict(required=False),
         l4_flavor_id=dict(required=False),
         l4_scale_flavor_id=dict(required=False),
-        availability_zone_list=dict(required=False, type='list'),
+        availability_zones=dict(required=False, type='list'),
         eips=dict(required=False, type='list'),
         l7_flavor_id=dict(required=False),
         l7_scale_flavor_id=dict(required=False),
@@ -355,17 +350,31 @@ class VLBLoadbalancerInfoModule(OTCModule):
         else:
             kwargs = dict((k, self.params[k])
                           for k in ['description', 'provisioning_status',
-                                    'operating_status', 'vpc_id',
-                                    'vip_port_id', 'vip_address',
-                                    'vip_subnet_cidr_id', 'l4_flavor_id',
-                                    'l4_scale_flavor_id',
-                                    'availability_zone_list', 'eips',
+                                    'operating_status', 'l4_flavor_id',
+                                    'l4_scale_flavor_id', 'eips',
                                     'l7_flavor_id', 'l7_scale_flavor_id',
                                     'member_device_id', 'member_address',
                                     'publicips', 'ip_version',
                                     'elb_virsubnet_type', 'marker', 'limit',
                                     'page_reverse']
                           if self.params[k] is not None)
+            if self.params['port_id']:
+                kwargs['vip_port_id'] = self.params['port_id']
+            if self.params['ip_address']:
+                kwargs['vip_address'] = self.params['ip_address']
+            if self.params['subnet_cidr_id']:
+                kwargs['vip_subnet_cidr_id'] = self.params['subnet_cidr_id']
+            if self.params['availability_zones']:
+                kwargs['availability_zone_list'] = \
+                    self.params['availability_zones']
+            if self.params['vpc']:
+                vpc = self.conn.vpc.find_vpc(self.params['vpc'],
+                                             ignore_missing=True)
+                if not vpc:
+                    self.fail_json(
+                        msg="Vpc {0} not found".format(self.params['vpc']))
+                kwargs['vpc_id'] = vpc.id
+
             for raw in self.conn.vlb.load_balancers(**kwargs):
                 dt = raw.to_dict()
                 dt.pop('location')
@@ -378,7 +387,7 @@ class VLBLoadbalancerInfoModule(OTCModule):
 
 
 def main():
-    module = VLBLoadbalancerInfoModule()
+    module = LoadbalancerV3InfoModule()
     module()
 
 
