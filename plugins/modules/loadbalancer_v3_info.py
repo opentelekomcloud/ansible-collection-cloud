@@ -277,15 +277,12 @@ loadbalancers:
           description:
             - Specifies the IP version. The value can be 4 (IPv4) or 6 (IPv6).
           type: int
-    elb_virsubnet_ids:
+    network_ids:
       description:
         - Specifies the ID of the subnet on the downstream plane.
         - The ports used by the load balancer dynamically occupy IP addresses.
           in the subnet.
       type: list
-    elb_virsubnet_type:
-      description:  Specifies the type of the subnet on the downstream plane.
-      type: str
 '''
 
 EXAMPLES = '''
