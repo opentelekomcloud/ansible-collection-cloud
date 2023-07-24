@@ -261,7 +261,7 @@ loadbalancers:
       description:
         - Specifies the reserved Layer 7 flavor.
       type: str
-    publicips:
+    floating_ips:
       description:
         - Specifies the EIP bound to the load balancer.
       type: list
@@ -292,7 +292,7 @@ EXAMPLES = '''
 
 # Get filtered loadbalancers
 - opentelekomcloud.cloud.loadbalancer_v3_info:
-    vpc_id: 16dbd25d-c55c-405b-9e56-11b03e7e7dc1
+    vpc: 16dbd25d-c55c-405b-9e56-11b03e7e7dc1
     eips: []
 
 # Get one loadbalancer by name or id
