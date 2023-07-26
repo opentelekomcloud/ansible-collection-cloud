@@ -127,6 +127,7 @@
             state: absent
           retries: 5
           failed_when: false
+          ignore_errors: true
 
         - name: Drop floating ip
           opentelekomcloud.cloud.floating_ip:
@@ -134,6 +135,7 @@
             state: absent
             purge: true
           failed_when: false
+          ignore_errors: true
 
         - name: Delete VPC
           opentelekomcloud.cloud.vpc:
