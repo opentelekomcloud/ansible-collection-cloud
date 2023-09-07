@@ -1,7 +1,7 @@
 Opentelekomcloud.Cloud
 ======================
 
-Collection version 0.12.4
+Collection version 0.14.1
 
 
 
@@ -18,6 +18,7 @@ These are the plugins in the opentelekomcloud.cloud collection
     as
     cce
     ces
+    css
     dds
     deh
     dms
