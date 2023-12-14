@@ -1,0 +1,76 @@
+---
+- name: Lts tests
+  module_defaults:
+    opentelekomcloud.cloud.log_group:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        log_group_name: "{{ ( prefix + '_lts-log-group') }}"
+        log_group_stream: "{{ ( prefix + '_lts-log-stream') }}"
+
+    - name: Create log group
+      opentelekomcloud.cloud.log_group:
+        state: present
+        name: "{{ log_group_name }}"
+        ttl_in_days: 5
+      register: log_group
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - log_group is changed
+
+    - name: Update log group
+      opentelekomcloud.cloud.log_group:
+        state: present
+        id: "{{ log_group.log_group.id }}"
+        ttl_in_days: 6
+      register: log_group
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - log_group is changed
+
+    - name: Create log stream
+      opentelekomcloud.cloud.log_stream:
+        state: present
+        name: "{{ log_group_name }}"
+        log_group_id: "{{ log_group.log_group.id }}"
+      register: log_stream
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - log_stream is changed
+
+  always:
+    - name: Cleanup
+      block:
+        - name: Delete log stream
+          opentelekomcloud.cloud.log_stream:
+            id: "{{ log_stream.log_stream.id }}"
+            log_group_id: "{{ log_group.log_group.id }}"
+            state: absent
+          register: log_stream
+          ignore_errors: true
+
+        - name: Assert result
+          ansible.builtin.assert:
+            that:
+              - log_stream is changed
+
+        - name: Delete log group
+          opentelekomcloud.cloud.log_group:
+            id: "{{ log_group.log_group.id }}"
+            state: absent
+
+        - name: Assert result
+          ansible.builtin.assert:
+            that:
+              - log_group is changed
