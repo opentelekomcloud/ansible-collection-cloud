@@ -247,8 +247,8 @@ class ASConfigModule(OTCModule):
     argument_spec = dict(
         scaling_configuration=dict(required=True),
         instance_id=dict(required=False),
-        flavor=dict(required=False),
         image=dict(required=False),
+        flavor=dict(required=False),
         disk=dict(required=False, type='list', elements='dict'),
         key_name=dict(required=False),
         personality=dict(required=False, type='list', elements='dict'),
