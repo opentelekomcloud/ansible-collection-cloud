@@ -30,6 +30,16 @@
         cidr: "192.168.110.0/24"
         gateway: "192.168.110.1"
 
+    - name: Set initial facts 1
+      ansible.builtin.set_fact:
+        as_test_image: "Standard_Debian_10_latest"
+        as_test_flavor: "s3.2xlarge.2"
+        key_name: "{{ ( prefix + '_key') }}"
+
+    - name: Set initial facts 2
+      ansible.builtin.set_fact:
+        сonfig_name: "{{ ( prefix + '_as_conf' ) }}"
+
     - name: Create VPC
       opentelekomcloud.cloud.vpc:
         name: "{{ vpc_name }}"
@@ -79,12 +89,29 @@
           - 8.8.8.8
       register: subnet
 
+    - name: Create keypair
+      openstack.cloud.keypair:
+        name: "{{ key_name }}"
+
+    - name: Create AS Config
+      opentelekomcloud.cloud.as_config:
+        scaling_configuration: "{{ config_name }}"
+        key_name: "{{ key_name }}"
+        image: "{{ as_test_image }}"
+        flavor: "{{ as_test_flavor }}"
+        disk:
+          - size: 10
+            volume_type: 'SAS'
+            disk_type: 'SYS'
+      register: as_config
+
     - name: Create AS Group
       opentelekomcloud.cloud.as_group:
         scaling_group:
           name: "{{ as_group_name }}"
         networks: [{'id': "{{ subnet.subnet.id }}"}]
         router: "{{ vpc.vpc.id }}"
+        scaling_configuration: "{{ as_config.as_config.id }}"
       register: as_group
 
     - name: Create AS Policy - check_mode
@@ -210,10 +237,24 @@
         - name: Delete AS group
           opentelekomcloud.cloud.as_group:
             scaling_group:
-              name: "{{ as_group_name }}"
+              id: "{{ as_group.as_group.id }}"
             state: absent
             force_delete: true
             wait: true
+          register: removed
+          ignore_errors: true
+
+        - name: Delete as config
+          opentelekomcloud.cloud.as_config:
+            scaling_configuration: "{{ as_config.as_config.name }}"
+            state: absent
+          register: removed
+          ignore_errors: true
+
+        - name: Delete keypair
+          openstack.cloud.keypair:
+            name: "{{ key_name }}"
+            state: absent
           register: removed
           ignore_errors: true
 
