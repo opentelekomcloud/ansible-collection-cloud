@@ -34,15 +34,15 @@ options:
        In this case, the flavorRef, imageRef, disk, and security_groups fields do not take effect.
       - If not specified, flavorRef, imageRef, and disk fields are mandatory.
     type: str
-  flavor:
-    description:
-      - Specifies the ECS flavor ID or name. A maximum of 10 flavors can be selected.\
-       Use a comma (,) to separate multiple flavor IDs.
-    type: str
   image:
     description:
       - Specifies the image ID or name. Its value is the same as that of image_id for specifying the image\
        selected during ECS creation.
+    type: str
+  flavor:
+    description:
+      - Specifies the ECS flavor ID or name. A maximum of 10 flavors can be selected.\
+       Use a comma (,) to separate multiple flavor IDs.
     type: str
   disk:
     description:
