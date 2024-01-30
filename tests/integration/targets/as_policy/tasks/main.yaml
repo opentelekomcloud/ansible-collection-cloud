@@ -29,10 +29,10 @@
         subnet_name: "{{ ( prefix + '_subnet') }}"
         cidr: "192.168.110.0/24"
         gateway: "192.168.110.1"
-        as_test_image: "Standard_Debian_10_latest"
-        as_test_flavor: "s3.2xlarge.2"
         key_name: "{{ ( prefix + '_key') }}"
         config_name: "{{ ( prefix + '_as_conf' ) }}"
+        as_test_image: "Standard_Debian_10_latest"
+        as_test_flavor: "s3.2xlarge.2"
 
     - name: Create VPC
       opentelekomcloud.cloud.vpc:

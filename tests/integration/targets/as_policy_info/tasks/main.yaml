@@ -27,6 +27,7 @@
         router_name: "{{ ( prefix + '_router') }}"
         as_test_image: "Standard_Debian_10_latest"
         as_test_flavor: "s3.2xlarge.2"
+        config_name: "{{ ( prefix + '_as_conf' ) }}"
 
     - name: Create keypair
       openstack.cloud.keypair:
