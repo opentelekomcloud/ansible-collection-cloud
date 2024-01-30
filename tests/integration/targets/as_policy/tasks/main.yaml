@@ -29,16 +29,10 @@
         subnet_name: "{{ ( prefix + '_subnet') }}"
         cidr: "192.168.110.0/24"
         gateway: "192.168.110.1"
-
-    - name: Set initial facts 1
-      ansible.builtin.set_fact:
         as_test_image: "Standard_Debian_10_latest"
         as_test_flavor: "s3.2xlarge.2"
         key_name: "{{ ( prefix + '_key') }}"
-
-    - name: Set initial facts 2
-      ansible.builtin.set_fact:
-        сonfig_name: "{{ ( prefix + '_as_conf' ) }}"
+        config_name: "{{ ( prefix + '_as_conf' ) }}"
 
     - name: Create VPC
       opentelekomcloud.cloud.vpc:
