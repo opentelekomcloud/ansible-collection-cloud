@@ -1,5 +1,5 @@
 Cloud Search Service (CSS) Modules
-=======================================
+==================================
 
 .. toctree::
    :maxdepth: 1
