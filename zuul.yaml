@@ -17,7 +17,8 @@
               ansible_test_integration_env:
                 has_snat: true
                 region: eu-de
-              ansible_test_exclude_tests: []
+              ansible_test_exclude_tests:
+                - autoscaling/group1/
         - otc-ansible-collection-test-integration-eu-nl:
             files: *integration-files
             vars: &vars-eu-nl

@@ -61,6 +61,7 @@ EXAMPLES = '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
+
 class SwrOrganisationInfoModule(OTCModule):
     argument_spec = dict(
         namespace=dict(required=False)
@@ -86,4 +87,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
