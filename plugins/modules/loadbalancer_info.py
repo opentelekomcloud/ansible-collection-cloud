@@ -60,10 +60,6 @@ loadbalancers:
             description: The load balancer virutal IP address.
             type: str
             sample: "192.168.2.88"
-        public_vip_address:
-            description: The load balancer public VIP address.
-            type: str
-            sample: "10.17.8.254"
         provisioning_status:
             description: The provisioning status of the load balancer.
             type: str
