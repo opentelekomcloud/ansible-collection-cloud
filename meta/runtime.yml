@@ -90,3 +90,4 @@ action_groups:
     - object_info.py
     - dns_nameserver_info.py
     - kms_info.py
+    - swr_organization_info.py

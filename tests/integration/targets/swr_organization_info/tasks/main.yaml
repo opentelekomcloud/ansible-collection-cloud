@@ -1,0 +1,15 @@
+- name: SWR organization tests
+  vars:
+    test_cloud: terraform
+  module_defaults:
+    opentelekomcloud.cloud.swr_organization_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get organizations list
+      opentelekomcloud.cloud.swr_organization_info:
+      register: organizations
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - organizations is success
