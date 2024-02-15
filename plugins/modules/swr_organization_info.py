@@ -53,7 +53,7 @@ organizations:
 '''
 
 EXAMPLES = '''
-# Create lb certificate.
+# Get SWR organisations information
 - opentelekomcloud.cloud.swr_organization_info:
     namespace: org_name
   register: swr_organization_info

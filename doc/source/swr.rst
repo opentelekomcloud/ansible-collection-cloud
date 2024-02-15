@@ -1,5 +1,5 @@
 Software Repository for Containers (SWR) Modules
-==================================
+================================================
 
 .. toctree::
    :maxdepth: 1
