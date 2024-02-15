@@ -60,6 +60,7 @@
                 - obs/group1/
                 - rds_flavor_info/group1/
                 - storage/vbs/
+                - swr/group1/
                 - waf/group1/
     gate:
       jobs:

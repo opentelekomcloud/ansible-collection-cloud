@@ -17,7 +17,7 @@ module: swr_organization_info
 short_description: Get SWR organisations info
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.14.2"
-author: "Valeriia Ziukina"
+author: "Ziukina Valeriia (@RusselSand)"
 description:
   - Get organizations info from Software Repository for Containers
 options:
