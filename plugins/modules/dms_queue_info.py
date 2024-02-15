@@ -56,6 +56,7 @@ EXAMPLES = '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
+
 class DmsQueueInfoModule(OTCModule):
     argument_spec = dict(
         queue=dict(required=False)
