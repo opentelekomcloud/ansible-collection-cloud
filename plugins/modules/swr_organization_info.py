@@ -80,6 +80,7 @@ class SwrOrganisationInfoModule(OTCModule):
             organizations=orgs
         )
 
+
 def main():
     module = SwrOrganisationInfoModule()
     module()
