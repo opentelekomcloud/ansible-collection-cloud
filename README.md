@@ -79,20 +79,20 @@ Paste in the following content with your credentials:
 # clouds.yaml
 
 clouds:
-otc:
-  profile: otc
-  auth:
-    username: '<USER_NAME>'
-    password: '<PASSWORD>'
-    project_name: '<eu-de_project>'
-    # or project_id: '<123456_PROJECT_ID>'
-    user_domain_name: 'OTC00000000001000000xxx'
-    # or user_domain_id: '<123456_DOMAIN_ID>'
-    auth_url: 'https://iam.eu-de.otc.t-systems.com:443/v3'
-  interface: 'public'
-  identity_api_version: 3 # !Important
-  ak: '<AK_VALUE>' # AK/SK pair for access to OBS
-  sk: '<SK_VALUE>'
+  otc:
+    profile: otc
+    auth:
+      username: '<USER_NAME>'
+      password: '<PASSWORD>'
+      project_name: '<eu-de_project>'
+      # or project_id: '<123456_PROJECT_ID>'
+      user_domain_name: 'OTC00000000001000000xxx'
+      # or user_domain_id: '<123456_DOMAIN_ID>'
+      auth_url: 'https://iam.eu-de.otc.t-systems.com:443/v3'
+    interface: 'public'
+    identity_api_version: 3 # !Important
+    ak: '<AK_VALUE>' # AK/SK pair for access to OBS
+    sk: '<SK_VALUE>'
 ```
 
 Verify the installation process by creating a sample playbook which invokes
