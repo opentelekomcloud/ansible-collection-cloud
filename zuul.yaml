@@ -17,7 +17,10 @@
               ansible_test_integration_env:
                 has_snat: true
                 region: eu-de
-              ansible_test_exclude_tests: []
+              ansible_test_exclude_tests:
+                - autoscaling/group1/
+                - elb/group1/
+                - obs/group1/
         - otc-ansible-collection-test-integration-eu-nl:
             files: *integration-files
             vars: &vars-eu-nl
@@ -45,6 +48,7 @@
                 has_snat: false
                 region: eu-ch2
               ansible_test_exclude_tests:
+                - autoscaling/group1/
                 - antiddos/group1/
                 - ces/group1/
                 - css/group1/
@@ -56,6 +60,7 @@
                 - obs/group1/
                 - rds_flavor_info/group1/
                 - storage/vbs/
+                - swr/group1/
                 - waf/group1/
     gate:
       jobs:

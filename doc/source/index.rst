@@ -29,6 +29,7 @@ These are the plugins in the opentelekomcloud.cloud collection
     nat
     rds
     sfsturbo
+    swr
     volume
     vpc
     vpn
