@@ -1,3 +1,4 @@
+---
 - name: SWR organization tests
   module_defaults:
     opentelekomcloud.cloud.swr_organization_info:
