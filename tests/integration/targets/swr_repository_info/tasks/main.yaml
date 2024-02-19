@@ -1,0 +1,14 @@
+---
+- name: SWR repository tests
+  module_defaults:
+    opentelekomcloud.cloud.swr_repository_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get repositories list
+      opentelekomcloud.cloud.swr_repository_info:
+      register: repositories
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - repositories is success
