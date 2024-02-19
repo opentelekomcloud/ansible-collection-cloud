@@ -27,7 +27,7 @@ options:
         periods (.), underscores (_), and hyphens (-) are allowed. Must start
         with letter. Length up to 64 characters.
     type: str
-    state:
+  state:
     description:
       - Whether resource should be present or absent.
     choices: ['present', 'absent']
@@ -56,36 +56,35 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 from ansible_collections.openstack.cloud.plugins.module_utils.resource import StateMachine
 
 
-# create, update, delete
-class StateMachineOrganization(StateMachine):
-
-    def _create(self, attributes, timeout, wait, **kwargs):
-        print()
-
-    def _update(self, resource, timeout, update, wait, **kwargs):
-        print()
-
-
 class SwrOrganizationModule(OTCModule):
     argument_spec = dict(
-        namespace=dict(required=False)
+        namespace=dict(required=False),
+        state=dict(type='str', required=False,
+                   choices=['present', 'absent'],
+                   default='present'),
     )
     module_kwargs = dict(
         supports_check_mode=True
     )
 
     def run(self):
-        sm = StateMachineOrganization(connection=self.conn,
-                                      sdk=self.sdk)
+        sm = (StateMachine(connection=self.conn,
+                           sdk=self.sdk,
+                           service_name='swr',
+                           type_name='?')
+              )
+        kwargs = {'state': self.params['state'], 'attributes': {}}
+        kwargs['attributes']['namespace'] = self.params['namespace']
+        resource, is_changed = sm(check_mode=self.ansible.check_mode,
+                                  non_updateable_attributes=['namespace'],
+                                  **kwargs)
 
+        self.exit_json(resource=resource, changed=is_changed)
 
 
 def main():
     module = SwrOrganizationModule()
     module()
-
-    def run(self):
-        sm = StateMachineOrganization()
 
 
 if __name__ == "__main__":
