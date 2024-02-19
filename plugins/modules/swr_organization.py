@@ -68,17 +68,17 @@ class SwrOrganizationModule(OTCModule):
     )
 
     def run(self):
-        sm = (StateMachine(connection=self.conn,
+        sm = StateMachine(connection=self.conn,
                            sdk=self.sdk,
                            service_name='swr',
-                           type_name='?')
-              )
+                           type_name='organization')
+
         kwargs = {'state': self.params['state'], 'attributes': {}}
         kwargs['attributes']['namespace'] = self.params['namespace']
         resource, is_changed = sm(check_mode=self.ansible.check_mode,
                                   non_updateable_attributes=['namespace'],
                                   **kwargs)
-
+        #если создание, сделать потом get
         self.exit_json(resource=resource, changed=is_changed)
 
 
