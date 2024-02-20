@@ -7,6 +7,7 @@
     - name: Get organizations list
       opentelekomcloud.cloud.swr_organization_info:
       register: organizations
+
     - name: Assert result
       ansible.builtin.assert:
         that:
