@@ -38,7 +38,8 @@ options:
     description:
       - Repository type.
     type: str
-    choices: ['app_server', 'linux', 'framework_app', 'database', 'lang', 'other', 'windows', 'arm']
+    choices: ['app_server', 'linux', 'framework_app', 'database', 'lang', 'other', 
+    'windows', 'arm']
   offset:
     description:
       - start index. Can be used only with limit
@@ -140,7 +141,7 @@ repositories:
       sample: 0
     tags:
       description: Image tag list.
-      type: str[]
+      type: list
       sample: []
     status:
       description: (Reserved field) Status.
