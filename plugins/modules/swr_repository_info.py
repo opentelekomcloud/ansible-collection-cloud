@@ -38,8 +38,7 @@ options:
     description:
       - Repository type.
     type: str
-    choices: ['app_server', 'linux', 'framework_app', 'database', 'lang', 'other', 
-    'windows', 'arm']
+    choices: ['app_server', 'linux', 'framework_app', 'database', 'lang', 'other', 'windows', 'arm']
   offset:
     description:
       - start index. Can be used only with limit
