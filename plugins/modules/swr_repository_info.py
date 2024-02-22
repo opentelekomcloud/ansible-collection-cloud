@@ -167,12 +167,13 @@ class SwrRepositoryInfoModule(OTCModule):
     argument_spec = dict(
         namespace=dict(required=False),
         repository=dict(required=False),
-        center=dict(required=False),
-        category=dict(required=False),
+        center=dict(required=False, choices=['self']),
+        category=dict(required=False,
+                      choices=['app_server', 'linux', 'framework_app', 'database', 'lang', 'other', 'windows', 'arm']),
         offset=dict(required=False),
         limit=dict(required=False),
-        order_column=dict(required=False),
-        order_type=dict(required=False),
+        order_column=dict(required=False, choices=['name', 'updated_time', 'tag_count']),
+        order_type=dict(required=False, choices=['desc', 'asc']),
     )
     module_kwargs = dict(
         supports_check_mode=True
