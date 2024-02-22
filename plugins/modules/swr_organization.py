@@ -24,7 +24,7 @@ options:
   namespace:
     description:
       - Mandatory name of organization.
-      - Only lowercase letters, digits, periods (.), underscores (_), and hyphens (-) are allowed.
+      - Use only lowercase letters, digits, and (./_/-)
       - Must start with letter.
       - Length up to 64 characters.
     type: str
