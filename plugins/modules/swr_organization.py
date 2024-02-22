@@ -149,7 +149,6 @@ class SwrOrganizationModule(OTCModule):
                                       wait=False,
                                       timeout=600,
                                       **kwargs)
-        # если создание, сделать потом get
         self.exit_json(organization=organization, changed=is_changed)
 
 
