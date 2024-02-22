@@ -10,7 +10,7 @@
 
     - name: Set initial facts
       ansible.builtin.set_fact:
-        organization_name: "{{ ( prefix + '_org') }}"
+        organization_name: "{{ ( 'org_' + prefix) }}"
 
     - name: Create organization
       opentelekomcloud.cloud.swr_organization:
