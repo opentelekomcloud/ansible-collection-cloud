@@ -91,4 +91,5 @@ action_groups:
     - dns_nameserver_info.py
     - kms_info.py
     - swr_organization_info.py
+    - swr_repository_info.py
     - swr_organization.py
