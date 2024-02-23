@@ -107,4 +107,5 @@ plugins/modules/waf_certificate.py validate-modules:missing-gplv3-license
 plugins/modules/waf_certificate_info.py validate-modules:missing-gplv3-license
 plugins/modules/waf_domain_info.py validate-modules:missing-gplv3-license
 plugins/modules/swr_organization_info.py validate-modules:missing-gplv3-license
+plugins/modules/swr_repository_info.py validate-modules:missing-gplv3-license
 plugins/modules/swr_organization.py validate-modules:missing-gplv3-license
