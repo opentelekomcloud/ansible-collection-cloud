@@ -28,6 +28,7 @@ options:
       - Must start with letter.
       - Length up to 64 characters.
     type: str
+    required: true
   state:
     description:
       - Whether resource should be present or absent.
