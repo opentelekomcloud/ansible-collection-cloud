@@ -92,3 +92,4 @@ action_groups:
     - kms_info.py
     - swr_organization_info.py
     - swr_repository_info.py
+    - swr_organization.py
