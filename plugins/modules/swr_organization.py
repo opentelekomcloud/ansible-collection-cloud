@@ -59,7 +59,7 @@ organization:
 '''
 
 EXAMPLES = '''
-# Get SWR organisations information
+# Create or delete SWR organizations
 - name: Create new organization
   opentelekomcloud.cloud.swr_organization:
     namespace: org_name
