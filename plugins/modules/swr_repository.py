@@ -78,7 +78,7 @@ repository:
 '''
 
 EXAMPLES = '''
-# Get SWR organizations information
+# Create or delete repository
 - name: Create new repository
   opentelekomcloud.cloud.swr_repository:
     namespace: org_name
