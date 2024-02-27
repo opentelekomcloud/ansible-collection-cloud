@@ -1,7 +1,5 @@
 ---
 - name: SWR repository tests
-  vars:
-    test_cloud: terraform
   module_defaults:
     opentelekomcloud.cloud.swr_repository:
       cloud: "{{ test_cloud }}"

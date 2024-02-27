@@ -13,13 +13,13 @@
 
 DOCUMENTATION = '''
 ---
-module: swr_organization
+module: swr_repository
 short_description: Create, update or delete organizations in SWR
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.14.2"
 author: "Ziukina Valeriia (@RusselSand)"
 description:
-  - Create, update or delete organizations in Software Repository for Containers
+  - Create, update or delete repositories in Software Repository for Containers
 options:
   namespace:
     description:
@@ -30,7 +30,7 @@ options:
     description:
       - Mandatory name of repository.
     type: str
-    required: true  
+    required: true
   category:
     description:
       - Repository type
@@ -54,31 +54,96 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-organization:
-    description: Organization object.
+repository:
+    description: Repository object.
     type: complex
     returned: On Success.
     contains:
-      id:
-        description: Specifies the ID of the organization.
-        type: int
+      namespace:
+        description: Name of organization.
+        type: str
+      repository:
+        description: Name of repository.
+        type: str
+      category:
+        description: Repository type
+        choices: ['app_server', 'linux', 'framework_app', 'database', 'lang', 'other', 'windows', 'arm']
+        type: str
+      description:
+        description: Brief description of the image repository
+        type: str
+      is_public:
+        description: Is repository public or not
+        type: bool
 '''
 
 EXAMPLES = '''
-# Get SWR organisations information
-- name: Create new organization
-  opentelekomcloud.cloud.swr_organization:
+# Get SWR organizations information
+- name: Create new repository
+  opentelekomcloud.cloud.swr_repository:
     namespace: org_name
+    repository: repo_name
+  register: repo
 
-- name: Delete an organization
-  opentelekomcloud.cloud.swr_organization:
+- name: Delete a repository
+  opentelekomcloud.cloud.swr_repository:
     namespace: org_name
+    repository: repo_name
     state: absent
 '''
 
-from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 from ansible_collections.openstack.cloud.plugins.module_utils.resource import StateMachine
-# class SwrRepositoryMachine(StateMachine):
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
+
+
+class SwrRepositoryMachine(StateMachine):
+    def _build_update(self, resource, attributes, updateable_attributes,
+                      non_updateable_attributes, **kwargs):
+        update = {}
+        resource_attributes = {}
+        if attributes.get('is_public') is not None:
+            resource_attributes['is_public'] = attributes['is_public']
+        if attributes.get('category') is not None:
+            resource_attributes['category'] = attributes['category']
+        if attributes.get('description') is not None:
+            resource_attributes['description'] = attributes['description']
+        resource_attributes['repository'] = attributes['repository']
+        resource_attributes['namespace'] = attributes['namespace']
+        if resource_attributes:
+            update['resource_attributes'] = resource_attributes
+        return update
+
+    def _delete(self, resource, attributes, timeout, wait, **kwargs):
+        self.delete_function(attributes['namespace'], attributes['repository'])
+
+        if wait:
+            for count in self.sdk.utils.iterate_timeout(
+                    timeout=timeout,
+                    message="Timeout waiting for resource to be absent"
+            ):
+                if self._find(attributes) is None:
+                    break
+
+    def _update(self, resource, timeout, update, wait, **kwargs):
+        resource_attributes = update.get('resource_attributes')
+        if resource_attributes:
+            resource = self.update_function(**resource_attributes)
+        if wait:
+            resource = self.sdk.resource.wait_for_status(self.session,
+                                                         resource,
+                                                         status='active',
+                                                         failures=['error'],
+                                                         wait=timeout,
+                                                         attribute='status')
+
+        return resource
+
+    def _find(self, attributes, **kwargs):
+        try:
+            repo = self.get_function(attributes['namespace'], attributes['repository'])
+        except self.sdk.exceptions.ResourceNotFound as ex:
+            repo = None
+        return repo
 
 
 class SwrRepositoryModule(OTCModule):
@@ -87,7 +152,7 @@ class SwrRepositoryModule(OTCModule):
         repository=dict(required=True),
         category=dict(required=False,
                       choices=['app_server', 'linux', 'framework_app', 'database', 'lang', 'other', 'windows', 'arm']),
-        is_public=dict(required=False),
+        is_public=dict(required=False, type='bool'),
         description=dict(required=False),
         state=dict(type='str', required=False,
                    choices=['present', 'absent'],
@@ -112,12 +177,12 @@ class SwrRepositoryModule(OTCModule):
             find=get_function,
             get=get_function,
             list=list_function,
-            update=update_function,)
-        sm = StateMachine(connection=self.conn,
-                          sdk=self.sdk,
-                          service_name=service_name,
-                          type_name=type_name,
-                          crud_functions=crud)
+            update=update_function, )
+        sm = SwrRepositoryMachine(connection=self.conn,
+                                  sdk=self.sdk,
+                                  service_name=service_name,
+                                  type_name=type_name,
+                                  crud_functions=crud)
         kwargs = {'state': self.params['state'],
                   'attributes': dict((k, self.params[k]) for k in
                                      ['namespace', 'repository', 'category', 'is_public', 'description']
