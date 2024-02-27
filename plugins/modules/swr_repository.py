@@ -141,7 +141,7 @@ class SwrRepositoryMachine(StateMachine):
     def _find(self, attributes, **kwargs):
         try:
             repo = self.get_function(attributes['namespace'], attributes['repository'])
-        except self.sdk.exceptions.ResourceNotFound as ex:
+        except self.sdk.exceptions.ResourceNotFound:
             repo = None
         return repo
 
