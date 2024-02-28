@@ -41,6 +41,7 @@
                 - elb/group1/
                 - obs/group1/
                 - storage/vbs/
+                - swr/group1/
         - otc-ansible-collection-test-integration-eu-ch:
             files: *integration-files
             vars: &vars-eu-ch
