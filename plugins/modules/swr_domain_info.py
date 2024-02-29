@@ -95,7 +95,7 @@ domains:
 '''
 
 EXAMPLES = '''
-# Get SWR organisations information
+# Get SWR domain information
 - opentelekomcloud.cloud.swr_domain_info:
     namespace: org_name
     repository: repo_name
