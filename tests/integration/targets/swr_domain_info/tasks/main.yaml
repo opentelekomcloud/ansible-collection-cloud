@@ -1,7 +1,5 @@
 ---
 - name: SWR domain info tests
-  vars:
-    test_cloud: terraform
   module_defaults:
     opentelekomcloud.cloud.swr_domain_info:
       cloud: "{{ test_cloud }}"

@@ -14,12 +14,12 @@
 DOCUMENTATION = '''
 ---
 module: swr_domain_info
-short_description: Get SWR image repositories info
+short_description: Get SWR domain info
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.14.2"
 author: "Ziukina Valeriia (@RusselSand)"
 description:
-  - Get image repositories info from Software Repository for Containers
+  - Get domain info from Software Repository for Containers
 options:
   namespace:
     description:
