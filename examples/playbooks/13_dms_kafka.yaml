@@ -1,0 +1,50 @@
+---
+
+- hosts: localhost
+  tasks:
+    
+    # This playbook shows how to create a DMS Kafka instance in OTC
+    # Please specify your vpc_id, subnet_id and security_group_id first
+
+    - set_fact:
+        my_sg_id: "123456789"
+        my_vpc_id: "123456789"
+        my_subnet_id: "123456789"
+        new_dms_inst_name: "my_dms_instance"
+
+    - block:
+
+      # This play creates the DMS Kafka instance in eu-de-03
+      # Specify different values for available_zones, product_id, storage_spec_code and engine_version if necessary
+      - name: Create DMS Kafka Instance
+        opentelekomcloud.cloud.dms_instance:
+          name: "{{ new_dms_inst_name }}"
+          storage_space: '600'
+          vpc_id: "{{ my_vpc_id }}"
+          security_group_id: "{{ my_sg_id }}"
+          subnet_id: "{{ my_subnet_id }}"
+          available_zones: [ "eu-de-03" ]
+          engine_version: '2.7'
+          product_id: '00300-30308-0--0'
+          storage_spec_code: 'dms.physical.storage.ultra'
+          description: 'New DMS instance'
+
+      # Let's wait for 10 minutes for the instance to become active
+      - name: Wait for DMS Kafka instance
+        opentelekomcloud.cloud.dms_instance_info:
+          name: "{{ new_dms_inst_name }}"
+        register: dmsinfo
+        retries: 20
+        delay: 30
+        until: dmsinfo.dms_instances[0].status == "RUNNING"
+
+      # Get infos about the newly created instance
+      - name: List DMS Kafka instance
+        opentelekomcloud.cloud.dms_instance_info:
+          name: "{{ new_dms_inst_name }}"
+
+      # Delete the instance
+      - name: Delete DMS Kafka Instance
+        opentelekomcloud.cloud.dms_instance:
+          name: "{{ new_dms_inst_name }}"
+          state: absent
