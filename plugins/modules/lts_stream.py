@@ -55,7 +55,6 @@ EXAMPLES = '''
     log_group_name: 'lts-test-group'
     log_stream_name: 'lts-test-stream'
     ttl_in_days: '5'
-    
 # Delete LTS log stream
 - opentelekomcloud.cloud.lts_stream:
     log_group_name: 'lts-test-group'
@@ -90,12 +89,12 @@ class LtsStreamModule(OTCModule):
         for x in self.conn.lts.groups():
             group_list.append(x.name)
             groupid_list.append(x.id)
-        
+
         # Check if log group exists, get id
         if self.params['log_group_name'] in group_list:
             group = self.params['log_group_name']
             i = group_list.index(group)
-            groupid = groupid_list[i] 
+            groupid = groupid_list[i]
 
         # Exit, if log group not existing
         if not group:
@@ -104,7 +103,7 @@ class LtsStreamModule(OTCModule):
                 failed=True,
                 message=('No Group with name %s found') % (self.params['log_group_name'])
             )
-        # Get existing streams 
+        # Get existing streams
         for x in self.conn.lts.streams(log_group=groupid):
             stream_list.append(x.name)
             streamid_list.append(x.id)
@@ -113,7 +112,7 @@ class LtsStreamModule(OTCModule):
         if self.params['log_stream_name'] in stream_list:
             stream = self.params['log_stream_name']
             i = stream_list.index(stream)
-            streamid = streamid_list[i] 
+            streamid = streamid_list[i]
 
         if self.params['state'] == 'present':
 
@@ -136,14 +135,13 @@ class LtsStreamModule(OTCModule):
                     message=('Stream with name %s already exists') % (self.params['log_stream_name'])
                 )
 
-
         if self.params['state'] == 'absent':
 
             # Stream Deletion
             if stream:
                 if self.ansible.check_mode:
                     self.exit(changed=True)
-                stream = self.conn.lts.delete_stream(log_group=groupid,log_stream=streamid)
+                stream = self.conn.lts.delete_stream(log_group=groupid, log_stream=streamid)
                 self.exit(changed=True, stream=stream)
 
             elif not stream:
@@ -161,4 +159,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

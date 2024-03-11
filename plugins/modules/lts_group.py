@@ -49,12 +49,10 @@ EXAMPLES = '''
 - opentelekomcloud.cloud.lts_group:
     name: 'lts-test'
     ttl_in_days: '7'
-    
 # Delete LTS log group
 - opentelekomcloud.cloud.lts_group:
     name: 'lts-test'
     state: absent
-
 # Update LTS log group
 - opentelekomcloud.cloud.lts_group:
     name: 'lts-test'
@@ -84,14 +82,14 @@ class LtsGroupModule(OTCModule):
         for x in self.conn.lts.groups():
             group_list.append(x.name)
             groupid_list.append(x.id)
-        
+
         # Check if log group exists, get id
         attrs['name'] = self.params['name']
         if attrs['name'] in group_list:
             group = attrs['name']
             i = group_list.index(group)
             groupid = groupid_list[i] 
-        
+
         if self.params['ttl_in_days']:
             attrs['ttl_in_days'] = self.params['ttl_in_days']
 
@@ -108,7 +106,7 @@ class LtsGroupModule(OTCModule):
             elif group:
                 if self.params['ttl_in_days']:
                     attrs['ttl_in_days'] = self.params['ttl_in_days']
-        
+
                 if self.ansible.check_mode:
                     self.exit(changed=True)
                 group = self.conn.lts.update_group(group=groupid, **attrs)
@@ -138,4 +136,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
