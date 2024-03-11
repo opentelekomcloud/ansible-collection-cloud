@@ -88,7 +88,7 @@ class LtsGroupModule(OTCModule):
         if attrs['name'] in group_list:
             group = attrs['name']
             i = group_list.index(group)
-            groupid = groupid_list[i] 
+            groupid = groupid_list[i]
 
         if self.params['ttl_in_days']:
             attrs['ttl_in_days'] = self.params['ttl_in_days']
