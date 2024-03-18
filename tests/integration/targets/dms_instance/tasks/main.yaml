@@ -1,8 +1,6 @@
 - name: SWR organization tests
-  vars:
-    test_cloud: terraform
   module_defaults:
-    opentelekomcloud.cloud.swr_organization_info:
+    opentelekomcloud.cloud.dms_instance:
       cloud: "{{ test_cloud }}"
   block:
     - name: Create DMS instance

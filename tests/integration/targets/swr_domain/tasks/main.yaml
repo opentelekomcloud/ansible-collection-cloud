@@ -1,7 +1,7 @@
 ---
 - name: SWR domain tests
   module_defaults:
-    opentelekomcloud.cloud.swr_repository:
+    opentelekomcloud.cloud.swr_domain:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
