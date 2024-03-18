@@ -1,0 +1,29 @@
+- name: SWR organization tests
+  vars:
+    test_cloud: terraform
+  module_defaults:
+    opentelekomcloud.cloud.swr_organization_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Create DMS instance
+      opentelekomcloud.cloud.dms_instance:
+        name: 'kafka-c76z'
+        storage_space: 600
+        vpc_id: 'a82d8c31-1f1b-4d55-bd45-e01ec3de417c'
+        security_group_id: '120888d9-65be-4899-b07d-aa151c2895d4'
+        subnet_id: '0f9d5426-ab11-471f-b5a0-d7b413cd2cfa'
+        available_zones: ['eu-de-03']
+        product_id: '00300-30308-0--0'
+        storage_spec_code: 'dms.physical.storage.ultra'
+      register:
+        dms_instance
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - dms_instance is success
+
+    - name: Delete DMS instance
+      opentelekomcloud.cloud.dms_instance:
+        name: 'kafka-c76z'
+        state: absent
