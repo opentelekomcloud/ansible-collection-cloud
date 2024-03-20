@@ -155,7 +155,7 @@ EXAMPLES = '''
 # Create Kafka Instance
 - opentelekomcloud.cloud.dms_instance:
     name: 'test'
-    storage_space: '600'
+    storage_space: 600
     vpc_id: '12345678-dc40-4e3a-95b1-5a0756441e12'
     security_group_id: '12345678'
     subnet_id: '12345678-ca80-4b49-bbbb-85ea9b96f8b3'
