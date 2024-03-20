@@ -1,7 +1,7 @@
 ---
 - name: SWR repository permissions tests
   module_defaults:
-    opentelekomcloud.cloud.swr_repository_permissions:
+    opentelekomcloud.cloud.swr_repository_permissions_info:
       cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
@@ -35,7 +35,6 @@
       ansible.builtin.assert:
         that:
           - repository is success
-          - repository is changed
 
     - name: Create user permission in this repository
       opentelekomcloud.cloud.swr_repository_permissions:
@@ -50,37 +49,41 @@
       ansible.builtin.assert:
         that:
           - permission is success
-          - permission is changed
 
-    - name: Update user permission in this repository
-      opentelekomcloud.cloud.swr_repository_permissions:
+    - name: List user permissions
+      opentelekomcloud.cloud.swr_repository_permissions_info:
         namespace: "{{ organization_name }}"
         repository: "{{ repository_name }}"
-        user_id: "{{ user_id }}"
-        user_name: "{{ user_name }}"
-        user_auth: 1
-      register: permission
+      register: permissions
 
     - name: Assert result
       ansible.builtin.assert:
         that:
-          - permission is success
-          - permission is changed
+          - permissions is success
 
-    - name: Delete user permission in this repository
-      opentelekomcloud.cloud.swr_repository_permissions:
+    - name: Get existing user permission
+      opentelekomcloud.cloud.swr_repository_permissions_info:
         namespace: "{{ organization_name }}"
         repository: "{{ repository_name }}"
-        user_id: "{{ user_id }}"
         user_name: "{{ user_name }}"
-        state: absent
-      register: permission
+      register: permissions
 
     - name: Assert result
       ansible.builtin.assert:
         that:
-          - permission is success
-          - permission is changed
+          - permissions is success
+
+    - name: Get existing user permission
+      opentelekomcloud.cloud.swr_repository_permissions_info:
+        namespace: "{{ organization_name }}"
+        repository: "{{ repository_name }}"
+        user_name: "non_existing_user"
+      register: permissions
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - permissions is success
 
   always:
     - name: Delete this repository
