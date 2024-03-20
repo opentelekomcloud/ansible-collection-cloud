@@ -12,8 +12,8 @@
       ansible.builtin.set_fact:
         organization_name: "{{ ( 'org_' + prefix) }}"
         repository_name: "{{ ( 'repo_' + prefix) }}"
-        user_id: "5a23ecb3999b458d92d51d524bb7fb4b"
-        user_name: "pgubina"
+        user_id: "cfe93b289ece46cd84a22b17c4e6671e"
+        user_name: "test_user"
 
     - name: Create organization
       opentelekomcloud.cloud.swr_organization:
