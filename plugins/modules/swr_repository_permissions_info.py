@@ -42,29 +42,24 @@ organizations:
   type: complex
   returned: On Success.
   contains:
-      namespace:
-        description: Name of organization.
-        type: str
-      repository:
-        description: Name of repository.
-        type: str
-        required: true
-      user_id:
-        description: User ID
-        type: str
-        required: true
-      user_name:
-        description: Username
-        type: str
-        required: true
-      user_auth:
-        description: User permission (7 — manage, 3 — write, 1 — read)
-        default: 1
-        choices: [1, 3, 7]
-        type: int
-      self_auth:
-        description: Check if this permission is for user who is making request
-        type: bool
+    namespace:
+      description: Name of organization.
+      type: str
+    repository:
+      description: Name of repository.
+      type: str
+    user_id:
+      description: User ID
+      type: str
+    user_name:
+      description: Username
+      type: str
+    user_auth:
+      description: User permission (7 — manage, 3 — write, 1 — read)
+      type: int
+    self_auth:
+      description: Check if this permission is for user who is making request
+      type: bool
 '''
 
 EXAMPLES = '''
