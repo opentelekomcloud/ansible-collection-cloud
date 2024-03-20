@@ -99,12 +99,12 @@ class SwrRepoPermissionMachine(StateMachine):
 
         if state == 'present' and not resource:
             # Create resource
-            resource = self._create(attributes, timeout, wait, auth=attributes['user_auth'], **kwargs)
+            resource = self._create(attributes, timeout, wait, **kwargs)
             return resource, True
 
         elif state == 'present' and resource:
             # Do not update resource
-            resource = self._update(attributes, timeout, wait, auth=attributes['user_auth'], **kwargs)
+            resource = self._update(attributes, timeout, wait, **kwargs)
             return resource, True
 
         elif state == 'absent' and resource:
@@ -116,13 +116,39 @@ class SwrRepoPermissionMachine(StateMachine):
             # Do nothing
             return None, False
 
+    def _update(self, attributes, timeout, wait, **kwargs):
+        resource = self.update_function(**attributes)
+        if wait:
+            resource = self.sdk.resource.wait_for_status(self.session,
+                                                         resource,
+                                                         status='active',
+                                                         failures=['error'],
+                                                         wait=timeout,
+                                                         attribute='status')
+        return resource
+
+    def _delete(self, resource, attributes, timeout, wait, **kwargs):
+        self.delete_function(namespace=attributes['namespace'],
+                             repository=attributes['repository'],
+                             user_ids=[attributes['permissions'][0]['user_id']])
+        if wait:
+            for count in self.sdk.utils.iterate_timeout(
+                    timeout=timeout,
+                    message="Timeout waiting for resource to be absent"
+            ):
+                if self._find(attributes) is None:
+                    break
+
     def _find(self, attributes, **kwargs):
-        permissions = self.list_function(**attributes)
+        permissions = self.list_function(
+            namespace=attributes['namespace'],
+            repository=attributes['repository'])
+        id = attributes['permissions'][0]['user_id']
         all_auth = list()
         for permission in permissions:
             all_auth.append(permission['self_auth'])
             all_auth += permission['others_auths']
-        current_user = list(filter(lambda x: x['user_id'] == attributes['user_id'], permissions))
+        current_user = list(filter(lambda x: x['user_id'] == id, all_auth))
         if len(current_user) > 1:
             self.fail_json(msg='Found more than a single resource'
                                ' which matches the given attributes.')
@@ -157,7 +183,7 @@ class SwrRepoPermissionModule(OTCModule):
         create_function = getattr(session, 'create_{0}'.format(type_name))
         delete_function = getattr(session, 'delete_{0}'.format(type_name))
         update_function = getattr(session, 'update_{0}'.format(type_name))
-        list_function = getattr(session, 'repository_permissions'.format(type_name))
+        list_function = getattr(session, 'repository_permissions')
         crud = dict(
             create=create_function,
             delete=delete_function,
@@ -173,11 +199,16 @@ class SwrRepoPermissionModule(OTCModule):
                                       crud_functions=crud)
         kwargs = {'state': self.params['state'],
                   'attributes': dict((k, self.params[k]) for k in
-                                     ['namespace', 'repository', 'user_id', 'user_name']
+                                     ['namespace', 'repository']
                                      if self.params[k] is not None)}
+        kwargs['attributes']['permissions'] = [{
+            'user_id': self.params['user_id'],
+            'user_name': self.params['user_name'],
+            'user_auth': self.params['user_auth']
+        }]
         permission, is_changed = sm(check_mode=self.ansible.check_mode,
-                                    non_updateable_attributes=['namespace', 'repository', 'user_id', 'user_name'],
-                                    updateable_attributes=['auth'],
+                                    non_updateable_attributes=['namespace', 'repository'],
+                                    updateable_attributes=['permissions'],
                                     wait=False,
                                     timeout=600,
                                     **kwargs)

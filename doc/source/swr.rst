@@ -10,3 +10,4 @@ Software Repository for Containers (SWR) Modules
    swr_repository <swr_repository_module>
    swr_domain_info <swr_domain_info_module>
    swr_domain <swr_domain_module>
+   swr_repository_permissions <swr_repository_permissions_module>
