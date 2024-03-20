@@ -25,10 +25,12 @@ options:
     description:
       - Mandatory name of an organisation
     type: str
+    required: true
   repository:
     description:
       - Mandatory name of a repository
     type: str
+    required: true
   user_name:
     description:
       - Optional user name
@@ -37,8 +39,8 @@ requirements: ["openstacksdk", "otcextensions"]
 '''
 
 RETURN = '''
-organizations:
-  description: Dictionary describing organizations
+permissions:
+  description: Dictionary describing permissions
   type: complex
   returned: On Success.
   contains:
