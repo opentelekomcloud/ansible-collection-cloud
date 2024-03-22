@@ -13,8 +13,8 @@
 
 DOCUMENTATION = '''
 ---
-module: swr_repository_permissions
-short_description: Create, update or delete repository permissions in SWR
+module: swr_organization_permissions
+short_description: Create, update or delete organization permissions in SWR
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.14.2"
 author: "Ziukina Valeriia (@RusselSand)"
@@ -23,10 +23,6 @@ description:
 options:
   namespace:
     description: Mandatory name of organization.
-    type: str
-    required: true
-  repository:
-    description: Mandatory name of repository.
     type: str
     required: true
   user_id:
@@ -60,26 +56,21 @@ permission:
       namespace:
         description: Specifies the name of the organization.
         type: str
-      repository:
-        description: Specifies the name of the repository.
-        type: str
 '''
 
 EXAMPLES = '''
-# Create or delete SWR repository permission
+# Create or delete SWR organization permission
 - name: Create new repository permission
-  opentelekomcloud.cloud.swr_repository_permissions:
+  opentelekomcloud.cloud.swr_organization_permissions:
     namespace: organization_name
-    repository: repository_name
     user_id: user_id
     user_name: user_name
     user_auth: 7
   register: permission
 
 - name: Delete an repository permission
-  opentelekomcloud.cloud.swr_repository_permissions:
+  opentelekomcloud.cloud.swr_organization_permissions:
     namespace: organization_name
-    repository: repository_name
     user_id: user_id
     user_name: user_name
     state: absent
@@ -90,10 +81,9 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 from ansible_collections.openstack.cloud.plugins.module_utils.resource import StateMachine
 
 
-class SwrRepoPermissionMachine(StateMachine):
+class SwrOrgPermissionMachine(StateMachine):
     def __call__(self, attributes, check_mode, state, timeout, wait,
                  updateable_attributes, non_updateable_attributes, **kwargs):
-        # kwargs is for passing arguments to subclasses
         resource = self._find(attributes, **kwargs)
         if check_mode:
             return self._simulate(state, resource, attributes, timeout, wait,
@@ -132,7 +122,6 @@ class SwrRepoPermissionMachine(StateMachine):
 
     def _delete(self, resource, attributes, timeout, wait, **kwargs):
         self.delete_function(namespace=attributes['namespace'],
-                             repository=attributes['repository'],
                              user_ids=[attributes['permissions'][0]['user_id']])
         if wait:
             for count in self.sdk.utils.iterate_timeout(
@@ -144,14 +133,13 @@ class SwrRepoPermissionMachine(StateMachine):
 
     def _find(self, attributes, **kwargs):
         permissions = self.list_function(
-            namespace=attributes['namespace'],
-            repository=attributes['repository'])
-        id = attributes['permissions'][0]['user_id']
+            namespace=attributes['namespace'])
+        user_id = attributes['permissions'][0]['user_id']
         all_auth = list()
         for permission in permissions:
             all_auth.append(permission['self_auth'])
             all_auth += permission['others_auths']
-        current_user = list(filter(lambda x: x['user_id'] == id, all_auth))
+        current_user = list(filter(lambda x: x['user_id'] == user_id, all_auth))
         if len(current_user) > 1:
             self.fail_json(msg='Found more than a single resource'
                                ' which matches the given attributes.')
@@ -164,7 +152,6 @@ class SwrRepoPermissionMachine(StateMachine):
 class SwrRepoPermissionModule(OTCModule):
     argument_spec = dict(
         namespace=dict(required=True),
-        repository=dict(required=True),
         user_id=dict(required=True),
         user_name=dict(required=True),
         user_auth=dict(required=False,
@@ -181,12 +168,12 @@ class SwrRepoPermissionModule(OTCModule):
 
     def run(self):
         service_name = "swr"
-        type_name = "repository_permissions"
+        type_name = "organization_permissions"
         session = getattr(self.conn, service_name)
         create_function = getattr(session, 'create_{0}'.format(type_name))
         delete_function = getattr(session, 'delete_{0}'.format(type_name))
         update_function = getattr(session, 'update_{0}'.format(type_name))
-        list_function = getattr(session, 'repository_permissions')
+        list_function = getattr(session, 'organization_permissions')
         crud = dict(
             create=create_function,
             delete=delete_function,
@@ -195,14 +182,14 @@ class SwrRepoPermissionModule(OTCModule):
             list=list_function,
             update=update_function,
         )
-        sm = SwrRepoPermissionMachine(connection=self.conn,
-                                      sdk=self.sdk,
-                                      service_name=service_name,
-                                      type_name=type_name,
-                                      crud_functions=crud)
+        sm = SwrOrgPermissionMachine(connection=self.conn,
+                                     sdk=self.sdk,
+                                     service_name=service_name,
+                                     type_name=type_name,
+                                     crud_functions=crud)
         kwargs = {'state': self.params['state'],
                   'attributes': dict((k, self.params[k]) for k in
-                                     ['namespace', 'repository']
+                                     ['namespace']
                                      if self.params[k] is not None)}
         kwargs['attributes']['permissions'] = [{
             'user_id': self.params['user_id'],
