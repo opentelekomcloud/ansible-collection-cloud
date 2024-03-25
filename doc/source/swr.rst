@@ -13,3 +13,4 @@ Software Repository for Containers (SWR) Modules
    swr_repository_permissions <swr_repository_permissions_module>
    swr_repository_permissions_info <swr_repository_permissions_info_module>
    swr_organization_permissions <swr_organization_permissions_module>
+   swr_organization_permissions_info <swr_organization_permissions_info_module>

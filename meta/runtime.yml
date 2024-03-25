@@ -99,3 +99,4 @@ action_groups:
     - swr_repository_permissions.py
     - swr_repository_permissions_info.py
     - swr_organization_permissions.py
+    - swr_organization_permissions_info.py
