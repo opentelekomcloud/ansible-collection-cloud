@@ -22,6 +22,10 @@
         network_name: "{{ ( prefix + '_network') }}"
         subnet_name: "{{ ( prefix + '_subnet') }}"
         router_name: "{{ ( prefix + '_router') }}"
+        as_test_image: "Standard_Debian_10_latest"
+        as_test_flavor: "s3.2xlarge.2"
+        key_name: "{{ ( prefix + '_key') }}"
+        config_name: "{{ ( prefix + '_as_conf' ) }}"
 
     - name: Create network
       openstack.cloud.network:
@@ -49,12 +53,29 @@
             subnet: "{{ subnet.subnet.name }}"
       register: router
 
+    - name: Create keypair
+      openstack.cloud.keypair:
+        name: "{{ key_name }}"
+
+    - name: Create AS Config
+      opentelekomcloud.cloud.as_config:
+        scaling_configuration: "{{ config_name }}"
+        key_name: "{{ key_name }}"
+        image: "{{ as_test_image }}"
+        flavor: "{{ as_test_flavor }}"
+        disk:
+          - size: 10
+            volume_type: 'SAS'
+            disk_type: 'SYS'
+      register: as_config
+
     - name: Create as group
       opentelekomcloud.cloud.as_group:
         scaling_group:
           name: "{{ as_group_name }}"
         networks: [{'id': "{{ network.network.id }}"}]
         router: "{{ router.router.id }}"
+        scaling_configuration: "{{ as_config.as_config.id }}"
       register: as_group
 
     - name: Get list of AS instances using as group id
@@ -104,6 +125,20 @@
             wait: true
           register: dropped_as_group
           failed_when: false
+
+        - name: Delete as config
+          opentelekomcloud.cloud.as_config:
+            scaling_configuration: "{{ config_name }}"
+            state: absent
+          register: removed
+          ignore_errors: true
+
+        - name: Delete keypair
+          openstack.cloud.keypair:
+            name: "{{ key_name }}"
+            state: absent
+          register: removed
+          ignore_errors: true
 
         - name: Drop existing router
           openstack.cloud.router:
