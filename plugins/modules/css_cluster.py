@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,6 +11,7 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
+---
 module: css_cluster
 short_description: Manage CSS clusters
 extends_documentation_fragment: opentelekomcloud.cloud.otc
@@ -28,20 +28,13 @@ options:
       - The value must start with a letter.
     required: true
     type: str
-  datastore_version:
-    description:
-      - Engine version. The value can be 6.2.3, 7.1.1 or 7.6.2.
-      - The default value is 7.6.2.
-    type: str
-    choices: [7.6.2, 7.9.3]
-    default: 7.6.2
   datastore_type:
-    description:
-      - Engine type.
-      - The default value is elasticsearch. Currently, the value can only be
-        elasticsearch.
+    choices: [elasticsearch, opensearch]
+    description: Datastore type
     type: str
-    default: elasticsearch
+  datastore_version:
+    description: Datastore version.
+    type: str
   instance_num:
     description:
       - Number of clusters.
@@ -178,6 +171,17 @@ options:
       - present
       - absent
     default: present
+  wait:
+     description:
+        - If the module should wait for the cluster to be created.
+     type: bool
+     default: 'yes'
+  timeout:
+    description:
+      - The amount of time the module should wait for the cluster to get
+        into active state.
+    default: 1200
+    type: int
 '''
 
 RETURN = '''
@@ -214,11 +218,12 @@ EXAMPLES = '''
         flavor: 'css.xlarge.2'
         https_enable: false
         system_encrypted: 0
+        timeout: 1200
         tags:
-        - 'key': "key0"
-          'value': "value0"
-        - 'key': "key1"
-          'value': "value1"
+        - key: "key0"
+          value: "value0"
+        - key: "key1"
+          value: "value1"
         backup_strategy:
           period: "00:00 GMT+03:00"
           prefix: "yetanother"
@@ -236,17 +241,18 @@ EXAMPLES = '''
         state: absent
 '''
 
+from ansible_collections.openstack.cloud.plugins.module_utils.resource import StateMachine
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
 
 class CssClusterModule(OTCModule):
     argument_spec = dict(
         name=dict(type='str', required=True),
-        datastore_version=dict(type='str', choices=['7.6.2', '7.9.3'], default='7.6.2'),
-        datastore_type=dict(type='str', default='elasticsearch'),
+        datastore_version=dict(type='str'),
+        datastore_type=dict(type='str', choices=['elasticsearch', 'opensearch']),
         instance_num=dict(type='int'),
         flavor=dict(type='str'),
-        volume_type=dict(type='str', choices=['common', 'high', 'ultrahigh']),
+        volume_type=dict(type='str', choices=['common', 'high', 'ultrahigh'], default='common'),
         volume_size=dict(type='int'),
         system_encrypted=dict(type='int', choices=[0, 1]),
         system_cmkid=dict(type='str'),
@@ -254,136 +260,139 @@ class CssClusterModule(OTCModule):
         authority_enable=dict(type='bool'),
         admin_pwd=dict(type='str', no_log=True),
         router=dict(type='str'),
-        net=dict(type='str'),
+        net=dict(type='str', aliases=['network']),
         security_group=dict(type='str'),
         tags=dict(required=False, type='list', elements='dict'),
-        backup_strategy=dict(type='dict', options=dict(
-            period=dict(type='str'),
-            prefix=dict(type='str'),
-            keepday=dict(type='int'),
-            bucket=dict(type='str'),
-            basepath=dict(type='str'),
-            agency=dict(type='str'),
-        )),
-
-        state=dict(type='str',
-                   choices=['present', 'absent'],
-                   default='present')
+        backup_strategy=dict(
+            type='dict',
+            options=dict(
+                period=dict(type='str'),
+                prefix=dict(type='str'),
+                keepday=dict(type='int'),
+                bucket=dict(type='str'),
+                basepath=dict(type='str', aliases=['basePath']),
+                agency=dict(type='str'),
+            ),
+        ),
+        state=dict(type='str', choices=['present', 'absent'], default='present'),
+        wait=dict(type='bool', default=True),
+        timeout=dict(type='int', default=1200)
     )
     module_kwargs = dict(
         required_if=[
-            ('state', 'present',
-             ['flavor', 'router', 'net',
-              'security_group', 'instance_num']),
-            ('authority_enable', 'true',
-             ['admin_pwd']),
-            ('system_encrypted', '1',
-             ['system_cmkid'])
+            ('state', 'present', ['flavor', 'router', 'net', 'security_group',
+                                  'instance_num', 'volume_size', 'datastore_type',
+                                  'datastore_version']),
+            ('authority_enable', 'true', ['admin_pwd']),
+            ('system_encrypted', '1', ['system_cmkid']),
         ],
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
-    def _system_state_change(self, cluster):
-        state = self.params['state']
-        if state == 'present':
-            if not cluster:
-                return True
-        elif state == 'absent' and cluster:
-            return True
-        return False
+    class _StateMachine(StateMachine):
+
+        def _create(self, attributes, timeout, wait, **kwargs):
+            resource = self.create_function(**attributes)
+            wait_function = getattr(self.session, 'wait_for_cluster')
+            wait_function(resource, timeout=timeout)
+            return self.get_function(resource.id)
 
     def run(self):
-        changed = False
+        service_name = 'css'
+        type_name = 'cluster'
+        session = getattr(self.conn, 'css')
+        create_function = getattr(session, 'create_{0}'.format(type_name))
+        delete_function = getattr(session, 'delete_{0}'.format(type_name))
+        get_function = getattr(session, 'get_{0}'.format(type_name))
+        find_function = getattr(session, 'find_{0}'.format(type_name))
+        list_function = getattr(session, '{0}s'.format(type_name))
 
-        cluster = self.conn.css.find_cluster(
-            name_or_id=self.params['name'],
-            ignore_missing=True
+        crud = dict(
+            create=create_function,
+            delete=delete_function,
+            find=find_function,
+            get=get_function,
+            list=list_function,
+            update=None,
         )
 
-        if self.ansible.check_mode:
-            self.exit_json(changed=self._system_state_change(cluster))
+        sm = self._StateMachine(
+            connection=self.conn,
+            service_name=service_name,
+            type_name=type_name,
+            sdk=self.sdk,
+            crud_functions=crud,
+        )
 
-        # Delete cluster
-        if self.params['state'] == 'absent':
-            if cluster:
-                changed = True
-                self.conn.css.delete_cluster(cluster=cluster.id,
-                                             ignore_missing=True)
-            self.exit_json(changed=changed)
+        kwargs = dict(
+            (k, self.params[k])
+            for k in ['state', 'timeout', 'wait']
+            if self.params[k] is not None
+        )
+        kwargs['attributes'] = {'name': self.params['name']}
 
-        # Create cluster
-        elif self.params['state'] == 'present':
-            if cluster:
-                self.exit(changed=changed)
+        if self.params['state'] == 'present':
+            vpc_id = self.conn.vpc.find_vpc(
+                self.params['router'], ignore_missing=False).id
+            network = self.conn.vpc.find_subnet(
+                self.params['net'], ignore_missing=True)
+            if not network:
+                network = self.conn.network.find_network(
+                    self.params['net'], ignore_missing=False)
+            net_id = network.id
 
-            if not cluster:
-                changed = True
-                volume_type = self.params['volume_type']
-
-                attrs = {
-                    'datastore': {
-                        'type': self.params['datastore_type'],
-                        'version': self.params['datastore_version']
+            security_group_id = self.conn.network.find_security_group(
+                self.params['security_group'], ignore_missing=False).id
+            attrs = {
+                'datastore': {
+                    'type': self.params['datastore_type'],
+                    'version': self.params['datastore_version'],
+                },
+                'instanceNum': self.params['instance_num'],
+                'instance': {
+                    'flavorRef': self.params['flavor'],
+                    'volume': {
+                        'volume_type': self.params['volume_type'].upper(),
+                        'size': self.params['volume_size'],
                     },
-                    'instance': {
-                        "flavorRef": self.params['flavor'],
-                        'nics': {
-                            'netId': self.params['net'],
-                            'vpcId': self.params['router'],
-                            'securityGroupId': self.params['security_group']
-                        },
-                        'volume': {
-                            'volume_type': volume_type.upper(),
-                            'size': self.params['volume_size']
-                        }
+                    'nics': {
+                        'vpcId': vpc_id,
+                        'netId': net_id,
+                        'securityGroupId': security_group_id,
                     },
-                    'diskEncryption': {
-                        'systemEncrypted': self.params['system_encrypted']
-                    },
-                    'backupStrategy': {},
-                    'name': self.params['name']
+                },
+            }
+            if self.params['system_cmkid']:
+                attrs['diskEncryption'] = {
+                    'systemEncrypted': self.params['system_encrypted'] or 1,
+                    'systemCmkid': self.params['system_cmkid'],
                 }
+            if self.params['https_enable']:
+                attrs['httpsEnable'] = self.params['https_enable']
+            if self.params['authority_enable']:
+                attrs['authorityEnable'] = self.params['authority_enable']
+            if self.params['admin_pwd']:
+                attrs['adminPwd'] = self.params['admin_pwd']
+            if self.params['tags']:
+                attrs['tags'] = self.params['tags']
+            if self.params['backup_strategy']:
+                if self.params['backup_strategy'].get('basepath'):
+                    del self.params['backup_strategy']['basepath']
+                attrs['backupStrategy'] = self.params['backup_strategy']
+            kwargs['attributes'].update(**attrs)
 
-                if self.params['system_cmkid']:
-                    attrs['diskEncryption']['systemCmkid'] = self.params['system_cmkid']
-                if self.params['instance_num']:
-                    attrs['instanceNum'] = self.params['instance_num']
-                if self.params['https_enable']:
-                    attrs['httpsEnable'] = self.params['https_enable']
-                if self.params['authority_enable']:
-                    attrs['authorityEnable'] = self.params['authority_enable']
-                if self.params['admin_pwd']:
-                    attrs['adminPwd'] = self.params['admin_pwd']
-                if self.params['tags']:
-                    attrs['tags'] = self.params['tags']
+        cluster, is_changed = sm(
+            check_mode=self.ansible.check_mode,
+            updateable_attributes=[],
+            non_updateable_attributes=[
+                'name', 'datastore_type', 'datastore_version', 'instance_num',
+                'volume_size', 'volume_type', 'router', 'net', 'security_group',
+                'flavor', 'backup_strategy', 'timeout', 'tags', 'system_encrypted',
+                'system_cmkid', 'https_enable', 'authority_enable', 'admin_pwd'],
+            **kwargs
+        )
 
-                if self.params['backup_strategy']:
-                    if self.params['backup_strategy']['period']:
-                        attrs['backupStrategy']['period'] = self.params['backup_strategy']['period']
-                    if self.params['backup_strategy']['prefix']:
-                        attrs['backupStrategy']['prefix'] = self.params['backup_strategy']['prefix']
-                    if self.params['backup_strategy']['bucket']:
-                        attrs['backupStrategy']['bucket'] = self.params['backup_strategy']['bucket']
-                    if self.params['backup_strategy']['basepath']:
-                        attrs['backupStrategy']['basePath'] = self.params['backup_strategy']['basepath']
-                    if self.params['backup_strategy']['agency']:
-                        attrs['backupStrategy']['agency'] = self.params['backup_strategy']['agency']
-                    if self.params['backup_strategy']['keepday'] in range(1, 90):
-                        attrs['backupStrategy']['keepDay'] = self.params['backup_strategy']['keepday']
-                    else:
-                        self.exit(
-                            changed=False,
-                            failed=True,
-                            message='backup strategy keepday must be in range from 1 to 90'
-                        )
-
-                cluster = self.conn.css.create_cluster(**self.params)
-
-            self.exit_json(
-                changed=changed,
-                css_cluster=cluster.to_dict(),
-                id=cluster.id
-            )
+        self.exit_json(changed=is_changed)
 
 
 def main():
