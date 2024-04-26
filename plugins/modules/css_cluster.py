@@ -54,6 +54,7 @@ options:
       - common
       - high
       - ultrahigh
+    default: common
   volume_size:
     description:
       - 'Volume size, which must be a multiple of 4 and 10.'
@@ -109,6 +110,7 @@ options:
       - Subnet ID. All instances in a cluster must have the same subnets and
         security groups.
     type: str
+    aliases: ['network']
   security_group:
     description:
       - Security group ID. All instances in a cluster must have the same subnets
@@ -160,6 +162,7 @@ options:
         description:
         - Storage path of the snapshot in the OBS bucket.
         type: str
+        aliases: ['basePath']
       agency:
         description:
         - IAM agency used to access OBS.
