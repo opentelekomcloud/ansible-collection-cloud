@@ -1,6 +1,6 @@
 ---
-- include: "provision.yaml"
+- include_tasks: "provision.yaml"
   when: "state != 'absent'"
 
-- include: "destroy.yaml"
+- include_tasks: "destroy.yaml"
   when: "state == 'absent'"
