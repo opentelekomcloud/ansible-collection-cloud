@@ -33,6 +33,8 @@ extensions = [
     'sphinx_antsibull_ext'
 ]
 
+antsibull_ext_color_scheme = 'default-autodark'
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
