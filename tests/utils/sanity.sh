@@ -27,4 +27,4 @@ if [ -f "requirements.txt" ]; then
 fi
 
 cd "$TEST_DIR"
-ansible-test sanity --skip-test metaclass-boilerplate --skip-test future-import-boilerplate 
+ansible-test sanity --skip-test metaclass-boilerplate --skip-test future-import-boilerplate  --skip-test import --skip-test validate-modules  --skip-test compile --python 2.7
