@@ -31,7 +31,6 @@ SKIP_TESTS="--skip-test import --skip-test validate-modules  --skip-test compile
 # Ansible-core 2.17 dropped support for the metaclass-boilerplate and future-import-boilerplate tests.
 ANSIBLE_VER=$(python3 -m pip show ansible-core | awk '$1 == "Version:" { print $2 }')
 ANSIBLE_MAJOR_VER=$(echo "$ANSIBLE_VER" | sed 's/^\([0-9]\)\..*/\1/g')
-SKIP_TESTS=""
 if [[ $ANSIBLE_MAJOR_VER -eq 2 ]]; then
     ANSIBLE_MINOR_VER=$(echo "$ANSIBLE_VER" | sed 's/^2\.\([^\.]*\)\..*/\1/g')
     if [[ $ANSIBLE_MINOR_VER -le 16 ]]; then
