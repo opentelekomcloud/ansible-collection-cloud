@@ -38,5 +38,8 @@ if [[ $ANSIBLE_MAJOR_VER -eq 2 ]]; then
     fi
 fi
 
+echo "Ansible version: $ANSIBLE_VER"
+echo "Tests to skip: $SKIP_TESTS"
+
 ansible-test sanity -v \
     $SKIP_TESTS
