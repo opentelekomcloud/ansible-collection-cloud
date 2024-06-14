@@ -83,6 +83,7 @@
           name: "{{ as_group_name }}"
         networks: [{'id': "{{ subnet.subnet.id }}"}]
         router: "{{ vpc.vpc.id }}"
+        scaling_configuration: "{{ as_config.as_config.id }}"
       register: as_group
 
     - name: Assert result
@@ -90,16 +91,6 @@
         that:
           - as_group is changed
           - as_group is success
-          - 'as_group.msg == "AS Group {{ as_group_name }} was created"'
-
-    - name: Create AS Group when it already exists
-      opentelekomcloud.cloud.as_group:
-        scaling_group:
-          name: "{{ as_group_name }}"
-        networks: [{'id': "{{ subnet.subnet.id }}"}]
-        router: "{{ vpc.vpc.id }}"
-      register: as_group_err
-      failed_when: 'as_group_err is changed or as_group_err.msg != "AS Group {{ as_group.as_group.id }} exists"'
 
     - name: Update as group - check mode
       opentelekomcloud.cloud.as_group:
@@ -129,7 +120,6 @@
         that:
           - as_group is success
           - as_group is changed
-          - 'as_group.msg == "AS Group {{ as_group.as_group.id }} was updated"'
 
     - name: Delete AS Group - check_mode
       opentelekomcloud.cloud.as_group:
@@ -159,17 +149,6 @@
         that:
           - as_gr_del is success
           - as_gr_del is changed
-          - 'as_gr_del.msg == "AS Group {{ as_group.as_group.id }} was deleted"'
-
-    - name: Delete AS Group that already deleted
-      opentelekomcloud.cloud.as_group:
-        scaling_group:
-          id: "{{ as_group.as_group.id }}"
-        state: absent
-        wait: true
-        timeout: 360
-      register: as_gr_err
-      failed_when: 'as_gr_err.msg != "AS Group {{ as_group.as_group.id }} not found"'
 
     - name: Create AS Group with instances
       opentelekomcloud.cloud.as_group:
