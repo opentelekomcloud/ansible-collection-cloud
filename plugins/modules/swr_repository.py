@@ -101,11 +101,11 @@ class SwrRepositoryMachine(StateMachine):
                       non_updateable_attributes, **kwargs):
         update = {}
         resource_attributes = {}
-        if attributes.get('is_public') is not None:
+        if attributes.get('is_public'):
             resource_attributes['is_public'] = attributes['is_public']
-        if attributes.get('category') is not None:
+        if attributes.get('category'):
             resource_attributes['category'] = attributes['category']
-        if attributes.get('description') is not None:
+        if attributes.get('description'):
             resource_attributes['description'] = attributes['description']
         resource_attributes['repository'] = attributes['repository']
         resource_attributes['namespace'] = attributes['namespace']

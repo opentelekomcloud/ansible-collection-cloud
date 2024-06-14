@@ -111,3 +111,8 @@ plugins/modules/swr_repository_info.py validate-modules:missing-gplv3-license
 plugins/modules/swr_organization.py validate-modules:missing-gplv3-license
 plugins/modules/swr_repository.py validate-modules:missing-gplv3-license
 plugins/modules/swr_domain_info.py validate-modules:missing-gplv3-license
+plugins/modules/swr_domain.py validate-modules:missing-gplv3-license
+plugins/modules/swr_repository_permissions.py validate-modules:missing-gplv3-license
+plugins/modules/swr_repository_permissions_info.py validate-modules:missing-gplv3-license
+plugins/modules/swr_organization_permissions.py validate-modules:missing-gplv3-license
+plugins/modules/swr_organization_permissions_info.py validate-modules:missing-gplv3-license

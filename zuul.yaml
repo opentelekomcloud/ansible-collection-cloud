@@ -21,6 +21,7 @@
                 - autoscaling/group1/
                 - elb/group1/
                 - obs/group1/
+                - swr/group2/
         - otc-ansible-collection-test-integration-eu-nl:
             files: *integration-files
             vars: &vars-eu-nl
@@ -42,6 +43,7 @@
                 - obs/group1/
                 - storage/vbs/
                 - swr/group1/
+                - swr/group2/
         - otc-ansible-collection-test-integration-eu-ch:
             files: *integration-files
             vars: &vars-eu-ch
@@ -62,6 +64,7 @@
                 - rds_flavor_info/group1/
                 - storage/vbs/
                 - swr/group1/
+                - swr/group2/
                 - waf/group1/
     gate:
       jobs:

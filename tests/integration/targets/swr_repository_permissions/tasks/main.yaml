@@ -1,0 +1,97 @@
+---
+- name: SWR repository permissions tests
+  module_defaults:
+    opentelekomcloud.cloud.swr_repository_permissions:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        organization_name: "{{ ( 'org_' + prefix) }}"
+        repository_name: "{{ ( 'repo_' + prefix) }}"
+        user_id: "cfe93b289ece46cd84a22b17c4e6671e"
+        user_name: "test_user"
+
+    - name: Create organization
+      opentelekomcloud.cloud.swr_organization:
+        namespace: "{{ organization_name }}"
+      register: organization
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - organization is success
+
+    - name: Create repository in this organization
+      opentelekomcloud.cloud.swr_repository:
+        namespace: "{{ organization_name }}"
+        repository: "{{ repository_name }}"
+      register: repository
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - repository is success
+          - repository is changed
+
+    - name: Create user permission in this repository
+      opentelekomcloud.cloud.swr_repository_permissions:
+        namespace: "{{ organization_name }}"
+        repository: "{{ repository_name }}"
+        user_id: "{{ user_id }}"
+        user_name: "{{ user_name }}"
+        user_auth: 7
+      register: permission
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - permission is success
+          - permission is changed
+
+    - name: Update user permission in this repository
+      opentelekomcloud.cloud.swr_repository_permissions:
+        namespace: "{{ organization_name }}"
+        repository: "{{ repository_name }}"
+        user_id: "{{ user_id }}"
+        user_name: "{{ user_name }}"
+        user_auth: 1
+      register: permission
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - permission is success
+          - permission is changed
+
+    - name: Delete user permission in this repository
+      opentelekomcloud.cloud.swr_repository_permissions:
+        namespace: "{{ organization_name }}"
+        repository: "{{ repository_name }}"
+        user_id: "{{ user_id }}"
+        user_name: "{{ user_name }}"
+        state: absent
+      register: permission
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - permission is success
+          - permission is changed
+
+  always:
+    - name: Delete this repository
+      opentelekomcloud.cloud.swr_repository:
+        namespace: "{{ organization_name }}"
+        repository: "{{ repository_name }}"
+        state: absent
+      failed_when: false
+
+    - name: Delete organization
+      opentelekomcloud.cloud.swr_organization:
+        namespace: "{{ organization_name }}"
+        state: absent
+      failed_when: false

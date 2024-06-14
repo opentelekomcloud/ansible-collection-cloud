@@ -228,8 +228,10 @@ class RdsInstanceModule(OTCModule):
             if instance:
                 attrs = {
                     'instance': instance.id,
-                    'wait': self.params['wait']
+                    'wait': self.params['wait'],
                 }
+                if self.params.get('wait_timeout'):
+                    attrs['wait_timeout'] = self.params['wait_timeout']
 
                 self.conn.delete_rds_instance(**attrs)
                 changed = True

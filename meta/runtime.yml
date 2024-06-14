@@ -95,3 +95,8 @@ action_groups:
     - swr_organization.py
     - swr_repository.py
     - swr_domain_info.py
+    - swr_domain.py
+    - swr_repository_permissions.py
+    - swr_repository_permissions_info.py
+    - swr_organization_permissions.py
+    - swr_organization_permissions_info.py
