@@ -1,5 +1,5 @@
 Data Warehouse Service (DWS) Modules
-==================================
+====================================
 
 .. toctree::
    :maxdepth: 1
