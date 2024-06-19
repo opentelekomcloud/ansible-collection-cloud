@@ -57,6 +57,7 @@ plugins/modules/dds_flavor_info.py validate-modules:missing-gplv3-license
 plugins/modules/dds_instance_info.py validate-modules:missing-gplv3-license
 plugins/modules/dds_instance.py validate-modules:missing-gplv3-license
 plugins/modules/dns_nameserver_info.py validate-modules:missing-gplv3-license
+plugins/modules/dws_cluster_info.py validate-modules:missing-gplv3-license
 plugins/modules/kms_info.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer_info.py validate-modules:missing-gplv3-license
