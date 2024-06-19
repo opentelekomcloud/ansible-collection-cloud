@@ -23,6 +23,7 @@ These are the plugins in the opentelekomcloud.cloud collection
     deh
     dms
     dns
+    dws
     ecs
     elb
     misc
