@@ -38,6 +38,7 @@ action_groups:
     - dds_flavor_info
     - dds_instance_info
     - dds_instance
+    - dws_cluster
     - dws_cluster_info
     - floating_ip
     - loadbalancer
