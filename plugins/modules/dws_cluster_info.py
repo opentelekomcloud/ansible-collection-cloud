@@ -56,10 +56,6 @@ cluster:
             description: Private network connection information.
             type: str
             sample: "192.168.0.10:8000"
-          jdbc_url:
-            description: JDBC URL on the private network.
-            type: str
-            sample: "jdbc:postgresql://192.168.0.10:8000/<YOUR_DATABASE_name>"
       enterprise_project_id:
         description: Enterprise project ID. The value 0 indicates the ID of the default enterprise project.
         type: str
@@ -165,10 +161,6 @@ cluster:
             description: Public network connection information.
             type: str
             sample: "10.0.0.8:8000"
-          jdbc_url:
-            description: JDBC URL of the public network.
-            type: str
-            sample: "jdbc:postgresql://10.0.0.8:8000/<YOUR_DATABASE_name>"
       public_ip:
         description: Public IP address. If the parameter is not specified, public connection is not used by default.
         type: complex
