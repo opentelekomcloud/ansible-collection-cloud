@@ -23,7 +23,7 @@ options:
   availability_zone:
     description: Availability Zone of a cluster.
     type: str
-  cn_num:
+  num_cn:
     description:
     - Number of deployed CNs. The value ranges from 2 to the number of
       cluster nodes. The maximum value is 20 and the default value is 3.
@@ -37,11 +37,12 @@ options:
       - It contains 4 to 32 characters. Only letters, digits, hyphens (-), and
         underscores (_) are allowed.
       - The value must start with a letter.
+    required: true
     type: str
   network:
     description: Name or ID of the neutron network
     type: str
-  node_num:
+  num_nodes:
     description:
       - Number of cluster nodes.
       - For a cluster, the value ranges from 3 to 256.
