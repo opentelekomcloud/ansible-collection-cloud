@@ -19,3 +19,5 @@ tmp
 
 # ansible-test inventory
 tests/integration/inventory
+
+*.egg-info/
