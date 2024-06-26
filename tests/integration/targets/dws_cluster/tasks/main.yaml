@@ -1,0 +1,108 @@
+---
+- name: DWS Cluster tests
+  module_defaults:
+    opentelekomcloud.cloud.dws_cluster:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        network_name: "{{ ( prefix + 'dws_test-network') }}"
+        subnet_name: "{{ ( prefix + 'dws_test-subnet') }}"
+        router_name: "{{ ( prefix + 'dws_test-router') }}"
+        cluster_name: "{{ ( 'z-' + prefix + 'dws_test-cluster') }}"
+        dws_flavor: "dws.m3.xlarge"
+
+    - name: Delete missing cluster
+      opentelekomcloud.cloud.dws_cluster:
+        state: absent
+        name: "definitely_missing_cluster"
+      register: dws
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - dws is success
+          - dws is not changed
+
+    - name: Create network for test
+      openstack.cloud.network:
+        cloud: "{{ test_cloud }}"
+        name: "{{ network_name }}"
+        state: present
+      register: test_network
+
+    - name: Create subnet for test
+      openstack.cloud.subnet:
+        cloud: "{{ test_cloud }}"
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ test_network.network.name }}"
+        cidr: "192.168.0.0/24"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: test_subnet
+
+    - name: Create router for test
+      openstack.cloud.router:
+        cloud: "{{ test_cloud }}"
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: "{{ has_snat | ternary(true, omit) }}"
+        interfaces:
+          - net: "{{ test_network.network.name }}"
+            subnet: "{{ test_subnet.subnet.name }}"
+      register: test_router
+
+    - name: Create DWS Cluster
+      opentelekomcloud.cloud.dws_cluster:
+        name: "{{ cluster_name }}"
+        flavor: "{{ dws_flavor }}"
+        router: "{{ router_name }}"
+        network: "{{ network_name }}"
+        security_group: "default"
+        username: "dbadmin"
+        password: "Testing@1234"
+        availability_zone: "eu-de-01"
+        num_nodes: 3
+        timeout: 1200
+      register: obj
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - obj is success
+          - obj is changed
+
+  always:
+    - name: Cleanup
+      block:
+        - name: Drop cluster
+          opentelekomcloud.cloud.dws_cluster:
+            name: "{{ cluster_name }}"
+            state: "absent"
+          failed_when: false
+
+        - name: Drop router
+          openstack.cloud.router:
+            cloud: "{{ test_cloud }}"
+            name: "{{ router_name }}"
+            state: absent
+          failed_when: false
+
+        - name: Drop subnet
+          openstack.cloud.subnet:
+            cloud: "{{ test_cloud }}"
+            name: "{{ subnet_name }}"
+            state: absent
+          failed_when: false
+
+        - name: Drop network
+          openstack.cloud.network:
+            cloud: "{{ test_cloud }}"
+            name: "{{ network_name }}"
+            state: absent
+          failed_when: false
