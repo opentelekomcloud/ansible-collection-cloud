@@ -10,7 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: dws_cluster
 short_description: Manage dws clusters
@@ -127,9 +127,9 @@ options:
         into active state.
     default: 1200
     type: int
-'''
+"""
 
-RETURN = '''
+RETURN = """
 cluster:
     description: Dictionary of dws cluster
     returned: changed
@@ -142,7 +142,7 @@ cluster:
             }
         }
     ]
-'''
+"""
 
 EXAMPLES = """
 #Create dws Cluster
@@ -188,47 +188,47 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class dwsClusterModule(OTCModule):
     argument_spec = dict(
-        name=dict(type="str", required=True),
-        availability_zone=dict(type="str"),
-        num_nodes=dict(type="int"),
-        num_cn=dict(type="int"),
-        port=dict(type="int"),
-        flavor=dict(type="str"),
+        name=dict(type='str', required=True),
+        availability_zone=dict(type='str'),
+        num_nodes=dict(type='int'),
+        num_cn=dict(type='int'),
+        port=dict(type='int'),
+        flavor=dict(type='str'),
         public_ip=dict(
-            type="dict",
+            type='dict',
             options=dict(
                 public_bind_type=dict(
-                    type="str",
-                    choices=["auto_assign", "not_use", "bind_existing"],
+                    type='str',
+                    choices=['auto_assign', 'not_use', 'bind_existing'],
                 ),
-                eip=dict(type="str"),
+                eip=dict(type='str'),
             ),
         ),
-        router=dict(type="str"),
-        network=dict(type="str"),
-        security_group=dict(type="str"),
-        tags=dict(required=False, type="list", elements="dict"),
-        username=dict(type="str", default="dbadmin"),
-        password=dict(type="str", no_log=True),
+        router=dict(type='str'),
+        network=dict(type='str'),
+        security_group=dict(type='str'),
+        tags=dict(required=False, type='list', elements='dict'),
+        username=dict(type='str', default='dbadmin'),
+        password=dict(type='str', no_log=True),
         state=dict(
-            type="str", choices=["present", "absent"], default="present"
+            type='str', choices=['present', 'absent'], default='present'
         ),
-        wait=dict(type="bool", default=True),
-        timeout=dict(type="int", default=1200),
+        wait=dict(type='bool', default=True),
+        timeout=dict(type='int', default=1200),
     )
     module_kwargs = dict(
         required_if=[
             (
-                "state",
-                "present",
+                'state',
+                'present',
                 [
-                    "flavor",
-                    "router",
-                    "network",
-                    "security_group",
-                    "name",
-                    "num_nodes",
-                    "password",
+                    'flavor',
+                    'router',
+                    'network',
+                    'security_group',
+                    'name',
+                    'num_nodes',
+                    'password',
                 ],
             ),
         ],
@@ -236,22 +236,21 @@ class dwsClusterModule(OTCModule):
     )
 
     class _StateMachine(StateMachine):
-
         def _create(self, attributes, timeout, wait, **kwargs):
             resource = self.create_function(**attributes)
-            wait_function = getattr(self.session, "wait_for_cluster")
+            wait_function = getattr(self.session, 'wait_for_cluster')
             wait_function(resource, wait=timeout)
             return self.get_function(resource.id)
 
     def run(self):
-        service_name = "dws"
-        type_name = "cluster"
-        session = getattr(self.conn, "dws")
-        create_function = getattr(session, "create_{0}".format(type_name))
-        delete_function = getattr(session, "delete_{0}".format(type_name))
-        get_function = getattr(session, "get_{0}".format(type_name))
-        find_function = getattr(session, "find_{0}".format(type_name))
-        list_function = getattr(session, "{0}s".format(type_name))
+        service_name = 'dws'
+        type_name = 'cluster'
+        session = getattr(self.conn, 'dws')
+        create_function = getattr(session, 'create_{0}'.format(type_name))
+        delete_function = getattr(session, 'delete_{0}'.format(type_name))
+        get_function = getattr(session, 'get_{0}'.format(type_name))
+        find_function = getattr(session, 'find_{0}'.format(type_name))
+        list_function = getattr(session, '{0}s'.format(type_name))
 
         crud = dict(
             create=create_function,
@@ -272,48 +271,60 @@ class dwsClusterModule(OTCModule):
 
         kwargs = dict(
             (k, self.params[k])
-            for k in ["state", "timeout", "wait"]
+            for k in ['state', 'timeout', 'wait']
             if self.params[k] is not None
         )
-        kwargs["attributes"] = {"name": self.params["name"]}
+        kwargs['attributes'] = {'name': self.params['name']}
 
-        if self.params["state"] == "present":
+        if self.params['state'] == 'present':
             vpc_id = self.conn.vpc.find_vpc(
-                self.params["router"], ignore_missing=False
+                self.params['router'], ignore_missing=False
             ).id
             net_id = None
             network = self.conn.vpc.find_subnet(
-                self.params["network"], ignore_missing=True
+                self.params['network'], ignore_missing=True
             )
             if network:
                 net_id = network.id
             else:
                 net_id = self.conn.network.find_network(
-                    self.params["network"], ignore_missing=False
+                    self.params['network'], ignore_missing=False
                 ).id
 
             security_group_id = self.conn.network.find_security_group(
-                self.params["security_group"], ignore_missing=False
+                self.params['security_group'], ignore_missing=False
             ).id
             attrs = {
-                "flavor": self.params["flavor"],
-                "num_nodes": self.params["num_nodes"],
-                "router_id": vpc_id,
-                "network_id": net_id,
-                "security_group_id": security_group_id,
-                "user_name": self.params["username"],
-                "user_pwd": self.params["password"],
+                'flavor': self.params['flavor'],
+                'num_nodes': self.params['num_nodes'],
+                'router_id': vpc_id,
+                'network_id': net_id,
+                'security_group_id': security_group_id,
+                'user_name': self.params['username'],
+                'user_pwd': self.params['password'],
             }
-            if self.params["availability_zone"]:
-                attrs['availability_zone'] = self.params["availability_zone"]
-            if self.params["num_cn"]:
-                attrs["num_cn"] = self.params["num_cn"]
-            if self.params["availability_zone"]:
-                attrs["availability_zone"] = self.params["availability_zone"]
-            if self.params["port"]:
-                attrs["port"] = self.params["port"]
-            if self.params["public_ip"]:
-                attrs["public_ip"] = self.params["public_ip"]
+            if self.params['availability_zone']:
+                attrs['availability_zone'] = self.params['availability_zone']
+            if self.params['num_cn']:
+                attrs['num_cn'] = self.params['num_cn']
+            if self.params['availability_zone']:
+                attrs['availability_zone'] = self.params['availability_zone']
+            if self.params['port']:
+                attrs['port'] = self.params['port']
+            if self.params['public_ip']:
+                attrs['public_ip'] = {}
+                if self.params['public_ip'].get('public_bind_type'):
+                    attrs['public_ip'] = {
+                        'public_bind_type': self.params['public_ip'][
+                            'public_bind_type'
+                        ],
+                        'eip_id': '',
+                    }
+                if self.params['public_ip'].get('eip'):
+                    resp = self.conn.network.find_ip(
+                        self.params['public_ip']['eip']
+                    )
+                    attrs['public_ip']['eip_id'] = resp.id
             if self.params['tags']:
                 attrs['tags'] = self.params['tags']
 
@@ -323,18 +334,18 @@ class dwsClusterModule(OTCModule):
             check_mode=self.ansible.check_mode,
             updateable_attributes=[],
             non_updateable_attributes=[
-                "flavor",
-                "router",
-                "network",
-                "security_group",
-                "availability_zone",
-                "name",
-                "num_nodes",
-                "username",
-                "password",
-                "port",
-                "public_ip",
-                "num_cn",
+                'flavor',
+                'router',
+                'network',
+                'security_group',
+                'availability_zone',
+                'name',
+                'num_nodes',
+                'username',
+                'password',
+                'port',
+                'public_ip',
+                'num_cn',
             ],
             **kwargs
         )
@@ -347,5 +358,5 @@ def main():
     module()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
