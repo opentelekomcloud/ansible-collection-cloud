@@ -1,0 +1,195 @@
+---
+- name: DWS Snapshot tests
+  module_defaults:
+    opentelekomcloud.cloud.dws_snapshot:
+      cloud: "{{ test_cloud }}"
+  vars:
+    prefix: dws_cluster_snapshot_test
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ (prefix + (99999999 | random | to_uuid | hash('md5'))) }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        network_name: "{{ ( prefix + 'dws-test-network') }}"
+        subnet_name: "{{ ( prefix + 'dws-test-subnet') }}"
+        router_name: "{{ ( prefix + 'dws-test-router') }}"
+        security_group_name: "{{ ( prefix + 'dws-security_group') }}"
+        dws_cluster_name: "{{ ( short_prefix + 'dws-test') }}"
+        dws_flavor: "dws.m3.xlarge"
+        snapshot_name: "{{ ( prefix + 'dws-snapshot') }}"
+
+    - name: Create network for test
+      openstack.cloud.network:
+        cloud: "{{ test_cloud }}"
+        name: "{{ network_name }}"
+        state: present
+      register: test_network
+
+    - name: Create subnet for test
+      openstack.cloud.subnet:
+        cloud: "{{ test_cloud }}"
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ test_network.network.name }}"
+        cidr: "{{ cidr }}"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: test_subnet
+
+    - name: Create router for test
+      openstack.cloud.router:
+        cloud: "{{ test_cloud }}"
+        name: "{{ router_name }}"
+        state: present
+        network: admin_external_net
+        enable_snat: true
+        interfaces:
+          - net: "{{ test_network.network.name }}"
+            subnet: "{{ test_subnet.subnet.name }}"
+      register: test_router
+
+    - name: Add cidr for vpc
+      opentelekomcloud.cloud.vpc:
+        name: "{{ router_name }}"
+        state: present
+        cidr: "{{ cidr }}"
+
+    - name: Create security group for test
+      openstack.cloud.security_group:
+        cloud: "{{ test_cloud }}"
+        state: present
+        name: "{{ security_group_name }}"
+        description: security group for test
+      register: test_security_group
+
+    - name: Create DWS Cluster
+      opentelekomcloud.cloud.dws_cluster:
+        name: "{{ dws_cluster_name }}"
+        state: present
+        num_nodes: 3
+        router: "{{ test_router.router.id }}"
+        net: "{{ test_network.id }}"
+        security_group: "{{ test_security_group.id }}"
+        flavor: "{{ dws_flavor }}"
+        timeout: 1200
+      register: cluster
+
+    - name: Create DWS snapshot
+      opentelekomcloud.cloud.dws_snapshot:
+        cluster: "{{ dws_cluster_name }}"
+        name: "{{ snapshot_name }}"
+      register: snapshot
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - snapshot is success
+          - snapshot is not changed
+          - snapshot.snapshots is defined
+
+    - name: Create DWS snapshot - check mode
+      opentelekomcloud.cloud.dws_snapshot:
+        cluster: "{{ dws_cluster_name }}"
+        name: "{{ snapshot_name }}"
+      register: created_snapshot
+      check_mode: true
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - created_snapshot is success
+          - created_snapshot is not changed
+
+    - name: Create DWS snapshot
+      opentelekomcloud.cloud.dws_snapshot:
+        cluster: "{{ dws_cluster_name }}"
+        name: "{{ snapshot_name }}"
+      register: created_snapshot
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - created_snapshot is success
+          - created_snapshot is changed
+          - created_snapshot.snapshots is defined
+
+    - name: Delete dws snapshot - check mode
+      opentelekomcloud.cloud.dws_snapshot:
+        cluster: "{{ dws_cluster_name }}"
+        name: "{{ snapshot_name }}"
+        state: "absent"
+      register: deleted_snapshot
+      check_mode: true
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - deleted_snapshot is not changed
+          - deleted_snapshot is success
+
+    - name: Delete dws snapshot
+      opentelekomcloud.cloud.dws_snapshot:
+        cluster: "{{ dws_cluster_name }}"
+        name: "{{ snapshot_name }}"
+        state: "absent"
+      register: deleted_snapshot
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - deleted_snapshot is changed
+          - deleted_snapshot is success
+
+  always:
+    - name: Cleanup
+      block:
+        - name: Drop cluster
+          opentelekomcloud.cloud.dws_cluster:
+            cloud: "{{ test_cloud }}"
+            name: "{{ dws_cluster_name }}"
+            state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
+
+        - name: Drop router
+          openstack.cloud.router:
+            cloud: "{{ test_cloud }}"
+            name: "{{ router_name }}"
+            state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
+
+        - name: Drop subnet
+          openstack.cloud.subnet:
+            cloud: "{{ test_cloud }}"
+            name: "{{ subnet_name }}"
+            state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
+
+        - name: Drop network
+          openstack.cloud.network:
+            cloud: "{{ test_cloud }}"
+            name: "{{ network_name }}"
+            state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
+
+        - name: Drop security group
+          openstack.cloud.security_group:
+            cloud: "{{ test_cloud }}"
+            state: absent
+            name: "{{ security_group_name }}"
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
