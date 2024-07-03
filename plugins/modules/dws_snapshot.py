@@ -179,7 +179,7 @@ class DwsSnapshotModule(OTCModule):
                 'cluster',
                 'description',
             ],
-            **kwargs,
+            **kwargs
         )
         if snapshot is None:
             self.exit_json(changed=is_changed)

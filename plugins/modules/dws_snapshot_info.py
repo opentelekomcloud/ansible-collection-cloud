@@ -102,7 +102,7 @@ class DwsSnapshotInfoModule(OTCModule):
 
         self.exit_json(
             changed=False,
-            snapshot_list=data
+            dws_snapshots=data
         )
 
 

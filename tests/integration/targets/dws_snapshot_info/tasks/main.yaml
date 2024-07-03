@@ -13,6 +13,6 @@
     - name: Assert result
       ansible.builtin.assert:
         that:
-          - result is not success
+          - result is success
           - result is not changed
-          - 'result.msg == "DWS cluster is missing"'
+          - result.dws_snapshots is defined

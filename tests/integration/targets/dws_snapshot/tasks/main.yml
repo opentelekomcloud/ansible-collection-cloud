@@ -4,7 +4,7 @@
     opentelekomcloud.cloud.dws_snapshot:
       cloud: "{{ test_cloud }}"
   vars:
-    prefix: dws_cluster_snapshot_test
+    prefix: dws-snapshot-test
   block:
     - name: Set random prefix
       ansible.builtin.set_fact:
@@ -86,7 +86,7 @@
         that:
           - snapshot is success
           - snapshot is not changed
-          - snapshot.snapshots is defined
+          - snapshot.dws_snapshot is defined
 
     - name: Create DWS snapshot - check mode
       opentelekomcloud.cloud.dws_snapshot:
@@ -111,8 +111,8 @@
       ansible.builtin.assert:
         that:
           - created_snapshot is success
-          - created_snapshot is changed
-          - created_snapshot.snapshots is defined
+          - created_snapshot is not changed
+          - created_snapshot.dws_snapshot is defined
 
     - name: Delete dws snapshot - check mode
       opentelekomcloud.cloud.dws_snapshot:
