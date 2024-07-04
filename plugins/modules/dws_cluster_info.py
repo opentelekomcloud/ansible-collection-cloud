@@ -25,11 +25,6 @@ options:
     description:
       - name or ID of the cluster to be queried.
     type: str
-  limit:
-    description:
-      - Number of clusters to be queried.
-      - The default value is 10, indicating that 10 clusters are queried at a time.
-    type: int
 requirements: ["openstacksdk", "otcextensions"]
 """
 
@@ -291,7 +286,6 @@ EXAMPLES = """
 # Get info about clusters
 - opentelekomcloud.cloud.dws_cluster_info:
     name: "dws-ea59"
-    limit: 5
   register: result
 """
 
@@ -301,24 +295,28 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 
 class DWSClusterInfoModule(OTCModule):
-    argument_spec = dict(name=dict(), limit=dict(type="int"))
+    argument_spec = dict(name=dict())
     module_kwargs = dict(supports_check_mode=True)
 
     otce_min_version = "0.24.1"
 
     def run(self):
-        name = self.params["name"]
-        if name:
-            dws_clusters = self.conn.dws.find_cluster(name)
+        data = []
+        if self.params['name']:
+            raw = self.conn.dws.find_cluster(
+                name_or_id=self.params['name'], ignore_missing=True
+            )
+            if raw:
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
         else:
-            kwargs = {
-                k: self.params[k] for k in ["limit"] if self.params[k] is not None
-            }
+            for raw in self.conn.css.clusters():
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
 
-            raw = self.conn.dws.clusters(**kwargs)
-            dws_clusters = [c.to_dict(computed=False) for c in raw]
-
-        self.exit_json(changed=False, dws_clusters=dws_clusters)
+        self.exit_json(changed=False, dws_clusters=data)
 
 
 def main():

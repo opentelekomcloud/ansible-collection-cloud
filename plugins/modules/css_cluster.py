@@ -395,7 +395,13 @@ class CssClusterModule(OTCModule):
             **kwargs
         )
 
-        self.exit_json(changed=is_changed)
+        if cluster is None:
+            self.exit_json(changed=is_changed)
+        else:
+            self.exit_json(
+                changed=is_changed,
+                css_cluster=cluster.to_dict(computed=False),
+            )
 
 
 def main():

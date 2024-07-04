@@ -198,19 +198,26 @@ class CSSClusterInfoModule(OTCModule):
     otce_min_version = '0.24.1'
 
     def run(self):
-        name = self.params['name']
-        if name:
-            css_clusters = self.conn.css.find_cluster(name)
+        data = []
+        if self.params['name']:
+            raw = self.conn.css.find_cluster(
+                name_or_id=self.params['name'], ignore_missing=True
+            )
+            if raw:
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
         else:
             kwargs = {k: self.params[k]
                       for k in ['start', 'limit']
                       if self.params[k] is not None}
 
-            raw = self.conn.css.clusters(**kwargs)
-            css_clusters = [c.to_dict(computed=False) for c in raw]
+            for raw in self.conn.css.clusters(**kwargs):
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
 
-        self.exit_json(changed=False,
-                       css_clusters=css_clusters)
+        self.exit_json(changed=False, css_clusters=data)
 
 
 def main():
