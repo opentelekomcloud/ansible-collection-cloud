@@ -86,16 +86,16 @@ class DwsSnapshotInfoModule(OTCModule):
 
     def run(self):
         data = []
-        snapshot_name = self.params['name']
 
-        # search snapshot by name or id
         if self.params['name']:
+            # search snapshot by name or id
             raw = self.conn.dws.find_snapshot(
-                name_or_id=snapshot_name, ignore_missing=True
+                name_or_id=self.params['name'], ignore_missing=True
             )
-            dt = raw.to_dict()
-            dt.pop('location')
-            data.append(dt)
+            if raw:
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
 
         else:
             for raw in self.conn.dws.snapshots():
