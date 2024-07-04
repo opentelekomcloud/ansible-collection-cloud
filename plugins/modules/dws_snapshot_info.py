@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: dws_snapshot_info
 short_description: Get DWS snapshot info
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.9.0"
+version_added: "0.14.4"
 author: "Attila Somogyi (@sattila1999)"
 description:
   - Get Data Warehouse Service snapshot info
