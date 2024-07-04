@@ -311,7 +311,7 @@ class DWSClusterInfoModule(OTCModule):
                 dt.pop('location')
                 data.append(dt)
         else:
-            for raw in self.conn.css.clusters():
+            for raw in self.conn.dws.clusters():
                 dt = raw.to_dict()
                 dt.pop('location')
                 data.append(dt)
