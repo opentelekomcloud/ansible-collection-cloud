@@ -1,0 +1,20 @@
+---
+- name: MRS Cluster Info tests
+  module_defaults:
+    opentelekomcloud.cloud.mrs_cluster_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Get info about clusters.
+      opentelekomcloud.cloud.mrs_cluster_info:
+        limit: 1
+        status: terminated
+        tags:
+          - key1=value1
+      register: result
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - result is success
+          - result is not changed
+          - result.clusters is defined

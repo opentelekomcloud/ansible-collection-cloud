@@ -27,6 +27,7 @@ These are the plugins in the opentelekomcloud.cloud collection
     ecs
     elb
     misc
+    mrs
     nat
     rds
     sfsturbo
