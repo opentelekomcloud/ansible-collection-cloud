@@ -30,8 +30,21 @@ rsync -av . \
     "$TEST_DIR" > /dev/null|| true
 
 if [ -f "requirements.txt" ]; then
-    ansible-galaxy collection install -p "${ANSIBLE_COLLECTIONS_PATH}"
-    ansible-galaxy role install -p "${ANSIBLE_COLLECTIONS_PATH}"
+    ansible-galaxy collection install -r requirements.txt -p ${ANSIBLE_COLLECTIONS_PATH}
+    ansible-galaxy role install -r requirements.txt -p ${ANSIBLE_COLLECTIONS_PATH}
+fi
+
+# Initialize PYTHONPATH and ANSIBLE_COLLECTIONS_PATHS if not set
+export PYTHONPATH=${ANSIBLE_COLLECTIONS_PATH}:${PYTHONPATH:-""}
+export ANSIBLE_COLLECTIONS_PATHS=${ANSIBLE_COLLECTIONS_PATH}:${ANSIBLE_COLLECTIONS_PATHS:-""}
+
+# Install the necessary openstack.cloud collection explicitly
+ansible-galaxy collection install openstack.cloud -f -p ${ANSIBLE_COLLECTIONS_PATH}
+
+# Verify that the collection is installed
+if [ ! -d "${ANSIBLE_COLLECTIONS_PATH}/ansible_collections/openstack/cloud" ]; then
+    echo "Error: openstack.cloud collection is not installed correctly."
+    exit 1
 fi
 
 cd "$TEST_DIR"
