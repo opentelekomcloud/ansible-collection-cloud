@@ -541,22 +541,28 @@ class MRSClusterInfoModule(OTCModule):
     otce_min_version = '0.24.1'
 
     def run(self):
-        name = self.params['name']
-        if name:
-            mrs_clusters = self.conn.mrs.find_cluster(name)
+        data = []
+        if self.params['name']:
+            raw = self.conn.mrs.find_cluster(
+                name_or_id=self.params['name'], ignore_missing=True
+            )
+            if raw:
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
         else:
             if self.params['tags']:
                 self.params['tags'] = _normalize_tags(self.params['tags'])
-
             kwargs = {k: self.params[k]
                       for k in ['tags', 'status', 'limit']
                       if self.params[k] is not None}
 
-            raw = self.conn.mrs.clusters(**kwargs)
-            mrs_clusters = [c.to_dict(computed=False) for c in raw]
+            for raw in self.conn.mrs.clusters(**kwargs):
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
 
-        self.exit_json(changed=False,
-                       mrs_clusters=mrs_clusters)
+        self.exit_json(changed=False, mrs_clusters=data)
 
 
 def main():
