@@ -17,4 +17,4 @@
         that:
           - result is success
           - result is not changed
-          - result.clusters is defined
+          - result.mrs_clusters is defined
