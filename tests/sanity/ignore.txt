@@ -75,6 +75,7 @@ plugins/modules/lb_healthmonitor.py validate-modules:missing-gplv3-license
 plugins/modules/lb_healthmonitor_info.py validate-modules:missing-gplv3-license
 plugins/modules/lb_certificate_info.py validate-modules:missing-gplv3-license
 plugins/modules/lb_certificate.py validate-modules:missing-gplv3-license
+plugins/modules/mrs_cluster_info.py validate-modules:missing-gplv3-license
 plugins/modules/nat_gateway.py validate-modules:missing-gplv3-license
 plugins/modules/nat_gateway_info.py validate-modules:missing-gplv3-license
 plugins/modules/nat_snat_rule.py validate-modules:missing-gplv3-license

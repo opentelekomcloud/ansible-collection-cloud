@@ -46,6 +46,7 @@ action_groups:
     - loadbalancer
     - loadbalancer_info
     - loadbalancer_v3_info
+    - mrs_cluster_info
     - nat_dnat_info
     - nat_dnat_rule
     - nat_gateway_info
