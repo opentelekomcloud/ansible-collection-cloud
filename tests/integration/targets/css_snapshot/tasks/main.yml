@@ -92,8 +92,8 @@
       ansible.builtin.assert:
         that:
           - snapshot is success
-          - snapshot is not changed
-          - snapshot.snapshots is defined
+          - snapshot is changed
+          - snapshot.css_snapshot is defined
 
     - name: Create CSS snapshot - check mode
       opentelekomcloud.cloud.css_snapshot:
@@ -118,8 +118,8 @@
       ansible.builtin.assert:
         that:
           - created_snapshot is success
-          - created_snapshot is changed
-          - created_snapshot.snapshots is defined
+          - created_snapshot is not changed
+          - created_snapshot.css_snapshot is defined
 
     - name: Delete css snapshot - check mode
       opentelekomcloud.cloud.css_snapshot:

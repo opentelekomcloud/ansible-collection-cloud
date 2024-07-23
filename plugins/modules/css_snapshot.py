@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 module: css_snapshot
 short_description: Manage CSS snapshots
 extends_documentation_fragment: opentelekomcloud.cloud.otc
@@ -23,12 +23,14 @@ options:
   cluster:
     description:
       - Name or ID of CSS cluster.
+    required: true
     type: str
   name:
     description:
       - Name of CSS snapshot name must be start with letter.
       - Name must be 4 to 64 characters in length.
       - The backup name must be unique.
+    required: true
     type: str
   description:
     description:
@@ -46,11 +48,21 @@ options:
     choices: [present, absent]
     default: present
     type: str
+  wait:
+     description:
+        - If the module should wait for the snapshot to be created.
+     type: bool
+     default: 'yes'
+  timeout:
+    description:
+      - The amount of time the module should wait for the snapshot to be created.
+    default: 600
+    type: int
 requirements: ["openstacksdk", "otcextensions"]
-'''
+"""
 
-RETURN = '''
-snapshots:
+RETURN = """
+css_snapshot:
   description: Specifies the CSS snapshot.
   returned: changed
   type: complex
@@ -65,9 +77,9 @@ snapshots:
         returned: On success when C(state=present)
         type: str
         sample: "snapshot_101"
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = """
 # Create css snapshot
 - opentelekomcloud.cloud.css_snapshot:
     cluster: "test-css"
@@ -79,77 +91,122 @@ EXAMPLES = '''
     cluster: "test-css"
     name: "snapshot_01"
     state: absent
-'''
+"""
 
-from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
+from ansible_collections.openstack.cloud.plugins.module_utils.resource import (
+    StateMachine,
+)
+from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import (
+    OTCModule,
+)
 
 
 class CssSnapshotModule(OTCModule):
     argument_spec = dict(
-        name=dict(),
-        cluster=dict(),
+        name=dict(type='str', required=True),
+        cluster=dict(type='str', required=True),
         description=dict(),
         indices=dict(),
-        state=dict(choices=['present', 'absent'],
-                   default='present')
+        state=dict(choices=['present', 'absent'], default='present'),
+        wait=dict(type='bool', default=True),
+        timeout=dict(type='int', default=600)
     )
-    module_kwargs = dict(
-        supports_check_mode=True
-    )
+    module_kwargs = dict(supports_check_mode=True)
+
+    class _StateMachine(StateMachine):
+        def _create(self, attributes, timeout, wait, **kwargs):
+            cluster = attributes['cluster']
+            resource = self.create_function(**attributes)
+            wait_function = getattr(self.session, 'wait_for_cluster')
+            wait_function(cluster, timeout=timeout)
+            return self.find_function(cluster, resource.id)
+
+        def _find(self, attributes, **kwargs):
+            # use find_* functions for id instead of get_* functions because
+            # get_* functions raise exceptions when resources cannot be found
+            cluster = attributes['cluster']
+            for k in ['id', 'name']:
+                if k in attributes:
+                    return self.find_function(cluster, attributes[k])
+
+            matches = list(self._find_matches(attributes, **kwargs))
+            if len(matches) > 1:
+                self.fail_json(msg='Found more than a single resource'
+                                   ' which matches the given attributes.')
+            elif len(matches) == 1:
+                return matches[0]
+            else:  # len(matches) == 0
+                return None
+
+        def _delete(self, resource, attributes, timeout, wait, **kwargs):
+            cluster = attributes['cluster']
+            self.delete_function(cluster, resource['id'])
+
+            if wait:
+                for count in self.sdk.utils.iterate_timeout(
+                    timeout=timeout,
+                    message="Timeout waiting for resource to be absent"
+                ):
+                    if self._find(attributes) is None:
+                        break
+
+        def _build_update(self, resource, attributes, updateable_attributes,
+                          non_updateable_attributes, **kwargs):
+            return {}
 
     def run(self):
-        attrs = {}
-        name = self.params['name']
-        snapshot_description = self.params['description']
+        service_name = 'css'
+        type_name = 'snapshot'
+        session = getattr(self.conn, 'css')
+        create_function = getattr(session, 'create_{0}'.format(type_name))
+        delete_function = getattr(session, 'delete_{0}'.format(type_name))
+        find_function = getattr(session, 'find_{0}'.format(type_name))
+        list_function = getattr(session, '{0}s'.format(type_name))
 
-        if self.params['description']:
-            attrs['description'] = self.params['description']
-        if self.params['indices']:
-            attrs['indices'] = self.params['indices']
+        crud_functions = dict(
+            create=create_function,
+            delete=delete_function,
+            find=find_function,
+            get=None,
+            list=list_function,
+            update=None,
+        )
 
-        if self.params['name']:
-            if self.params['cluster']:
-                cluster = self.conn.css.find_cluster(name_or_id=attrs['cluster'])
+        sm = self._StateMachine(
+            connection=self.conn,
+            sdk=self.sdk,
+            type_name=type_name,
+            service_name=service_name,
+            crud_functions=crud_functions
+        )
 
-                if cluster:
-                    changed = False
+        kwargs = dict(
+            (k, self.params[k])
+            for k in ['state', 'timeout', 'wait']
+            if self.params[k] is not None
+        )
 
-                    if self.ansible.check_mode:
-                        self.exit(changed=self._system_state_change(name))
+        kwargs['attributes'] = dict(
+            (k, self.params[k])
+            for k in ['name', 'description', 'indices']
+            if self.params[k] is not None
+        )
+        cluster = self.conn.css.find_cluster(
+            self.params['cluster'], ignore_missing=False
+        )
+        kwargs['attributes']['cluster'] = cluster
 
-                    if self.params['state'] == 'present':
-                        attrs['name'] = name
-
-                        if snapshot_description:
-                            attrs['description'] = snapshot_description
-
-                            snapshot = self.conn.css.create_snapshot(cluster, **attrs)
-                            changed = True
-
-                            self.exit(changed=changed,
-                                      snapshot=snapshot.to_dict(),
-                                      id=snapshot.id,
-                                      msg='CSS snapshot with name %s was created' % name)
-
-                        else:
-                            changed = False
-                            self.fail(changed=changed,
-                                      msg='CSS snapshot with name %s '
-                                      'already exists' % name)
-
-                    elif self.params['state'] == 'absent':
-                        self.conn.css.delete_snapshot(name, cluster)
-                        changed = True
-
-                    self.exit(changed=changed,
-                              msg='CSS snapshot with name %s was deleted' % name)
-
-                else:
-                    changed = False
-                    self.fail(changed=changed,
-                              msg='CSS snapshot with name %s does not exist' % name)
-            else:
-                self.fail(msg='CSS snapshot %s does not exist' % self.params['cluster'])
+        snapshot, is_changed = sm(
+            check_mode=self.ansible.check_mode,
+            updateable_attributes=[],
+            non_updateable_attributes=[],
+            **kwargs,
+        )
+        if snapshot is None:
+            self.exit_json(changed=is_changed)
+        else:
+            self.exit_json(changed=is_changed,
+                           css_snapshot=snapshot.to_dict(computed=False))
 
 
 def main():
