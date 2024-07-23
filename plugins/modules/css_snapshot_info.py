@@ -22,7 +22,13 @@ description:
   - Get Cloud Search Service snapshot info
 options:
   cluster:
-    description: Name of the cluster, to which the snapshot to be queried belongs.
+    description:
+     - Name or Id of the CSS cluster, to which
+       the snapshot to be queried belongs.
+    type: str
+    required: True
+  name:
+    description: Name or Id of the cluster snapshot.
     type: str
 requirements: ["openstacksdk", "otcextensions"]
 '''
@@ -98,7 +104,8 @@ EXAMPLES = '''
 #Query CSS Snapshots
 
 - opentelekomcloud.cloud.css_snapshot_info:
-    cluster: 'test'
+    cluster: 'test-cluster'
+    snapshot: 'test-snapshot'
   register: result
 '''
 
@@ -109,7 +116,8 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class CssSnapshotInfoModule(OTCModule):
 
     argument_spec = dict(
-        cluster=dict(required=False)
+        cluster=dict(required=True),
+        name=dict(required=False)
     )
 
     module_kwargs = dict(
@@ -118,26 +126,30 @@ class CssSnapshotInfoModule(OTCModule):
 
     def run(self):
         data = []
-        cluster_name = self.params['cluster']
 
-        # search cluster by name or id
-        if self.params['cluster']:
-            cluster = self.conn.css.find_cluster(name_or_id=cluster_name)
+        cluster = self.conn.css.find_cluster(
+            self.params['cluster'], ignore_missing=False
+        )
+
+        if self.params['name']:
+            # search snapshot by name or id
+            raw = self.conn.css.find_snapshot(
+                cluster, self.params['name'], ignore_missing=True
+            )
+            if raw:
+                dt = raw.to_dict()
+                dt.pop('location')
+                data.append(dt)
+
         else:
-            self.fail(changed=False,
-                      msg='CSS cluster is missing')
-
-        # if exists list snapshots
-        if cluster:
-            snapshots = self.conn.css.snapshots(cluster['id'])
-            for snapshot in snapshots:
-                dt = snapshot.to_dict()
+            for raw in self.conn.css.snapshots(cluster):
+                dt = raw.to_dict()
                 dt.pop('location')
                 data.append(dt)
 
         self.exit_json(
             changed=False,
-            snapshot_list=data
+            css_snapshots=data
         )
 
 
