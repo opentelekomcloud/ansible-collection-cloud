@@ -26,7 +26,6 @@ options:
      - Name or Id of the CSS cluster, to which
        the snapshot to be queried belongs.
     type: str
-    required: True
   name:
     description: Name or Id of the cluster snapshot.
     type: str
@@ -116,7 +115,7 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 class CssSnapshotInfoModule(OTCModule):
 
     argument_spec = dict(
-        cluster=dict(required=True),
+        cluster=dict(required=False),
         name=dict(required=False)
     )
 
@@ -127,9 +126,12 @@ class CssSnapshotInfoModule(OTCModule):
     def run(self):
         data = []
 
-        cluster = self.conn.css.find_cluster(
-            self.params['cluster'], ignore_missing=False
-        )
+        if self.params['cluster']:
+            cluster = self.conn.css.find_cluster(
+                self.params['cluster'], ignore_missing=False
+            )
+        else:
+            self.fail(changed=False, msg='CSS cluster is missing')
 
         if self.params['name']:
             # search snapshot by name or id
