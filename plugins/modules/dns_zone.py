@@ -135,7 +135,7 @@ class DNSZonesModule(OTCModule):
         changed = False
         attrs = {}
         query = {
-            'type': self.params['zone_type'],
+            'zone_type': self.params['zone_type'],
             'name_or_id': self.params['name']
         }
 
