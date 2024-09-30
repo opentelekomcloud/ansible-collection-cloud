@@ -7,7 +7,7 @@
     - name: Get flavor info
       opentelekomcloud.cloud.rds_flavor_info:
         datastore: "postgresql"
-        version: "10"
+        version: "16"
         instance_mode: "single"
       register: rds
 
@@ -26,7 +26,7 @@
     - name: Get flavor info for wrong ds
       opentelekomcloud.cloud.rds_flavor_info:
         datastore: "postgresql1"
-        version: "10"
+        version: "16"
         instance_mode: "single"
       register: rds
       failed_when: 'rds.msg != "value of datastore must be one of: mysql, postgresql, sqlserver, got: postgresql1"'
