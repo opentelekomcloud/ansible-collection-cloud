@@ -140,3 +140,33 @@ ok: [localhost] => {
     "gw.nat_gateways": []
 }
 ```
+
+## For Developers: additional steps
+
+Create a path where you place your development files e.g.:
+
+```bash
+mkdir -p ~/ansible/ansible_collections/opentelekomcloud/
+```
+
+Clone the development files into your path and rename it to cloud.
+
+```bash
+cd ~/ansible/ansible_collections/opentelekomcloud/
+git clone git@github.com:opentelekomcloud/ansible-collection-cloud.git cloud
+```
+
+Export the path variable and make it available for your system:
+
+```bash
+pwd
+> /path/to/your/ansible/ansible_collections/
+export ANSIBLE_COLLECTIONS_PATHS=/path/to/your/ansible/ansible_collections/
+```
+
+Validate the entry of your development environment by running the following command.
+
+```bash
+source ~/youransiblevenv/bin/activate
+ansible-galaxy collection list
+```
