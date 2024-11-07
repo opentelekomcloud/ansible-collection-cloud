@@ -145,13 +145,17 @@ options:
         choices: [present, absent]
         default: present
         type: str
+requirements:
+    - "python >= 3.6"
+    - "openstacksdk"
+
 extends_documentation_fragment:
-- openstack.cloud.openstack
+- opentelekomcloud.cloud.otc
 '''
 
 EXAMPLES = '''
 # Create a port
-- openstack.cloud.port:
+- opentelekomcloud.cloud.port:
     state: present
     auth:
       auth_url: https://identity.example.com
@@ -162,7 +166,7 @@ EXAMPLES = '''
     network: foo
 
 # Create a port with a static IP
-- openstack.cloud.port:
+- opentelekomcloud.cloud.port:
     state: present
     auth:
       auth_url: https://identity.example.com
@@ -175,7 +179,7 @@ EXAMPLES = '''
       - ip_address: 10.1.0.21
 
 # Create a port with No security groups
-- openstack.cloud.port:
+- opentelekomcloud.cloud.port:
     state: present
     auth:
       auth_url: https://identity.example.com
@@ -187,7 +191,7 @@ EXAMPLES = '''
     no_security_groups: True
 
 # Update the existing 'port1' port with multiple security groups (version 1)
-- openstack.cloud.port:
+- opentelekomcloud.cloud.port:
     state: present
     auth:
       auth_url: https://identity.example.com
@@ -198,7 +202,7 @@ EXAMPLES = '''
     security_groups: 1496e8c7-4918-482a-9172-f4f00fc4a3a5,057d4bdf-6d4d-472...
 
 # Update the existing 'port1' port with multiple security groups (version 2)
-- openstack.cloud.port:
+- opentelekomcloud.cloud.port:
     state: present
     auth:
       auth_url: https://identity.example.com
@@ -211,7 +215,7 @@ EXAMPLES = '''
       - 057d4bdf-6d4d-472...
 
 # Create port of type 'direct'
-- openstack.cloud.port:
+- opentelekomcloud.cloud.port:
     state: present
     auth:
       auth_url: https://identity.example.com
@@ -223,7 +227,7 @@ EXAMPLES = '''
     binding_vnic_type: direct
 
 # Create a port with binding profile
-- openstack.cloud.port:
+- opentelekomcloud.cloud.port:
     state: present
     auth:
       auth_url: https://identity.example.com

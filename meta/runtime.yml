@@ -53,6 +53,7 @@ action_groups:
     - nat_gateway
     - nat_snat_info
     - nat_snat_rule
+    - port
     - rds_datastore_info
     - rds_flavor_info
     - rds_instance
