@@ -1,0 +1,97 @@
+---
+- name: Port tests
+  module_defaults:
+    openstack.cloud.network:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.subnet:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.port:
+      cloud: "{{ test_cloud }}"
+
+  block:
+    - name: Set random prefix
+      ansible.builtin.set_fact:
+        prefix: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+
+    - name: Set initial facts
+      ansible.builtin.set_fact:
+        subnet_name: "{{ ( prefix + '_ac_subnet') }}"
+        network_name: "{{ ( prefix + '_ac_network') }}"
+        port_name: "{{ ( prefix + '_ac_port') }}"
+        main_cidr: "192.168.0.0/24"
+        main_cidr_network: "{{ main_cidr.split('/')[0] }}"
+
+    - name: "Creating network"
+      openstack.cloud.network:
+        name: "{{ network_name }}"
+        state: present
+      register: net_res
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - net_res is success
+          - net_res is changed
+          - net_res.network is defined
+          -
+    - name: "Creating subnet"
+      openstack.cloud.subnet:
+        name: "{{ subnet_name }}"
+        state: present
+        network_name: "{{ net_res.network.name }}"
+        cidr: "{{ main_cidr }}"
+        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
+      register: sub_res
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - sub_res is success
+          - sub_res is changed
+          - sub_res.subnet is defined
+          -
+    - name: "Creating port for Private IP"
+      opentelekomcloud.cloud.port:
+        state: present
+        name: "{{ port_name }}"
+        network: "{{ net_res.network.name }}"
+        fixed_ips:
+          - ip_address: "{{ '.'.join(main_cidr_network.split('.')[:3] + ['2']) }}"
+      register: port_res
+
+    - name: Assert result
+      ansible.builtin.assert:
+        that:
+          - port_res is success
+          - port_res is changed
+          - port_res.port is defined
+
+  always:
+    - name: Cleanup
+      block:
+        - name: Drop port
+          opentelekomcloud.cloud.port:
+            name: "{{ port_res.port.name }}"
+            state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
+
+        - name: Drop subnet
+          openstack.cloud.subnet:
+            name: "{{ sub_res.subnet.name }}"
+            state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
+
+        - name: Drop network
+          openstack.cloud.network:
+            name: "{{ net_res.network.name }}"
+            state: absent
+          register: removed
+          until: removed is not failed
+          ignore_errors: true
+          retries: 10
