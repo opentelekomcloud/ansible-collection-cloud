@@ -220,6 +220,139 @@ keys:
           description: Specifies the OS architecture, 32 bit or 64 bit.
           type: str
           sample: "64"
+        __os_version:
+          description: Specifies the OS version.
+          type: str
+          sample: "CentOS 7.3 64bit"
+        __description:
+          description: Provides supplementary information about the image.
+          type: str
+        disk_format:
+          description: Specifies the image format.
+          type: str
+          sample: "zvhd2"
+        __isregistered:
+          description: Specifies whether the image has been registered.
+          type: str
+          sample: "true"
+        __platform:
+          description: Specifies the image platform type. 
+          type: str
+          sample: "Windows"
+        __os_type:
+          description: Specifies the OS type.
+          type: str
+          sample: "Linux"
+        min_disk:
+          description: Specifies the minimum disk space (GB) required for running the image.
+          type: int
+          sample: "40"
+        virtual_env_type:
+          description: Specifies the environment where the image is used.
+          type: str
+          sample: "Ironic"
+        __image_source_type:
+          description: Specifies the image backend storage type.
+          type: str
+          sample: "UDS"
+        __imagetype:
+          description: Specifies the image type.
+          type: str
+          sample: "Gold"
+        created_at:
+          description: Specifies the time when the image was created. The value is in UTC format.
+          type: str
+          sample: "2018-09-06T15:17:33Z"
+        __originalimagename:
+          description: Specifies the parent image ID.
+          type: str
+        __backup_id:
+          description: Specifies the backup ID.
+          type: str
+        __image_size:
+          description: Specifies the size (bytes) of the image file.
+          type: str
+          sample: "2000000"
+        __data_origin:
+          description: Specifies the image source.
+          type: str
+        __lazyloading:
+          description: Specifies whether the image supports lazy loading.
+          type: str
+          sample: "false"
+        active_at:
+          description: Specifies the time when the image status became active.
+          type: str
+          sample: "2018-09-06T15:17:33Z"
+        __os_feature_list:
+          description: Specifies additional attributes of the image.
+          type: str
+        __support_kvm:
+          description: Specifies whether the image supports KVM. 
+          type: str
+          sample: "true"
+        __support_xen:
+          description: Specifies whether the image supports Xen.
+          type: str
+          sample: "true"
+        __support_largememory:
+          description: Specifies whether the image supports large-memory ECSs.
+          type: str
+          sample: "true"
+        __support_diskintensive:
+          description: Specifies whether the image supports disk-intensive ECSs.
+          type: str
+          sample: "true"
+        __support_highperformance:
+          description: Specifies whether the image supports high-performance ECSs.
+          type: str
+          sample: "true"
+        __support_xen_gpu_type:
+          description: Specifies whether the image supports GPU-accelerated ECSs on the Xen platform.
+          type: str
+          sample: "true"
+        __support_kvm_gpu_type:
+          description: Specifies whether the image supports GPU-accelerated ECSs on the KVM platform. 
+          type: str
+          sample: "true"
+        __support_xen_hana:
+          description: Specifies whether the image supports HANA ECSs on the Xen platform. 
+          type: str
+          sample: "true"
+        __support_kvm_infiniband:
+          description: Specifies whether the image supports ECSs with InfiniBand NICs on the KVM platform.
+          type: str
+          sample: "true"
+        enterprise_project_id:
+          description: Specifies the enterprise project that the image belongs to.
+          type: str
+          sample: "0"
+        __root_origin:
+          description: Specifies that the image is created from an external image file.
+          type: str
+        __sequence_num:
+          description: Specifies the ECS system disk slot number of the image.
+          type: str
+          sample: "0"
+        __support_fc_inject:
+          description: Specifies whether the image supports password/private key injection using Cloud-Init.
+          type: str
+          sample: "true"
+        hw_firmware_type:
+          description: Specifies the ECS boot mode.
+          type: str
+          sample: "uefi"
+        hw_vif_multiqueue_enabled:
+          description: Specifies whether the image supports NIC multi-queue.
+          type: str
+          sample: "true"
+        __system__cmkid:
+          description: Specifies the ID of the key used to encrypt the image.
+          type: str
+        __support_amd:
+          description: Specifies whether the image uses AMD's x86 architecture.
+          type: str
+          sample: "true"
 '''
 
 EXAMPLES = '''
