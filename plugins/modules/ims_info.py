@@ -64,6 +64,92 @@ options:
       - Specifies the container type.
     type: str
     choices: ['bare']
+  disk_format:
+    description:
+      - Specifies the image format. 
+    type: str
+    choices: ['zvhd2', 'vhd', 'zvhd', 'raw', 'qcow2']
+  min_ram:
+    description:
+      - Specifies the minimum memory size (MB) required for running the image. 
+    type: int
+  min_disk:
+    description:
+      - Specifies the minimum disk space (GB) required for running the image.
+    type: int
+  os_bit:
+    description:
+      - Specifies the OS architecture, 32 bit or 64 bit.
+    type: str
+    choices: ['32', '64']
+  platform:
+    description:
+      - Specifies the image platform type.
+    type: str
+    choices: ['Windows', 'Ubuntu', 'Red Hat', 'SUSE', 'CentOS', 'Debian', 'OpenSUSE', 'Oracle Linux', 'Fedora', 'CoreOS', 'EulerOS', 'Other']
+  marker:
+    description:
+      - Specifies the start number from which images are queried. The value is the image ID.
+    type: str
+  os_type:
+    description:
+      - Specifies the image OS type.
+    type: str
+    choices: ['Linux', 'Windows', 'Other']
+  tag:
+    description:
+      - Specifies a tag added to an image.
+    type: str
+  member_status:
+    description:
+      - Specifies the member status. Visibility must be set to "shared" during the query.
+    type: str
+    choices: ['accepted', 'rejected', 'pending']
+  support_kvm:
+    description:
+      - Specifies whether the image supports KVM.
+    type: bool
+  support_xen:
+    description:
+      - Specifies whether the image supports Xen.
+    type: bool
+  support_largememory:
+    description:
+      - Specifies whether the image supports large-memory ECSs.
+    type: bool
+  support_diskintensive:
+    description:
+      - Specifies whether the image supports disk-intensive ECSs.
+    type: bool
+  support_highperformance:
+    description:
+      - Specifies whether the image supports high-performance ECSs.
+    type: bool
+  support_xen_gpu_type:
+    description:
+      - Specifies whether the image supports GPU-accelerated ECSs on the KVM platform. This attribute cannot co-exist with support_xen and support_kvm.
+    type: bool
+  support_kvm_gpu_type:
+    description:
+      - Specifies whether the image supports GPU-accelerated ECSs on the KVM platform. This attribute cannot co-exist with support_xen and support_kvm.
+    type: bool
+  support_xen_hana:
+    description:
+      - Specifies whether the image supports HANA ECSs on the Xen platform. This attribute cannot co-exist with support_xen and support_kvm.
+    type: bool
+  support_kvm_infiniband:
+    description:
+      - Specifies whether the image supports ECSs with InfiniBand NICs on the KVM platform. This attribute cannot co-exist with support_xen.
+    type: bool
+  virtual_env_type:
+    description:
+      - Specifies the environment where the image is used.
+    type: str
+    choices: ['FusionCompute', 'Ironic', 'DataImage', 'IsoImage']
+  enterprise_project_id:
+    description:
+      - Specifies the enterprise project to which the images to be queried belong.
+    type: str
   
   
 requirements: ["openstacksdk", "otcextensions"]
@@ -72,50 +158,68 @@ requirements: ["openstacksdk", "otcextensions"]
 RETURN = '''
 keys:
     description:
-        - Info about about a CMK.
+        - Info about about a image.
     returned: On Success
     type: complex
     contains:
-        key_id:
-          description: CMK ID.
+        file:
+          description: Specifies the URL for uploading and downloading the image file.
           type: str
-          sample: "0d0466b0-e727-4d9c-b35d-f84bb474a37f"
-        creation_date:
-          description: Time when a key is created.
+          sample: "/v2/images/bc6bed6e-ba3a-4447-afcc-449174a3eb52/file"
+        owner:
+          description: Specifies the tenant to which the image belongs.
           type: str
-          sample: "1638806642000"
-        default_key_flag:
-          description: Identification of a Master Key.
+          sample: "1bed856811654c1cb661a6ca845ebc77"
+        id:
+          description: Specifies the image ID.
           type: str
-          sample: "0"
-        domain_id:
-          description: User domain ID.
+          sample: "bc6bed6e-ba3a-4447-afcc-449174a3eb52"
+        self:
+          description: Specifies the image URL.
           type: str
-          sample: "b168fe00ff56492495a7d22974df2d0b"
-        key_alias:
-          description: Alias of a CMK.
+          sample: "/v2/images/bc6bed6e-ba3a-4447-afcc-449174a3eb52"
+        schema:
+          description: Specifies the image schema.
           type: str
-          sample: "do-not-delete-pls"
-        key_description:
-          description: Description of a CMK.
+          sample: "/v2/schemas/image"
+        status:
+          description:Specifies the image status.
           type: str
-          sample: ""
-        key_state:
-          description: State of a CMK.
+          sample: "active"
+        tags:
+          description: Specifies tags of the image.
+          type: list
+        visibility:
+          description: Specifies whether the image is available to other tenants.
           type: str
-          sample: "2"
-        key_type:
-          description: Type of a CMK.
+          sample: "public"
+        name:
+          description: Specifies the image name.
           type: str
-          sample: "1"
-        realm:
-          description: Region where a CMK resides.
+          sample: "image1"
+        protected:
+          description: Specifies whether the image is protected. 
+          type: bool
+        container_format:
+          description: Specifies the container type.
           type: str
-          sample: "eu-de"
-        scheduled_deletion_date:
-          description: Time when a key will be deleted as scheduled.
+          sample: "bare"
+        min_ram:
+          description: Specifies the minimum memory size (MB) required for running the image.
+          type: int
+          sample: 2048
+        max_ram:
+          description: Specifies the maximum memory (MB) of the image.
           type: str
-          sample: ""
+          sample: "2048"
+        updated_at:
+          description: Specifies the time when the image was updated. The value is in UTC format.
+          type: str
+          sample: "2018-09-06T15:17:33Z"
+        __os_bit:
+          description: Specifies the OS architecture, 32 bit or 64 bit.
+          type: str
+          sample: "64"
 '''
 
 EXAMPLES = '''
