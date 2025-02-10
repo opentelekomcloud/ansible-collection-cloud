@@ -12,7 +12,7 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
-module: ims_info
+module: ims_image_info
 short_description: Get info about images.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.12.5"
@@ -66,12 +66,12 @@ options:
     choices: ['bare']
   disk_format:
     description:
-      - Specifies the image format. 
+      - Specifies the image format.
     type: str
     choices: ['zvhd2', 'vhd', 'zvhd', 'raw', 'qcow2']
   min_ram:
     description:
-      - Specifies the minimum memory size (MB) required for running the image. 
+      - Specifies the minimum memory size (MB) required for running the image.
     type: int
   min_disk:
     description:
@@ -150,8 +150,8 @@ options:
     description:
       - Specifies the enterprise project to which the images to be queried belong.
     type: str
-  
-  
+
+
 requirements: ["openstacksdk", "otcextensions"]
 '''
 
@@ -183,7 +183,7 @@ keys:
           type: str
           sample: "/v2/schemas/image"
         status:
-          description:Specifies the image status.
+          description: Specifies the image status.
           type: str
           sample: "active"
         tags:
@@ -198,7 +198,7 @@ keys:
           type: str
           sample: "image1"
         protected:
-          description: Specifies whether the image is protected. 
+          description: Specifies whether the image is protected.
           type: bool
         container_format:
           description: Specifies the container type.
@@ -236,7 +236,7 @@ keys:
           type: str
           sample: "true"
         __platform:
-          description: Specifies the image platform type. 
+          description: Specifies the image platform type.
           type: str
           sample: "Windows"
         __os_type:
@@ -288,7 +288,7 @@ keys:
           description: Specifies additional attributes of the image.
           type: str
         __support_kvm:
-          description: Specifies whether the image supports KVM. 
+          description: Specifies whether the image supports KVM.
           type: str
           sample: "true"
         __support_xen:
@@ -312,11 +312,11 @@ keys:
           type: str
           sample: "true"
         __support_kvm_gpu_type:
-          description: Specifies whether the image supports GPU-accelerated ECSs on the KVM platform. 
+          description: Specifies whether the image supports GPU-accelerated ECSs on the KVM platform.
           type: str
           sample: "true"
         __support_xen_hana:
-          description: Specifies whether the image supports HANA ECSs on the Xen platform. 
+          description: Specifies whether the image supports HANA ECSs on the Xen platform.
           type: str
           sample: "true"
         __support_kvm_infiniband:
@@ -364,9 +364,11 @@ EXAMPLES = '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
-class IMSInfoModule(OTCModule):
+
+class IMSImageInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False, type='str'),
+        id=dict(required=False, type='str'),
         isregistered=dict(required=False, type='bool'),
         imagetype=dict(required=False, type='str', choices=['gold', 'private', 'shared']),
         whole_image=dict(required=False, type='bool'),
@@ -380,7 +382,8 @@ class IMSInfoModule(OTCModule):
         min_ram=dict(required=False, type='int'),
         min_disk=dict(required=False, type='int'),
         os_bit=dict(required=False, type='str', choices=['32', '64']),
-        platform=dict(required=False, type='str', choices=['Windows', 'Ubuntu', 'Red Hat', 'SUSE', 'CentOS', 'Debian', 'OpenSUSE', 'Oracle Linux', 'Fedora', 'CoreOS', 'EulerOS', 'Other']),
+        platform=dict(required=False, type='str', choices=['Windows', 'Ubuntu', 'Red Hat', 'SUSE', 'CentOS', 'Debian',
+                                                           'OpenSUSE', 'Oracle Linux', 'Fedora', 'CoreOS', 'EulerOS', 'Other']),
         marker=dict(required=False, type='str'),
         os_type=dict(required=False, type='str', choices=['Linux', 'Windows', 'Other']),
         tag=dict(required=False, type='str'),
@@ -410,7 +413,8 @@ class IMSInfoModule(OTCModule):
 
         if self.params['name'] and self.params['id']:
             self.fail_json(msg="Only specify either name or id, not both.")
-
+        if self.params['id']:
+            query['id'] = self.params['id']
         if self.params['name']:
             query['name'] = self.params['name']
         if self.params['imagetype']:
@@ -469,19 +473,19 @@ class IMSInfoModule(OTCModule):
             query['enterprise_project_id'] = self.params['enterprise_project_id']
 
         else:
-            for raw in self.conn.ims.images(**query):
+            for raw in self.conn.imsv2.images(**query):
                 dt = raw.to_dict()
                 dt.pop('location')
                 data.append(dt)
 
         self.exit(
             changed=False,
-            keys=data
+            images=data
         )
 
 
 def main():
-    module = IMSInfoModule()
+    module = IMSImageInfoModule()
     module()
 
 
