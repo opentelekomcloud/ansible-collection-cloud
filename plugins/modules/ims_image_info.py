@@ -15,7 +15,7 @@ DOCUMENTATION = '''
 module: ims_image_info
 short_description: Get info about images.
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.12.5"
+version_added: "0.14.8"
 author: "Sebastian Gode (@SebastianGode)"
 description:
   - Get image informations from the OTC.
