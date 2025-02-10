@@ -356,19 +356,15 @@ keys:
 '''
 
 EXAMPLES = '''
-# Get info about KMS keys
-- opentelekomcloud.cloud.kms_info:
-    name: "kms-test-123"
+# Get info about IMS images
+- opentelekomcloud.cloud.ims_info:
+    name: "ims-test-123"
   register: result
 '''
 
-import re
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 
-UUID_PATTERN = re.compile(r'^[\da-f]{8}-([\da-f]{4}-){3}[\da-f]{12}$', re.IGNORECASE)
-
-
-class KMSInfoModule(OTCModule):
+class IMSInfoModule(OTCModule):
     argument_spec = dict(
         name=dict(required=False, type='str'),
         isregistered=dict(required=False, type='bool'),
@@ -418,56 +414,62 @@ class KMSInfoModule(OTCModule):
         if self.params['name']:
             query['name'] = self.params['name']
         if self.params['imagetype']:
-            query['imagetype'] = self.params['imagetype']
+            query['__imagetype'] = self.params['imagetype']
         if self.params['system_cmkid']:
-            query['system_cmkid'] = self.params['system_cmkid']
+            query['__system__cmkid'] = self.params['system_cmkid']
         if self.params['visibility']:
             query['visibility'] = self.params['visibility']
+        if self.params['container_format']:
+            query['container_format'] = self.params['container_format']
+        if self.params['disk_format']:
+            query['disk_format'] = self.params['disk_format']
         if self.params['owner']:
             query['owner'] = self.params['owner']
+        if self.params['member_status']:
+            query['member_status'] = self.params['member_status']
         if self.params['platform']:
-            query['platform'] = self.params['platform']
+            query['__platform'] = self.params['platform']
         if self.params['os_type']:
-            query['os_type'] = self.params['os_type']
+            query['__os_type'] = self.params['os_type']
         if self.params['tag']:
             query['tag'] = self.params['tag']
         if self.params['virtual_env_type']:
             query['virtual_env_type'] = self.params['virtual_env_type']
         if self.params.get('isregistered', False):
-            query['isregistered'] = self.params['isregistered']
+            query['__isregistered'] = self.params['isregistered']
         if self.params.get('whole_image', False):
-            query['whole_image'] = self.params['whole_image']
+            query['__whole_image'] = self.params['whole_image']
         if self.params.get('protected', False):
             query['protected'] = self.params['protected']
         if self.params.get('support_kvm', False):
-            query['support_kvm'] = self.params['support_kvm']
+            query['__support_kvm'] = self.params['support_kvm']
         if self.params.get('support_xen', False):
-            query['support_xen'] = self.params['support_xen']
+            query['__support_xen'] = self.params['support_xen']
         if self.params.get('support_largememory', False):
-            query['support_largememory'] = self.params['support_largememory']
+            query['__support_largememory'] = self.params['support_largememory']
         if self.params.get('support_diskintensive', False):
-            query['support_diskintensive'] = self.params['support_diskintensive']
+            query['__support_diskintensive'] = self.params['support_diskintensive']
         if self.params.get('support_highperformance', False):
-            query['support_highperformance'] = self.params['support_highperformance']
+            query['__support_highperformance'] = self.params['support_highperformance']
         if self.params.get('support_xen_gpu_type', False):
-            query['support_xen_gpu_type'] = self.params['support_xen_gpu_type']
+            query['__support_xen_gpu_type'] = self.params['support_xen_gpu_type']
         if self.params.get('support_kvm_gpu_type', False):
-            query['support_kvm_gpu_type'] = self.params['support_kvm_gpu_type']
+            query['__support_kvm_gpu_type'] = self.params['support_kvm_gpu_type']
         if self.params.get('support_xen_hana', False):
-            query['support_xen_hana'] = self.params['support_xen_hana']
+            query['__support_xen_hana'] = self.params['support_xen_hana']
         if self.params.get('support_kvm_infiniband', False):
-            query['support_kvm_infiniband'] = self.params['support_kvm_infiniband']
+            query['__support_kvm_infiniband'] = self.params['support_kvm_infiniband']
         if self.params.get('min_ram'):
             query['min_ram'] = self.params['min_ram']
         if self.params.get('min_disk'):
             query['min_disk'] = self.params['min_disk']
         if self.params['os_bit']:
-            query['os_bit'] = self.params['os_bit']
+            query['__os_bit'] = self.params['os_bit']
         if self.params['enterprise_project_id']:
             query['enterprise_project_id'] = self.params['enterprise_project_id']
 
         else:
-            for raw in self.conn.ims.keys(**query):
+            for raw in self.conn.ims.images(**query):
                 dt = raw.to_dict()
                 dt.pop('location')
                 data.append(dt)
@@ -479,7 +481,7 @@ class KMSInfoModule(OTCModule):
 
 
 def main():
-    module = KMSInfoModule()
+    module = IMSInfoModule()
     module()
 
 
