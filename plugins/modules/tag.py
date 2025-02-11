@@ -314,6 +314,8 @@ class TagModule(OTCModule):
         else:
             self.fail_json(msg='Any of the supported should be given')
 
+        tags = []
+
         if instance:
             current_tags = self.fetch_tags(
                 self, endpoint, url_prefix, microver, instance)
