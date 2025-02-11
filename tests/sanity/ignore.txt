@@ -61,6 +61,7 @@ plugins/modules/dws_cluster_info.py validate-modules:missing-gplv3-license
 plugins/modules/dws_cluster.py validate-modules:missing-gplv3-license
 plugins/modules/dws_snapshot.py validate-modules:missing-gplv3-license
 plugins/modules/dws_snapshot_info.py validate-modules:missing-gplv3-license
+plugins/modules/ims_image_info.py validate-modules:missing-gplv3-license
 plugins/modules/kms_info.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer.py validate-modules:missing-gplv3-license
 plugins/modules/loadbalancer_info.py validate-modules:missing-gplv3-license

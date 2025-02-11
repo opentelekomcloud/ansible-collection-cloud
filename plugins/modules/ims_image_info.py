@@ -22,7 +22,11 @@ description:
 options:
   name:
     description:
-      - name or ID of the image to be queried.
+      - name of the image to be queried.
+    type: str
+  id:
+    description:
+      - ID of the image to be queried.
     type: str
   isregistered:
     description:
