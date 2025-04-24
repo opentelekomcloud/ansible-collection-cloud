@@ -364,8 +364,7 @@ class LoadBalancerModule(OTCModule):
                     if ips:
                         public_vip_address = ips[0]
 
-                self.conn.elb.delete_loadbalancer(load_balancer=lb.id,
-                                                  cascade=True)
+                self.conn.vlb.delete_load_balancer(load_balancer=lb.id)
                 changed = True
 
                 if delete_fip and public_vip_address:
