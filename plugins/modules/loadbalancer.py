@@ -92,19 +92,19 @@ loadbalancer:
       type: str
       sample: "elb_test"
     vip_network_id:
-      description: Network ID the load balancer virutal IP port belongs in.
+      description: Network ID the load balancer virtual IP port belongs in.
       type: str
       sample: "f171db43-56fd-41cf-82d7-4e91d741762e"
     vip_subnet_id:
-      description: Subnet ID the load balancer virutal IP port belongs in.
+      description: Subnet ID the load balancer virtual IP port belongs in.
       type: str
       sample: "c53e3c70-9d62-409a-9f71-db148e7aa853"
     vip_port_id:
-      description: The load balancer virutal IP port ID.
+      description: The load balancer virtual IP port ID.
       type: str
       sample: "2061395c-1c01-47ab-b925-c91b93df9c1d"
     vip_address:
-      description: The load balancer virutal IP address.
+      description: The load balancer virtual IP address.
       type: str
       sample: "192.168.2.88"
     public_vip_address:
@@ -151,12 +151,12 @@ EXAMPLES = '''
     wait: true
     timeout: 600
 
-# Delete a load balancer(and all its related resources)
+# Delete a load balancer (and all its related resources)
 - opentelekomcloud.cloud.loadbalancer:
     state: absent
     name: my_lb
 
-# Delete a load balancer(and all its related resources) together with the
+# Delete a load balancer (and all its related resources) together with the
 # public IP address(if any) attached to it.
 - opentelekomcloud.cloud.loadbalancer:
     state: absent
@@ -195,8 +195,7 @@ class LoadBalancerModule(OTCModule):
             lb = self.conn.network.get_load_balancer(lb.id)
 
             if lb:
-                if lb:
-                    return None
+                return None
             else:
                 if status == "DELETED":
                     return None
@@ -364,6 +363,31 @@ class LoadBalancerModule(OTCModule):
                     if ips:
                         public_vip_address = ips[0]
 
+                # make sure to delete listeners first
+                if lb.listener_ids:
+                    for listener in lb.listener_ids:
+                        l = self.conn.vlb.get_listener(listener=listener)
+
+                        # check for default Pool / Backend Server Group and delete
+                        if l.default_pool_id:
+                            pool = self.conn.vlb.find_pool(
+                                name_or_id=l.default_pool_id,
+                                ignore_missing=False)
+
+                        # check for Healthmonitor and delete
+                        if pool.healthmonitor_id:
+                            healthmonitor = self.conn.vlb.find_health_monitor(
+                                name_or_id=pool.healthmonitor_id,
+                                ignore_missing=False)
+                            self.conn.vlb.delete_health_monitor(
+                                healthmonitor=healthmonitor)
+
+                        self.conn.vlb.delete_pool(pool=l.default_pool_id)
+                        
+                        # delete Listener
+                        self.conn.network.delete_listener(listener=listener["id"])
+
+                # delete LB with new V3.0 version
                 self.conn.vlb.delete_load_balancer(load_balancer=lb.id)
                 changed = True
 
