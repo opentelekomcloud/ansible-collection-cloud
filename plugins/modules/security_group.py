@@ -82,13 +82,13 @@ EXAMPLES = '''
     name: foo
     project: myproj
 
-#Create a security groups with exclusive and with rules
+# Create a security groups with exclusive and with rules
 - opentelekomcloud.cloud.security_group:
     cloud: otc
     state: present
     name: foo
     description: security group for foo servers
-    exclusive: True
+    exclusive: true
     security_group_rules:
       - "direction": "egress"
         "ethertype": "IPv4"

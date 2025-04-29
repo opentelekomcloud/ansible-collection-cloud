@@ -1,7 +1,7 @@
 stestr
 openstacksdk
 # pycodestyle==2.8.0
-ansible-lint>=6.0.0,<6.18.0
+ansible-lint
 flake8>=4.0.0
 pylint
 voluptuous

@@ -101,8 +101,8 @@ EXAMPLES = '''
     description: "my test backup"
     state: present
     volume: ecs-7b0
-    force: True
-    incremental: True
+    force: true
+    incremental: true
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
