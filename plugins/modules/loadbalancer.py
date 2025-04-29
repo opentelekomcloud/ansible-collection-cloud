@@ -366,12 +366,12 @@ class LoadBalancerModule(OTCModule):
                 # make sure to delete listeners first
                 if lb.listener_ids:
                     for listener in lb.listener_ids:
-                        l = self.conn.vlb.get_listener(listener=listener)
+                        l_obj = self.conn.vlb.get_listener(listener=listener)
 
                         # check for default Pool / Backend Server Group and delete
-                        if l.default_pool_id:
+                        if l_obj.default_pool_id:
                             pool = self.conn.vlb.find_pool(
-                                name_or_id=l.default_pool_id,
+                                name_or_id=l_obj.default_pool_id,
                                 ignore_missing=False)
 
                         # check for Healthmonitor and delete
@@ -382,8 +382,8 @@ class LoadBalancerModule(OTCModule):
                             self.conn.vlb.delete_health_monitor(
                                 healthmonitor=healthmonitor)
 
-                        self.conn.vlb.delete_pool(pool=l.default_pool_id)
-                        
+                        self.conn.vlb.delete_pool(pool=l_obj.default_pool_id)
+
                         # delete Listener
                         self.conn.network.delete_listener(listener=listener["id"])
 
