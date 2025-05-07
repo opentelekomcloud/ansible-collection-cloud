@@ -12,6 +12,7 @@
 # limitations under the License.
 
 DOCUMENTATION = '''
+dummy
 module: as_config
 short_description: Create/Remove AutoScaling configuration from the OTC
 extends_documentation_fragment: opentelekomcloud.cloud.otc
