@@ -15,6 +15,7 @@
               - ^tests/integration/
             vars: &vars-eu-de
               ansible_test_integration_env:
+                ANSIBLE_TEST_PYTHON_VERSION: 3.10
                 has_snat: true
                 region: eu-de
               ansible_test_exclude_tests:
@@ -26,6 +27,7 @@
             files: *integration-files
             vars: &vars-eu-nl
               ansible_test_integration_env:
+                ANSIBLE_TEST_PYTHON_VERSION: 3.10
                 has_snat: false
                 region: eu-nl
                 deh_host_type: s3
@@ -48,6 +50,7 @@
             files: *integration-files
             vars: &vars-eu-ch
               ansible_test_integration_env:
+                ANSIBLE_TEST_PYTHON_VERSION: 3.10
                 has_snat: false
                 region: eu-ch2
               ansible_test_exclude_tests:
