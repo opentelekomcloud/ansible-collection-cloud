@@ -7,6 +7,7 @@
     vars:
       ansible_collection_namespace: "opentelekomcloud"
       ansible_collection_name: "cloud"
+      python_version: 3.10
     check:
       jobs:
         - otc-ansible-collection-test-integration-eu-de:
