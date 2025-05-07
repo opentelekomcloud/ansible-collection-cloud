@@ -16,6 +16,7 @@
               - ^plugins/
               - ^tests/integration/
             vars: &vars-eu-de
+              python_version: 3.10
               ansible_test_integration_env:
                 ANSIBLE_TEST_PYTHON_VERSION: 3.10
                 has_snat: true
@@ -29,6 +30,7 @@
             nodeset: ubuntu-jammy
             files: *integration-files
             vars: &vars-eu-nl
+              python_version: 3.10
               ansible_test_integration_env:
                 ANSIBLE_TEST_PYTHON_VERSION: 3.10
                 has_snat: false
@@ -53,6 +55,7 @@
             nodeset: ubuntu-jammy
             files: *integration-files
             vars: &vars-eu-ch
+              python_version: 3.10
               ansible_test_integration_env:
                 ANSIBLE_TEST_PYTHON_VERSION: 3.10
                 has_snat: false
