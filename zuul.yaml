@@ -1,7 +1,6 @@
 # yamllint disable
 ---
 - project:
-    nodeset: ubuntu-jammy
     merge-mode: squash-merge
     templates:
       - ansible-collection
@@ -11,6 +10,7 @@
     check:
       jobs:
         - otc-ansible-collection-test-integration-eu-de:
+            nodeset: ubuntu-jammy
             files: &integration-files
               - ^plugins/
               - ^tests/integration/
@@ -25,6 +25,7 @@
                 - obs/group1/
                 - swr/group2/
         - otc-ansible-collection-test-integration-eu-nl:
+            nodeset: ubuntu-jammy
             files: *integration-files
             vars: &vars-eu-nl
               ansible_test_integration_env:
@@ -48,6 +49,7 @@
                 - swr/group1/
                 - swr/group2/
         - otc-ansible-collection-test-integration-eu-ch:
+            nodeset: ubuntu-jammy
             files: *integration-files
             vars: &vars-eu-ch
               ansible_test_integration_env:
@@ -73,11 +75,14 @@
     gate:
       jobs:
         - otc-ansible-collection-test-integration-eu-de:
+            nodeset: ubuntu-jammy
             files: *integration-files
             vars: *vars-eu-de
         - otc-ansible-collection-test-integration-eu-nl:
+            nodeset: ubuntu-jammy
             files: *integration-files
             vars: *vars-eu-nl
         - otc-ansible-collection-test-integration-eu-ch:
+            nodeset: ubuntu-jammy
             files: *integration-files
             vars: *vars-eu-ch
