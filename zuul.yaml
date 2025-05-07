@@ -1,6 +1,7 @@
 # yamllint disable
 ---
 - project:
+    nodeset: ubuntu-jammy
     merge-mode: squash-merge
     templates:
       - ansible-collection
