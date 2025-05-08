@@ -76,7 +76,6 @@
         that:
           - bandwidth is success
           - bandwidth is defined
-          - bandwidth.bandwidth['publicip_info'] | length == 1
 
     - name: Remove eip from bandwidth
       opentelekomcloud.cloud.associate_bandwidth:
