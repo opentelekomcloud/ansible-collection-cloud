@@ -93,7 +93,7 @@ EXAMPLES = '''
     server: "{{ server_name }}"
     state: present
     tags:
-        - new_tag
+      - new_tag
     mode: replace
 
 - name: replace all tags with a single tag on a network
@@ -101,7 +101,7 @@ EXAMPLES = '''
     network: "{{ network_name }}"
     state: present
     tags:
-        - new_tag
+      - new_tag
     mode: replace
 
 - name: append tags on instance
@@ -110,8 +110,8 @@ EXAMPLES = '''
     state: present
     mode: set
     tags:
-        - new_tag1
-        - new_tag2
+      - new_tag1
+      - new_tag2
 
 - name: remove all tags
   os_tag:
@@ -313,6 +313,8 @@ class TagModule(OTCModule):
             resource = trunk
         else:
             self.fail_json(msg='Any of the supported should be given')
+
+        tags = []
 
         if instance:
             current_tags = self.fetch_tags(

@@ -188,7 +188,7 @@ EXAMPLES = '''
       value: 6
       unit: "B/s"
       count: 1
-    alarm_enabled: True
+    alarm_enabled: true
     ok_actions:
       - type: notification
         notificationList:

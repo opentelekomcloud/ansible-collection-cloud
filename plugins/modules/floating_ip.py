@@ -123,39 +123,39 @@ EXAMPLES = '''
 # external network or nova pool. A new floating IP from the first available
 # external network is allocated to the project.
 - opentelekomcloud.cloud.floating_ip:
-     cloud: dguerri
-     server: cattle001
+    cloud: dguerri
+    server: cattle001
 
 # Assign a new floating IP to the instance fixed ip `192.0.2.3` of
 # `cattle001`. If a free floating IP is already allocated to the project, it is
 # reused; if not, a new one is created.
 - opentelekomcloud.cloud.floating_ip:
-     cloud: dguerri
-     state: present
-     reuse: yes
-     server: cattle001
-     network: ext_net
-     fixed_address: 192.0.2.3
-     wait: true
-     timeout: 180
+    cloud: dguerri
+    state: present
+    reuse: true
+    server: cattle001
+    network: ext_net
+    fixed_address: 192.0.2.3
+    wait: true
+    timeout: 180
 
 # Assign a new floating IP from the network `ext_net` to the instance fixed
 # ip in network `private_net` of `cattle001`.
 - opentelekomcloud.cloud.floating_ip:
-     cloud: dguerri
-     state: present
-     server: cattle001
-     network: ext_net
-     nat_destination: private_net
-     wait: true
-     timeout: 180
+    cloud: dguerri
+    state: present
+    server: cattle001
+    network: ext_net
+    nat_destination: private_net
+    wait: true
+    timeout: 180
 
 # Detach a floating IP address from a server
 - opentelekomcloud.cloud.floating_ip:
-     cloud: dguerri
-     state: absent
-     floating_ip_address: 203.0.113.2
-     server: cattle001
+    cloud: dguerri
+    state: absent
+    floating_ip_address: 203.0.113.2
+    server: cattle001
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
