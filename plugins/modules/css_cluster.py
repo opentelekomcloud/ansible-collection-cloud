@@ -203,7 +203,7 @@ cluster:
 '''
 
 EXAMPLES = '''
-#Create CSS Cluster
+# Create CSS Cluster
 ---
 - hosts: localhost
   tasks:
@@ -223,10 +223,10 @@ EXAMPLES = '''
         system_encrypted: 0
         timeout: 1200
         tags:
-        - key: "key0"
-          value: "value0"
-        - key: "key1"
-          value: "value1"
+          - key: "key0"
+            value: "value0"
+          - key: "key1"
+            value: "value1"
         backup_strategy:
           period: "00:00 GMT+03:00"
           prefix: "yetanother"
@@ -235,7 +235,7 @@ EXAMPLES = '''
           bucket: "css-bucket"
           basepath: "css-test"
 
-#Delete CSS Cluster
+# Delete CSS Cluster
 - hosts: localhost
   tasks:
     - name: Create CSS cluster

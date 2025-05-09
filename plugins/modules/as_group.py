@@ -265,32 +265,31 @@ as_group:
 '''
 
 EXAMPLES = '''
-#Create AS Group
- - opentelekomcloud.cloud.as_group:
-     scaling_group:
-       name: "as_group_test"
-     networks:
-       - id: "a64b4561-af18-4440-9976-b2398ed39ce5"
-     router: "5d1ac1f4-bec6-4b8c-aae0-7c4345c68f5d"
-     scaling_configuration: "as_config_test"
-     desire_instance_number: 1
-     max_instance_number: 1
-     action: "resume"
-     state: "present"
-     wait: true
-     timeout: 360
-   register: result
+# Create AS Group
+- opentelekomcloud.cloud.as_group:
+    scaling_group:
+    name: "as_group_test"
+    networks:
+      - id: "a64b4561-af18-4440-9976-b2398ed39ce5"
+    router: "5d1ac1f4-bec6-4b8c-aae0-7c4345c68f5d"
+    scaling_configuration: "as_config_test"
+    desire_instance_number: 1
+    max_instance_number: 1
+    action: "resume"
+    state: "present"
+    wait: true
+    timeout: 360
+  register: result
 
-#Delete AS Group
- - opentelekomcloud.cloud.as_group:
-     scaling_group:
-       name: "as_group_test"
-     state: "absent"
-     force_delete: true
-     wait: true
-     timeout: 360
-   register: result
-
+# Delete AS Group
+- opentelekomcloud.cloud.as_group:
+    scaling_group:
+    name: "as_group_test"
+    state: "absent"
+    force_delete: true
+    wait: true
+    timeout: 360
+  register: result
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

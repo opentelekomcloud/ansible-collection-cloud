@@ -10,11 +10,14 @@
     check:
       jobs:
         - otc-ansible-collection-test-integration-eu-de:
+            nodeset: ubuntu-jammy
             files: &integration-files
               - ^plugins/
               - ^tests/integration/
             vars: &vars-eu-de
+              python_version: "3.10"
               ansible_test_integration_env:
+                ANSIBLE_TEST_PYTHON_VERSION: "3.10"
                 has_snat: true
                 region: eu-de
               ansible_test_exclude_tests:
@@ -23,9 +26,12 @@
                 - obs/group1/
                 - swr/group2/
         - otc-ansible-collection-test-integration-eu-nl:
+            nodeset: ubuntu-jammy
             files: *integration-files
             vars: &vars-eu-nl
+              python_version: "3.10"
               ansible_test_integration_env:
+                ANSIBLE_TEST_PYTHON_VERSION: "3.10"
                 has_snat: false
                 region: eu-nl
                 deh_host_type: s3
@@ -45,9 +51,12 @@
                 - swr/group1/
                 - swr/group2/
         - otc-ansible-collection-test-integration-eu-ch:
+            nodeset: ubuntu-jammy
             files: *integration-files
             vars: &vars-eu-ch
+              python_version: "3.10"
               ansible_test_integration_env:
+                ANSIBLE_TEST_PYTHON_VERSION: "3.10"
                 has_snat: false
                 region: eu-ch2
               ansible_test_exclude_tests:
@@ -69,11 +78,14 @@
     gate:
       jobs:
         - otc-ansible-collection-test-integration-eu-de:
+            nodeset: ubuntu-jammy
             files: *integration-files
             vars: *vars-eu-de
         - otc-ansible-collection-test-integration-eu-nl:
+            nodeset: ubuntu-jammy
             files: *integration-files
             vars: *vars-eu-nl
         - otc-ansible-collection-test-integration-eu-ch:
+            nodeset: ubuntu-jammy
             files: *integration-files
             vars: *vars-eu-ch

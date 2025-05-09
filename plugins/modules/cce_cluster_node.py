@@ -281,7 +281,7 @@ EXAMPLES = '''
     data_volumes:
       - volumetype: 'SATA'
         size: 100
-        encrypted: False
+        encrypted: false
         cmk_id: ''
       - volumetype: 'SAS'
         size: 120

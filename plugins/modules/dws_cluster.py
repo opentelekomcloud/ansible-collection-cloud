@@ -145,7 +145,7 @@ cluster:
 """
 
 EXAMPLES = """
-#Create dws Cluster
+# Create dws Cluster
 ---
 - hosts: localhost
   tasks:
@@ -164,12 +164,12 @@ EXAMPLES = """
         port: 8000
         timeout: 1200
         tags:
-        - key: "key0"
-          value: "value0"
-        - key: "key1"
-          value: "value1"
+          - key: "key0"
+            value: "value0"
+          - key: "key1"
+            value: "value1"
 
-#Delete dws Cluster
+# Delete dws Cluster
 - hosts: localhost
   tasks:
     - name: Delete dws cluster

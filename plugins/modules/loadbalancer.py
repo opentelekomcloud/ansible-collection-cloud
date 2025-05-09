@@ -147,7 +147,7 @@ EXAMPLES = '''
     name: ELB
     state: present
     vip_subnet: default_subnet
-    auto_public_ip: yes
+    auto_public_ip: true
     wait: true
     timeout: 600
 
@@ -161,7 +161,7 @@ EXAMPLES = '''
 - opentelekomcloud.cloud.loadbalancer:
     state: absent
     name: my_lb
-    delete_public_ip: yes
+    delete_public_ip: true
 '''
 
 import time

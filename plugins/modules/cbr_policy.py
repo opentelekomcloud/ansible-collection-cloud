@@ -214,7 +214,7 @@ EXAMPLES = '''
   opentelekomcloud.cloud.cbr_policy:
     name: "newpolicy"
     count_day_backups: 5
-    is_enabled: False
+    is_enabled: false
 
 - name: Delete policy
   opentelekomcloud.cloud.cbr_policy:
