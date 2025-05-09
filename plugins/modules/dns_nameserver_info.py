@@ -49,7 +49,7 @@ nameservers:
 '''
 
 EXAMPLES = '''
-#Get info about choosen DNS recordset.
+# Get info about choosen DNS recordset.
 - opentelekomcloud.cloud.dns_nameserver_info:
     zone: "ff80808275f5fc0f017e886898315ee9"
   register: nameservers

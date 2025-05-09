@@ -138,7 +138,6 @@ nat_dnat:
     floating_ip: f39ef6e6-a4b3-42be-a501-b7dfe251b123
     protocol: tcp
     state: present
-
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

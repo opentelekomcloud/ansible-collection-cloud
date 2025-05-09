@@ -181,9 +181,7 @@ EXAMPLES = '''
     scaling_policy: "{{ as_policy_name }}"
     state: "absent"
   register: as_policy
-
 '''
-
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule
 

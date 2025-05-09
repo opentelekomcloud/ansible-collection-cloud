@@ -84,7 +84,7 @@ recordset:
 '''
 
 EXAMPLES = '''
-#Get info about choosen DNS recordset.
+# Get info about choosen DNS recordset.
 - opentelekomcloud.cloud.dns_recordset_info:
     zone: "ff80808275f5fc0f017e886898315ee9"
     name: "ff80808275f5fc0f017e886898315ee2"

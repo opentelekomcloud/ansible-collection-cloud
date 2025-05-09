@@ -94,14 +94,14 @@ EXAMPLES = '''
 - opentelekomcloud.cloud.dms_message:
     queue: 'queue'
     messages:
-        - body: 'test1'
-          attributes:
-            attribute1: 'value1'
-            attribute2: 'value2'
-        - body: 'test2'
-          attributes:
-            attribute1: 'value3'
-            attribute2: 'value4'
+      - body: 'test1'
+        attributes:
+          attribute1: 'value1'
+          attribute2: 'value2'
+      - body: 'test2'
+        attributes:
+          attribute1: 'value3'
+          attribute2: 'value4'
     task: send
 
 # Consume Message

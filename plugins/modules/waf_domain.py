@@ -108,7 +108,7 @@ EXAMPLES = '''
         server_protocol: https
         address: 4.3.2.1
         port: 8080
-    proxy: False
+    proxy: false
   state: present
 
 # Modify Domain.

@@ -128,7 +128,6 @@ EXAMPLES = '''
     status: "ACTIVE"
     spec: "1"
   register: gw
-
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

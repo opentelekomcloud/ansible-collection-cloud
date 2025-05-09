@@ -135,7 +135,7 @@ EXAMPLES = '''
 
 - opentelekomcloud.cloud.lb_healthmonitor_info:
     type: "http"
-    admin_state_up: False
+    admin_state_up: false
     expected_codes: "200,202,401"
   register: healthmonitor
 '''
