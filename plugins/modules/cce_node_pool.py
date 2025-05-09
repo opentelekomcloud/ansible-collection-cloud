@@ -258,14 +258,14 @@ EXAMPLES = '''
 - cce_node_pool:
     cloud: "{{ test_cloud }}"
     availability_zone: "random"
-    autoscaling_enabled: True
+    autoscaling_enabled: true
     cluster: tino-test
     data_volumes:
       - volumetype: SSD
         size: 120
       - volumetype: SATA
         size: 100
-        encrypted: False
+        encrypted: false
         cmk_id: ''
     flavor: s2.large.2
     initial_node_count: 0

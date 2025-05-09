@@ -120,7 +120,7 @@ class SwrRepoPermissionMachine(StateMachine):
             return None, False
 
     def _update(self, attributes, timeout, wait, **kwargs):
-        resource = self.update_function(**attributes)
+        resource = self.update_function(**attributes, value="")
         if wait:
             resource = self.sdk.resource.wait_for_status(self.session,
                                                          resource,

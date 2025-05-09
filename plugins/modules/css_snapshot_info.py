@@ -100,8 +100,7 @@ snapshots:
 '''
 
 EXAMPLES = '''
-#Query CSS Snapshots
-
+# Query CSS Snapshots
 - opentelekomcloud.cloud.css_snapshot_info:
     cluster: 'test-cluster'
     snapshot: 'test-snapshot'

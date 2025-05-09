@@ -121,26 +121,26 @@ backup:
 '''
 
 EXAMPLES = '''
-#Create RDS backup (only required parameters are specified)
+# Create RDS backup (only required parameters are specified)
 - opentelekomcloud.cloud.rds_backup:
     instance: "test-db"
     name: "test_ansible_module"
   register: rds_backup
 
-#Delete RDS backup
+# Delete RDS backup
 - opentelekomcloud.cloud.rds_backup:
     instance: "test-db"
     name: "test_ansible_module"
     state: absent
   register: rds_backup
 
-#Create RDS backup (ID instance is specified)
+# Create RDS backup (ID instance is specified)
 - opentelekomcloud.cloud.rds_backup:
     instance: 3870b5c9d92643efb078c32d2fcdffbein03
     name: "test_ansible_module"
   register: rds_backup
 
-#Create RDS backup (All parameters are specified)
+# Create RDS backup (All parameters are specified)
 - opentelekomcloud.cloud.rds_backup:
     instance: "test-db"
     name: "test_ansible_module"
@@ -150,13 +150,13 @@ EXAMPLES = '''
     timeout: 200
   register: rds_backup
 
-#Delete RDS backup (All parameters are specified)
+# Delete RDS backup (All parameters are specified)
 - opentelekomcloud.cloud.rds_backup:
     instance: 3870b5c9d92643efb078c32d2fcdffbein03
     name: "test_ansible_module"
     description: "This is a description"
     state: absent
-    wait: no
+    wait: false
     timeout: 180
   register: rds_backup
 '''

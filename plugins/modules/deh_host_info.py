@@ -156,7 +156,6 @@ EXAMPLES = '''
     host_type: "s2-medium"
     host_type_name: "s2-medium"
   register: deh
-
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

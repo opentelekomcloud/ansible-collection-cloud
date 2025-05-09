@@ -150,7 +150,6 @@ EXAMPLES = '''
     region: "eu-de"
     availability_zone: "eu-de-01"
     timeout: 600
-
 '''
 
 

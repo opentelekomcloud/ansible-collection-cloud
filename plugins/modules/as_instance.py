@@ -77,9 +77,10 @@ EXAMPLES = '''
 
 # Protect AS instances
 - opentelekomcloud.cloud.as_instance:
-    scaling_group: "as_group_id"
-    scaling_instances: ["89af599d-a8ab-4c29-a063-0b719ed77e8e", \
-    "89af599d-a8ab-4c29-a063-0b719ed77555"]
+    scaling_group: "89af599d-a8ab-4c29-a063-0b719ed88888"
+    scaling_instances:
+      - "89af599d-a8ab-4c29-a063-0b719ed77e8e"
+      - "89af599d-a8ab-4c29-a063-0b719ed77555"
     action: "protect"
     state: present
   register: as_instances
@@ -87,9 +88,10 @@ EXAMPLES = '''
 # Unprotect AS instances
 - opentelekomcloud.cloud.as_instance:
     scaling_group: "89af599d-a8ab-4c29-a063-0b719ed88888"
-    scaling_instances: ["89af599d-a8ab-4c29-a063-0b719ed77e8e", \
-    "89af599d-a8ab-4c29-a063-0b719ed77555"]
-    action: "protect"
+    scaling_instances:
+      - "89af599d-a8ab-4c29-a063-0b719ed77e8e"
+      - "89af599d-a8ab-4c29-a063-0b719ed77555"
+    action: "unprotect"
     state: present
   register: as_instances
 

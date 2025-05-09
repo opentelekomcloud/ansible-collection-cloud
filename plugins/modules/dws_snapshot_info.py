@@ -63,8 +63,7 @@ snapshots:
 '''
 
 EXAMPLES = '''
-#Query DWS Snapshots
-
+# Query DWS Snapshots
 - opentelekomcloud.cloud.dws_snapshot_info:
     name: 'test'
   register: result

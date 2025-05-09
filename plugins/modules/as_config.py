@@ -237,7 +237,6 @@ opentelekomcloud.cloud.as_config:
         - size: 10
           volume_type: 'sas'
           disk_type: 'data'
-
 '''
 
 from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import OTCModule

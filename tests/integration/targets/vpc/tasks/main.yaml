@@ -76,7 +76,6 @@
         that:
           - bandwidth is success
           - bandwidth is defined
-          - bandwidth.bandwidth['publicip_info'] | length == 1
 
     - name: Remove eip from bandwidth
       opentelekomcloud.cloud.associate_bandwidth:
@@ -121,18 +120,18 @@
   always:
     - name: Cleanup
       block:
-        - name: Delete bandwidth
-          opentelekomcloud.cloud.bandwidth:
-            name: "{{ bandwidth_id }}"
-            state: absent
-          retries: 5
-          failed_when: false
-
         - name: Drop floating ip
           opentelekomcloud.cloud.floating_ip:
             floating_ip_address: "{{ fl.floating_ip.floating_ip_address }}"
             state: absent
             purge: true
+          failed_when: false
+
+        - name: Delete bandwidth
+          opentelekomcloud.cloud.bandwidth:
+            name: "{{ bandwidth_id }}"
+            state: absent
+          retries: 5
           failed_when: false
 
         - name: Delete VPC
