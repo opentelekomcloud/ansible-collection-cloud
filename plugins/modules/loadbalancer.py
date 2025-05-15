@@ -20,11 +20,11 @@ version_added: "0.0.1"
 author: "Artem Goncharov (@gtema)"
 description:
   - Add or Remove Enhanced Load Balancer from the OTC load-balancer
-    service(ELB).
+    service (ELB).
 options:
   name:
     description:
-      - Name that has to be given to the load balancer
+      - Name to assign to the load balancer
     required: true
     type: str
   state:
@@ -56,6 +56,12 @@ options:
     description:
       - When C(state=absent) and this option is true, any public IP address
         associated with the VIP will be deleted along with the load balancer.
+    type: bool
+    default: 'no'
+  delete_cascade:
+    description:
+      - When C(state=absent) and this option is true, any resources attached
+        to the load balancer are deleted.
     type: bool
     default: 'no'
   wait:
@@ -171,13 +177,14 @@ from ansible_collections.opentelekomcloud.cloud.plugins.module_utils.otc import 
 
 class LoadBalancerModule(OTCModule):
     argument_spec = dict(
-        name=dict(required=True),
-        state=dict(default='present', choices=['absent', 'present']),
-        vip_subnet=dict(required=False),
-        vip_address=dict(required=False),
-        public_ip_address=dict(required=False, default=None),
+        name=dict(required=True, type='str'),
+        state=dict(default='present', choices=['absent', 'present'], type='str'),
+        vip_subnet=dict(required=False, type='str'),
+        vip_address=dict(required=False, type='str'),
+        public_ip_address=dict(required=False, default=None, type='str'),
         auto_public_ip=dict(required=False, default=False, type='bool'),
         delete_public_ip=dict(required=False, default=False, type='bool'),
+        delete_cascade=dict(required=False, default=False, type='bool')
     )
     module_kwargs = dict(
         supports_check_mode=True
@@ -234,7 +241,7 @@ class LoadBalancerModule(OTCModule):
             fip = self.conn.network.find_ip(public_vip_address)
             if not fip:
                 self.fail_json(
-                    msg='Public IP %s is unavailable' % public_vip_address
+                    msg=f'Public IP {public_vip_address} is unavailable'
                 )
 
             if orig_public_ip:
@@ -283,11 +290,10 @@ class LoadBalancerModule(OTCModule):
         public_vip_address = self.params['public_ip_address']
         allocate_fip = self.params['auto_public_ip']
         delete_fip = self.params['delete_public_ip']
+        delete_cascade = self.params['delete_cascade']
 
         vip_subnet_id = None
-
         lb = None
-
         changed = False
         lb = self.conn.network.find_load_balancer(
             name_or_id=self.params['name'])
@@ -363,34 +369,52 @@ class LoadBalancerModule(OTCModule):
                     if ips:
                         public_vip_address = ips[0]
 
-                # make sure to delete listeners first
-                if lb.listener_ids:
-                    for listener in lb.listener_ids:
-                        l_obj = self.conn.vlb.get_listener(listener=listener)
+                if not delete_cascade and lb.listener_ids:
+                    self.fail_json(
+                        msg=(
+                            "The load balancer has listeners left.\n"
+                            "Use 'delete_cascade=true', to remove all attached resources."
+                        ),
+                        listener_ids=lb.listener_ids
+                    )
 
-                        # check for default Pool / Backend Server Group and delete
-                        if l_obj.default_pool_id:
-                            pool = self.conn.vlb.find_pool(
-                                name_or_id=l_obj.default_pool_id,
-                                ignore_missing=False)
+                if delete_cascade:
+                    if lb.listener_ids:
+                        for listener in lb.listener_ids:
+                            l_obj = self.conn.vlb.get_listener(listener=listener)
 
-                        # check for Healthmonitor and delete
-                        if pool.healthmonitor_id:
-                            healthmonitor = self.conn.vlb.find_health_monitor(
-                                name_or_id=pool.healthmonitor_id,
-                                ignore_missing=False)
-                            self.conn.vlb.delete_health_monitor(
-                                healthmonitor=healthmonitor)
+                            # check for default Pool / Backend Server Group and delete
+                            if l_obj.default_pool_id:
+                                # search for backend server grp
+                                pool = self.conn.vlb.find_pool(
+                                    name_or_id=l_obj.default_pool_id,
+                                    ignore_missing=False)
+                                # get backend server grp members and delete
+                                if pool.members:
+                                    for member in pool.members:
+                                        self.conn.vlb.delete_member(
+                                            member=member["id"],
+                                            pool=pool["id"])
 
-                        self.conn.vlb.delete_pool(pool=l_obj.default_pool_id)
+                                # check for health monitor and delete
+                                if pool.healthmonitor_id:
+                                    healthmonitor = self.conn.vlb.find_health_monitor(
+                                        name_or_id=pool.healthmonitor_id,
+                                        ignore_missing=False)
+                                    self.conn.vlb.delete_health_monitor(
+                                        healthmonitor=healthmonitor)
 
-                        # delete Listener
-                        self.conn.network.delete_listener(listener=listener["id"])
+                                # delete backend server group
+                                self.conn.vlb.delete_pool(pool=l_obj.default_pool_id)
+
+                            # delete Listener
+                            self.conn.network.delete_listener(listener=listener["id"])
 
                 # delete LB with new V3.0 version
                 self.conn.vlb.delete_load_balancer(load_balancer=lb.id)
                 changed = True
 
+                # delete public VIP
                 if delete_fip and public_vip_address:
                     self.conn.network.delete_ip(public_vip_address)
                     changed = True

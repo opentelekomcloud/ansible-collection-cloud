@@ -230,6 +230,7 @@
         name: "{{ lb.loadbalancer.id }}"
         state: absent
         delete_public_ip: true
+        delete_cascade: true
       register: dropped
 
     - name: Assert result
@@ -259,6 +260,7 @@
             name: "{{ lb.loadbalancer.id }}"
             state: absent
             delete_public_ip: true
+            delete_cascade: true
           register: removed
           until: removed is not failed
           ignore_errors: true
