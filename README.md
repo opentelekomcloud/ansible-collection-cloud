@@ -17,7 +17,7 @@ modules)
 Run the following command to install the collection.
 
 ```bash
-$ ansible-galaxy collection install opentelekomcloud.cloud
+ansible-galaxy collection install opentelekomcloud.cloud
 ```
 
 > If you need further information to get started, please see section:
@@ -30,26 +30,26 @@ Installation was tested on Ubuntu 20.04
 Install ``python3-venv`` for Python virtual environment:
 
 ```bash
-$ sudo apt-get install python3-venv
+sudo apt-get install python3-venv
 ```
 
 Create virtual environment ``ansiblevenv``:
 
 ```bash
-$ python3 -m venv ansiblevenv
+python3 -m venv ansiblevenv
 ```
 
 Install dependencies for python package [otcextensions](https://github.com/opentelekomcloud/python-otcextensions) which are described in its
 [documentation](https://python-otcextensions.readthedocs.io/en/latest/):
 
 ```bash
-$ sudo apt-get install gcc libssl-dev python3-dev
+sudo apt-get install gcc libssl-dev python3-dev
 ```
 
 Enable virtual environment ``ansiblevenv``:
 
 ```bash
-$ source ansiblevenv/bin/activate
+source ansiblevenv/bin/activate
 ```
 
 Install ``wheel``, ``ansible`` and ``otcextensions``:
