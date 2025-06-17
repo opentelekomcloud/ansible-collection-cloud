@@ -64,6 +64,7 @@ otcdocs_service_title = 'Ansible Collection opentelekomcloud.cloud'
 otcdocs_service_type = ''
 otcdocs_search_environment = 'hc_de'
 otcdocs_search_url = "https://opensearch.eco.tsi-dev.otc-service.com/"
+otcdocs_analytics_app == 'ansible_modules'
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
