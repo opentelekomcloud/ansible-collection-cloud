@@ -73,7 +73,7 @@ EXAMPLES = '''
 # Get a flavor.
 - rds_flavor_info:
     datastore: "postgresql"
-    version: "10"
+    version: "17"
   register: rds_flavor_info
 '''
 
