@@ -1,11 +1,11 @@
-# Ansible Collection opentelekomcloud.cloud
+# Ansible Collection T Cloud Public
 
 Ansible Collections for using with OTC (addition to the native OpenStack
 modules)
 
 * ``cloud`` - collection containing additional ansible modules for managing
-  OTC specific resources (or modified OpenStack modules in case of behavioral
-  differencies)
+  T Cloud Public specific resources (or modified OpenStack modules in case
+  of behavioral differences)
 
 ## Requirements
 
@@ -117,8 +117,8 @@ all dependencies:
         var: gw.nat_gateways
 ```
 [Here](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/examples) you can 
-find some [examples](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/examples) of using OTC collection. All 
-the examples are based on real usecases, and contains some tips and tricks.
+find some [examples](https://github.com/opentelekomcloud/ansible-collection-cloud/tree/master/examples) of using T Cloud Public collection. All 
+the examples are based on real use cases, and contains some tips and tricks.
 
 Run the playbook to verify the functionality:
 
@@ -146,13 +146,13 @@ ok: [localhost] => {
 Create a path where you place your development files e.g.:
 
 ```bash
-mkdir -p ~/ansible/ansible_collections/opentelekomcloud/
+mkdir -p ~/ansible/ansible_collections/tcloud/
 ```
 
 Clone the development files into your path and rename it to cloud.
 
 ```bash
-cd ~/ansible/ansible_collections/opentelekomcloud/
+cd ~/ansible/ansible_collections/tcloud/
 git clone git@github.com:opentelekomcloud/ansible-collection-cloud.git cloud
 ```
 

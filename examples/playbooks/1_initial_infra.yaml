@@ -30,14 +30,14 @@
     # There are a few mismatches in resources logic and naming  between native Openstack and
     # Opentelekomcloud. To make it clear we placed examples using native Openstack resources.
     #
-    #    - name: Create network. In Open Telekom Cloud infrastructure this entity is hidden inside
+    #    - name: Create network. In T Cloud Public infrastructure this entity is hidden inside
     # Subnet summary, and isn't create separately, but only querying from the existing Subnet.
     #      openstack.cloud.os_network:
     #        name: "{{ network_name }}"
     #        state: present
     #      register: network
     #
-    #    - name: Create subnet. Openstack's Subnet is equal Open Telekom Cloud Subnet.
+    #    - name: Create subnet. Openstack's Subnet is equal T Cloud Public Subnet.
     #      openstack.cloud.os_subnet:
     #        name: "{{ subnet_name }}"
     #        state: present
@@ -46,7 +46,7 @@
     #        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
     #      register: subnet
     #
-    #    - name: Create router. In Open Telekom Cloud terms it's a VPC. Please pay attention that
+    #    - name: Create router. In T Cloud Public terms it's a VPC. Please pay attention that
     # Network argument here is not an Network created on previous step, but constanta for OTC.
     #      openstack.cloud.os_router:
     #        name: "{{ router_name }}"

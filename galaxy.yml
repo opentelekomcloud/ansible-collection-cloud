@@ -1,6 +1,6 @@
 namespace: opentelekomcloud
 name: cloud
-version: 0.14.9
+version: 0.15.0
 readme: README.md
 authors:
   - Artem Goncharov <artem.goncharov@gmail.com>
@@ -16,7 +16,7 @@ dependencies:
   "openstack.cloud": "*"
 repository: http://github.com/OpenTelekomCloud/ansible_collections
 documentation: http://docs.otc.t-systems.com
-homepage: https://open-telekom-cloud.com
+homepage: https://public.t-cloud.com/
 issues: http://github.com/OpenTelekomCloud/ansible_collections/issue/tracker
 build_ignore:
   - "*.tar.gz"

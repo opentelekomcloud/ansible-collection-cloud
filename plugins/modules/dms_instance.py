@@ -13,12 +13,12 @@
 
 DOCUMENTATION = '''
 module: dms_instance
-short_description: Manage DMS Instances on Open Telekom Cloud
+short_description: Manage DMS Instances on T Cloud Public
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.1.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Manage DMS Instances on Open Telekom Cloud
+  - Manage DMS Instances on T Cloud Public
 options:
   name:
     description:

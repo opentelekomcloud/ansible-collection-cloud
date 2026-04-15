@@ -1,7 +1,7 @@
 galaxy_info:
   author: Artem Goncharov
-  description: Manage VPC Peering between 2 VPCs in the Open Telekom Cloud
-  company: Open Telekom Cloud
+  description: Manage VPC Peering between 2 VPCs in the T Cloud Public
+  company: T Cloud Public
 
   license: Apache-2.0
 

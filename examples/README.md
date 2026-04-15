@@ -1,5 +1,5 @@
-Open Telekom Cloud Manuals
-==========================
+T Cloud Public Manuals
+======================
 
 
 This document contains examples of implementing OTC modules. Besides playbooks itself, we also
@@ -120,7 +120,7 @@ could be errors in autoscaling groups behavior.
  There are a few mismatches in resources logic and naming  between native Openstack and
  Opentelekomcloud. To make it clear we placed examples using native Openstack resources.
 
-> Creating a network. In Open Telekom Cloud infrastructure this entity is hidden inside
+> Creating a network. In T Cloud Public infrastructure this entity is hidden inside
 > Subnet summary, and isn't create separately, but only querying from the existing Subnet.
 
 ```diff
@@ -130,7 +130,7 @@ could be errors in autoscaling groups behavior.
        state: present
     register: network
 
-   - name: Create subnet. Openstack's Subnet is equal Open Telekom Cloud Subnet.
+   - name: Create subnet. Openstack's Subnet is equal T Cloud Public Subnet.
      openstack.cloud.os_subnet:
        name: "{{ subnet_name }}"
        state: present
@@ -139,7 +139,7 @@ could be errors in autoscaling groups behavior.
        dns_nameservers: "{{ ['100.125.4.25', '8.8.8.8'] }}"
      register: subnet
 ```
-> Creating a router. In Open Telekom Cloud terms it's a VPC. Please pay attention that
+> Creating a router. In T Cloud Public terms it's a VPC. Please pay attention that
 > Network argument here is not an Network created on previous step, but constanta for OTC.
 
 ```diff

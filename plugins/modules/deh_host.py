@@ -13,12 +13,12 @@
 
 DOCUMENTATION = '''
 module: deh_host
-short_description: Manage Dedicated Hosts on Open Telekom Cloud
+short_description: Manage Dedicated Hosts on T Cloud Public
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.1.2"
 author: "Tino Schreiber (@tischrei)"
 description:
-  - Manage Dedicated Hosts on Open Telekom Cloud
+  - Manage Dedicated Hosts on T Cloud Public
 options:
   auto_placement:
     description:

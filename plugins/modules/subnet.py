@@ -19,7 +19,7 @@ extends_documentation_fragment: opentelekomcloud.cloud.otc
 author: "Anton Kachurin (@outcatcher)"
 version_added: "0.11.0"
 description:
-   - Manage (create, update or delete) Open Telekom Cloud VPC subnet.
+   - Manage (create, update or delete) T Cloud Public VPC subnet.
 options:
   state:
     description: Indicate desired state of the resource.
