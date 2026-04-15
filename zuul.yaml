@@ -52,6 +52,7 @@
                 - swr/group1/
                 - swr/group2/
                 - vpn/group1/
+                - waf/group1/
         - otc-ansible-collection-test-integration-eu-ch:
             nodeset: ubuntu-jammy
             files: *integration-files
