@@ -79,6 +79,7 @@
                 - swr/group2/
                 - vpn/group1/
                 - waf/group1/
+                - fip/group1/
     gate:
       jobs:
         - otc-ansible-collection-test-integration-eu-de:
