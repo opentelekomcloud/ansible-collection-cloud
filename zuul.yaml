@@ -25,6 +25,7 @@
                 - elb/group1/
                 - obs/group1/
                 - swr/group2/
+                - vpn/group1/
         - otc-ansible-collection-test-integration-eu-nl:
             nodeset: ubuntu-jammy
             files: *integration-files
@@ -50,6 +51,7 @@
                 - storage/vbs/
                 - swr/group1/
                 - swr/group2/
+                - vpn/group1/
         - otc-ansible-collection-test-integration-eu-ch:
             nodeset: ubuntu-jammy
             files: *integration-files
@@ -74,6 +76,7 @@
                 - storage/vbs/
                 - swr/group1/
                 - swr/group2/
+                - vpn/group1/
                 - waf/group1/
     gate:
       jobs:

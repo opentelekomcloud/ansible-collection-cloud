@@ -1,5 +1,4 @@
 ---
-parseable: true
 exclude_paths:
   - ci/playbooks
   - examples
