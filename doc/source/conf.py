@@ -20,9 +20,9 @@ from git import Repo
 
 # -- Project information -----------------------------------------------------
 
-project = 'Open Telekom Cloud Ansible Modules Documentation'
-copyright = '2021, Open Telekom Cloud'
-author = 'Open Telekom Cloud'
+project = 'T Cloud Public Ansible Modules Documentation'
+copyright = '2026, T Cloud Public'
+author = 'T Cloud Public'
 
 
 # -- General configuration ---------------------------------------------------
@@ -116,7 +116,7 @@ html_theme_options = {
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 
-html_title = "Open Telekom Cloud Ansible Modules Documentation"
+html_title = "T Cloud Public Ansible Modules Documentation"
 
 
 # Add any paths that contain custom static files (such as style sheets) here,

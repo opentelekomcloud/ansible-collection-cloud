@@ -90,18 +90,18 @@ action_groups:
     - lb_healthmonitor_info
     - lb_certificate_info
     - lb_certificate
-    - anti_ddos_fip_statuses_info.py
-    - anti_ddos_optional_policies_info.py
-    - object_info.py
-    - dns_nameserver_info.py
-    - kms_info.py
-    - swr_organization_info.py
-    - swr_repository_info.py
-    - swr_organization.py
-    - swr_repository.py
-    - swr_domain_info.py
-    - swr_domain.py
-    - swr_repository_permissions.py
-    - swr_repository_permissions_info.py
-    - swr_organization_permissions.py
-    - swr_organization_permissions_info.py
+    - anti_ddos_fip_statuses_info
+    - anti_ddos_optional_policies_info
+    - object_info
+    - dns_nameserver_info
+    - kms_info
+    - swr_organization_info
+    - swr_repository_info
+    - swr_organization
+    - swr_repository
+    - swr_domain_info
+    - swr_domain
+    - swr_repository_permissions
+    - swr_repository_permissions_info
+    - swr_organization_permissions
+    - swr_organization_permissions_info

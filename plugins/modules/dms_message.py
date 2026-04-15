@@ -13,12 +13,12 @@
 
 DOCUMENTATION = '''
 module: dms_message
-short_description: Manage DMS Messages on Open Telekom Cloud
+short_description: Manage DMS Messages on T Cloud Public
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.1.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Manage DMS Messages on Open Telekom Cloud
+  - Manage DMS Messages on T Cloud Public
 options:
   queue:
     description:

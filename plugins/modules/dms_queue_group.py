@@ -13,12 +13,12 @@
 
 DOCUMENTATION = '''
 module: dms_queue_group
-short_description: Manage DMS Queue-Groups on Open Telekom Cloud
+short_description: Manage DMS Queue-Groups on T Cloud Public
 extends_documentation_fragment: opentelekomcloud.cloud.otc
 version_added: "0.1.2"
 author: "Sebastian Gode (@SebastianGode)"
 description:
-  - Manage DMS Queue-Groups on Open Telekom Cloud
+  - Manage DMS Queue-Groups on T Cloud Public
 options:
   queue_name:
     description:
