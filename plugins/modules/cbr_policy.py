@@ -293,7 +293,7 @@ class CBRPolicyModule(OTCModule):
         query = {}
 
         state = self.params['state']
-        policy = self.conn.cbr.find_policy(name_or_id=self.params['name'])
+        policy = self.conn.cbr.find_policy(policy_id=self.params['name'])
         changed = False
 
         if self.ansible.check_mode:
