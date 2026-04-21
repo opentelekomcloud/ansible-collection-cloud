@@ -9,6 +9,16 @@ from ansible_collections.opentelekomcloud.cloud.plugins.modules import (
     rds_instance
 )
 
+# Try to import the new testing module for Ansible 2.19+
+try:
+    from ansible.module_utils.testing import patch_module_args
+    HAS_PATCH_MODULE_ARGS = True
+except ImportError:
+    HAS_PATCH_MODULE_ARGS = False
+
+# Global to track the current module args context manager
+_current_patch_context = None
+
 
 class FakeCloud(object):
     """This is a fake conn object
@@ -50,9 +60,42 @@ class AnsibleFailJson(Exception):
 
 
 def set_module_args(args):
-    """prepare arguments so that they will be picked up during module creation"""
-    args = json.dumps({'ANSIBLE_MODULE_ARGS': args})
-    basic._ANSIBLE_ARGS = to_bytes(args)
+    """prepare arguments so that they will be picked up during module creation
+
+    This function supports both old-style Ansible (pre-2.19) and new-style
+    Ansible 2.19+ with serialization profiles.
+    """
+    global _current_patch_context
+
+    # Close any previous context
+    if _current_patch_context is not None:
+        try:
+            _current_patch_context.__exit__(None, None, None)
+        except Exception:
+            pass
+        _current_patch_context = None
+
+    if HAS_PATCH_MODULE_ARGS:
+        # Ansible 2.19+ - use the official testing helper
+        args['_ansible_remote_tmp'] = '/tmp'
+        args['_ansible_keep_remote_files'] = False
+        _current_patch_context = patch_module_args(args)
+        _current_patch_context.__enter__()
+    else:
+        # Legacy Ansible (pre-2.19)
+        args = json.dumps({'ANSIBLE_MODULE_ARGS': args})
+        basic._ANSIBLE_ARGS = to_bytes(args)
+
+
+def cleanup_module_args():
+    """Clean up the module args context after a test"""
+    global _current_patch_context
+    if _current_patch_context is not None:
+        try:
+            _current_patch_context.__exit__(None, None, None)
+        except Exception:
+            pass
+        _current_patch_context = None
 
 
 class RdsInstanceTest(TestCase):
@@ -64,6 +107,7 @@ class RdsInstanceTest(TestCase):
             fail_json=fail_json)
         self.mock_module_helper.start()
         self.addCleanup(self.mock_module_helper.stop)
+        self.addCleanup(cleanup_module_args)
 
         self.conn = FakeCloud()
         self.module = rds_instance.RdsInstanceModule
