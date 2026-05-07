@@ -8,4 +8,4 @@ voluptuous
 yamllint
 rstcheck
 ruamel.yaml
-otcextensions
+otcextensions @ git+https://github.com/opentelekomcloud/python-otcextensions@fix/resource-commit-method-patch

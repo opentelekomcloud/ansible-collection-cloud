@@ -170,3 +170,5 @@ Validate the entry of your development environment by running the following comm
 source ~/youransiblevenv/bin/activate
 ansible-galaxy collection list
 ```
+
+Testing line

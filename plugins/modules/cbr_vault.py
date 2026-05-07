@@ -597,7 +597,7 @@ class CBRVaultModule(OTCModule):
         else:
             self.fail_json(msg="billing is mandatory for creation")
         if self.params['policy']:
-            policy = self.conn.cbr.find_policy(policy_id=self.params['policy'])
+            policy = self.conn.cbr.find_policy(memory_or_id=self.params['policy'])
             if policy:
                 attrs['backup_policy_id'] = policy.id
             else:

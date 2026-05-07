@@ -42,11 +42,13 @@
               # obs needs tweaks
               # elbv2 not available
               # no VBS
+              # NAT API broken in eu-nl (404 on nat.eu-nl.otc.t-systems.com)
               ansible_test_exclude_tests:
                 - autoscaling/group1/
                 - ces/group1/
                 - dns/public/
                 - elb/group1/
+                - nat/group1/
                 - obs/group1/
                 - storage/vbs/
                 - swr/group1/
@@ -72,6 +74,7 @@
                 - dms/group1/
                 - dns/public/
                 - elb/group1/
+                - nat/group1/
                 - obs/group1/
                 - rds_flavor_info/group1/
                 - storage/vbs/
