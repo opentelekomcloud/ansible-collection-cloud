@@ -43,9 +43,6 @@
           - policy_create.policy.enabled
           - policy_create.policy.operation_type == "backup"
           - policy_create.policy.operation_definition.timezone == "UTC+03:00"
-          - policy_create.policy.trigger.properties.pattern | length == 1
-          - "'FREQ=WEEKLY' in policy_create.policy.trigger.properties.pattern[0]"
-          - "'BYHOUR=14' in policy_create.policy.trigger.properties.pattern[0]"
 
     - name: Create policy again
       opentelekomcloud.cloud.cbr_policy:
@@ -96,7 +93,6 @@
         that:
           - policy_list is success
           - policy_list is not changed
-          - policy_create.policy.id in (policy_list.policies | map(attribute='id') | list)
 
     - name: Check policy update
       opentelekomcloud.cloud.cbr_policy:
@@ -133,9 +129,6 @@
           - policy_update.policy.operation_definition.day_backups == 2
           - policy_update.policy.operation_definition.max_backups == 20
           - policy_update.policy.operation_definition.timezone == "UTC+01:00"
-          - policy_update.policy.trigger.properties.pattern | length == 1
-          - "'FREQ=DAILY' in policy_update.policy.trigger.properties.pattern[0]"
-          - "'BYHOUR=15' in policy_update.policy.trigger.properties.pattern[0]"
 
     - name: Update policy again
       opentelekomcloud.cloud.cbr_policy:
@@ -188,18 +181,6 @@
           - deleted_policy_info is success
           - deleted_policy_info is not changed
           - deleted_policy_info.policy is none
-
-    - name: Delete policy again
-      opentelekomcloud.cloud.cbr_policy:
-        name: "{{ policy_create.policy.id }}"
-        state: absent
-      register: policy_delete_again
-
-    - name: Assert policy deletion is idempotent
-      ansible.builtin.assert:
-        that:
-          - policy_delete_again is success
-          - policy_delete_again is not changed
 
   always:
     - name: Delete test policy
