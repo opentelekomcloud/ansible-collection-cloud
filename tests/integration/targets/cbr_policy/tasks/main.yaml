@@ -10,15 +10,14 @@
       ansible.builtin.set_fact:
         policy_name: "{{ 999999 | random | to_uuid | hash('md5') }}_policy"
         initial_pattern:
-          - "FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00"
+          - "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYHOUR=14;BYMINUTE=00"
         updated_pattern:
-          - "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;BYHOUR=15;BYMINUTE=00"
+          - "FREQ=DAILY;INTERVAL=1;BYHOUR=15;BYMINUTE=00"
 
     - name: Check policy creation
       opentelekomcloud.cloud.cbr_policy:
         name: "{{ policy_name }}"
-        count_max_backups: 10
-        retention_duration_days: 5
+        timezone: "UTC+03:00"
         pattern: "{{ initial_pattern }}"
       check_mode: true
       register: policy_check
@@ -31,8 +30,7 @@
     - name: Create policy
       opentelekomcloud.cloud.cbr_policy:
         name: "{{ policy_name }}"
-        count_max_backups: 10
-        retention_duration_days: 5
+        timezone: "UTC+03:00"
         pattern: "{{ initial_pattern }}"
       register: policy_create
 
@@ -44,15 +42,13 @@
           - policy_create.policy.name == policy_name
           - policy_create.policy.enabled
           - policy_create.policy.operation_type == "backup"
-          - policy_create.policy.operation_definition.max_backups == 10
-          - policy_create.policy.operation_definition.retention_duration_days == 5
+          - policy_create.policy.operation_definition.timezone == "UTC+03:00"
           - policy_create.policy.trigger.properties.pattern == initial_pattern
 
     - name: Create policy again
       opentelekomcloud.cloud.cbr_policy:
         name: "{{ policy_name }}"
-        count_max_backups: 10
-        retention_duration_days: 5
+        timezone: "UTC+03:00"
         pattern: "{{ initial_pattern }}"
       register: policy_create_again
 
@@ -106,7 +102,6 @@
         is_enabled: false
         count_day_backups: 2
         count_max_backups: 20
-        retention_duration_days: 7
         timezone: "UTC+01:00"
         pattern: "{{ updated_pattern }}"
       check_mode: true
@@ -123,7 +118,6 @@
         is_enabled: false
         count_day_backups: 2
         count_max_backups: 20
-        retention_duration_days: 7
         timezone: "UTC+01:00"
         pattern: "{{ updated_pattern }}"
       register: policy_update
@@ -136,7 +130,6 @@
           - not policy_update.policy.enabled
           - policy_update.policy.operation_definition.day_backups == 2
           - policy_update.policy.operation_definition.max_backups == 20
-          - policy_update.policy.operation_definition.retention_duration_days == 7
           - policy_update.policy.operation_definition.timezone == "UTC+01:00"
           - policy_update.policy.trigger.properties.pattern == updated_pattern
 
@@ -146,7 +139,6 @@
         is_enabled: false
         count_day_backups: 2
         count_max_backups: 20
-        retention_duration_days: 7
         timezone: "UTC+01:00"
         pattern: "{{ updated_pattern }}"
       register: policy_update_again

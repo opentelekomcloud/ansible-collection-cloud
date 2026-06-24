@@ -52,8 +52,8 @@ options:
     type: int
   retention_duration_days:
     description:
-      - ID of the target disk to be restored. This parameter is mandatory for
-        disk restoration. By default -1.
+      - Duration of retaining a backup, in days.
+      - Mutually exclusive with count_max_backups.
     type: int
   timezone:
     description:
@@ -244,6 +244,9 @@ class CBRPolicyModule(OTCModule):
         required_if=[
             ('state', 'present', ['pattern'])
         ],
+        mutually_exclusive=[
+            ('count_max_backups', 'retention_duration_days')
+        ],
         supports_check_mode=True
     )
 
@@ -345,10 +348,6 @@ class CBRPolicyModule(OTCModule):
                 query['operation_type'] = 'backup'
             if self.params['is_enabled'] is None:
                 query['enabled'] = True
-            if self.params['count_max_backups'] is None:
-                query['operation_definition']['max_backups'] = -1
-            if self.params['retention_duration_days'] is None:
-                query['operation_definition']['retention_duration_days'] = -1
             query['name'] = self.params['name']
             policy = self.conn.cbr.create_policy(**query)
             changed = True
