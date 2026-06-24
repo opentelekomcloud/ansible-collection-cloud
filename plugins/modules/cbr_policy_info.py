@@ -16,7 +16,7 @@ DOCUMENTATION = '''
 module: cbr_policy_info
 short_description: Get CBR policy information
 extends_documentation_fragment: opentelekomcloud.cloud.otc
-version_added: "0.15.1"
+version_added: "0.15.2"
 author: "Sidelnikov Anton (@anton-sidelnikov)"
 description:
   - Get a CBR policy by name or ID, or list policies matching filters.
