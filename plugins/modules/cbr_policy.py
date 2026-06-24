@@ -250,6 +250,32 @@ class CBRPolicyModule(OTCModule):
         supports_check_mode=True
     )
 
+    @staticmethod
+    def _normalize_pattern(pattern):
+        if not pattern:
+            return set()
+
+        normalized = set()
+        numeric_keys = {'BYHOUR', 'BYMINUTE', 'INTERVAL'}
+        for rule in pattern:
+            parts = {}
+            for part in rule.split(';'):
+                key, value = part.strip().split('=', 1)
+                key = key.upper()
+                values = value.split(',')
+                if key in numeric_keys:
+                    values = [str(int(item)) for item in values]
+                elif key == 'BYDAY':
+                    values = sorted(item.upper() for item in values)
+                else:
+                    values = [item.upper() for item in values]
+                parts[key] = ','.join(values)
+
+            parts.setdefault('INTERVAL', '1')
+            normalized.add(tuple(sorted(parts.items())))
+
+        return normalized
+
     def _require_update(self, policy):
         require_update = False
         if policy:
@@ -257,8 +283,11 @@ class CBRPolicyModule(OTCModule):
                 if self.params['is_enabled'] != policy.enabled:
                     require_update = True
             if self.params['pattern']:
-                if set(self.params['pattern']) != set(
-                        policy['trigger']['properties']['pattern']):
+                requested_pattern = self._normalize_pattern(
+                    self.params['pattern'])
+                current_pattern = self._normalize_pattern(
+                    policy['trigger']['properties']['pattern'])
+                if requested_pattern != current_pattern:
                     require_update = True
             if self.params['count_day_backups'] is not None:
                 if self.params['count_day_backups'] != policy.operation_definition['day_backups']:

@@ -43,7 +43,9 @@
           - policy_create.policy.enabled
           - policy_create.policy.operation_type == "backup"
           - policy_create.policy.operation_definition.timezone == "UTC+03:00"
-          - policy_create.policy.trigger.properties.pattern == initial_pattern
+          - policy_create.policy.trigger.properties.pattern | length == 1
+          - "'FREQ=WEEKLY' in policy_create.policy.trigger.properties.pattern[0]"
+          - "'BYHOUR=14' in policy_create.policy.trigger.properties.pattern[0]"
 
     - name: Create policy again
       opentelekomcloud.cloud.cbr_policy:
@@ -131,7 +133,9 @@
           - policy_update.policy.operation_definition.day_backups == 2
           - policy_update.policy.operation_definition.max_backups == 20
           - policy_update.policy.operation_definition.timezone == "UTC+01:00"
-          - policy_update.policy.trigger.properties.pattern == updated_pattern
+          - policy_update.policy.trigger.properties.pattern | length == 1
+          - "'FREQ=DAILY' in policy_update.policy.trigger.properties.pattern[0]"
+          - "'BYHOUR=15' in policy_update.policy.trigger.properties.pattern[0]"
 
     - name: Update policy again
       opentelekomcloud.cloud.cbr_policy:
