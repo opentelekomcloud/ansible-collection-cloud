@@ -1,0 +1,213 @@
+---
+- name: CBR policy tests
+  module_defaults:
+    opentelekomcloud.cloud.cbr_policy:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.cbr_policy_info:
+      cloud: "{{ test_cloud }}"
+  block:
+    - name: Set policy test facts
+      ansible.builtin.set_fact:
+        policy_name: "{{ 999999 | random | to_uuid | hash('md5') }}_policy"
+        initial_pattern:
+          - "FREQ=DAILY;INTERVAL=1;BYHOUR=14;BYMINUTE=00"
+        updated_pattern:
+          - "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;BYHOUR=15;BYMINUTE=00"
+
+    - name: Check policy creation
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_name }}"
+        count_max_backups: 10
+        retention_duration_days: 5
+        pattern: "{{ initial_pattern }}"
+      check_mode: true
+      register: policy_check
+
+    - name: Assert policy creation check
+      ansible.builtin.assert:
+        that:
+          - policy_check is changed
+
+    - name: Create policy
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_name }}"
+        count_max_backups: 10
+        retention_duration_days: 5
+        pattern: "{{ initial_pattern }}"
+      register: policy_create
+
+    - name: Assert policy creation
+      ansible.builtin.assert:
+        that:
+          - policy_create is success
+          - policy_create is changed
+          - policy_create.policy.name == policy_name
+          - policy_create.policy.enabled
+          - policy_create.policy.operation_type == "backup"
+          - policy_create.policy.operation_definition.max_backups == 10
+          - policy_create.policy.operation_definition.retention_duration_days == 5
+          - policy_create.policy.trigger.properties.pattern == initial_pattern
+
+    - name: Create policy again
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_name }}"
+        count_max_backups: 10
+        retention_duration_days: 5
+        pattern: "{{ initial_pattern }}"
+      register: policy_create_again
+
+    - name: Assert policy creation is idempotent
+      ansible.builtin.assert:
+        that:
+          - policy_create_again is success
+          - policy_create_again is not changed
+
+    - name: Get policy by name
+      opentelekomcloud.cloud.cbr_policy_info:
+        name: "{{ policy_name }}"
+      register: policy_info
+
+    - name: Assert policy information
+      ansible.builtin.assert:
+        that:
+          - policy_info is success
+          - policy_info is not changed
+          - policy_info.policy.id == policy_create.policy.id
+          - policy_info.policy.name == policy_name
+
+    - name: Get policy by ID
+      opentelekomcloud.cloud.cbr_policy_info:
+        id: "{{ policy_create.policy.id }}"
+      register: policy_info_by_id
+
+    - name: Assert policy information by ID
+      ansible.builtin.assert:
+        that:
+          - policy_info_by_id is success
+          - policy_info_by_id is not changed
+          - policy_info_by_id.policy.id == policy_create.policy.id
+          - policy_info_by_id.policy.name == policy_name
+
+    - name: List backup policies
+      opentelekomcloud.cloud.cbr_policy_info:
+        operation_type: backup
+      register: policy_list
+
+    - name: Assert policy is in policy list
+      ansible.builtin.assert:
+        that:
+          - policy_list is success
+          - policy_list is not changed
+          - policy_create.policy.id in (policy_list.policies | map(attribute='id') | list)
+
+    - name: Check policy update
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_create.policy.id }}"
+        is_enabled: false
+        count_day_backups: 2
+        count_max_backups: 20
+        retention_duration_days: 7
+        timezone: "UTC+01:00"
+        pattern: "{{ updated_pattern }}"
+      check_mode: true
+      register: policy_update_check
+
+    - name: Assert policy update check
+      ansible.builtin.assert:
+        that:
+          - policy_update_check is changed
+
+    - name: Update policy
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_create.policy.id }}"
+        is_enabled: false
+        count_day_backups: 2
+        count_max_backups: 20
+        retention_duration_days: 7
+        timezone: "UTC+01:00"
+        pattern: "{{ updated_pattern }}"
+      register: policy_update
+
+    - name: Assert policy update
+      ansible.builtin.assert:
+        that:
+          - policy_update is success
+          - policy_update is changed
+          - not policy_update.policy.enabled
+          - policy_update.policy.operation_definition.day_backups == 2
+          - policy_update.policy.operation_definition.max_backups == 20
+          - policy_update.policy.operation_definition.retention_duration_days == 7
+          - policy_update.policy.operation_definition.timezone == "UTC+01:00"
+          - policy_update.policy.trigger.properties.pattern == updated_pattern
+
+    - name: Update policy again
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_create.policy.id }}"
+        is_enabled: false
+        count_day_backups: 2
+        count_max_backups: 20
+        retention_duration_days: 7
+        timezone: "UTC+01:00"
+        pattern: "{{ updated_pattern }}"
+      register: policy_update_again
+
+    - name: Assert policy update is idempotent
+      ansible.builtin.assert:
+        that:
+          - policy_update_again is success
+          - policy_update_again is not changed
+
+    - name: Check policy deletion
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_create.policy.id }}"
+        state: absent
+      check_mode: true
+      register: policy_delete_check
+
+    - name: Assert policy deletion check
+      ansible.builtin.assert:
+        that:
+          - policy_delete_check is changed
+
+    - name: Delete policy
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_create.policy.id }}"
+        state: absent
+      register: policy_delete
+
+    - name: Assert policy deletion
+      ansible.builtin.assert:
+        that:
+          - policy_delete is success
+          - policy_delete is changed
+
+    - name: Get deleted policy
+      opentelekomcloud.cloud.cbr_policy_info:
+        name: "{{ policy_create.policy.id }}"
+      register: deleted_policy_info
+
+    - name: Assert deleted policy is absent
+      ansible.builtin.assert:
+        that:
+          - deleted_policy_info is success
+          - deleted_policy_info is not changed
+          - deleted_policy_info.policy is none
+
+    - name: Delete policy again
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_create.policy.id }}"
+        state: absent
+      register: policy_delete_again
+
+    - name: Assert policy deletion is idempotent
+      ansible.builtin.assert:
+        that:
+          - policy_delete_again is success
+          - policy_delete_again is not changed
+
+  always:
+    - name: Delete test policy
+      opentelekomcloud.cloud.cbr_policy:
+        name: "{{ policy_name | default('cbr-policy-integration-cleanup') }}"
+        state: absent
+      failed_when: false

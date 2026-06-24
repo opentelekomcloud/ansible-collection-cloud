@@ -325,8 +325,8 @@ class CBRPolicyModule(OTCModule):
         query['operation_definition'] = {}
         if self.params['count_day_backups'] is not None:
             query['operation_definition']['day_backups'] = self.params['count_day_backups']
-        if self.params['count_day_backups']:
-            query['operation_definition']['max_backups'] = self.params['count_day_backups']
+        if self.params['count_max_backups'] is not None:
+            query['operation_definition']['max_backups'] = self.params['count_max_backups']
         if self.params['count_month_backups'] is not None:
             query['operation_definition']['month_backups'] = self.params['count_month_backups']
         if self.params['retention_duration_days'] is not None:
@@ -345,9 +345,9 @@ class CBRPolicyModule(OTCModule):
                 query['operation_type'] = 'backup'
             if self.params['is_enabled'] is None:
                 query['enabled'] = True
-            if not self.params['count_day_backups']:
+            if self.params['count_max_backups'] is None:
                 query['operation_definition']['max_backups'] = -1
-            if not self.params['retention_duration_days']:
+            if self.params['retention_duration_days'] is None:
                 query['operation_definition']['retention_duration_days'] = -1
             query['name'] = self.params['name']
             policy = self.conn.cbr.create_policy(**query)
