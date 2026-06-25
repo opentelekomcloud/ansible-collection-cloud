@@ -183,10 +183,7 @@ class VPCRouteModule(OTCModule):
 
             else:
 
-                if self.ansible.check_mode:
-                    self.exit_json(changed=False)
-
-                self.fail_json(msg="Resource with this id doesn't exist")
+                self.exit_json(changed=False)
 
 
 def main():
