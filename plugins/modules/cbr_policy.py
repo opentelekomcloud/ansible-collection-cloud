@@ -52,8 +52,8 @@ options:
     type: int
   retention_duration_days:
     description:
-      - ID of the target disk to be restored. This parameter is mandatory for
-        disk restoration. By default -1.
+      - Duration of retaining a backup, in days.
+      - Mutually exclusive with count_max_backups.
     type: int
   timezone:
     description:
@@ -244,8 +244,37 @@ class CBRPolicyModule(OTCModule):
         required_if=[
             ('state', 'present', ['pattern'])
         ],
+        mutually_exclusive=[
+            ('count_max_backups', 'retention_duration_days')
+        ],
         supports_check_mode=True
     )
+
+    @staticmethod
+    def _normalize_pattern(pattern):
+        if not pattern:
+            return set()
+
+        normalized = set()
+        numeric_keys = {'BYHOUR', 'BYMINUTE', 'INTERVAL'}
+        for rule in pattern:
+            parts = {}
+            for part in rule.split(';'):
+                key, value = part.strip().split('=', 1)
+                key = key.upper()
+                values = value.split(',')
+                if key in numeric_keys:
+                    values = [str(int(item)) for item in values]
+                elif key == 'BYDAY':
+                    values = sorted(item.upper() for item in values)
+                else:
+                    values = [item.upper() for item in values]
+                parts[key] = ','.join(values)
+
+            parts.setdefault('INTERVAL', '1')
+            normalized.add(tuple(sorted(parts.items())))
+
+        return normalized
 
     def _require_update(self, policy):
         require_update = False
@@ -254,8 +283,11 @@ class CBRPolicyModule(OTCModule):
                 if self.params['is_enabled'] != policy.enabled:
                     require_update = True
             if self.params['pattern']:
-                if set(self.params['pattern']) != set(
-                        policy['trigger']['properties']['pattern']):
+                requested_pattern = self._normalize_pattern(
+                    self.params['pattern'])
+                current_pattern = self._normalize_pattern(
+                    policy['trigger']['properties']['pattern'])
+                if requested_pattern != current_pattern:
                     require_update = True
             if self.params['count_day_backups'] is not None:
                 if self.params['count_day_backups'] != policy.operation_definition['day_backups']:
@@ -293,7 +325,7 @@ class CBRPolicyModule(OTCModule):
         query = {}
 
         state = self.params['state']
-        policy = self.conn.cbr.find_policy(policy_id=self.params['name'])
+        policy = self.conn.cbr.find_policy(name_or_id=self.params['name'])
         changed = False
 
         if self.ansible.check_mode:
@@ -325,8 +357,8 @@ class CBRPolicyModule(OTCModule):
         query['operation_definition'] = {}
         if self.params['count_day_backups'] is not None:
             query['operation_definition']['day_backups'] = self.params['count_day_backups']
-        if self.params['count_day_backups']:
-            query['operation_definition']['max_backups'] = self.params['count_day_backups']
+        if self.params['count_max_backups'] is not None:
+            query['operation_definition']['max_backups'] = self.params['count_max_backups']
         if self.params['count_month_backups'] is not None:
             query['operation_definition']['month_backups'] = self.params['count_month_backups']
         if self.params['retention_duration_days'] is not None:
@@ -345,10 +377,6 @@ class CBRPolicyModule(OTCModule):
                 query['operation_type'] = 'backup'
             if self.params['is_enabled'] is None:
                 query['enabled'] = True
-            if not self.params['count_day_backups']:
-                query['operation_definition']['max_backups'] = -1
-            if not self.params['retention_duration_days']:
-                query['operation_definition']['retention_duration_days'] = -1
             query['name'] = self.params['name']
             policy = self.conn.cbr.create_policy(**query)
             changed = True

@@ -26,6 +26,7 @@
                 - obs/group1/
                 - swr/group2/
                 - vpn/group1/
+                - swr/group1/
         - otc-ansible-collection-test-integration-eu-nl:
             nodeset: ubuntu-jammy
             files: *integration-files
