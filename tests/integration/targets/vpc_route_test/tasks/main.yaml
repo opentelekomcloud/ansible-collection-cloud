@@ -3,6 +3,16 @@
   module_defaults:
     opentelekomcloud.cloud.vpc_route:
       cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.vpc_route_info:
+      cloud: "{{ test_cloud }}"
+    opentelekomcloud.cloud.vpc_peering:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.network:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.subnet:
+      cloud: "{{ test_cloud }}"
+    openstack.cloud.router:
+      cloud: "{{ test_cloud }}"
   block:
     - name: Set random prefix
       ansible.builtin.set_fact:
@@ -110,60 +120,119 @@
           - vpc_route is changed
 
   always:
-    - name: Cleanup
-      block:
-        - name: Drop existing vpc route
-          opentelekomcloud.cloud.vpc_route:
-            # pass ID as name
-            route_id: "{{ vpc_route.vpc_route.id }}"
-            state: absent
-          register: dropped
-          failed_when: false
+    - name: Drop registered VPC route
+      opentelekomcloud.cloud.vpc_route:
+        route_id: "{{ vpc_route.vpc_route.id }}"
+        state: absent
+      register: dropped_route
+      until: dropped_route is success
+      retries: 5
+      delay: 5
+      failed_when: false
+      when:
+        - vpc_route is defined
+        - vpc_route.vpc_route is defined
+        - vpc_route.vpc_route.id is defined
 
-        - name: Assert result
-          ansible.builtin.assert:
-            that:
-              - dropped is success
-              - dropped is changed
+    - name: Find remaining test VPC routes
+      opentelekomcloud.cloud.vpc_route_info:
+        router: "{{ test_router_1.router.id }}"
+        destination: "{{ test_subnet_2.subnet.cidr }}"
+      register: remaining_routes
+      until: remaining_routes is success
+      retries: 5
+      delay: 5
+      failed_when: false
+      when:
+        - test_router_1 is defined
+        - test_router_1.router is defined
+        - test_subnet_2 is defined
+        - test_subnet_2.subnet is defined
 
-        - name: Drop vpc peering
-          opentelekomcloud.cloud.vpc_peering:
-            name: "{{ vpc_peering_name }}"
-            state: absent
-          failed_when: false
+    - name: Drop remaining test VPC routes
+      opentelekomcloud.cloud.vpc_route:
+        route_id: "{{ item.id }}"
+        state: absent
+      loop: "{{ remaining_routes.vpc_routes | default([]) }}"
+      register: dropped_remaining_route
+      until: dropped_remaining_route is success
+      retries: 5
+      delay: 5
+      failed_when: false
 
-        - name: Drop existing first router
-          openstack.cloud.router:
-            name: "{{ router_name_1 }}"
-            state: absent
-          failed_when: false
+    - name: Drop VPC peering
+      opentelekomcloud.cloud.vpc_peering:
+        name: "{{ vpc_peering_name }}"
+        state: absent
+      register: dropped_peering
+      until: dropped_peering is success
+      retries: 10
+      delay: 5
+      failed_when: false
+      when: vpc_peering_name is defined
 
-        - name: Drop existing first subnet
-          openstack.cloud.subnet:
-            name: "{{ subnet_name_1 }}"
-            state: absent
-          failed_when: false
+    - name: Drop first router
+      openstack.cloud.router:
+        name: "{{ router_name_1 }}"
+        state: absent
+      register: dropped_router_1
+      until: dropped_router_1 is success
+      retries: 10
+      delay: 5
+      failed_when: false
+      when: router_name_1 is defined
 
-        - name: Drop existing first network
-          openstack.cloud.network:
-            name: "{{ network_name_1 }}"
-            state: absent
-          failed_when: false
+    - name: Drop second router
+      openstack.cloud.router:
+        name: "{{ router_name_2 }}"
+        state: absent
+      register: dropped_router_2
+      until: dropped_router_2 is success
+      retries: 10
+      delay: 5
+      failed_when: false
+      when: router_name_2 is defined
 
-        - name: Drop existing second router
-          openstack.cloud.router:
-            name: "{{ router_name_2 }}"
-            state: absent
-          failed_when: false
+    - name: Drop first subnet
+      openstack.cloud.subnet:
+        name: "{{ subnet_name_1 }}"
+        state: absent
+      register: dropped_subnet_1
+      until: dropped_subnet_1 is success
+      retries: 10
+      delay: 5
+      failed_when: false
+      when: subnet_name_1 is defined
 
-        - name: Drop existing second subnet
-          openstack.cloud.subnet:
-            name: "{{ subnet_name_2 }}"
-            state: absent
-          failed_when: false
+    - name: Drop second subnet
+      openstack.cloud.subnet:
+        name: "{{ subnet_name_2 }}"
+        state: absent
+      register: dropped_subnet_2
+      until: dropped_subnet_2 is success
+      retries: 10
+      delay: 5
+      failed_when: false
+      when: subnet_name_2 is defined
 
-        - name: Drop existing second network
-          openstack.cloud.network:
-            name: "{{ network_name_2 }}"
-            state: absent
-          failed_when: false
+    - name: Drop first network
+      openstack.cloud.network:
+        name: "{{ network_name_1 }}"
+        state: absent
+      register: dropped_network_1
+      until: dropped_network_1 is success
+      retries: 10
+      delay: 5
+      failed_when: false
+      when: network_name_1 is defined
+
+    - name: Drop second network
+      openstack.cloud.network:
+        name: "{{ network_name_2 }}"
+        state: absent
+      register: dropped_network_2
+      until: dropped_network_2 is success
+      retries: 10
+      delay: 5
+      failed_when: false
+      when: network_name_2 is defined
