@@ -94,7 +94,7 @@ options:
   volume_type:
     description: |
       - Type of the volume
-      - Supported values: common, ultrahigh
+      - Supported values: cloudssd, essd
       - Mandatory for new instance
     type: str
   volume_size:
@@ -144,7 +144,7 @@ EXAMPLES = '''
     router: "{{ router_name }}"
     network: "{{ network_name }}"
     security_group: "default"
-    volume_type: "common"
+    volume_type: "cloudssd"
     volume_size: 100
     password: "Test@123"
     region: "eu-de"
