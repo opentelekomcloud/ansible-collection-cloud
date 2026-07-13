@@ -44,6 +44,27 @@
         state: present
       register: secgroup2
 
+    - name: Create HPC share without hpc_bw (must fail)
+      opentelekomcloud.cloud.sfsturbo_share:
+        name: "{{ share_name }}"
+        share_proto: "NFS"
+        share_type: "PERFORMANCE"
+        size: 3686
+        availability_zone: 'eu-de-01'
+        vpc_id: "{{ vpc.vpc.id }}"
+        subnet_id: "{{ subnet.subnet.id }}"
+        security_group_id: "{{ secgroup.security_group.id }}"
+        metadata:
+          expand_type: "hpc"
+      register: hpc_no_bw
+      ignore_errors: true
+
+    - name: Assert HPC share without hpc_bw failed
+      ansible.builtin.assert:
+        that:
+          - hpc_no_bw is failed
+          - "'hpc_bw' in hpc_no_bw.msg"
+
     - name: Create sfsturbo share
       opentelekomcloud.cloud.sfsturbo_share:
         name: "{{ share_name }}"
