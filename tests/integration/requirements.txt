@@ -1,3 +1,4 @@
 otcextensions
 openstacksdk
+packaging
 six  # Workaround for broken keystoneauth 5.2.0
