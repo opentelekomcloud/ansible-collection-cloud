@@ -16,7 +16,7 @@ try:
     import openstack as sdk
     import otcextensions
     from otcextensions import sdk as otc_sdk
-    from pkg_resources import parse_version as V
+    from packaging.version import Version as V
     HAS_LIBRARIES = True
 except ImportError:
     HAS_LIBRARIES = False
