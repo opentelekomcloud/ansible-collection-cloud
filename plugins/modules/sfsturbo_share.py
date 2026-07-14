@@ -48,6 +48,10 @@ options:
         32768 (in the unit of GB). For an enhanced file system where the
         expand_type field is specified for metadata, the capacity ranges
         from 10240 to 327680.
+      - For an HPC file system (metadata expand_type set to hpc), the capacity
+        must be a multiple of 1.2 TiB, expressed in GB and rounded down to the
+        nearest integer (for example, 3686 for a 3.6 TiB file system). The
+        minimum depends on the hpc_bw value.
       -  Can be extended, but it is possible only to set size bigger
          than current one.
     type: int
@@ -79,9 +83,18 @@ options:
     suboptions:
       expand_type:
         description:
-          - Specifies the extension type. The current valid value is bandwidth,
-            indicating that an enhanced file system is created.
+          - Specifies the extension type. Set to bandwidth to create an
+            enhanced file system. Set to hpc to create an HPC file system,
+            in which case hpc_bw is mandatory.
         type: str
+        choices: ['bandwidth', 'hpc']
+      hpc_bw:
+        description:
+          - Specifies the HPC file system bandwidth. Mandatory when expand_type
+            is set to hpc. For example, 20M for a 20 MB/s/TiB file system, or
+            250M for a 250 MB/s/TiB file system.
+        type: str
+        choices: ['20M', '40M', '125M', '250M', '500M', '1000M']
       crypt_key_id:
         description:
           - Specifies the ID of a KMS professional key when an encrypted
@@ -129,6 +142,21 @@ EXAMPLES = '''
     vpc_id: "vpc_uuid"
     subnet_id: "subnet_uuid"
     security_group_id: "security_group_uuid"
+  register: share
+
+- name: Create HPC sfs turbo share
+  opentelekomcloud.cloud.sfsturbo_share:
+    name: "test_hpc_share"
+    share_proto: "NFS"
+    share_type: "PERFORMANCE"
+    size: 3686
+    availability_zone: 'eu-de-01'
+    vpc_id: "vpc_uuid"
+    subnet_id: "subnet_uuid"
+    security_group_id: "security_group_uuid"
+    metadata:
+      expand_type: "hpc"
+      hpc_bw: "250M"
   register: share
 
 - name: Extend capacity sfs turbo share
@@ -222,7 +250,11 @@ class SfsTurboShareModule(OTCModule):
         security_group_id=dict(type='str'),
         description=dict(type='str'),
         metadata=dict(type='dict', options=dict(
-            expand_type=dict(type='str'),
+            expand_type=dict(type='str',
+                             choices=['bandwidth', 'hpc']),
+            hpc_bw=dict(type='str',
+                        choices=['20M', '40M', '125M',
+                                 '250M', '500M', '1000M']),
             crypt_key_id=dict(type='str'))),
         state=dict(type='str', required=False,
                    choices=['present', 'absent'],
@@ -235,6 +267,19 @@ class SfsTurboShareModule(OTCModule):
     )
 
     def run(self):
+        metadata = self.params['metadata']
+        if metadata:
+            # Ansible fills unspecified suboptions with None. Drop them so
+            # only user-provided keys are sent to the API.
+            metadata = {k: v for k, v in metadata.items() if v is not None}
+            self.params['metadata'] = metadata or None
+
+        if metadata and metadata.get('expand_type') == 'hpc' \
+                and not metadata.get('hpc_bw'):
+            self.fail_json(
+                msg="'hpc_bw' is mandatory in metadata when 'expand_type' "
+                    "is set to 'hpc'.")
+
         sm = StateMachineShare(connection=self.conn,
                                service_name='sfsturbo',
                                type_name='share',
