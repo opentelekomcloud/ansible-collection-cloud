@@ -245,6 +245,8 @@ class RdsInstanceModule(OTCModule):
             if volume_type:
                 self.params['volume_type'] = volume_type.upper()
 
+            self.params["disk_encryption_id"] = self.params['disk_encryption']
+
             instance = self.conn.create_rds_instance(**self.params)
             self.exit(changed=True, instance=instance.to_dict())
 
